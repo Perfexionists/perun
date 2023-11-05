@@ -87,9 +87,7 @@ def read_and_deflate_chunk(file_handle: BinaryIO) -> str:
     return decompressor.decompress(packed_content).decode("utf-8")
 
 
-def split_object_name(
-    base_dir: str, object_name: str, object_ext: str = ""
-) -> tuple[str, str]:
+def split_object_name(base_dir: str, object_name: str, object_ext: str = "") -> tuple[str, str]:
     """
     :param str base_dir: base directory for the object_name
     :param str object_name: sha-1 string representing the object (possibly with extension)
@@ -103,18 +101,14 @@ def split_object_name(
     return object_dir_full_path, object_file_full_path + object_ext
 
 
-def add_loose_object_to_dir(
-    base_dir: str, object_name: str, object_content: bytes
-) -> None:
+def add_loose_object_to_dir(base_dir: str, object_name: str, object_content: bytes) -> None:
     """
     :param str base_dir: path to the base directory
     :param str object_name: sha-1 string representing the object (possibly with extension)
     :param bytes object_content: contents of the packed object
     """
     # Break the sha1 representation to base dir (first byte) and rest of the file
-    object_dir_full_path, object_file_full_path = split_object_name(
-        base_dir, object_name
-    )
+    object_dir_full_path, object_file_full_path = split_object_name(base_dir, object_name)
 
     # Create the dir
     touch_dir(object_dir_full_path)
@@ -239,9 +233,7 @@ def save_degradation_list_for(
     to_be_stored_changes = sorted(list(list_of_registered_changes.values()))
 
     # Store the changes in the file
-    minor_dir, minor_storage_file = split_object_name(
-        base_dir, minor_version, ".changes"
-    )
+    minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
     touch_dir(minor_dir)
     touch_file(minor_storage_file)
     with open(minor_storage_file, "w") as write_handle:
@@ -286,9 +278,7 @@ def load_degradation_list_for(
     :param str minor_version:
     :return: list of triples (DegradationInfo, command string, minor version source)
     """
-    minor_dir, minor_storage_file = split_object_name(
-        base_dir, minor_version, ".changes"
-    )
+    minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
     touch_dir(minor_dir)
     touch_file(minor_storage_file)
     with open(minor_storage_file, "r") as read_handle:

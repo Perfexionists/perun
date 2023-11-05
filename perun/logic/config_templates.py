@@ -369,9 +369,7 @@ class UserConfiguration(DeveloperConfiguration):
         """
         log.info("Looking up candidate workloads")
         workload_candidates = []
-        for file in UserConfiguration._all_candidate_files(
-            UserConfiguration.WORKLOAD_FOLDERS
-        ):
+        for file in UserConfiguration._all_candidate_files(UserConfiguration.WORKLOAD_FOLDERS):
             workload_candidates.append(file)
         return workload_candidates
 
@@ -392,9 +390,7 @@ class UserConfiguration(DeveloperConfiguration):
         except subprocess.CalledProcessError:
             log.info("Nothing to make...")
         executable_candidates = []
-        for file in UserConfiguration._all_candidate_files(
-            UserConfiguration.EXECUTABLE_FOLDERS
-        ):
+        for file in UserConfiguration._all_candidate_files(UserConfiguration.EXECUTABLE_FOLDERS):
             if os.path.isfile(file) and os.access(file, os.X_OK):
                 executable_candidates.append(file)
         return executable_candidates
@@ -403,9 +399,7 @@ class UserConfiguration(DeveloperConfiguration):
         """Initialization of keys used for jinja2 template"""
         super().__init__()
         self.collectors = [{"name": "time", "params": {"warmup": 3, "repeat": 10}}]
-        self.format = {
-            "output_profile_template": "%collector%-of-%cmd%-%workload%-%date%"
-        }
+        self.format = {"output_profile_template": "%collector%-of-%cmd%-%workload%-%date%"}
         self.profiles = {"register_after_run": "true"}
 
         # Lookup executables and workloads

@@ -20,9 +20,7 @@ def extract(stats_name, reset_cache, **_):
     dynamic_stats = dyn_stats.DynamicStats()
     if not reset_cache:
         # Obtain the dynamic baseline statistics from cache, if any
-        cached_stats = stats.get_latest(stats_name, ["dynamic-stats"]).get(
-            "dynamic-stats", {}
-        )
+        cached_stats = stats.get_latest(stats_name, ["dynamic-stats"]).get("dynamic-stats", {})
         if cached_stats:
             dynamic_stats = dyn_stats.DynamicStats.from_dict(cached_stats)
     return dynamic_stats

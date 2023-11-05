@@ -154,9 +154,7 @@ class SpatialAverage(RegressionKernelMethod):
     @correction.setter
     def correction(self, value):
         value = np.atleast_1d(value)
-        assert (
-            len(value.shape) == 1
-        ), "Error, the correction must be a single value or a 1D array"
+        assert len(value.shape) == 1, "Error, the correction must be a single value or a 1D array"
         self._correction = value
 
     def set_density_correction(self):

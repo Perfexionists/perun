@@ -73,21 +73,14 @@ def best_model_order_equality(
     :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    best_baseline_models = detection.get_filtered_best_models_of(
-        baseline_profile, group="param"
-    )
-    best_target_models = detection.get_filtered_best_models_of(
-        target_profile, group="param"
-    )
+    best_baseline_models = detection.get_filtered_best_models_of(baseline_profile, group="param")
+    best_target_models = detection.get_filtered_best_models_of(target_profile, group="param")
 
     for uid, best_model in best_target_models.items():
         best_baseline_model = best_baseline_models.get(uid)
         if best_baseline_model:
             confidence = min(best_baseline_model.r_square, best_model.r_square)
-            if (
-                confidence >= CONFIDENCE_THRESHOLD
-                and best_baseline_model.type != best_model.type
-            ):
+            if confidence >= CONFIDENCE_THRESHOLD and best_baseline_model.type != best_model.type:
                 baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
                 target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:

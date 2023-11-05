@@ -439,9 +439,7 @@ def test_fuzzing_degradation(pcs_with_root, monkeypatch):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "Founded degradation mutations: 0" not in result.output
-    )
+    asserts.predicate_from_cli(result, "Founded degradation mutations: 0" not in result.output)
     monkeypatch.setattr(perun_fuzz, "target_testing", original_target_testing)
 
 
@@ -801,8 +799,6 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "Executing binary raised an exception" in result.output
-    )
+    asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, "target_testing", old_target_perun_testing)
     monkeypatch.setattr(utils, "get_stdout_from_external_command", old_check_output)

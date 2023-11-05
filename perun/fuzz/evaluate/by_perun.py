@@ -127,9 +127,7 @@ def check_for_change(
     for base_prof, target_prof in zip(base_pg, target_pg):
         checks = 0
         degs = 0
-        for perf_change in check.degradation_between_profiles(
-            base_prof[1], target_prof[1], method
-        ):
+        for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1], method):
             checks += 1
             degs += perf_change.result == PerformanceChange.Degradation
         return degs / checks if checks else 0.0

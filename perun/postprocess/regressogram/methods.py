@@ -54,9 +54,7 @@ def compute_regressogram(
     for x_pts, y_pts, uid in data_gen:
         # Check whether the user gives as own number of buckets or select the method to its estimate
         buckets = (
-            config["bucket_number"]
-            if config.get("bucket_number")
-            else config["bucket_method"]
+            config["bucket_number"] if config.get("bucket_number") else config["bucket_method"]
         )
         result = regressogram(x_pts, y_pts, config["statistic_function"], buckets)
         result.update(

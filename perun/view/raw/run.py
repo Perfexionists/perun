@@ -45,17 +45,13 @@ def show(profile: Profile, **kwargs: Any) -> None:
                     int(raw_indent) * 1 * " "
                     + "- {}: {}".format(
                         log.in_color(collector_item, RAW_KEY_COLOUR),
-                        log.in_color(
-                            collector_info[collector_item] or "none", RAW_ITEM_COLOUR
-                        ),
+                        log.in_color(collector_info[collector_item] or "none", RAW_ITEM_COLOUR),
                     )
                 )
 
 
 @click.command()
-@click.option(
-    "--one-line", "-o", is_flag=True, help="Shows the aggregated one-liner raw profile."
-)
+@click.option("--one-line", "-o", is_flag=True, help="Shows the aggregated one-liner raw profile.")
 @click.option(
     "--indent",
     "-i",

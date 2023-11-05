@@ -94,9 +94,7 @@ class Watchdog:
         """
         # Terminate the session only if it's running
         if self.__enabled:
-            self.info(
-                "Watchdog successfully terminated for trace PID '{}'.".format(self.pid)
-            )
+            self.info("Watchdog successfully terminated for trace PID '{}'.".format(self.pid))
             self.__enabled = False
         # Optionally pack the file and remove it from the file system
         if zipper.pack is not None:
@@ -113,9 +111,7 @@ class Watchdog:
         """
         if self.__enabled:
             # Create a debug message
-            self.__logger.debug(
-                msg + "\n" + ("=" * (len(msg) + self.__debug_format_len))
-            )
+            self.__logger.debug(msg + "\n" + ("=" * (len(msg) + self.__debug_format_len)))
         # Use the colored output for console
         perun_log.cprintln(msg + "\n" + ("=" * len(msg)), "white")
 
@@ -192,11 +188,7 @@ class Watchdog:
                 func_count, usdt_count
             )
         )
-        self.info(
-            "Number of probe points in the script: '{}'".format(
-                _count_script_probes(script)
-            )
-        )
+        self.info("Number of probe points in the script: '{}'".format(_count_script_probes(script)))
 
     def log_resources(self, processes, modules):
         """Logs the SystemTap and perun related resources that are being used on the system,

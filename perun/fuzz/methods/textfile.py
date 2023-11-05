@@ -208,9 +208,7 @@ def repeat_word(lines: list[str]) -> None:
     rand = randomizer.rand_index(len(lines))
     with SuppressedExceptions(ValueError, IndexError):
         word = randomizer.rand_choice(lines[rand].split())
-        lines[rand] = (
-            lines[rand][:-1] + (" " + (word[100])) * repetitions + lines[rand][-1:]
-        )
+        lines[rand] = lines[rand][:-1] + (" " + (word[100])) * repetitions + lines[rand][-1:]
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)

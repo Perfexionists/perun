@@ -74,9 +74,7 @@ class TransformContext:
         self.bottom = collections.defaultdict(lambda: collections.defaultdict(int))
 
         # Thread -> level -> total exclusive time
-        self.level_times_exclusive = collections.defaultdict(
-            lambda: collections.defaultdict(int)
-        )
+        self.level_times_exclusive = collections.defaultdict(lambda: collections.defaultdict(int))
 
         # ID Map is used to map probe ID -> function name in non-verbose mode
         # and function name -> function name in verbose mode (basically a no-op)
@@ -86,9 +84,7 @@ class TransformContext:
         # Compact dictionaries used for computing dynamic stats
         # tid -> uid -> [amounts]
         self.funcs = collections.defaultdict(
-            lambda: collections.defaultdict(
-                lambda: {"e": array.array("Q"), "i": array.array("Q")}
-            )
+            lambda: collections.defaultdict(lambda: {"e": array.array("Q"), "i": array.array("Q")})
         )
         # pid -> [processes]
         self.processes = collections.defaultdict(list)
@@ -114,17 +110,13 @@ def trace_to_profile(data_file, config, probes, **_):
     resource_queue = proc.SafeQueue(vals.RESOURCE_QUEUE_CAPACITY)
     profile_queue = proc.SafeQueue(1)
     # Also create a new process for transforming the resources into a profile
-    profile_process = Process(
-        target=profile_builder, args=(resource_queue, profile_queue)
-    )
+    profile_process = Process(target=profile_builder, args=(resource_queue, profile_queue))
 
     try:
         # Start the process
         profile_process.start()
         # Process and send a chunk of resources
-        for res in chunkify(
-            process_records(data_file, config, probes), vals.RESOURCE_CHUNK
-        ):
+        for res in chunkify(process_records(data_file, config, probes), vals.RESOURCE_CHUNK):
             resource_queue.write(list(res))
         resource_queue.end_of_input()
         # After all resources have been sent, wait for the resulting profile
@@ -186,9 +178,7 @@ def process_records(data_file, config, probes):
     """
     # Initialize the context
     binaries = set(map(os.path.basename, config.libs + [config.binary]))
-    ctx = TransformContext(
-        probes, binaries, config.verbose_trace, config.executable.workload
-    )
+    ctx = TransformContext(probes, binaries, config.verbose_trace, config.executable.workload)
     # Get the handlers
     handlers = _record_handlers()
 
@@ -217,9 +207,7 @@ def process_records(data_file, config, probes):
                 for tid, bottom in ctx.bottom.items()
             },
         )
-        metrics.add_metric(
-            "trace_level_times_exclusive", dict(ctx.level_times_exclusive)
-        )
+        metrics.add_metric("trace_level_times_exclusive", dict(ctx.level_times_exclusive))
         all_probes = set(probes.func.keys()) | set(probes.usdt.keys())
         metrics.add_metric("collected_probes", len(ctx.probes_hit & all_probes))
         config.stats_data = {"p": ctx.processes, "t": ctx.threads, "f": ctx.funcs}
@@ -248,13 +236,10 @@ def _build_mixed_cg_tmp(config, ctx):
         restricted_search=False,
     )
     cg_map = {
-        func_name: {"callees": callees}
-        for func_name, callees in static_cg["call_graph"].items()
+        func_name: {"callees": callees} for func_name, callees in static_cg["call_graph"].items()
     }
 
-    mixed_call_graph = CallGraphResource().add_dyn(
-        ctx.dyn_cg, cg_map, static_cg["control_flow"]
-    )
+    mixed_call_graph = CallGraphResource().add_dyn(ctx.dyn_cg, cg_map, static_cg["control_flow"])
     resources.store(
         resources.Resources.PERUN_CALL_GRAPH,
         stats_name=cg_stats_name,
@@ -285,9 +270,7 @@ def _build_alternative_cg(config, ctx):
     for cg_type, cg_prefix in prefix:
         cgs[cg_type] = {}
         with SuppressedExceptions(StatsFileNotFoundException):
-            cgr = stats.get_stats_of(cg_prefix + cg_stats_name, ["perun_cg"])[
-                "perun_cg"
-            ]
+            cgr = stats.get_stats_of(cg_prefix + cg_stats_name, ["perun_cg"])["perun_cg"]
             cgs[cg_type] = cgr["call_graph"]["cg_map"]
     if not cgs["mixed"]:
         # If no mixed call graph is found, use static for initial merge
@@ -424,9 +407,7 @@ def _record_func_begin(record, ctx):
         parent_func = tid_ctx.func_stack[-1]
         if parent_func["callee_tmp"]:
             # Handle cases where we somehow lost return probe, overapproximate the exclusive time
-            parent_func["callee_time"] += (
-                record["timestamp"] - parent_func["callee_tmp"]
-            )
+            parent_func["callee_time"] += record["timestamp"] - parent_func["callee_tmp"]
         parent_func["callee_tmp"] = record["timestamp"]
 
         # Update the dynamic call graph structure
@@ -456,19 +437,12 @@ def _record_func_end(record, ctx):
     matching_record = {}
     # In most cases, the record matches the top record in the stack
     depth_diff = 1
-    if (
-        stack
-        and record["id"] == stack[-1]["id"]
-        and record["timestamp"] > stack[-1]["timestamp"]
-    ):
+    if stack and record["id"] == stack[-1]["id"] and record["timestamp"] > stack[-1]["timestamp"]:
         matching_record = stack.pop()
     # However, if not, then traverse the whole stack and attempt to find matching record
     else:
         for idx, stack_item in enumerate(reversed(stack)):
-            if (
-                record["id"] == stack_item["id"]
-                and record["timestamp"] > stack_item["timestamp"]
-            ):
+            if record["id"] == stack_item["id"] and record["timestamp"] > stack_item["timestamp"]:
                 depth_diff = idx
                 stack[:] = stack[: len(stack) - idx]
                 matching_record = stack.pop()
@@ -531,9 +505,7 @@ def _record_usdt_end(record, ctx):
     :return dict: profile resource dictionary
     """
     # Obtain the corresponding probe pair and matching record
-    matching_record, usdt_uid = _pair_usdt(
-        ctx, record, ctx.probes.usdt_reversed[record["id"]]
-    )
+    matching_record, usdt_uid = _pair_usdt(ctx, record, ctx.probes.usdt_reversed[record["id"]])
     return _build_resource(matching_record, record, usdt_uid, ctx.workload)
 
 
@@ -548,9 +520,7 @@ def _pair_usdt(ctx, record, pair=None):
     :return:
     """
     # Get the probe stack
-    stack = ctx.per_thread[record["tid"]].usdt_stack[
-        record["id"] if pair is None else pair
-    ]
+    stack = ctx.per_thread[record["tid"]].usdt_stack[record["id"] if pair is None else pair]
     try:
         # Get the matching record and create resource UID
         matching_record = stack.pop()
@@ -628,9 +598,7 @@ def parse_records(file_name, probes, verbose_trace):
                 record_type = int(minor_components[0])
                 record_tid = int(minor_components[1])
                 probe_id = major_components[1].rstrip("\n")
-                record_id, probe_step, probe_lib = probe_map.get(
-                    probe_id, (probe_id, 0, probe_id)
-                )
+                record_id, probe_step, probe_lib = probe_map.get(probe_id, (probe_id, 0, probe_id))
                 # 'loc' default value is for process records
                 record = {
                     "type": record_type,
@@ -655,9 +623,7 @@ def parse_records(file_name, probes, verbose_trace):
             # In case there is any issue with parsing, return corrupted trace record
             # We want to catch any error since parsing should be bullet-proof and should not crash
             except Exception:
-                WATCH_DOG.info(
-                    "Corrupted data record on ln {}: {}".format(cnt, line.rstrip("\n"))
-                )
+                WATCH_DOG.info("Corrupted data record on ln {}: {}".format(cnt, line.rstrip("\n")))
                 yield {
                     "type": vals.RecordType.CORRUPT.value,
                     "tid": -1,

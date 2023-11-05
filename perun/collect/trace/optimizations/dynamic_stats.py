@@ -116,9 +116,7 @@ class DynamicStats:
             try:
                 if resource["uid"] in ("!ProcessResource!", "!ThreadResource!"):
                     # Process resources automatically create internal process and thread records
-                    self.threads[resource["tid"]] = _Thread(
-                        resource["pid"], resource["amount"]
-                    )
+                    self.threads[resource["tid"]] = _Thread(resource["pid"], resource["amount"])
                     if resource["uid"] == "!ProcessResource!":
                         processes[resource["pid"]].append(resource)
                 else:
@@ -198,15 +196,11 @@ class DynamicStats:
         # TODO: Currently only bottom-level records are used in global dynamic stats
         # TODO: Seems like the only proper solution would be to use exclusive times instead
         # Eliminate processes that are not bottom, or both are and aren't (e.g., because of exec)
-        processes = set(
-            pid for pid, proc in self.process_hierarchy.items() if proc["bottom"]
-        )
+        processes = set(pid for pid, proc in self.process_hierarchy.items() if proc["bottom"])
 
         # Merge values from the selected processes
         # TODO: how to handle multiple parallel threads in terms of global stats? Currently additive
-        merged = collections.defaultdict(
-            lambda: {"e": array.array("Q"), "i": array.array("Q")}
-        )
+        merged = collections.defaultdict(lambda: {"e": array.array("Q"), "i": array.array("Q")})
         for tid, tid_funcs in func_values.items():
             # Filter function records that should not be part of the global stats
             if tid in self.threads and self.threads[tid][0] in processes:

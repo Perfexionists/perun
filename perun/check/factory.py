@@ -106,10 +106,7 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
     should_precollect = dutils.strtobool(
         str(config.lookup_key_recursively("degradation.collect_before_check", "false"))
     )
-    if (
-        should_precollect
-        and minor_version.checksum not in pre_collect_profiles.minor_version_cache
-    ):
+    if should_precollect and minor_version.checksum not in pre_collect_profiles.minor_version_cache:
         # Set the registering after run to true for this run
         config.runtime().set("profiles.register_after_run", "true")
         # Actually collect the resources
@@ -187,9 +184,7 @@ def degradation_in_minor(
                 del target_profile_queue[target_profile_info.config_tuple]
 
         # Store the detected degradation
-        store.save_degradation_list_for(
-            pcs.get_object_directory(), minor_version, detected_changes
-        )
+        store.save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
     if not quiet:
         log.print_list_of_degradations(detected_changes)
     return detected_changes
@@ -208,9 +203,7 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
         for minor_version in vcs.walk_minor_versions(head):
             history.progress_to_next_minor_version(minor_version)
             newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
-            log.print_short_change_string(
-                log.count_degradations_per_group(newly_detected_changes)
-            )
+            log.print_short_change_string(log.count_degradations_per_group(newly_detected_changes))
             history.finish_minor_version(minor_version, newly_detected_changes)
             log.print_list_of_degradations(newly_detected_changes)
             detected_changes.extend(newly_detected_changes)
@@ -270,18 +263,14 @@ def degradation_between_files(
     if not force:
         if baseline_config != target_config:
             log.error(
-                "incompatible configurations '{}' and '{}'".format(
-                    baseline_config, target_config
-                )
+                "incompatible configurations '{}' and '{}'".format(baseline_config, target_config)
                 + "\n\nPerformance check does not make sense for profiles "
                 "collected in different ways!"
             )
 
     detected_changes = [
         (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version)
-        for deg in degradation_between_profiles(
-            baseline_file, target_file, models_strategy
-        )
+        for deg in degradation_between_profiles(baseline_file, target_file, models_strategy)
         if deg.result != PerformanceChange.NoChange
     ]
 
@@ -356,9 +345,7 @@ def get_strategies_for(profile: Profile) -> Iterable[str]:
         the same configuration type
     """
     # Retrieve the application strategy
-    application_strategy = config.lookup_key_recursively(
-        "degradation.apply", default="all"
-    )
+    application_strategy = config.lookup_key_recursively("degradation.apply", default="all")
 
     # Retrieve all of the strategies from configuration
     strategies = config.gather_key_recursively("degradation.strategies")

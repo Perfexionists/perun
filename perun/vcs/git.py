@@ -63,11 +63,7 @@ def _init(vcs_path: str, vcs_init_params: dict[str, Any]) -> bool:
         Repo.init(vcs_path, **(vcs_init_params or {}))
     except GitCommandError as gce:
         # If by calling the init we created empty directory in vcs_path, we clean up after ourselves
-        if (
-            os.path.exists(vcs_path)
-            and dir_was_newly_created
-            and not os.listdir(vcs_path)
-        ):
+        if os.path.exists(vcs_path) and dir_was_newly_created and not os.listdir(vcs_path):
             os.rmdir(vcs_path)
         perun_log.error(f"while git init: {gce}")
 
@@ -207,9 +203,7 @@ def _check_minor_version_validity(git_repo: Repo, minor_version: str) -> None:
 
 
 @create_repo_from_path
-def _massage_parameter(
-    git_repo: Repo, parameter: str, parameter_type: Optional[str] = None
-) -> str:
+def _massage_parameter(git_repo: Repo, parameter: str, parameter_type: Optional[str] = None) -> str:
     """Parameter massaging takes a parameter and unites it to the unified context
 
     Given a parameter (in the context of git, this is rev), of a given parameter_type (e.g. tree,
@@ -271,9 +265,7 @@ def _save_state(git_repo: Repo) -> tuple[bool, str]:
 
 
 @create_repo_from_path
-def _restore_state(
-    git_repo: Repo, has_saved_stashed_changes: bool, previous_state: str
-) -> None:
+def _restore_state(git_repo: Repo, has_saved_stashed_changes: bool, previous_state: str) -> None:
     """Restores the previous state of the repository by restoring the stashed changes and checking
     out the previous head.
 

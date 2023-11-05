@@ -52,8 +52,7 @@ from perun.utils.structs import CollectStatus
     is_flag=True,
     default=False,
     callback=cli_helpers.unsupported_option_callback,
-    help="If set to true, then even if the repository is dirty, "
-    "the changes will not be stashed",
+    help="If set to true, then even if the repository is dirty, " "the changes will not be stashed",
 )
 @click.pass_context
 def run(ctx: click.Context, **kwargs: Any) -> None:
@@ -115,8 +114,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    help="Additional parameters for <cmd>. E.g. ``status`` or "
-    "``-al`` is command parameter.",
+    help="Additional parameters for <cmd>. E.g. ``status`` or " "``-al`` is command parameter.",
 )
 @click.option(
     "--workload",
@@ -125,8 +123,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload"
-    "for ``ls`` command.",
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload" "for ``ls`` command.",
 )
 @click.option(
     "--collector",
@@ -144,8 +141,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <collector> read from the"
-    " file in YAML format",
+    help="Additional parameters for the <collector> read from the" " file in YAML format",
 )
 @click.option(
     "--postprocessor",
@@ -164,8 +160,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <postprocessor> read from the"
-    " file in YAML format",
+    help="Additional parameters for the <postprocessor> read from the" " file in YAML format",
 )
 @click.pass_context
 def job(ctx: click.Context, **kwargs: Any) -> None:

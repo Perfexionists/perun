@@ -100,15 +100,9 @@ def _write_config_to(
 
     # Create the internal configuration
     internal_conf = {
-        "internal_data_filename": job_settings.get(
-            "internal_data_filename", DEFAULT_DATA_FILENAME
-        ),
-        "internal_storage_size": job_settings.get(
-            "internal_storage_size", DEFAULT_STORAGE_SIZE
-        ),
-        "internal_direct_output": job_settings.get(
-            "internal_direct_output", DEFAULT_DIRECT_OUTPUT
-        ),
+        "internal_data_filename": job_settings.get("internal_data_filename", DEFAULT_DATA_FILENAME),
+        "internal_storage_size": job_settings.get("internal_storage_size", DEFAULT_STORAGE_SIZE),
+        "internal_direct_output": job_settings.get("internal_direct_output", DEFAULT_DIRECT_OUTPUT),
     }
     # Append the runtime filter configuration
     if filter_list:
@@ -121,9 +115,7 @@ def _write_config_to(
         internal_conf["sampling"] = sampling
 
     # Serializes the configuration dictionary to the proper circ format
-    config_handle.write(
-        "CIRC = {0}".format(json.dumps(internal_conf, sort_keys=True, indent=2))
-    )
+    config_handle.write("CIRC = {0}".format(json.dumps(internal_conf, sort_keys=True, indent=2)))
 
 
 def _create_sample_from(

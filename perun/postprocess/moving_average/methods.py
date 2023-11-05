@@ -57,12 +57,8 @@ def compute_window_width_change(window_width: int, r_square: float) -> int:
     :param float r_square: coefficient of determination from the current moving average model
     :return int: new value of window width for next run of iterative computation
     """
-    window_change = (
-        _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)
-    )
-    return max(
-        1, window_width - max(1, int(min(0.9 * window_width - 1, window_change)))
-    )
+    window_change = _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)
+    return max(1, window_width - max(1, int(min(0.9 * window_width - 1, window_change))))
 
 
 def compute_moving_average(
@@ -92,9 +88,7 @@ def compute_moving_average(
     return moving_average_models
 
 
-def execute_computation(
-    y_pts: list[float], config: dict[str, Any]
-) -> tuple[Any, float]:
+def execute_computation(y_pts: list[float], config: dict[str, Any]) -> tuple[Any, float]:
     """
     The computation wrapper of supported methods of moving average approach.
 
@@ -123,9 +117,7 @@ def execute_computation(
         )
         # computation of the individual values based on the selected methods
         bucket_stats = (
-            bucket_stats.median()
-            if config["moving_method"] == "smm"
-            else bucket_stats.mean()
+            bucket_stats.median() if config["moving_method"] == "smm" else bucket_stats.mean()
         )
     # computation of Exponential Moving Average
     elif config["moving_method"] == "ema":
@@ -167,9 +159,7 @@ def moving_average(
     """
     # Sort the points to the right order for computation
     # Fixme: this is needed for type checking
-    x_pts, y_pts = cast(
-        tuple[list[float], list[float]], map(list, zip(*sorted(zip(x_pts, y_pts))))
-    )
+    x_pts, y_pts = cast(tuple[list[float], list[float]], map(list, zip(*sorted(zip(x_pts, y_pts)))))
 
     # If has been specified the window width by user, then will be followed the direct computation
     if configuration.get("window_width"):

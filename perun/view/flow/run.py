@@ -132,8 +132,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-v",
     default=False,
     is_flag=True,
-    help="The generated graph will be immediately opened in the"
-    " browser (firefox will be used).",
+    help="The generated graph will be immediately opened in the" " browser (firefox will be used).",
 )
 @pass_profile
 # Fixme: Consider breaking this to two

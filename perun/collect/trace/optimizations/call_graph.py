@@ -139,11 +139,7 @@ class CallGraphResource(CGLevelMixin):
 
         base = {"main": self.cg_map["main"]["sample"]}
         base.update(
-            {
-                func["name"]: func["sample"]
-                for func in self.cg_map.values()
-                if filter_func(func)
-            }
+            {func["name"]: func["sample"] for func in self.cg_map.values() if filter_func(func)}
         )
         return base
 
@@ -206,10 +202,7 @@ class CallGraphResource(CGLevelMixin):
         """
         if func_1 == func_2:
             return False
-        res = (
-            self[func_1]["level"] < self[func_2]["level"]
-            and func_2 in self.reachable[func_1]
-        )
+        res = self[func_1]["level"] < self[func_2]["level"] and func_2 in self.reachable[func_1]
         return res
 
     def compute_bottom(self):
@@ -218,17 +211,13 @@ class CallGraphResource(CGLevelMixin):
 
         :return set: the resulting Bottom set of the call graph
         """
-        unfiltered_funcs = [
-            func for func in self.cg_map.keys() if not self[func]["filtered"]
-        ]
+        unfiltered_funcs = [func for func in self.cg_map.keys() if not self[func]["filtered"]]
         if self.backedges:
             self.bottom = set()
             for func in unfiltered_funcs:
                 # Find callees and back edges except those that are filtered
                 unfiltered_callees = [
-                    callee
-                    for callee in self[func]["callees"]
-                    if not self[callee]["filtered"]
+                    callee for callee in self[func]["callees"] if not self[callee]["filtered"]
                 ]
                 unfiltered_backedges = [
                     be for be in self.backedges[func] if not self[be]["filtered"]
@@ -240,9 +229,7 @@ class CallGraphResource(CGLevelMixin):
             self.bottom = set(
                 func
                 for func in unfiltered_funcs
-                if not any(
-                    self.subsumption(func, cmp_func) for cmp_func in unfiltered_funcs
-                )
+                if not any(self.subsumption(func, cmp_func) for cmp_func in unfiltered_funcs)
             )
         return self.bottom
 
@@ -321,9 +308,7 @@ class CallGraphResource(CGLevelMixin):
         # Add those excluded functions that have at least one callee that is not excluded
         # Such functions may be needed to not break the call graph structure
         for func_name in excluded:
-            included_callees = [
-                name for name in angr_cg[func_name] if name not in excluded
-            ]
+            included_callees = [name for name in angr_cg[func_name] if name not in excluded]
             if included_callees:
                 self[func_name] = self._create_cg_node(func_name, filtered=True)
 
@@ -368,11 +353,7 @@ class CallGraphResource(CGLevelMixin):
                 reachable |= self.reachable[func]
             # Expand the function
             else:
-                callees = [
-                    callee
-                    for callee in self[func]["callees"]
-                    if callee not in reachable
-                ]
+                callees = [callee for callee in self[func]["callees"] if callee not in reachable]
                 candidates.extend(callees)
         self.reachable[vertex["name"]] = reachable
 

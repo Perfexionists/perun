@@ -61,9 +61,7 @@ def is_verbose_enough(verbosity_peak: int) -> bool:
     return VERBOSITY >= verbosity_peak
 
 
-def page_function_if(
-    func: Callable[..., Any], paging_switch: bool
-) -> Callable[..., Any]:
+def page_function_if(func: Callable[..., Any], paging_switch: bool) -> Callable[..., Any]:
     """Adds paging of the output to standard stream
 
     This decorator serves as a pager for long outputs to the standard stream. As a pager currently,
@@ -132,16 +130,12 @@ def _log_msg(
         stream(log_level, msg)
 
 
-def msg_to_stdout(
-    message: str, msg_verbosity: int, log_level: int = logging.INFO
-) -> None:
+def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
     """
     Helper function for the log_msg, prints the @p msg to the stdout,
     if the @p msg_verbosity is smaller or equal to actual verbosity.
     """
-    _log_msg(
-        lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level
-    )
+    _log_msg(lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level)
 
 
 def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
@@ -175,11 +169,7 @@ def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     :param object frame: some fecking frame object
     :return: tuple of filename and function name
     """
-    return (
-        (frame[0], frame[1])
-        if isinstance(frame, tuple)
-        else (frame.filename, frame.name)
-    )
+    return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
 
 
 def print_current_stack(
@@ -208,14 +198,11 @@ def print_current_stack(
             # We filter the first load entry of the module
             frame_name == "<module>",
             # We filter these error and stack handlers ;)
-            frame_file.endswith("log.py")
-            and frame_name in ("error", "print_current_stack"),
+            frame_file.endswith("log.py") and frame_name in ("error", "print_current_stack"),
         ]
         if not any(filtering_conditions):
             reduced_trace.append(frame)
-    print(
-        in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr
-    )
+    print(in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr)
 
 
 def error(
@@ -253,11 +240,7 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: str) -> N
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in helpers.py
     """
-    print(
-        in_color(
-            phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS
-        )
-    )
+    print(in_color(phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS))
 
 
 @static_variables(current_job=1)
@@ -366,9 +349,7 @@ def count_degradations_per_group(
     :return: dictionary mapping change strings to its counts
     """
     # Get only degradation results
-    changes = map(
-        operator.attrgetter("result"), map(operator.itemgetter(0), degradation_list)
-    )
+    changes = map(operator.attrgetter("result"), map(operator.itemgetter(0), degradation_list))
     # Transform the enum into a string
     change_names = list(map(operator.attrgetter("name"), changes))
     counts = dict(collections.Counter(change_names))
@@ -427,9 +408,7 @@ def print_short_summary_of_degradations(
     degradation_count = str_to_plural(
         counts.get("Degradation", 0) + counts.get("SevereDegradation", 0), "degradation"
     )
-    print(
-        f"{optimization_count}({OPTIMIZATION_ICON}), {degradation_count}({DEGRADATION_ICON})"
-    )
+    print(f"{optimization_count}({OPTIMIZATION_ICON}), {degradation_count}({DEGRADATION_ICON})")
 
 
 def change_counts_to_string(counts: dict[str, int], width: int = 0) -> str:
@@ -521,9 +500,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
 
     if deg_info.confidence_type != "no":
         print(" (with confidence ", end="")
-        cprint(
-            f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", "bold"
-        )
+        cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", "bold")
         print(")", end="")
 
 
@@ -542,9 +519,7 @@ def _print_partial_intervals(
     :return None: function has no return value
     """
     print("  \u2514 ", end="")
-    for change_info, rel_error, x_start, x_end in aggregate_intervals(
-        partial_intervals
-    ):
+    for change_info, rel_error, x_start, x_end in aggregate_intervals(partial_intervals):
         if change_info != PerformanceChange.NoChange:
             cprint(
                 f"<{x_start}, {x_end}> {rel_error}x; ",
@@ -586,10 +561,7 @@ def print_list_of_degradations(
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
             print("\u2514 ", end="")
-            if (
-                deg_info.rate_degradation_relative > 0.0
-                or deg_info.rate_degradation_relative < 0.0
-            ):
+            if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
                 cprint(
                     "{}ms ({}%)".format(
                         round(deg_info.rate_degradation, 2),
@@ -715,9 +687,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         elapsed = time.time() - before
         print(
             "[!] {} [{}] in {} [!]".format(
-                (
-                    func.phase_name if hasattr(func, "phase_name") else func.__name__
-                ).title(),
+                (func.phase_name if hasattr(func, "phase_name") else func.__name__).title(),
                 in_color("DONE", "green", "bold"),
                 in_color("{:0.2f}s".format(elapsed), "white", "bold"),
             )
@@ -787,9 +757,7 @@ class History:
         :ivar str prev: the child of the edge, i.e. the not yet processed sha
         """
 
-        def __init__(
-            self, n: str, colour: str = "white", prev: Optional[str] = None
-        ) -> None:
+        def __init__(self, n: str, colour: str = "white", prev: Optional[str] = None) -> None:
             """Initiates one edge of the history
 
             :param str n: the next sha that will be processed
@@ -806,9 +774,7 @@ class History:
             :param str char: string that represents the edge
             :return: string representing the edge in ascii
             """
-            return (
-                char if self.colour == "white" else in_color(char, self.colour, "bold")
-            )
+            return char if self.colour == "white" else in_color(char, self.colour, "bold")
 
     def __init__(self, head: str) -> None:
         """Creates a with wrapper, which keeps and prints the context of the current vcs
@@ -1058,13 +1024,10 @@ class History:
         else:
             for _ in range(1, parent_num):
                 merged_at += 1
-                left_str = " ".join(
-                    e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
-                )
+                left_str = " ".join(e.to_ascii("|") for e in self.unresolved_edges[:merged_at])
                 right_str = (
                     " ".join(
-                        e.to_ascii("\\")
-                        for e in self.unresolved_edges[-rightmost_branches_num:]
+                        e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
                     )
                     if rightmost_branches_num
                     else ""
@@ -1072,9 +1035,7 @@ class History:
                 print(left_str + right_str)
                 print(
                     left_str
-                    + " ".join(
-                        [self.unresolved_edges[merged_at].to_ascii("\\"), right_str]
-                    )
+                    + " ".join([self.unresolved_edges[merged_at].to_ascii("\\"), right_str])
                 )
 
     def _process_fork_point(self, fork_point: str) -> None:

@@ -389,9 +389,7 @@ class ParametersManager:
         metrics.start_timer("optimization_parameters")
         func_count, level_count = 0, 0
         if call_graph is not None:
-            func_count, level_count = len(call_graph.cg_map.keys()), len(
-                call_graph.levels
-            )
+            func_count, level_count = len(call_graph.cg_map.keys()), len(call_graph.levels)
             # Update the default keep top according to the first call graph branching
             self._default_keep_top = call_graph.coverage_max_cut()[1] + 1
         # Extract the user-supplied modes and parameters
@@ -439,9 +437,7 @@ class ParametersManager:
             self[Parameters.DIFF_KEEP_LEAF] = True
             self[Parameters.CG_PROJ_KEEP_LEAF] = True
         # Keep-top: 10% of levels, minimum is default
-        keep_top = max(
-            math.ceil(level_count * self._keep_top_ratio), self._default_keep_top
-        )
+        keep_top = max(math.ceil(level_count * self._keep_top_ratio), self._default_keep_top)
         self[Parameters.STATIC_KEEP_TOP] = keep_top
 
     def _infer_modes(self, selected_pipeline, user_modes):
@@ -483,9 +479,7 @@ class ParametersManager:
         # Set the threshold
         self[Parameters.DYNSAMPLE_THRESHOLD] = base
         self[Parameters.DYNBASE_SOFT_THRESHOLD] = base
-        self[Parameters.DYNBASE_HARD_THRESHOLD] = (
-            base * self._hard_threshold_coefficient
-        )
+        self[Parameters.DYNBASE_HARD_THRESHOLD] = base * self._hard_threshold_coefficient
 
     def _infer_dynamic_probing(self, cli_params):
         """Predict parameters and threshold values for Dynamic Probing .
@@ -493,13 +487,9 @@ class ParametersManager:
         :param list cli_params: a collection of user-supplied parameters
         """
         # Update the probing threshold if reattach is enabled and probing threshold is not set
-        probing_threshold_set = Parameters.PROBING_THRESHOLD in [
-            param for param, _ in cli_params
-        ]
+        probing_threshold_set = Parameters.PROBING_THRESHOLD in [param for param, _ in cli_params]
         if self[Parameters.PROBING_REATTACH] and not probing_threshold_set:
-            probing_threshold = (
-                self._probing_threshold * self._probing_reattach_coefficient
-            )
+            probing_threshold = self._probing_threshold * self._probing_reattach_coefficient
             self[Parameters.PROBING_THRESHOLD] = probing_threshold
 
     def _extract_sources(self, binary):

@@ -20,9 +20,7 @@ def test_regressogram_method():
     Expects to pass all assertions.
     """
     # Get the profile with testing data
-    test_model = test_utils.load_profile(
-        "postprocess_profiles", "exp_model_datapoints.perf"
-    )
+    test_model = test_utils.load_profile("postprocess_profiles", "exp_model_datapoints.perf")
     assert test_model is not None
 
     for current_method in _EXPECTED_RESULTS.keys():

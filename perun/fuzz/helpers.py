@@ -14,9 +14,7 @@ def insert_at_split(
     :param int split_position: position in the list[index] that we insert
     :param bytes inserted_bytes: inserted string or bytes
     """
-    lines[index] = (
-        lines[index][:split_position] + inserted_bytes + lines[index][split_position:]
-    )
+    lines[index] = lines[index][:split_position] + inserted_bytes + lines[index][split_position:]
 
 
 def remove_at_split(lines: list[Any], index: int, split_position: int) -> None:
@@ -40,7 +38,5 @@ def replace_at_split(
     :param chr replaced_bytes:
     """
     lines[index] = (
-        lines[index][:split_position]
-        + replaced_bytes
-        + lines[index][split_position + 1 :]
+        lines[index][:split_position] + replaced_bytes + lines[index][split_position + 1 :]
     )

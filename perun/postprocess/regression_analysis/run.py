@@ -29,9 +29,7 @@ def postprocess(
     :param configuration: the perun and options context
     """
     # Validate the input configuration
-    tools.validate_dictionary_keys(
-        configuration, ["method", "regression_models", "steps"], []
-    )
+    tools.validate_dictionary_keys(configuration, ["method", "regression_models", "steps"], [])
 
     # Perform the regression analysis
     analysis = methods.compute(
@@ -69,17 +67,13 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
 
         summary_record = func_summary.setdefault(record["uid"], {})
         summary_record[record["model"]] = record["r_square"]
-    metrics.save_separate(
-        "details/{}.json".format(metrics.Metrics.metrics_id), func_summary
-    )
+    metrics.save_separate("details/{}.json".format(metrics.Metrics.metrics_id), func_summary)
 
     # Count the number of respective models
     models = {model: 0 for model in reg_models.get_supported_models() if model != "all"}
     models["undefined"] = 0
     for func_record in funcs.values():
-        models[
-            "undefined" if (func_record["r_square"] <= 0.5) else func_record["model"]
-        ] += 1
+        models["undefined" if (func_record["r_square"] <= 0.5) else func_record["model"]] += 1
     # Store the counts in the metrics
     for model, count in models.items():
         metrics.add_metric(f"{model}_model", count)
@@ -92,8 +86,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     type=click.Choice(methods.get_supported_param_methods()),
     required=True,
     multiple=False,
-    help="Will use the <method> to find the best fitting models for"
-    " the given profile.",
+    help="Will use the <method> to find the best fitting models for" " the given profile.",
 )
 @click.option(
     "--regression_models",

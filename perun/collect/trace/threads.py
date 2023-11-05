@@ -33,9 +33,7 @@ class NonBlockingTee(Thread):
 
     def run(self):
         """The thread loop which blocks until new output from the stream is available."""
-        WATCH_DOG.debug(
-            "NonBlockingTee thread starting, output stored in '{}'".format(self._file)
-        )
+        WATCH_DOG.debug("NonBlockingTee thread starting, output stored in '{}'".format(self._file))
         with open(self._file, "wb") as tee_file:
             try:
                 # Wait for a next line from the stream
@@ -87,9 +85,7 @@ class PeriodicThread(Thread):
         of time, the waiting is interrupted and the action is invoked.
         """
         WATCH_DOG.debug(
-            "PeriodicThread starting, action will be performed every {}s".format(
-                self._timer
-            )
+            "PeriodicThread starting, action will be performed every {}s".format(self._timer)
         )
         # Repeat the wait as long as the stop event is not set
         while not self._stop_event.is_set():

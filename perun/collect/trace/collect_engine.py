@@ -180,9 +180,7 @@ class CollectEngine(ABC):
                     proc_name, proc.pid
                 )
             )
-            utils.run_safely_external_command(
-                "sudo kill -{} {}".format(SIGINT, proc.pid), False
-            )
+            utils.run_safely_external_command("sudo kill -{} {}".format(SIGINT, proc.pid), False)
             # The wait is needed to get rid of the resulting zombie process
             try:
                 proc.wait(timeout=CLEANUP_TIMEOUT)

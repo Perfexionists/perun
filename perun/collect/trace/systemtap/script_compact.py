@@ -60,9 +60,13 @@ PROCESS_HANDLER_TEMPLATE = (
     'printf("{type} %d %d %d %d;%s\\n", '
     'tid(), pid(), ppid(), read_stopwatch_ns("{timestamp}"), execname())'
 )
-THREAD_HANDLER_TEMPLATE = 'printf("{type} %d %d %d;%s\\n", tid(), pid(), read_stopwatch_ns("{timestamp}"), execname())'
+THREAD_HANDLER_TEMPLATE = (
+    'printf("{type} %d %d %d;%s\\n", tid(), pid(), read_stopwatch_ns("{timestamp}"), execname())'
+)
 # Template of a record creation within a probe handler
-HANDLER_TEMPLATE = 'printf("{type} %d %d;{id_type}\\n", tid, read_stopwatch_ns("{timestamp}"), {id_get})'
+HANDLER_TEMPLATE = (
+    'printf("{type} %d %d;{id_type}\\n", tid, read_stopwatch_ns("{timestamp}"), {id_get})'
+)
 # Template of a probe event declaration and handler definition
 PROBE_TEMPLATE = """
 probe {probe_events}
@@ -137,9 +141,7 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     :param Configuration config: the configuration parameters
     :param Probes probes: the probes specification
     """
-    WATCH_DOG.info(
-        "Attempting to assembly the SystemTap script '{}'".format(script_file)
-    )
+    WATCH_DOG.info("Attempting to assembly the SystemTap script '{}'".format(script_file))
 
     # Add unique probe and sampling ID to the probes
     probes.add_probe_ids()
@@ -151,14 +153,10 @@ def assemble_system_tap_script(script_file, config, probes, **_):
         # Declare and init arrays, create the begin / end probes
         _add_script_init(script_handle, config, probes, timed_sampling)
         # Add the thread begin / end probes
-        _add_thread_probes(
-            script_handle, config.binary, bool(probes.sampled_probes_len())
-        )
+        _add_thread_probes(script_handle, config.binary, bool(probes.sampled_probes_len()))
         # Add the timed sampling timer probe if needed
         if timed_sampling:
-            sampling_freq = config.run_optimization_parameters[
-                Parameters.TIMEDSAMPLE_FREQ.value
-            ]
+            sampling_freq = config.run_optimization_parameters[Parameters.TIMEDSAMPLE_FREQ.value]
             _add_timer_probe(script_handle, sampling_freq)
         # Create the timing probes for functions and USDT probes
         _add_program_probes(script_handle, probes, config.verbose_trace, timed_sampling)
@@ -214,9 +212,7 @@ probe process("{binary}").end
             type=int(RecordType.PROCESS_END), timestamp=STOPWATCH_NAME
         ),
         timed_sampling=(
-            "global {} = 1".format(TIMED_SWITCH)
-            if timed_sampling
-            else "# Timed Sampling omitted"
+            "global {} = 1".format(TIMED_SWITCH) if timed_sampling else "# Timed Sampling omitted"
         ),
     )
     handle.write(script_init)
@@ -325,36 +321,26 @@ def _add_program_probes(handle, probes, verbose_trace, timed_sampling):
         (prebuilt["e"]["single_usdt"], prebuilt["h"]["usdt_single"]),
         (
             prebuilt["e"]["sampled_func"].format(suffix=".call?"),
-            ENTRY_APPROX_SAMPLE_TEMPLATE.format(
-                probe_handler=prebuilt["h"]["func_begin"]
-            ),
+            ENTRY_APPROX_SAMPLE_TEMPLATE.format(probe_handler=prebuilt["h"]["func_begin"]),
         ),
         (
             prebuilt["e"]["sampled_func"].format(suffix=".return?"),
-            EXIT_APPROX_SAMPLE_TEMPLATE.format(
-                probe_handler=prebuilt["h"]["func_exit"]
-            ),
+            EXIT_APPROX_SAMPLE_TEMPLATE.format(probe_handler=prebuilt["h"]["func_exit"]),
         ),
         (
             prebuilt["e"]["sampled_usdt"],
-            ENTRY_APPROX_SAMPLE_TEMPLATE.format(
-                probe_handler=prebuilt["h"]["usdt_begin"]
-            ),
+            ENTRY_APPROX_SAMPLE_TEMPLATE.format(probe_handler=prebuilt["h"]["usdt_begin"]),
         ),
         (
             prebuilt["e"]["sampled_usdt_exit"],
-            EXIT_APPROX_SAMPLE_TEMPLATE.format(
-                probe_handler=prebuilt["h"]["usdt_exit"]
-            ),
+            EXIT_APPROX_SAMPLE_TEMPLATE.format(probe_handler=prebuilt["h"]["usdt_exit"]),
         ),
     ]
 
     for spec_event, spec_handler in specification:
         # Add the new events + handler only if there are some associated events
         if spec_event:
-            probe = PROBE_TEMPLATE.format(
-                probe_events=spec_event, probe_handler=spec_handler
-            )
+            probe = PROBE_TEMPLATE.format(probe_events=spec_event, probe_handler=spec_handler)
             handle.write(probe)
 
 
@@ -380,12 +366,8 @@ def _build_array_declaration(probes, verbose_trace, max_threads):
     if probes.sampled_probes_len() > 0:
         array_size = probes.sampled_probes_len()
         max_array_size = array_size * max_threads
-        max_array_size = (
-            max_array_size if max_array_size > MAX_MAP_ENTRIES else MAX_MAP_ENTRIES
-        )
-        sampling_arrays = ARRAYS_SAMPLING_TEMPLATE.format(
-            size=array_size, max_size=max_array_size
-        )
+        max_array_size = max_array_size if max_array_size > MAX_MAP_ENTRIES else MAX_MAP_ENTRIES
+        sampling_arrays = ARRAYS_SAMPLING_TEMPLATE.format(size=array_size, max_size=max_array_size)
     # TODO: Recursion sampling switch on / off
     return ARRAYS_TEMPLATE.format(
         id_array=id_array,
@@ -428,9 +410,7 @@ def _build_sampling_init(probes):
     threshold_string = "    # Probe name -> Probe sampling threshold\n"
     # Generate the initialization code for both the function and USDT sampled probes
     for probe in probes.get_sampled_probes():
-        threshold_string += _array_assign(
-            ARRAY_SAMPLE_THRESHOLD, probe["name"], probe["sample"]
-        )
+        threshold_string += _array_assign(ARRAY_SAMPLE_THRESHOLD, probe["name"], probe["sample"])
     return threshold_string
 
 
@@ -444,9 +424,7 @@ def _build_probe_body(probe_type, verbose_trace):
     """
     # Set how the probe will be identified in the output and how we obtain the identification
     # based on the trace verbosity
-    id_t, id_get = (
-        ("%s", "pname") if verbose_trace else ("%d", "{}[pname]".format(ARRAY_PROBE_ID))
-    )
+    id_t, id_get = ("%s", "pname") if verbose_trace else ("%d", "{}[pname]".format(ARRAY_PROBE_ID))
     # Format the template for the required probe type
     return HANDLER_TEMPLATE.format(
         type=int(probe_type), id_type=id_t, id_get=id_get, timestamp=STOPWATCH_NAME
@@ -464,11 +442,7 @@ def _build_func_events(probe_iter, timed_sampling):
     """
 
     def timed_switch(func_name):
-        return (
-            " if ({})".format(TIMED_SWITCH)
-            if timed_sampling and func_name != "main"
-            else ""
-        )
+        return " if ({})".format(TIMED_SWITCH) if timed_sampling and func_name != "main" else ""
 
     return ",\n      ".join(
         FUNC_EVENT_TEMPLATE.format(
@@ -487,8 +461,7 @@ def _build_usdt_events(probe_iter, probe_id="name"):
     :return str: the built probe events code
     """
     return ",\n      ".join(
-        USDT_EVENT_TEMPLATE.format(binary=prb["lib"], loc=prb[probe_id])
-        for prb in probe_iter
+        USDT_EVENT_TEMPLATE.format(binary=prb["lib"], loc=prb[probe_id]) for prb in probe_iter
     )
 
 

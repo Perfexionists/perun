@@ -69,9 +69,7 @@ def derived_const(
 
         y_start = result["coeffs"][0]
         y_end = y_start + result["coeffs"][1] * result["x_end"]
-        angle = math.atan2(
-            abs(y_end - y_start), abs(result["x_end"] - result["x_start"])
-        )
+        angle = math.atan2(abs(y_end - y_start), abs(result["x_end"] - result["x_start"]))
         slope_change = angle / 90
         if slope_change > const["b1_threshold"]:
             r = result["r_square"] * (1 - slope_change)
@@ -92,9 +90,7 @@ def derived_const(
         yield const
 
 
-def _filter_by_models(
-    analysis: list[dict[str, Any]], models: list[str]
-) -> list[dict[str, Any]]:
+def _filter_by_models(analysis: list[dict[str, Any]], models: list[str]) -> list[dict[str, Any]]:
     """Filters regression results by computed models.
 
     :param list of dict analysis: the computed regression models

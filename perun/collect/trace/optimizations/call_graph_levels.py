@@ -110,9 +110,7 @@ class CGLevelMixin:
         """Computes the dominance relation using the immediate dominators."""
         # Create networkx graph
         edges = [
-            (parent, callee)
-            for parent in self.cg_map.keys()
-            for callee in self[parent]["callees"]
+            (parent, callee) for parent in self.cg_map.keys() for callee in self[parent]["callees"]
         ]
         graph = nx.DiGraph(edges)
 
@@ -147,15 +145,11 @@ class CGLevelMixin:
             new_iter = set()
             # New visited functions reachable from the last level
             for func in iter_sets[-1]:
-                candidates |= (
-                    set(self[func]["callees"]) - self.backedges[func] - processed
-                )
+                candidates |= set(self[func]["callees"]) - self.backedges[func] - processed
             # Check if there is a caller that has not been resolved yet
             for func in candidates:
                 unsolved_callers = {
-                    caller
-                    for caller in self[func]["callers"]
-                    if func not in self.backedges[caller]
+                    caller for caller in self[func]["callers"] if func not in self.backedges[caller]
                 } - processed
                 if not unsolved_callers:
                     new_iter.add(func)
@@ -247,9 +241,7 @@ class CGLevelMixin:
         self._lp_set_level(node)
         # node['level'] = candidate_level
         finished.add(candidate)
-        inspect_list.extend(
-            [(candidate, callee, node["level"]) for callee in node["callees"]]
-        )
+        inspect_list.extend([(candidate, callee, node["level"]) for callee in node["callees"]])
         return True
 
     def _lp_set_level(self, node):

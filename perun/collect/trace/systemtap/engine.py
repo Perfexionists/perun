@@ -71,9 +71,7 @@ class SystemTapEngine(engine.CollectEngine):
 
         # Locks
         binary_name = os.path.basename(self.executable.cmd)
-        self.lock_binary = ResourceLock(
-            LockType.Binary, binary_name, self.pid, self.locks_dir
-        )
+        self.lock_binary = ResourceLock(LockType.Binary, binary_name, self.pid, self.locks_dir)
         self.lock_stap = ResourceLock(
             LockType.SystemTap,
             "process_{}".format(binary_name),
@@ -106,8 +104,7 @@ class SystemTapEngine(engine.CollectEngine):
         # Extract the USDT probe locations from the binary
         # note: stap -l returns code '1' if there are no USDT probes
         return {
-            target: list(_parse_usdt_name(_extract_usdt_probes(target)))
-            for target in self.targets
+            target: list(_parse_usdt_name(_extract_usdt_probes(target))) for target in self.targets
         }
 
     def assemble_collect_program(self, **kwargs):
@@ -241,9 +238,7 @@ class SystemTapEngine(engine.CollectEngine):
         self.stap_module = match.group(1)
         WATCH_DOG.debug("Compiled kernel module name: '{}'".format(self.stap_module))
         # Lock the kernel module
-        self.lock_module = ResourceLock(
-            LockType.Module, self.stap_module, self.pid, self.locks_dir
-        )
+        self.lock_module = ResourceLock(LockType.Module, self.stap_module, self.pid, self.locks_dir)
         self.lock_module.lock()
 
     def _run_systemtap_collection(self, command, logfile, config):
@@ -275,9 +270,7 @@ class SystemTapEngine(engine.CollectEngine):
         """
         # In kernel, the module name is appended with the stapio process PID
         # Scan the running processes for the stapio process and filter out the grep itself
-        proc = _extract_processes(
-            'ps -eo {} | grep "[s]tapio.*{}"'.format(PS_FORMAT, self.data)
-        )
+        proc = _extract_processes('ps -eo {} | grep "[s]tapio.*{}"'.format(PS_FORMAT, self.data))
         # Check the results - there should be only one result
         if proc:
             if len(proc) != 1:
@@ -316,9 +309,7 @@ class SystemTapEngine(engine.CollectEngine):
 
         # Start the profiled command
         WATCH_DOG.info(
-            "Launching the profiled command '{}'".format(
-                self.executable.to_escaped_string()
-            )
+            "Launching the profiled command '{}'".format(self.executable.to_escaped_string())
         )
 
         with utils.nonblocking_subprocess(
@@ -396,15 +387,9 @@ class SystemTapEngine(engine.CollectEngine):
             # Form the module name which consists of the base module name and stapio PID
             module_name = "{}__{}".format(self.stap_module, self.stapio)
             # Attempts to unload the module
-            utils.run_safely_external_command(
-                "sudo rmmod {}".format(module_name), False
-            )
-            if not _wait_for_resource_release(
-                _loaded_stap_kernel_modules, [module_name]
-            ):
-                WATCH_DOG.debug(
-                    "Unloading the kernel module '{}' failed".format(module_name)
-                )
+            utils.run_safely_external_command("sudo rmmod {}".format(module_name), False)
+            if not _wait_for_resource_release(_loaded_stap_kernel_modules, [module_name]):
+                WATCH_DOG.debug("Unloading the kernel module '{}' failed".format(module_name))
         finally:
             # Always unlock the module
             if self.lock_module is not None:
@@ -506,9 +491,7 @@ def _wait_for_script_compilation(logfile, stap_process):
                 return
             else:
                 # The stap process terminated with non-zero code which means failure
-                WATCH_DOG.debug(
-                    "SystemTap build process failed with exit code '{}'".format(status)
-                )
+                WATCH_DOG.debug("SystemTap build process failed with exit code '{}'".format(status))
                 raise SystemTapScriptCompilationException(logfile, status)
 
 
@@ -578,9 +561,7 @@ def _heartbeat_stap(logfile, phase):
     :param str phase: the SystemTap phase (compilation or collection)
     """
     # Report log line count and the last record
-    WATCH_DOG.info(
-        "{} status update: 'log lines count' ; 'last log line'".format(phase)
-    )
+    WATCH_DOG.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
     WATCH_DOG.info("'{}' ; '{}'".format(*_get_last_line_of(logfile, FileSize.SHORT)))
 
 
@@ -682,9 +663,7 @@ def _check_used_resources(locks_dir):
         locked, lockless = [], []
         for resource in resources:
             # Find all the locks that are matching the resource
-            matching_locks = [
-                lock for lock in resource_locks if condition(resource, lock)
-            ]
+            matching_locks = [lock for lock in resource_locks if condition(resource, lock)]
             record = (resource, matching_locks)
             # Save the resource as locked or lockless
             if matching_locks:
@@ -698,9 +677,7 @@ def _check_used_resources(locks_dir):
     active_locks = get_active_locks_for(
         locks_dir, resource_types=[LockType.Module, LockType.SystemTap]
     )
-    processes = _extract_processes(
-        'ps -eo {} | awk \'$4" "$5 == "sudo stap"\''.format(PS_FORMAT)
-    )
+    processes = _extract_processes('ps -eo {} | awk \'$4" "$5 == "sudo stap"\''.format(PS_FORMAT))
     modules = _loaded_stap_kernel_modules()
 
     # Partition the locks into Systemtap and module locks
@@ -714,7 +691,5 @@ def _check_used_resources(locks_dir):
         processes, stap_locks, lambda proc, lock: lock.pid == proc[1]
     )
     # Module locks are tied to their name
-    locked_mod, lockless_mod = _match(
-        modules, mod_locks, lambda module, lock: lock.name == module
-    )
+    locked_mod, lockless_mod = _match(modules, mod_locks, lambda module, lock: lock.name == module)
     return (locked_proc, lockless_proc), (locked_mod, lockless_mod)

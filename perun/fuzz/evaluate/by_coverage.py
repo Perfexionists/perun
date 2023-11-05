@@ -41,11 +41,7 @@ def prepare_workspace(source_path: str) -> None:
     :param str source_path: path to dir with source files, where coverage info files are stored
     """
     for file in os.listdir(source_path):
-        if (
-            file.endswith(".gcda")
-            or file.endswith(".gcov")
-            or file.endswith(".gcov.json.gz")
-        ):
+        if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith(".gcov.json.gz"):
             os.remove(path.join(source_path, file))
 
 
@@ -210,11 +206,7 @@ def get_coverage_from_dir(cwd: str, config: CoverageConfiguration) -> int:
     """
     os.chdir(config.gcno_path)
 
-    cmd = (
-        ["gcov", "-i", "-o", "."]
-        if config.has_intermediate_format()
-        else ["gcov", "-o", "."]
-    )
+    cmd = ["gcov", "-i", "-o", "."] if config.has_intermediate_format() else ["gcov", "-o", "."]
     cmd.extend(config.source_files)
 
     with SuppressedExceptions(subprocess.CalledProcessError):

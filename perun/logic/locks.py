@@ -84,9 +84,7 @@ class ResourceLock:
         self.type = resource_type
         self.pid = pid
         self.locks_dir = locks_dir
-        self.file = os.path.join(
-            locks_dir, "{}:{}{}".format(self.name, self.pid, self.type.value)
-        )
+        self.file = os.path.join(locks_dir, "{}:{}{}".format(self.name, self.pid, self.type.value))
 
     @classmethod
     def fromfile(cls, lock_file: str) -> Optional["ResourceLock"]:
@@ -108,9 +106,7 @@ class ResourceLock:
     def lock(self) -> None:
         """Actually locks the resource represented by the lock object."""
         WATCH_DOG.debug(
-            "Attempting to lock a resource '{}' with pid '{}'".format(
-                self.name, self.pid
-            )
+            "Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid)
         )
 
         # Lock the resource first
@@ -133,15 +129,11 @@ class ResourceLock:
         is raised.
         """
         WATCH_DOG.debug(
-            "Checking lock validity for a resource '{}' with pid '{}'".format(
-                self.name, self.pid
-            )
+            "Checking lock validity for a resource '{}' with pid '{}'".format(self.name, self.pid)
         )
 
         # Iterate all the lock files related to the resource + resource type
-        for active_lock in get_active_locks_for(
-            self.locks_dir, [self.name], [self.type]
-        ):
+        for active_lock in get_active_locks_for(self.locks_dir, [self.name], [self.type]):
             # Ignore the self lock file
             if active_lock.pid == self.pid:
                 continue
@@ -169,17 +161,13 @@ class ResourceLock:
         """Attempts to remove the lock file from the file system."""
         try:
             if os.path.exists(self.file):
-                WATCH_DOG.debug(
-                    "Attempting to remove a lock file '{}'".format(self.file)
-                )
+                WATCH_DOG.debug("Attempting to remove a lock file '{}'".format(self.file))
                 temp.delete_temp_file(self.file, force=True)
                 WATCH_DOG.debug("Lock file '{}' removed".format(self.file))
         except (InvalidTempPathException, OSError) as exc:
             # Issue a warning only if the file still exists after a deletion attempt
             if temp.exists_temp_file(self.file):
-                WATCH_DOG.warn(
-                    "Failed to delete resource lock file '{}'".format(str(exc))
-                )
+                WATCH_DOG.warn("Failed to delete resource lock file '{}'".format(str(exc)))
 
 
 def get_active_locks_for(
@@ -237,9 +225,7 @@ def _is_running_perun_process(pid: int) -> bool:
     # Request information about process with the given PID
     WATCH_DOG.debug("Checking the details of a process '{}'".format(pid))
     query = "ps -o {} -p {}".format(PS_FORMAT, pid)
-    result = (
-        utils.run_safely_external_command(query, False)[0].decode("utf-8").splitlines()
-    )
+    result = utils.run_safely_external_command(query, False)[0].decode("utf-8").splitlines()
     WATCH_DOG.log_variable("process::{}".format(pid), result)
     # If no such process exists then the output contains only header line
     if len(result) < 2:

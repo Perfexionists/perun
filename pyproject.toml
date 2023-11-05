@@ -208,5 +208,15 @@ exclude_also = [
     "assert NotImplementedError(.*)",
 ]
 
+# Formatting configuration
+# ----------------------
+[tool.black]
+target-version = [
+    "py39",
+    "py310",
+    "py311"
+]
+line-length = 100
+
 # This line has to be there, because otherwise the setuptools_scm will not infer the version
 [tool.setuptools_scm]

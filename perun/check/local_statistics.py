@@ -162,9 +162,7 @@ def classify_stats_diff(
         # update the change_score according to the value of current computed relative error
         change_score = compare_diffs(change_score, new_rel_error)
 
-    change_states = classify_change(
-        change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, stat_no
-    )
+    change_states = classify_change(change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, stat_no)
     return np.atleast_1d(change_states), np.atleast_1d(np.divide(rel_error, stat_no))
 
 
@@ -225,22 +223,16 @@ def execute_analysis(
         original_x_pts,
         baseline_y_pts,
         target_y_pts,
-    ) = nparam_helpers.preprocess_nonparam_models(
-        uid, baseline_model, target_profile, target_model
-    )
+    ) = nparam_helpers.preprocess_nonparam_models(uid, baseline_model, target_profile, target_model)
 
     baseline_window_stats, _ = compute_window_stats(original_x_pts, baseline_y_pts)
     target_window_stats, x_pts = compute_window_stats(original_x_pts, target_y_pts)
-    change_info, partial_rel_error = classify_stats_diff(
-        baseline_window_stats, target_window_stats
-    )
+    change_info, partial_rel_error = classify_stats_diff(baseline_window_stats, target_window_stats)
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
     x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
     x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0].round(2)
-    partial_intervals = np.array(
-        (change_info, partial_rel_error, x_pts_even, x_pts_odd)
-    ).T
+    partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
 
     change_info_enum = nparam_helpers.classify_change(
         tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
@@ -251,9 +243,7 @@ def execute_analysis(
     return {
         "change_info": change_info_enum,
         "rel_error": round(
-            tools.safe_division(
-                float(np.sum(partial_rel_error)), partial_rel_error.size
-            ),
+            tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
             2,
         ),
         "partial_intervals": partial_intervals,

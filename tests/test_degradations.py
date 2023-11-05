@@ -91,28 +91,18 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     profiles = [
-        store.load_profile_from_file(
-            os.path.join(pool_path, "linear_base.perf"), True, True
-        ),
+        store.load_profile_from_file(os.path.join(pool_path, "linear_base.perf"), True, True),
         store.load_profile_from_file(
             os.path.join(pool_path, "linear_base_degradated.perf"), True, True
         ),
-        store.load_profile_from_file(
-            os.path.join(pool_path, "quad_base.perf"), True, True
-        ),
+        store.load_profile_from_file(os.path.join(pool_path, "quad_base.perf"), True, True),
         store.load_profile_from_file(os.path.join(pool_path, "zero.perf"), True, True),
     ]
     tracer_profiles = [
-        store.load_profile_from_file(
-            os.path.join(pool_path, "tracer_baseline.perf"), True, True
-        ),
-        store.load_profile_from_file(
-            os.path.join(pool_path, "tracer_target.perf"), True, True
-        ),
+        store.load_profile_from_file(os.path.join(pool_path, "tracer_baseline.perf"), True, True),
+        store.load_profile_from_file(os.path.join(pool_path, "tracer_target.perf"), True, True),
     ]
 
     # Test degradation detection using ETO
@@ -191,12 +181,8 @@ def test_strategies():
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
-    profile = store.load_profile_from_file(
-        os.path.join(pool_path, "linear_base.perf"), True, True
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
+    profile = store.load_profile_from_file(os.path.join(pool_path, "linear_base.perf"), True, True)
     rule = {
         "method": "average_amount_threshold",
         "collector": "complexity",

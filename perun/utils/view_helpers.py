@@ -130,9 +130,7 @@ def build_bokeh_theme() -> bk_theme.Theme:
     )
 
 
-def add_y_units(
-    profile_header: MutableMapping[str, Any], of_key: str, y_axis_label: str
-) -> str:
+def add_y_units(profile_header: MutableMapping[str, Any], of_key: str, y_axis_label: str) -> str:
     """Add units to Y axis label if the Y dimension has one.
 
     :param profile_header: the header part of a profile.

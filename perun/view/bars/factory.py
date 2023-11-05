@@ -50,9 +50,7 @@ def create_from_params(
     # accepts only np.size as an aggregation function for non-numeric columns. Let's do the data
     # preparation ourselves and let the users handle potential warnings when they select columns
     # and aggregation function combination that is invalid.
-    grouped = data_frame[[per_key, by_key, of_key]].groupby(
-        [per_key, by_key], sort=False
-    )
+    grouped = data_frame[[per_key, by_key, of_key]].groupby([per_key, by_key], sort=False)
     data_frame = grouped[[of_key]].aggregate(func=func).reset_index()
     # Build the bar graph: X axis is multi-key, where the by_key is used in grouping/stacking
     bars = hv.Bars(data_frame, kdims=[per_key, by_key], vdims=[of_key])

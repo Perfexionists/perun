@@ -33,9 +33,7 @@ def extract(stats_name, binary, cache, **kwargs):
     # Otherwise extract the call graph using angr
     # Load the binary (and selected libs) into internal representation
     libs = kwargs.get("libs", [])
-    proj = angr.Project(
-        binary, load_options={"auto_load_libs": False, "force_load_libs": libs}
-    )
+    proj = angr.Project(binary, load_options={"auto_load_libs": False, "force_load_libs": libs})
 
     # Set parameters for Control Flow Graph analysis
     cfg_params = {"normalize": True}

@@ -176,15 +176,11 @@ def config_edit(ctx: click.Context) -> None:
         ExternalEditorErrorException,
         MissingConfigSectionException,
     ) as editor_exception:
-        perun_log.error(
-            "could not invoke external editor: {}".format(str(editor_exception))
-        )
+        perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
 
 
 @config.command("reset")
-@click.argument(
-    "config_template", required=False, default="master", metavar="<template>"
-)
+@click.argument("config_template", required=False, default="master", metavar="<template>")
 @click.pass_context
 def config_reset(ctx: click.Context, config_template: str) -> None:
     """Resets the configuration file to a sane default.
@@ -211,7 +207,5 @@ def config_reset(ctx: click.Context, config_template: str) -> None:
         commands.config_reset(ctx.obj["store_type"], config_template)
     except NotPerunRepositoryException as npre:
         perun_log.error(
-            "could not reset the {} configuration: {}".format(
-                ctx.obj["store_type"], str(npre)
-            )
+            "could not reset the {} configuration: {}".format(ctx.obj["store_type"], str(npre))
         )

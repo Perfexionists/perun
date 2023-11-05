@@ -152,9 +152,7 @@ class ExternalGenerator(WorkloadGenerator):
             path_to_workload = os.path.join(self.output_dir, workload)
             values = self._parse_workload_values(workload)
             if len(values) == len(self.keys):
-                yield path_to_workload, {
-                    key: value for (key, value) in zip(self.keys, values)
-                }
+                yield path_to_workload, {key: value for (key, value) in zip(self.keys, values)}
             else:
                 log.warn(
                     "Could not match format '{}' for workload file '{}'".format(

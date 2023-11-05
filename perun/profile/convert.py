@@ -190,9 +190,7 @@ def flatten(flattened_value: Any) -> Any:
     # Lists are merged as comma separated keys
     elif isinstance(flattened_value, list):
         return ",".join(
-            ":".join(
-                str(nested_value[1]) for nested_value in query.flattened_values(i, lv)
-            )
+            ":".join(str(nested_value[1]) for nested_value in query.flattened_values(i, lv))
             for (i, lv) in enumerate(flattened_value)
         )
     # Rest of the values are left as they are

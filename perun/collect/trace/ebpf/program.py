@@ -54,9 +54,7 @@ def _add_structs_and_init(handle, probe_count, sampled_count, timed_sampling):
     """
     # Create the sampling BPF array if there are any sampled probes
     if sampled_count > 0:
-        sampling_array = "BPF_ARRAY(sampling, u32, {sampled});".format(
-            sampled=sampled_count
-        )
+        sampling_array = "BPF_ARRAY(sampling, u32, {sampled});".format(sampled=sampled_count)
     else:
         sampling_array = "// sampling array omitted"
     # Create the timed sampling array to dynamically enable or disable records gathering

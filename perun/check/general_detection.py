@@ -93,9 +93,7 @@ def create_model_record(model: dict[str, Any]) -> ModelRecord:
 def get_filtered_best_models_of(
     profile: Profile,
     group: str,
-    model_filter: Optional[
-        Callable[[dict[str, Any], dict[str, Any]], bool]
-    ] = filter_by_r_square,
+    model_filter: Optional[Callable[[dict[str, Any], dict[str, Any]], bool]] = filter_by_r_square,
 ) -> dict[str, ModelRecord]:
     """
     This function filters the models from the given profiles according to the given specification.

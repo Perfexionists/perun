@@ -30,9 +30,7 @@ QUARTILE_ALPHA = 0.4
 QUARTILE_LINE_WIDTH = 2
 
 
-def save_anomalies(
-    anomalies: list[Mutation], anomaly_type: str, file_handle: TextIO
-) -> None:
+def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: TextIO) -> None:
     """Saves anomalies (faults and hangs) into the file
 
     :param list anomalies: list of
@@ -97,9 +95,7 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     results_data_file.close()
 
 
-def get_time_for_value(
-    value: int, time_data: list[int], data: list[int]
-) -> Optional[int]:
+def get_time_for_value(value: int, time_data: list[int], data: list[int]) -> Optional[int]:
     """Function gets time value according to measured value.
 
     :param numeric value: selected y-axis value
@@ -280,17 +276,9 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
                 for line in delta:
                     diff += "<tr><td>"
                     if line[0] == "-":
-                        diff += (
-                            "<xmp style='color: red; display: inline'>"
-                            + line
-                            + "</xmp>"
-                        )
+                        diff += "<xmp style='color: red; display: inline'>" + line + "</xmp>"
                     elif line[0] == "+":
-                        diff += (
-                            "<xmp style='color: green; display: inline'>"
-                            + line
-                            + "</xmp>"
-                        )
+                        diff += "<xmp style='color: green; display: inline'>" + line + "</xmp>"
                     else:
                         diff += "<xmp style='display: inline'>" + line + "</xmp>"
                     diff += "</td></tr>\n"

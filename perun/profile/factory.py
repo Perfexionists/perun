@@ -70,9 +70,7 @@ class Profile(MutableMapping[str, Any]):
         self._storage = {
             "resources": {},
             "resource_type_map": {},
-            "models": global_data.get("models", [])
-            if isinstance(global_data, dict)
-            else [],
+            "models": global_data.get("models", []) if isinstance(global_data, dict) else [],
         }
         self._tuple_to_resource_type_map: dict[str, str] = {}
         self._resource_type_to_flattened_resources_map: dict[str, dict[str, Any]] = {}
@@ -106,11 +104,7 @@ class Profile(MutableMapping[str, Any]):
         """
         if clear_existing_resources:
             self._storage["resources"].clear()
-        if (
-            resource_type == "global"
-            and isinstance(resource_list, dict)
-            and resource_list
-        ):
+        if resource_type == "global" and isinstance(resource_list, dict) and resource_list:
             # Resources are in type of {'time': _, 'resources': []}
             self._translate_resources(
                 resource_list["resources"], {"time": resource_list.get("time", "0.0")}
@@ -148,25 +142,17 @@ class Profile(MutableMapping[str, Any]):
         ]
 
         # Update collectable and persistent keys (needed for merge)
-        Profile.persistent.update(
-            {key for key, val in ctx.items() if isinstance(val, str)}
-        )
-        Profile.collectable.update(
-            {key for key, val in ctx.items() if not isinstance(val, str)}
-        )
+        Profile.persistent.update({key for key, val in ctx.items() if isinstance(val, str)})
+        Profile.collectable.update({key for key, val in ctx.items() if not isinstance(val, str)})
 
         for resource in resource_list:
             persistent_properties = [
-                (key, value)
-                for (key, value) in resource.items()
-                if key not in Profile.collectable
+                (key, value) for (key, value) in resource.items() if key not in Profile.collectable
             ] + ctx_persistent_properties
             persistent_properties.extend(list(additional_params.items()))
             persistent_properties.sort(key=operator.itemgetter(0))
             collectable_properties = [
-                (key, value)
-                for (key, value) in resource.items()
-                if key in Profile.collectable
+                (key, value) for (key, value) in resource.items() if key in Profile.collectable
             ] + ctx_collectable_properties
             resource_type = self.register_resource_type(
                 resource["uid"], tuple(persistent_properties)
@@ -178,9 +164,7 @@ class Profile(MutableMapping[str, Any]):
             for key, value in collectable_properties:
                 self._storage["resources"][resource_type][key].append(value)
 
-    def register_resource_type(
-        self, uid: str, persistent_properties: tuple[Any, ...]
-    ) -> str:
+    def register_resource_type(self, uid: str, persistent_properties: tuple[Any, ...]) -> str:
         """Registers tuple of persistent properties under new key or return existing one
 
         :param str uid: uid of the resource that will be used to describe the resource type
@@ -250,9 +234,7 @@ class Profile(MutableMapping[str, Any]):
         """
         return self._storage
 
-    def _get_flattened_persistent_values_for(
-        self, resource_type: str
-    ) -> dict[str, Any]:
+    def _get_flattened_persistent_values_for(self, resource_type: str) -> dict[str, Any]:
         """Flattens the nested values of the resources to single level
 
         E.g. the following resource:
@@ -286,14 +268,10 @@ class Profile(MutableMapping[str, Any]):
         if resource_type not in self._resource_type_to_flattened_resources_map.keys():
             persistent_properties = self._storage["resource_type_map"][resource_type]
             flattened_resources = dict(list(query.all_items_of(persistent_properties)))
-            self._resource_type_to_flattened_resources_map[
-                resource_type
-            ] = flattened_resources
+            self._resource_type_to_flattened_resources_map[resource_type] = flattened_resources
         return self._resource_type_to_flattened_resources_map[resource_type]
 
-    def all_resources(
-        self, flatten_values: bool = False
-    ) -> Iterable[tuple[int, dict[str, Any]]]:
+    def all_resources(self, flatten_values: bool = False) -> Iterable[tuple[int, dict[str, Any]]]:
         """Generator for iterating through all the resources contained in the
         performance profile.
 
@@ -311,13 +289,9 @@ class Profile(MutableMapping[str, Any]):
         for resource_type, resources in self._storage["resources"].items():
             # uid: {...}
             if flatten_values:
-                persistent_properties = self._get_flattened_persistent_values_for(
-                    resource_type
-                )
+                persistent_properties = self._get_flattened_persistent_values_for(resource_type)
             else:
-                persistent_properties = self._storage["resource_type_map"][
-                    resource_type
-                ]
+                persistent_properties = self._storage["resource_type_map"][resource_type]
 
             if resources:
                 resource_keys = resources.keys()
@@ -417,10 +391,7 @@ class Profile(MutableMapping[str, Any]):
             if (
                 group == "model"
                 or (group == "param" and model.get("model") in get_supported_models())
-                or (
-                    group == "nonparam"
-                    and model.get("model") in get_supported_nparam_methods()
-                )
+                or (group == "nonparam" and model.get("model") in get_supported_nparam_methods())
             ):
                 yield model_idx, model
 

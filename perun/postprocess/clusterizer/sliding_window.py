@@ -11,9 +11,7 @@ from typing import Any
 import perun.utils.log as log
 
 
-def compute_window_width(
-    window_width: float, width_measure: str, resource_number: int
-) -> float:
+def compute_window_width(window_width: float, width_measure: str, resource_number: int) -> float:
     """Computes the sliding window width for the next cluster
 
     The computation of the new width of the cluster is dependent on the used measure,
@@ -36,9 +34,7 @@ def compute_window_width(
         return resource_number * window_width
 
 
-def compute_window_height(
-    resource_amount: int, window_height: int, height_measure: str
-) -> int:
+def compute_window_height(resource_amount: int, window_height: int, height_measure: str) -> int:
     """Computes the sliding window height for the next cluster
 
     The computation of the new height of the cluster is dependent on the used measure,
@@ -102,17 +98,11 @@ def clusterize(
         resource_height = resource["amount"]
         # If we are out of the window, we recompute the width and height and move to next cluster
         if resource_width >= current_width or resource_height > current_height:
-            current_width = compute_window_width(
-                window_width, width_measure, resource_number
-            )
-            current_height = compute_window_height(
-                resource_height, window_height, height_measure
-            )
+            current_width = compute_window_width(window_width, width_measure, resource_number)
+            current_height = compute_window_height(resource_height, window_height, height_measure)
             current_cluster += 1
             resource_width = 0
-            log.info(
-                "creating new cluster of ({}, {})".format(current_width, current_height)
-            )
+            log.info("creating new cluster of ({}, {})".format(current_width, current_height))
 
         # Update the cluster of the resource
         resource_width += 1

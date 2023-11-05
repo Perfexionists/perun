@@ -88,9 +88,7 @@ class RunnerReport:
         self.message: str = "OK"
         self.kwargs: dict[str, Any] = kwargs
 
-    def update_from(
-        self, stat_code: int | enum.Enum, message: str, params: dict[str, Any]
-    ) -> None:
+    def update_from(self, stat_code: int | enum.Enum, message: str, params: dict[str, Any]) -> None:
         """Updates the report according to the successful results of one of the phases
 
         :param int stat_code: returned code of the run
@@ -102,9 +100,7 @@ class RunnerReport:
         self.kwargs.update(params or {})
 
         is_enum = hasattr(self.stat_code, "value")
-        if not (
-            self.stat_code == 0 or (is_enum and cast(Enum, self.stat_code).value == 0)
-        ):
+        if not (self.stat_code == 0 or (is_enum and cast(Enum, self.stat_code).value == 0)):
             self.status = self.error_status
 
         # Update the message; delete the assumed OK if error occurred
@@ -297,9 +293,7 @@ class Job:
     :ivar Executable executable: System Under Profiling (SUP)
     """
 
-    def __init__(
-        self, collector: Unit, postprocessors: list[Unit], executable: Executable
-    ) -> None:
+    def __init__(self, collector: Unit, postprocessors: list[Unit], executable: Executable) -> None:
         """
         :param Unit collector: collection unit used to collect the SUP
         :param list postprocessors: list of postprocessing units applied after the collection
@@ -490,8 +484,4 @@ class ModelRecord:
 
         :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
         """
-        return (
-            len(self.b0)
-            if hasattr(self.b0, "__len__")
-            else 1 + self.b1 != 0.0 + self.b2 != 0.0
-        )
+        return len(self.b0) if hasattr(self.b0, "__len__") else 1 + self.b1 != 0.0 + self.b2 != 0.0

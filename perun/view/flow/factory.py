@@ -63,18 +63,13 @@ def create_from_params(
 
     # Construct the Area objects and combine them into an overlay
     flow_graph = hv.Overlay(
-        [
-            hv.Area(y_values, label=source_name)
-            for source_name, y_values in data_source.items()
-        ]
+        [hv.Area(y_values, label=source_name) for source_name, y_values in data_source.items()]
     )
     # For stacked flow graph, we need to stack the individual Area objects from the overlay
     if stacked:
         flow_graph = hv.Area.stack(flow_graph)
     # Configuration options for the individual Area objects
-    flow_graph.opts(
-        hv.opts.Area(color=hv.Cycle(key_colours), fill_alpha=1 if stacked else 0.7)
-    )
+    flow_graph.opts(hv.opts.Area(color=hv.Cycle(key_colours), fill_alpha=1 if stacked else 0.7))
     # Configuration options for the entire plot
     flow_graph.opts(
         title=graph_title,
@@ -119,9 +114,7 @@ def construct_data_source_from(
     data_source: dict[Hashable, list[int]] = {}
     for group_name, by_key_group_data_frame in data_frame.groupby(by_key):
         data_source[group_name] = [0] * (maximal_x_value + 1)
-        source_data_frame = group_and_aggregate(
-            by_key_group_data_frame, through_key, func
-        )
+        source_data_frame = group_and_aggregate(by_key_group_data_frame, through_key, func)
         if accumulate:
             accumulated_value = 0
             for index in range(minimal_x_value, maximal_x_value):
@@ -135,15 +128,11 @@ def construct_data_source_from(
             for through_key_value, of_key_value in cast(
                 list[tuple[int, int]], source_data_frame[of_key].items()
             ):
-                data_source[group_name][
-                    through_key_value - minimal_x_value
-                ] = of_key_value
+                data_source[group_name][through_key_value - minimal_x_value] = of_key_value
     return data_source
 
 
-def group_and_aggregate(
-    data: pd.DataFrame, group_through_key: str, func: str
-) -> pd.DataFrame:
+def group_and_aggregate(data: pd.DataFrame, group_through_key: str, func: str) -> pd.DataFrame:
     """Groups the data by group_through_key and then aggregates it through the 'func'.
 
     :param data: partially grouped data.

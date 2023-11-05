@@ -19,9 +19,7 @@ def test_flow_cli(pcs_with_root, monkeypatch):
     Expecting no errors and created flow file
     """
     runner = CliRunner()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     # Classical run --- will accumulate the values
     assert "flow.html" not in os.listdir(os.getcwd())
@@ -74,9 +72,7 @@ def test_flow_cli_errors(pcs_with_root, monkeypatch):
     monkeypatch.setattr(hv, "render", lambda x: x)
 
     runner = CliRunner()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     result = runner.invoke(
         cli.show, [valid_profile, "flow", "--of=undefined", "--by=uid", "--stacked"]

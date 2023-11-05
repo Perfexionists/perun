@@ -59,14 +59,10 @@ from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionExc
 #  - digit(s) specifying the version component
 #  - additional postfixes, such as characters or +, -
 # e.g., 3.11a, 3.1.2b, 3.6.8+
-PYTHON_VERSION = re.compile(
-    r"^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?"
-)
+PYTHON_VERSION = re.compile(r"^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?")
 
 
-def get_build_directories(
-    root: str = ".", template: Optional[list[str]] = None
-) -> Iterable[str]:
+def get_build_directories(root: str = ".", template: Optional[list[str]] = None) -> Iterable[str]:
     """Search for build directories in project tree. The build directories can be specified as an
     argument or default templates are used.
 
@@ -134,17 +130,13 @@ def is_executable_elf(file: str, only_not_stripped: bool = False) -> bool:
     """
     # Determine file magic code, we are looking out for ELF files
     f_magic = magic.from_file(file)
-    is_elf = f_magic.startswith("ELF") and (
-        "executable" in f_magic or "shared object" in f_magic
-    )
+    is_elf = f_magic.startswith("ELF") and ("executable" in f_magic or "shared object" in f_magic)
     if is_elf and only_not_stripped:
         return "not stripped" in f_magic
     return is_elf
 
 
-def get_project_elf_executables(
-    root: str = ".", only_not_stripped: bool = False
-) -> list[str]:
+def get_project_elf_executables(root: str = ".", only_not_stripped: bool = False) -> list[str]:
     """Get all ELF executable files stripped or not from project specified by root
     The function searches for executable files in build directories - if there are any, otherwise
     the whole project directory tree is traversed.
@@ -314,9 +306,7 @@ def run_safely_external_command(
                 if not quiet and (cmdout or cmderr):
                     cprintln(f"captured stdout: {cmdout.decode('utf-8')}", "red")
                     cprintln(f"captured stderr: {cmderr.decode('utf-8')}", "red")
-                raise subprocess.CalledProcessError(
-                    objects[i].returncode, unpiped_commands[i]
-                )
+                raise subprocess.CalledProcessError(objects[i].returncode, unpiped_commands[i])
 
     return cmdout, cmderr
 
@@ -336,9 +326,7 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
             cprint(err.decode("utf-8"), "red")
 
 
-def get_stdout_from_external_command(
-    command: list[str], stdin: Optional[IO[bytes]] = None
-) -> str:
+def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[bytes]] = None) -> str:
     """Runs external command with parameters, checks its output and provides its output.
 
     :param list command: list of arguments for command
@@ -426,9 +414,7 @@ def get_supported_module_names(package: str) -> list[str]:
     """
     if package not in ("vcs", "collect", "postprocess", "view"):
         error(
-            "trying to call get_supported_module_names with incorrect package '{}'".format(
-                package
-            )
+            "trying to call get_supported_module_names with incorrect package '{}'".format(package)
         )
     return {
         "vcs": ["git"],
@@ -502,11 +488,7 @@ def abs_in_relative_range(value: float, range_val: float, range_rate: float) -> 
     :return: true if the value is in relative range
     """
     range_rate = range_rate if 0.0 <= range_rate <= 1.0 else 0.0
-    return (
-        abs((1.0 - range_rate) * range_val)
-        <= abs(value)
-        <= abs((1.0 + range_rate) * range_val)
-    )
+    return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
 
 
 def abs_in_absolute_range(value: float, border: float) -> bool:
@@ -659,16 +641,12 @@ def get_current_interpreter(
     # Ensure that the found interpreter satisfies the required version
     if interpreter and required_version is not None:
         # The format of --version should be 'Python x.y.z'
-        version = run_safely_external_command(f"{interpreter} --version")[0].decode(
-            "utf-8"
-        )
+        version = run_safely_external_command(f"{interpreter} --version")[0].decode("utf-8")
         version = version.split()[1]
         interpreter_version = _parse_version(version)[0]
         parsed_required_version, cmp_operator = _parse_version(required_version)
         # Compare the versions using the obtained operator
-        for interpreter_v, required_v in zip(
-            interpreter_version, parsed_required_version
-        ):
+        for interpreter_v, required_v in zip(interpreter_version, parsed_required_version):
             if cmp_operator(interpreter_v, required_v):
                 interpreter = fallback
                 break

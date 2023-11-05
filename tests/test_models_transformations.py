@@ -38,6 +38,4 @@ def test_transformation_data():
     # Test invalid transformation
     with pytest.raises(exceptions.InvalidTransformationException) as exc:
         models.get_transformation_data_for("linear", "invalid")
-    assert "Invalid or unsupported transformation: invalid for model: linear." in str(
-        exc.value
-    )
+    assert "Invalid or unsupported transformation: invalid for model: linear." in str(exc.value)

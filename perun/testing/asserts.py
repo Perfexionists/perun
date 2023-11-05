@@ -8,9 +8,7 @@ import traceback
 from typing import Optional
 
 
-def predicate_from_cli(
-    cli_result: click.testing.Result | list[str] | str, predicate: bool
-) -> None:
+def predicate_from_cli(cli_result: click.testing.Result | list[str] | str, predicate: bool) -> None:
     """Checks the correctness of the @p predicate.
 
     In case the predicate is violated, the function outputs additional helper information for
@@ -64,8 +62,6 @@ def invalid_param_choice(
     :param str file: name of the file that should not be created (optional)
     """
     predicate_from_cli(cli_result, cli_result.exit_code == 1)
-    predicate_from_cli(
-        cli_result, "Invalid value '{}'".format(choice) in cli_result.output
-    )
+    predicate_from_cli(cli_result, "Invalid value '{}'".format(choice) in cli_result.output)
     if file:
         assert file not in os.listdir(os.getcwd())

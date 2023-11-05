@@ -74,9 +74,7 @@ class Config:
     during the run.
     """
 
-    def __init__(
-        self, config_type: str, path: str, config_initial_data: dict[str, Any]
-    ) -> None:
+    def __init__(self, config_type: str, path: str, config_initial_data: dict[str, Any]) -> None:
         """
         :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
         :param str path: path leading to the configuration (if stored internally)
@@ -263,9 +261,7 @@ def init_local_config_at(
     helpers.touch_file(path)
 
     # Get configuration template
-    predefined_config = templates.get_predefined_configuration(
-        config_template, wrapped_vcs
-    )
+    predefined_config = templates.get_predefined_configuration(config_template, wrapped_vcs)
 
     # Create a config for user to set up
     local_config = streams.safely_load_yaml_from_stream(predefined_config)
@@ -284,9 +280,7 @@ def init_config_at(path: str, config_type: str) -> bool:
     return getattr(sys.modules[__name__], init_function_name)(path)
 
 
-def _locate_section_from_query(
-    config_data: dict[str, Any], sections: list[str]
-) -> dict[str, Any]:
+def _locate_section_from_query(config_data: dict[str, Any], sections: list[str]) -> dict[str, Any]:
     """Iterates through the config dictionary and queries the subsections from the list of the
     sections, returning the last one.
 
@@ -303,9 +297,7 @@ def _locate_section_from_query(
     return section_iterator
 
 
-def _ascend_by_section_safely(
-    section_iterator: dict[str, Any], section_key: str
-) -> dict[str, Any]:
+def _ascend_by_section_safely(section_iterator: dict[str, Any], section_key: str) -> dict[str, Any]:
     """Ascends by one level in the section_iterator.
 
     In case the section_key is not in the section_iterator, MissingConfigSectionException is raised.
@@ -427,9 +419,7 @@ def runtime() -> Config:
 
     :returns: runtime temporary config
     """
-    return Config(
-        "runtime", "", {"output_filename_queue": [], "input_filename_queue": []}
-    )
+    return Config("runtime", "", {"output_filename_queue": [], "input_filename_queue": []})
 
 
 def get_hierarchy() -> Iterable[Config]:

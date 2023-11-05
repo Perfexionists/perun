@@ -131,12 +131,8 @@ def _mocked_trace_stack(_, __):
                         12,
                     ),
                     TraceRecord(RecordType.FUNC_BEGIN, 5, "rb_intern", 53049, 5983, 63),
-                    TraceRecord(
-                        RecordType.FUNC_BEGIN, 6, "rb_intern2", 53053, 5983, 70
-                    ),
-                    TraceRecord(
-                        RecordType.FUNC_BEGIN, 7, "rb_intern3", 53062, 5983, 70
-                    ),
+                    TraceRecord(RecordType.FUNC_BEGIN, 6, "rb_intern2", 53053, 5983, 70),
+                    TraceRecord(RecordType.FUNC_BEGIN, 7, "rb_intern3", 53062, 5983, 70),
                 ],
                 [],
             )
@@ -144,19 +140,13 @@ def _mocked_trace_stack(_, __):
         "static": {
             5983: {
                 "array__create": [
-                    TraceRecord(
-                        RecordType.StaticSingle, 3, "array__create", 5023, 5983, 3
-                    )
+                    TraceRecord(RecordType.StaticSingle, 3, "array__create", 5023, 5983, 3)
                 ],
                 "string__create": [
-                    TraceRecord(
-                        RecordType.StaticSingle, 9, "string__create", 53135, 5983, 329
-                    )
+                    TraceRecord(RecordType.StaticSingle, 9, "string__create", 53135, 5983, 329)
                 ],
                 "symbol__create": [
-                    TraceRecord(
-                        RecordType.StaticSingle, 8, "symbol__create", 52637, 5983, 166
-                    )
+                    TraceRecord(RecordType.StaticSingle, 8, "symbol__create", 52637, 5983, 166)
                 ],
                 "method__cache__clear": [
                     TraceRecord(
@@ -241,9 +231,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     monkeypatch.setattr(trace_run, "collect", _mocked_collect)
     monkeypatch.setattr(trace_run, "after", _mocked_after)
     # Patch dependency check for SystemTap engine
-    monkeypatch.setattr(
-        stap.SystemTapEngine, "check_dependencies", _mocked_check_dependencies
-    )
+    monkeypatch.setattr(stap.SystemTapEngine, "check_dependencies", _mocked_check_dependencies)
     result = runner.invoke(
         cli.cli,
         [
@@ -331,9 +319,7 @@ def test_collect_trace_utils(pcs_with_root):
 
     temp.touch_temp_dir(locks_dir)
     temp.touch_temp_file(os.path.join(locks_dir, lock_file), protect=True)
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-f", "main", "-w"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-f", "main", "-w"])
     assert result.exit_code == 0
 
 
@@ -381,10 +367,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     # Test running the job from the params using the yaml string
     result = runner.invoke(
         cli.collect,
-        ["-c{}".format(target), '-p"global_sampling: 2"', "trace"]
-        + func
-        + usdt
-        + binary,
+        ["-c{}".format(target), '-p"global_sampling: 2"', "trace"] + func + usdt + binary,
     )
     assert result.exit_code == 0
 
@@ -478,9 +461,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
 
     # Try timeout parameter which actually interrupts a running program
     wait_target = os.path.join(target_dir, "tst_waiting")
-    result = runner.invoke(
-        cli.collect, ["-c", wait_target, "trace", "-w", "-f", "main", "-t", 1]
-    )
+    result = runner.invoke(cli.collect, ["-c", wait_target, "trace", "-w", "-f", "main", "-t", 1])
     assert result.exit_code == 0
 
 
@@ -500,25 +481,19 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     target = os.path.join(target_dir, "tst")
 
     # Test simple userspace strategy without external modification or sampling
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-s", "userspace", "-k"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "userspace", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy1_script.txt")
     )
     # Test simple u_sampled strategy without external modification
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy2_script.txt")
     )
     # Test simple all strategy without external modification or sampling
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-s", "all", "-k"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "all", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy3_script.txt")
@@ -612,9 +587,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     )
     # Test u_sampled strategy with more static probes to check correct pairing
     monkeypatch.setattr(stap, "_extract_usdt_probes", _mocked_stap_extraction2)
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy8_script.txt")
@@ -646,9 +619,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
     assert "No profiling probes created" in result.output
 
     # Try invalid parameter --strategy
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-sinvalid", "-b", target]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-sinvalid", "-b", target])
     assert result.exit_code == 2
 
     # Try binary parameter that is actually not executable ELF
@@ -660,9 +631,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
     monkeypatch.setattr(stap.SystemTapEngine, "collect", _mocked_stap2)
     # Test malformed file that ends in unexpected way
     _mocked_stap_file = "record_malformed.txt"
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "-w 1", "trace", "-s", "userspace"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 1", "trace", "-s", "userspace"])
     # However, the collector should still be able to correctly process it
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -672,9 +641,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that ends in another unexpected way
     _mocked_stap_file = "record_malformed2.txt"
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "-w 2", "trace", "-s", "userspace"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 2", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -683,9 +650,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that has corrupted record
     _mocked_stap_file = "record_malformed3.txt"
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "-w 3", "trace", "-s", "userspace"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 3", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -695,9 +660,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that has misplaced data chunk
     _mocked_stap_file = "record_malformed4.txt"
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "-w 4", "trace", "-s", "userspace"]
-    )
+    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 4", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]

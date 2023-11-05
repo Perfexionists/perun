@@ -117,9 +117,7 @@ def parse_resources(allocation: list[str]) -> dict[str, Any]:
     return data
 
 
-def parse_log(
-    filename: str, executable: Executable, snapshots_interval: float
-) -> dict[str, Any]:
+def parse_log(filename: str, executable: Executable, snapshots_interval: float) -> dict[str, Any]:
     """Parse raw data in the log file
 
     :param string filename: name of the log file

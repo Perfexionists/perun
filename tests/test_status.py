@@ -23,9 +23,7 @@ from perun.utils.exceptions import NotPerunRepositoryException
 import perun.testing.utils as test_utils
 
 
-TIMESTAMP_RE = re.compile(
-    r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf"
-)
+TIMESTAMP_RE = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
 
 
 def analyze_profile_pool(profile_pool):
@@ -102,10 +100,7 @@ def assert_untracked_overview_info(untracked_profiles_info, untracked_profiles):
     """
     number_of_untracked = len(untracked_profiles)
     if number_of_untracked:
-        assert (
-            "{} untracked profiles".format(number_of_untracked)
-            in untracked_profiles_info
-        )
+        assert "{} untracked profiles".format(number_of_untracked) in untracked_profiles_info
     else:
         assert "(no untracked profiles)" in untracked_profiles_info
 
@@ -279,9 +274,7 @@ def test_status(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     git_repo = git.Repo(pcs_full.get_vcs_path())
 
     commands.status()
@@ -304,9 +297,7 @@ def test_status_sort(monkeypatch, pcs_single_prof, capsys, valid_profile_pool):
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_single_prof.get_path(), valid_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     decorators.remove_from_function_args_cache("lookup_key_recursively")
 
     # Try what happens if we screw the stored profile keys ;)

@@ -50,11 +50,7 @@ def classify_change(
             else PerformanceChange.MaybeDegradation
         )
     else:
-        result = (
-            PerformanceChange.Optimization
-            if diff_value < 0
-            else PerformanceChange.Degradation
-        )
+        result = PerformanceChange.Optimization if diff_value < 0 else PerformanceChange.Degradation
 
     return result
 
@@ -152,9 +148,7 @@ def preprocess_nonparam_models(
             y_pts = model.b0
         return x_pts, y_pts
 
-    def check_model_coordinates() -> (
-        tuple[list[float], list[float], list[float], list[float]]
-    ):
+    def check_model_coordinates() -> tuple[list[float], list[float], list[float], list[float]]:
         """
         Function check the lengths of the coordinates from both models.
 

@@ -70,9 +70,7 @@ def _extract_strategy_specifics(engine, probes):
     # Extract the functions and usdt probes if needed
     func, usdt = {}, {}
     if probes.strategy != Strategy.CUSTOM:
-        func = _extract_functions(
-            engine.targets, probes.strategy, probes.global_sampling
-        )
+        func = _extract_functions(engine.targets, probes.strategy, probes.global_sampling)
         if probes.with_usdt:
             usdt = _extract_usdt(engine, probes.global_sampling)
 
@@ -143,9 +141,7 @@ def _pair_rules(usdt_probes):
                 lambda x: related[0] if x in related[0] else related[1],
             )
             for pair in pairs:
-                _add_paired_probe(
-                    prb_name + pair[0], prb_name + pair[1], usdt_probes, result
-                )
+                _add_paired_probe(prb_name + pair[0], prb_name + pair[1], usdt_probes, result)
 
             # Insert the rest of the suffix extensions
             _add_suffix_probes(prb_name, b_suffixes + e_suffixes, usdt_probes, result)
@@ -338,9 +334,7 @@ def _extract_usdt(engine, global_sampling):
 
     # Transform
     return {
-        usdt: Probes.create_probe_record(
-            usdt, ProbeType.USDT, lib=target, sample=global_sampling
-        )
+        usdt: Probes.create_probe_record(usdt, ProbeType.USDT, lib=target, sample=global_sampling)
         for target, target_usdt in usdt_probes.items()
         for usdt in target_usdt
     }

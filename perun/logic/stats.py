@@ -87,9 +87,7 @@ def build_stats_filename_as_profile_source(
     return stats_name
 
 
-def build_stats_filename_as_profile_sha(
-    profile: str, minor_version: Optional[str] = None
-) -> str:
+def build_stats_filename_as_profile_sha(profile: str, minor_version: Optional[str] = None) -> str:
     """Generate stats filename based on the 'SHA' property of the supplied profile,
     i.e. the stats filename will refer to the name of the profile after its tracking.
 
@@ -248,15 +246,11 @@ def list_stats_for_minor(minor_version: Optional[str] = None) -> list[tuple[str,
     if minor_exists:
         # We assume that all the files in the minor version stats directory are actually stats
         _, _, files = next(os.walk(target_dir))
-        return [
-            (file, os.stat(os.path.join(target_dir, file)).st_size) for file in files
-        ]
+        return [(file, os.stat(os.path.join(target_dir, file)).st_size) for file in files]
     return []
 
 
-def list_stat_versions(
-    from_minor: Optional[str] = None, top: int = 0
-) -> list[tuple[str, str]]:
+def list_stat_versions(from_minor: Optional[str] = None, top: int = 0) -> list[tuple[str, str]]:
     """Returns 'top' minor versions (starting at 'from_minor') that have directories and index
      records in the '.perun/stats'. The minor versions are sorted by date from the most recent.
 
@@ -316,9 +310,7 @@ def get_latest(
     return {}
 
 
-def delete_stats_file_across_versions(
-    stats_filename: str, keep_directory: bool = False
-) -> None:
+def delete_stats_file_across_versions(stats_filename: str, keep_directory: bool = False) -> None:
     """Deletes the stats file across all the minor version directories in stats.
 
     :param str stats_filename: the name of the stats file to delete
@@ -391,9 +383,7 @@ def reset_stats(keep_directories: bool = False) -> None:
     if keep_directories:
         # Synchronize the index to make sure that we delete every minor version
         synchronize_index()
-        delete_version_dirs(
-            [version for version, _ in list_stat_versions()], False, True
-        )
+        delete_version_dirs([version for version, _ in list_stat_versions()], False, True)
         clean_stats(keep_empty=True)
     else:
         # No need to keep the version directories, simply recreate the stats directory
@@ -433,9 +423,7 @@ def synchronize_index() -> None:
     indexed_versions = _load_stats_index()
     stats_versions, _ = _get_versions_in_stats_directory()
     # Delete from index all minor version records that do not have a directory in stats anymore
-    indexed_versions = [
-        version for version in indexed_versions if tuple(version) in stats_versions
-    ]
+    indexed_versions = [version for version in indexed_versions if tuple(version) in stats_versions]
     # Add record to index for all versions in stats that do not already have one
     # Make sure the values are sorted by date and are unique by inserting all the records
     _add_versions_to_index(stats_versions + indexed_versions, [])
@@ -457,9 +445,7 @@ def _delete_stats_objects(dirs: Iterable[str], files: Iterable[str]) -> None:
                 delete_func(item)  # type: ignore
             except OSError as exc:
                 # Possibly already deleted files or restricted permission etc., log and skip
-                perun_log.msg_to_file(
-                    "Stats object deletion error: {}".format(str(exc)), 0
-                )
+                perun_log.msg_to_file("Stats object deletion error: {}".format(str(exc)), 0)
 
 
 def _delete_empty_dir(directory_path: str) -> bool:
@@ -485,9 +471,7 @@ def _add_to_dict(dictionary: dict[str, Any], sid: str, content: dict[str, Any]) 
     dictionary[sid] = content
 
 
-def _update_or_add_to_dict(
-    dictionary: dict[str, Any], sid: str, extension: dict[str, Any]
-) -> None:
+def _update_or_add_to_dict(dictionary: dict[str, Any], sid: str, extension: dict[str, Any]) -> None:
     """A helper function that updates the stats content in the given dict under the ID or creates
     the new ID with the 'extension' content if it does not exist
 
@@ -511,14 +495,10 @@ def _touch_minor_stats_directory(minor_version: str) -> str:
     :return str: the full path of the minor version directory for stats
     """
     # Obtain path to the directory for the given minor version
-    _, lower_level_dir = store.split_object_name(
-        pcs.get_stats_directory(), minor_version
-    )
+    _, lower_level_dir = store.split_object_name(pcs.get_stats_directory(), minor_version)
     # Make an entry in the index if the minor version directory does not exist yet
     if not os.path.exists(lower_level_dir):
-        _add_versions_to_index(
-            [_get_version_info(store.version_path_to_sha(lower_level_dir))]
-        )
+        _add_versions_to_index([_get_version_info(store.version_path_to_sha(lower_level_dir))])
 
     # Create the directory for storing statistics in the given minor version
     utils_helpers.touch_dir(lower_level_dir)
@@ -636,9 +616,7 @@ def _remove_versions_from_index(minor_versions: list[str]) -> None:
     :param list minor_versions: list of minor versions (checksums) to delete
     """
     index_stats = [
-        [checksum, date]
-        for checksum, date in _load_stats_index()
-        if checksum not in minor_versions
+        [checksum, date] for checksum, date in _load_stats_index() if checksum not in minor_versions
     ]
     index.save_custom_index(pcs.get_stats_index(), index_stats)
 
@@ -721,9 +699,7 @@ def _get_versions_in_stats_directory() -> tuple[list[tuple[str, str]], list[str]
         for item in os.listdir(directory):
             item = os.path.join(directory, item)
             # Filter out objects that are not directories or do not pass the filtering function
-            if not os.path.isdir(item) or (
-                filter_func is not None and not filter_func(item)
-            ):
+            if not os.path.isdir(item) or (filter_func is not None and not filter_func(item)):
                 custom_list.append(item)
             # The rest should be valid directories
             else:
@@ -745,9 +721,7 @@ def _get_versions_in_stats_directory() -> tuple[list[tuple[str, str]], list[str]
         for lower in lower_list:
             try:
                 # Construct the minor version from SHA and resolve it
-                temp_versions.append(
-                    _get_version_info(store.version_path_to_sha(lower))
-                )
+                temp_versions.append(_get_version_info(store.version_path_to_sha(lower)))
                 # Check the contents of the minor version stats, directories should not be allowed
                 # Do not check the files as we do not really have a way to distinguish custom ones
                 temp_custom.extend(list(dirs_generator(lower, [])))

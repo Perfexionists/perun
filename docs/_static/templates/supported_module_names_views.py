@@ -2,9 +2,7 @@ def get_supported_module_names(package):
     """..."""
     if package not in ("vcs", "collect", "postprocess", "view"):
         error(
-            "trying to call get_supported_module_names with incorrect package '{}'".format(
-                package
-            )
+            "trying to call get_supported_module_names with incorrect package '{}'".format(package)
         )
     return {
         "vcs": ["git"],

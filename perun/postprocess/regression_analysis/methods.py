@@ -56,11 +56,7 @@ def compute(
                 result["method"] = method
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as exc:
-            print(
-                "info: unable to perform regression analysis on function '{0}'.".format(
-                    chunk[2]
-                )
-            )
+            print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
             print("  - " + str(exc))
     # Compute the derived models
     for der in compute_derived(derived, analysis, **kwargs):
@@ -141,9 +137,7 @@ def iterative_computation(
     x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
     # Do the initial step for specified models
-    model_generators, results = _models_initial_step(
-        x_pts, y_pts, computation_models, steps
-    )
+    model_generators, results = _models_initial_step(x_pts, y_pts, computation_models, steps)
     best_fit = -1
     while True:
         try:
@@ -227,9 +221,7 @@ def initial_guess_computation(
     x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
     # Do the initial step for specified models
-    model_generators, results = _models_initial_step(
-        x_pts, y_pts, computation_models, steps
-    )
+    model_generators, results = _models_initial_step(x_pts, y_pts, computation_models, steps)
     # Find the model that fits the most
     best_fit = _find_best_fitting_model(results)
 
@@ -382,9 +374,7 @@ def _bisection_solve_half_model(
     if half_model["model"] != last_model["model"]:
         # The model is different, continue with bisection
         try:
-            for submodel in _bisection_step(
-                x_pts, y_pts, computation_models, half_model
-            ):
+            for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
                 yield submodel
         except exceptions.InvalidPointsException:
             # Too few submodel points to perform regression, use the half model instead
@@ -457,9 +447,7 @@ def _transform_to_output_data(
     :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     :returns dict: the output dictionary
     """
-    tools.validate_dictionary_keys(
-        data, ["model", "coeffs", "r_square", "x_start", "x_end"], []
-    )
+    tools.validate_dictionary_keys(data, ["model", "coeffs", "r_square", "x_start", "x_end"], [])
 
     # Specify the keys which should be directly mapped
     transform_keys = ["model", "r_square", "x_start", "x_end", "method", "uid"]

@@ -49,9 +49,7 @@ PROFILE_COUNTER = 0
 DEFAULT_SORT_KEY = "time"
 
 
-def lookup_value(
-    container: dict[str, str] | profiles.Profile, key: str, missing: str
-) -> str:
+def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
     """Helper function for getting the key from the container. If it is not present in the container
     or it is empty string or empty object, the function should return the missing constant.
 
@@ -73,21 +71,14 @@ def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     :param str param: parameter we will use in the resulting profile
     :return: collector or postprocess unit name that is incorporated in the filename
     """
-    unit_param_map = {
-        post["name"]: post["params"] for post in profile.get("postprocessors", [])
-    }
+    unit_param_map = {post["name"]: post["params"] for post in profile.get("postprocessors", [])}
     used_collector = profile["collector_info"]
-    unit_param_map.update(
-        {used_collector.get("name", "?"): used_collector.get("params", {})}
-    )
+    unit_param_map.update({used_collector.get("name", "?"): used_collector.get("params", {})})
 
     # Lookup the unit params
     unit_params = unit_param_map.get(unit)
     if unit_params:
-        return (
-            sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0])
-            or "_"
-        )
+        return sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0]) or "_"
     else:
         return "_"
 
@@ -129,30 +120,25 @@ def generate_profile_name(profile: profiles.Profile) -> str:
         [  # type: ignore
             (
                 r"%collector%",
-                lambda scanner, token: lookup_value(
-                    profile["collector_info"], "name", "_"
-                ),
+                lambda scanner, token: lookup_value(profile["collector_info"], "name", "_"),
             ),
             (
                 r"%postprocessors%",
                 lambda scanner, token: (
-                    "after-"
-                    + "-and-".join(map(lambda p: p["name"], profile["postprocessors"]))
+                    "after-" + "-and-".join(map(lambda p: p["name"], profile["postprocessors"]))
                 )
                 if profile["postprocessors"]
                 else "_",
             ),
             (
                 r"%[^.]+\.[^%]+%",
-                lambda scanner, token: lookup_param(
-                    profile, *token[1:-1].split(".", maxsplit=1)
-                ),
+                lambda scanner, token: lookup_param(profile, *token[1:-1].split(".", maxsplit=1)),
             ),
             (
                 r"%cmd%",
-                lambda scanner, token: os.path.split(
-                    lookup_value(profile["header"], "cmd", "_")
-                )[-1],
+                lambda scanner, token: os.path.split(lookup_value(profile["header"], "cmd", "_"))[
+                    -1
+                ],
             ),
             (
                 r"%args%",
@@ -174,9 +160,7 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             ),
             (
                 r"%date%",
-                lambda scanner, token: time.strftime(
-                    "%Y-%m-%d-%H-%M-%S", time.gmtime()
-                ),
+                lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime()),
             ),
             (r"%origin%", lambda scanner, token: lookup_value(profile, "origin", "_")),
             (r"%counter%", lambda scanner, token: str(PROFILE_COUNTER)),
@@ -205,9 +189,7 @@ def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
     :returns list: list of ProfileInfo parsed from index of the given minor_version
     """
     # Compute the
-    profiles = index.get_profile_list_for_minor(
-        pcs.get_object_directory(), minor_version
-    )
+    profiles = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
     for index_entry in profiles:
         inside_info = {
@@ -220,12 +202,8 @@ def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
             "collector_info": {"name": index_entry.collector},
             "postprocessors": [{"name": p} for p in index_entry.postprocessors],
         }
-        _, profile_name = store.split_object_name(
-            pcs.get_object_directory(), index_entry.checksum
-        )
-        profile_info = ProfileInfo(
-            index_entry.path, profile_name, index_entry.time, inside_info
-        )
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
+        profile_info = ProfileInfo(index_entry.path, profile_name, index_entry.time, inside_info)
         profile_info_list.append(profile_info)
 
     return profile_info_list
@@ -364,9 +342,7 @@ def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]
         profile_header.get("cmd", ""),
         profile_header.get("args", ""),
         profile_header.get("workload", ""),
-        ", ".join(
-            [postprocessor["name"] for postprocessor in profile["postprocessors"]]
-        ),
+        ", ".join([postprocessor["name"] for postprocessor in profile["postprocessors"]]),
     )
 
 
@@ -402,9 +378,7 @@ def extract_job_from_profile(profile: profiles.Profile) -> Job:
     return Job(collector, posts, executable)
 
 
-def is_key_aggregatable_by(
-    profile: profiles.Profile, func: str, key: str, keyname: str
-) -> bool:
+def is_key_aggregatable_by(profile: profiles.Profile, func: str, key: str, keyname: str) -> bool:
     """Check if the key can be aggregated by the function.
 
     Everything is countable and hence 'count' and 'nunique' (number of unique values) are
@@ -426,9 +400,7 @@ def is_key_aggregatable_by(
     valid_keys = set(query.all_numerical_resource_fields_of(profile))
     if key not in valid_keys:
         choices = "(choose either count/nunique as aggregation function;"
-        choices += " or from the following keys: {})".format(
-            ", ".join(map(str, valid_keys))
-        )
+        choices += " or from the following keys: {})".format(", ".join(map(str, valid_keys)))
         raise InvalidParameterException(keyname, key, choices)
     return True
 
@@ -443,9 +415,7 @@ def get_sort_order():
     return sort_order
 
 
-def sort_profiles(
-    profile_list: list["ProfileInfo"], reverse_profiles: bool = True
-) -> None:
+def sort_profiles(profile_list: list["ProfileInfo"], reverse_profiles: bool = True) -> None:
     """Sorts the profiles according to the key set in either configuration.
 
     The key can either be specified in temporary configuration, or in any of the local or global
@@ -508,9 +478,7 @@ def merge_resources_of(
     return lhs
 
 
-def _get_default_variable(
-    profile: profiles.Profile, supported_variables: list[str]
-) -> str:
+def _get_default_variable(profile: profiles.Profile, supported_variables: list[str]) -> str:
     """Helper function that determines default variable for profile based on list of supported
     variables.
 
@@ -584,9 +552,7 @@ class ProfileInfo:
         self.time = mtime
         self.type = profile_info["header"]["type"]
         self.cmd = profile_info["header"]["cmd"]
-        self.args = helpers.get_key_with_aliases(
-            profile_info["header"], ("args", "params")
-        )
+        self.args = helpers.get_key_with_aliases(profile_info["header"], ("args", "params"))
         self.workload = profile_info["header"]["workload"]
         self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [

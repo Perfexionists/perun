@@ -42,9 +42,7 @@ def collect(
     log.newline()
 
     log.info(
-        "Begin timing of {} {}".format(
-            executable.cmd, helpers.str_to_plural(repeat, "time")
-        ),
+        "Begin timing of {} {}".format(executable.cmd, helpers.str_to_plural(repeat, "time")),
         end="",
     )
     times = []

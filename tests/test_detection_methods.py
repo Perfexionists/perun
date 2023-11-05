@@ -14,94 +14,44 @@ from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED
 
 
 def load_profiles(param):
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     if param:
         profiles = [
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "const1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "const2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "const3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "const4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "const1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "const2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "const3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "const4.perf"), True, True),
             ],
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "lin1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "lin2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "lin3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "lin4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "lin1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "lin2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "lin3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "lin4.perf"), True, True),
             ],
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "log1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "log2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "log3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "log4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "log1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "log2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "log3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "log4.perf"), True, True),
             ],
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "quad1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "quad2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "quad3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "quad4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "quad1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "quad2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "quad3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "quad4.perf"), True, True),
             ],
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "pow1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "pow2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "pow3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "pow4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "pow1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "pow2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "pow3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "pow4.perf"), True, True),
             ],
             [
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "exp1.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "exp2.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "exp3.perf"), True, True
-                ),
-                store.load_profile_from_file(
-                    os.path.join(pool_path, "exp4.perf"), True, True
-                ),
+                store.load_profile_from_file(os.path.join(pool_path, "exp1.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "exp2.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "exp3.perf"), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, "exp4.perf"), True, True),
             ],
         ]
     else:
@@ -116,9 +66,7 @@ def load_profiles(param):
     return profiles
 
 
-def check_degradation_result(
-    baseline_profile, target_profile, expected_result, function
-):
+def check_degradation_result(baseline_profile, target_profile, expected_result, function):
     result = list(function(baseline_profile, target_profile))
     assert expected_result["result"] & {r.result for r in result}
     assert expected_result["type"] & {r.type for r in result}
@@ -139,12 +87,8 @@ def test_regression_detections_methods():
         for profiles_kind, results_kind in zip(profiles, expected_results):
             baseline_profile = profiles_kind[0]
             for target_profile, error_kind in zip(profiles_kind[1:], results_kind):
-                check_degradation_result(
-                    baseline_profile, target_profile, error_kind[0], function
-                )
-                check_degradation_result(
-                    target_profile, baseline_profile, error_kind[1], function
-                )
+                check_degradation_result(baseline_profile, target_profile, error_kind[0], function)
+                check_degradation_result(target_profile, baseline_profile, error_kind[1], function)
 
 
 def test_complex_detection_methods():
@@ -157,9 +101,7 @@ def test_complex_detection_methods():
 
     for expected_results in NONPARAM_EXPECTED_RESULTS:
         degradation_list = list(
-            expected_results["function"](
-                profiles[0], profiles[1], models_strategy="all-models"
-            )
+            expected_results["function"](profiles[0], profiles[1], models_strategy="all-models")
         )
         expected_result = expected_results["results"].pop(0)
         degradation_list.sort(key=lambda item: (item.location, item.from_baseline))
@@ -172,10 +114,7 @@ def test_complex_detection_methods():
                     assert expected_result.location == test_deg_info.location
                     assert expected_result.from_baseline == test_deg_info.from_baseline
                     assert expected_result.to_target == test_deg_info.to_target
-                    assert (
-                        expected_result.rate_degradation
-                        == test_deg_info.rate_degradation
-                    )
+                    assert expected_result.rate_degradation == test_deg_info.rate_degradation
                     if len(test_deg_info.partial_intervals) > 0:
                         assert expected_result.partial_intervals == aggregate_intervals(
                             test_deg_info.partial_intervals

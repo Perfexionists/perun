@@ -49,9 +49,7 @@ def get_supported_transformations(model_key: str) -> list[str]:
     return [t for t in _MODELS.get(model_key, {}).get("transformations", {}).keys()]
 
 
-def get_transformation_data_for(
-    regression_model: str, transformation: str
-) -> dict[str, Any]:
+def get_transformation_data_for(regression_model: str, transformation: str) -> dict[str, Any]:
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
     :param str regression_model: the regression model in which to search for transformation
@@ -68,9 +66,7 @@ def get_transformation_data_for(
     # Now get the transformations
     if transformation not in get_supported_transformations(key):
         # Model does not support requested transformation
-        raise exceptions.InvalidTransformationException(
-            regression_model, transformation
-        )
+        raise exceptions.InvalidTransformationException(regression_model, transformation)
     return _MODELS[key]["transformations"][transformation]
 
 

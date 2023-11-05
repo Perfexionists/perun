@@ -91,9 +91,7 @@ def end_timer(name: str) -> None:
     """
     if Metrics.enabled:
         if name in Metrics.timers:
-            Metrics.records[Metrics.metrics_id][name] = (
-                time.time() - Metrics.timers[name]
-            )
+            Metrics.records[Metrics.metrics_id][name] = time.time() - Metrics.timers[name]
             del Metrics.timers[name]
 
 

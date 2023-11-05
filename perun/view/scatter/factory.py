@@ -49,9 +49,7 @@ def create_from_params(
     y_axis_label = view_helpers.add_y_units(profile["header"], of_key, y_axis_label)
     for data_slice, models_slice in _generate_plot_data_slices(profile):
         # Plot the points as a scatter plot
-        scatter = hv.Scatter(
-            data_slice, (per_key, x_axis_label), (of_key, y_axis_label)
-        )
+        scatter = hv.Scatter(data_slice, (per_key, x_axis_label), (of_key, y_axis_label))
         # Add models to the plot, if there are any
         scatter *= _draw_models(profile, models_slice)
 
@@ -187,14 +185,10 @@ def _create_parametric_model(model: ProfileModel) -> hv.Curve:
     # First transform the model type and coefficients into X and Y points that can be plotted
     model_conv = convert.plot_data_from_coefficients_of(model)
     # Create a Curve plot element that represents the model
-    return hv.Curve(
-        (model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model)
-    )
+    return hv.Curve((model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model))
 
 
-def _create_non_param_model(
-    profile: Profile, model: ProfileModel
-) -> Iterator[hv.Curve]:
+def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[hv.Curve]:
     """Build a render object for a moving average model according to its computed properties.
 
     :param model: the moving average model.

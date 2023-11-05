@@ -46,9 +46,7 @@ def test_table_cli(pcs_full):
     with open(os.path.join(TABLE_TEST_DIR, "table_resources_ref_basic"), "r") as trb:
         assert_files_match_output(result, trb)
 
-    models_profile = test_utils.load_profilename(
-        "postprocess_profiles", "complexity-models.perf"
-    )
+    models_profile = test_utils.load_profilename("postprocess_profiles", "complexity-models.perf")
     added = test_utils.prepare_profile(
         pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
     )
@@ -164,9 +162,7 @@ def test_table_cli(pcs_full):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    with open(
-        os.path.join(TABLE_TEST_DIR, "table_models_ref_sorted_filtered"), "r"
-    ) as trb:
+    with open(os.path.join(TABLE_TEST_DIR, "table_models_ref_sorted_filtered"), "r") as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(

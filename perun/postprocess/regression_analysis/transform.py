@@ -32,9 +32,7 @@ def coefficients_to_points(
 
     # Add the coefficients and interval values safely to the data dictionary
     for coefficient in coeffs:
-        data.update(
-            {coefficient.get("name", "invalid_coeff"): coefficient.get("value", 0)}
-        )
+        data.update({coefficient.get("name", "invalid_coeff"): coefficient.get("value", 0)})
     data.update({"x_start": x_start, "x_end": x_end})
 
     # Call the transformation function and check results

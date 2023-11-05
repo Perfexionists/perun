@@ -22,9 +22,9 @@ def extract(stats_name, exclude_self, vcs_version, **_):
     """
     if vcs_version is None:
         # Search for the closest stats if no version is specified
-        return stats.get_latest(
-            stats_name, ["perun_cg"], exclude_self=exclude_self
-        ).get("perun_cg", {})
+        return stats.get_latest(stats_name, ["perun_cg"], exclude_self=exclude_self).get(
+            "perun_cg", {}
+        )
 
     return stats.get_stats_of(stats_name, minor_version=vcs_version).get("perun_cg", {})
 
@@ -51,6 +51,4 @@ def store(stats_name, call_graph, cache, **_):
         "minor_version": call_graph.minor,
     }
     stats.add_stats(stats_name, ["perun_cg"], [serialized])
-    temp.store_temp(
-        "optimization/{}.json".format(stats_name), serialized, json_format=True
-    )
+    temp.store_temp("optimization/{}.json".format(stats_name), serialized, json_format=True)

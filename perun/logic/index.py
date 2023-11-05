@@ -58,9 +58,7 @@ class BasicIndexEntry:
 
     version = IndexVersion.SlowLorris
 
-    def __init__(
-        self, time: str, checksum: str, path: str, offset: int, *_: Any
-    ) -> None:
+    def __init__(self, time: str, checksum: str, path: str, offset: int, *_: Any) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -88,9 +86,7 @@ class BasicIndexEntry:
         return self.__dict__ == other.__dict__
 
     @classmethod
-    def read_from(
-        cls, index_handle: BinaryIO, index_version: IndexVersion
-    ) -> "BasicIndexEntry":
+    def read_from(cls, index_handle: BinaryIO, index_version: IndexVersion) -> "BasicIndexEntry":
         """Reads the entry from the index handle
 
         This is basic version, which stores only the information of timestamp, sha and path of the
@@ -109,9 +105,7 @@ class BasicIndexEntry:
                 )
             )
         file_offset = index_handle.tell()
-        file_time = timestamps.timestamp_to_str(
-            timestamps.read_timestamp_from_file(index_handle)
-        )
+        file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
         file_sha = binascii.hexlify(index_handle.read(20)).decode("utf-8")
         file_path, byte = "", store.read_char_from_handle(index_handle)
         while byte != "\0":
@@ -134,9 +128,7 @@ class BasicIndexEntry:
 
         :return:  string representation of the entry
         """
-        return " @{3} {2} -> {1} ({0})".format(
-            self.time, self.checksum, self.path, self.offset
-        )
+        return " @{3} {2} -> {1} ({0})".format(self.time, self.checksum, self.path, self.offset)
 
 
 class ExtendedIndexEntry(BasicIndexEntry):
@@ -180,9 +172,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         self.args = profile["header"].get("args", "")
         self.workload = profile["header"].get("workload", "")
         self.collector = profile["collector_info"]["name"]
-        self.postprocessors = [
-            postprocessor["name"] for postprocessor in profile["postprocessors"]
-        ]
+        self.postprocessors = [postprocessor["name"] for postprocessor in profile["postprocessors"]]
 
     def __eq__(self, other: object) -> bool:
         """Compares two IndexEntries simply by checking the equality of its internal dictionaries
@@ -193,9 +183,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         return self.__dict__ == other.__dict__
 
     @classmethod
-    def read_from(
-        cls, index_handle: BinaryIO, index_version: IndexVersion
-    ) -> "ExtendedIndexEntry":
+    def read_from(cls, index_handle: BinaryIO, index_version: IndexVersion) -> "ExtendedIndexEntry":
         """Reads the entry from the index handle
 
         :param File index_handle: opened index handle
@@ -204,9 +192,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         """
         if ExtendedIndexEntry.version.value > index_version.value:
             # Since we are reading from the older index, we will have to fix some stuff
-            return ExtendedIndexEntry._read_from_older_index(
-                index_handle, index_version
-            )
+            return ExtendedIndexEntry._read_from_older_index(index_handle, index_version)
         return ExtendedIndexEntry._read_from_same_index(index_handle, index_version)
 
     @classmethod
@@ -223,9 +209,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         :return:
         """
         basic_entry = super().read_from(index_handle, index_version)
-        _, profile_name = store.split_object_name(
-            pcs.get_object_directory(), basic_entry.checksum
-        )
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), basic_entry.checksum)
         profile = store.load_profile_from_file(profile_name, is_raw_profile=False)
         return ExtendedIndexEntry(
             basic_entry.time,
@@ -244,9 +228,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         :param index_handle:
         :return:
         """
-        basic_entry = BasicIndexEntry.read_from(
-            index_handle, get_older_version(index_version)
-        )
+        basic_entry = BasicIndexEntry.read_from(index_handle, get_older_version(index_version))
         profile: dict[str, Any] = {
             "header": {},
             "collector_info": {},
@@ -341,9 +323,7 @@ def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
     loaded_objects = 0
     entry_constructor = INDEX_ENTRY_CONSTRUCTORS[INDEX_VERSION - 1]
 
-    while (
-        index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects
-    ):
+    while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
         entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))  # type: ignore
         # Fixme: ^--- there is an issue with mypy, that type has no attribute read_from, but it is syntactically correct
         loaded_objects += 1
@@ -430,9 +410,7 @@ def update_index_version(index_handle: BinaryIO) -> None:
     index_handle.seek(previous_position)
 
 
-def modify_number_of_entries_in_index(
-    index_handle: BinaryIO, modify: Callable[[int], int]
-) -> None:
+def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[int], int]) -> None:
     """Helper function of inplace modification of number of entries in index
 
     :param file index_handle: handle of the opened index
@@ -673,9 +651,7 @@ def remove_from_index(
                 else:
                     return entry.path == removed_file
 
-            found_entry = lookup_entry_within_index(
-                index_handle, lookup_function, removed_file
-            )
+            found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
             removed_entries.append(found_entry)
 
             perun_log.info(
@@ -710,9 +686,7 @@ def remove_from_index(
         )
 
 
-def get_profile_list_for_minor(
-    base_dir: str, minor_version: str
-) -> list[BasicIndexEntry]:
+def get_profile_list_for_minor(base_dir: str, minor_version: str) -> list[BasicIndexEntry]:
     """Read the list of entries corresponding to the minor version from its index.
 
     :param str base_dir: base directory of the models

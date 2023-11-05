@@ -27,9 +27,7 @@ from perun.utils.structs import Executable, CollectStatus
 
 
 # The profiling record template
-_ProfileRecord = collections.namedtuple(
-    "_ProfileRecord", ["action", "func", "timestamp", "size"]
-)
+_ProfileRecord = collections.namedtuple("_ProfileRecord", ["action", "func", "timestamp", "size"])
 
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {
@@ -48,9 +46,7 @@ _COLLECTOR_SUBTYPES = {"delta": "time delta"}
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(
-    executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
@@ -78,32 +74,24 @@ def before(
         # Create the configuration cmake and build the configuration executable
         log.cprint("Building the configuration executable...", "white")
         cmake_path = makefiles.create_config_cmake(target_dir, files)
-        exec_path = makefiles.build_executable(
-            cmake_path, makefiles.CMAKE_CONFIG_TARGET
-        )
+        exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
         log.done()
 
         # Extract some configuration data using the configuration executable
         log.cprint("Extracting the configuration...", "white")
         function_sym = symbols.extract_symbols(exec_path)
-        include_list, exclude_list, runtime_filter = symbols.filter_symbols(
-            function_sym, rules
-        )
+        include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
         log.done()
 
         # Create the collector cmake and build the collector executable
         log.cprint("Building the collector executable...", "white")
         cmake_path = makefiles.create_collector_cmake(target_dir, files, exclude_list)
-        exec_path = makefiles.build_executable(
-            cmake_path, makefiles.CMAKE_COLLECT_TARGET
-        )
+        exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
         log.done()
 
         # Create the internal configuration file
         log.cprint("Creating runtime config...", "white")
-        configurator.create_runtime_config(
-            exec_path, runtime_filter, include_list, kwargs
-        )
+        configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
         log.done()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
@@ -120,9 +108,7 @@ def before(
         return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
-def collect(
-    executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Runs the collector executable and extracts the performance data
 
     :param Executable executable: executable configuration (command, arguments and workloads)
@@ -148,9 +134,7 @@ def collect(
         )
 
 
-def after(
-    executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Performs the transformation of the raw data output into the profile format
 
     :param Executable executable: full collected command with arguments and workload
@@ -162,9 +146,7 @@ def after(
     """
     # Get the trace log path
     log.cprint("Starting the post-processing phase...", "white")
-    internal_filename = kwargs.get(
-        "internal_data_filename", configurator.DEFAULT_DATA_FILENAME
-    )
+    internal_filename = kwargs.get("internal_data_filename", configurator.DEFAULT_DATA_FILENAME)
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
@@ -181,14 +163,10 @@ def after(
             # Process the record
             if _process_file_record(record, call_stack, resources, address_map) != 0:
                 # Stack error
-                err_msg = (
-                    "Call stack error, record: " + record.func + ", " + record.action
-                )
+                err_msg = "Call stack error, record: " + record.func + ", " + record.action
                 err_msg += ", stack top: "
                 err_msg += (
-                    call_stack[-1].func + ", " + call_stack[-1].action
-                    if call_stack
-                    else "empty"
+                    call_stack[-1].func + ", " + call_stack[-1].action if call_stack else "empty"
                 )
                 log.failed()
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
@@ -202,8 +180,7 @@ def after(
     # Update the profile dictionary
     kwargs["profile"] = {
         "global": {
-            "time": str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS)
-            + "s",
+            "time": str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + "s",
             "resources": resources,
         }
     }
@@ -230,11 +207,7 @@ def _process_file_record(
     if record.action == "i":
         call_stack.append(record)
         returned_code = 0
-    elif (
-        call_stack
-        and call_stack[-1].action == "i"
-        and call_stack[-1].func == record.func
-    ):
+    elif call_stack and call_stack[-1].action == "i" and call_stack[-1].func == record.func:
         # Function exit, match with the function enter to create resources record
         matching_record = call_stack.pop()
         resources.append(
@@ -269,9 +242,7 @@ def _check_dependencies() -> None:
     log.info("\t", end="")
     if not shutil.which("cmake"):
         log.no()
-        log.error(
-            "Could not find 'cmake'. Please, install build-essentials and cmake packages."
-        )
+        log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
         log.yes()
     log.newline()
@@ -287,9 +258,7 @@ def _validate_input(**kwargs: Any) -> None:
     """
     target_dir = kwargs["target_dir"]
     if not target_dir:
-        raise click.exceptions.BadParameter(
-            "The --target-dir parameter must be supplied."
-        )
+        raise click.exceptions.BadParameter("The --target-dir parameter must be supplied.")
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     if os.path.exists(target_dir) and not os.path.isdir(target_dir):
@@ -297,9 +266,7 @@ def _validate_input(**kwargs: Any) -> None:
             "The given --target-dir already exists and " "is not a directory"
         )
     if not kwargs["files"]:
-        raise click.exceptions.BadParameter(
-            "At least one --files parameter must be supplied."
-        )
+        raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
 
 
 def _sampling_to_dictionary(
@@ -338,9 +305,7 @@ def _sampling_to_dictionary(
     " custom binary with injected profiling commands. Must be valid"
     " resolvable path",
 )
-@click.option(
-    "--rules", "-r", type=str, multiple=True, help="Marks the function for profiling."
-)
+@click.option("--rules", "-r", type=str, multiple=True, help="Marks the function for profiling.")
 @click.option(
     "--internal-data-filename",
     "-if",

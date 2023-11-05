@@ -48,9 +48,7 @@ def test_bars_cli(pcs_with_root, valid_profile_pool, monkeypatch):
     monkeypatch.setattr(hv, "render", lambda x: x)
 
     runner = CliRunner()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     # Test correct stacked
     result = runner.invoke(
@@ -94,9 +92,7 @@ def test_bars_cli_errors(pcs_with_root, valid_profile_pool, monkeypatch):
     monkeypatch.setattr(hv, "render", lambda x: x)
 
     runner = CliRunner()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     # Try some bogus of parameter
     result = runner.invoke(

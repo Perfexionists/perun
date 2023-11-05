@@ -44,20 +44,17 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
           registered
     """
     registered_modules = utils.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(
-        package.__path__, package.__name__ + "."
-    ):
+    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         module = utils.get_module(module_name)
         for must_have_function_name in must_have_function_names:
-            assert hasattr(
-                module, must_have_function_name
-            ) and "Missing {} in module {}".format(must_have_function_name, module_name)
+            assert hasattr(module, must_have_function_name) and "Missing {} in module {}".format(
+                must_have_function_name, module_name
+            )
 
         # Each module has to be registered in get_supported_module_names
         unit_name = module_name.split(".")[-1]
-        assert (
-            unit_name in registered_modules
-            and "{} was not registered properly".format(module_name)
+        assert unit_name in registered_modules and "{} was not registered properly".format(
+            module_name
         )
 
 
@@ -75,14 +72,12 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
           registered
     """
     registered_modules = utils.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(
-        package.__path__, package.__name__ + "."
-    ):
+    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
         module = utils.get_module(module_name)
-        assert hasattr(
-            module, "run"
-        ) and "Missing module run.py in the '{}' module".format(package_name)
+        assert hasattr(module, "run") and "Missing module run.py in the '{}' module".format(
+            package_name
+        )
         run_module = utils.get_module(".".join([module_name, "run"]))
         for must_have_function_name in must_have_function_names:
             assert (
@@ -93,9 +88,9 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
 
         # Each module has to have CLI interface function of the same name
         unit_name = module_name.split(".")[-1]
-        assert hasattr(
-            run_module, unit_name
-        ) and "{} is missing CLI function point".format(unit_name)
+        assert hasattr(run_module, unit_name) and "{} is missing CLI function point".format(
+            unit_name
+        )
 
         # Each module has to be registered in get_supported_module_names
         # Note: As of Click 7.0 we have to (de)sanitize _ and -
@@ -196,10 +191,7 @@ def test_binaries_lookup():
     assert binaries2[1].endswith("utils_tree/testdir/nobuild/quicksort")
 
     # Remove all testing executable files in the build directory (all 'quicksort' files)
-    [
-        os.remove(filename)
-        for filename in glob.glob(testdir + "**/**/quicksort", recursive=True)
-    ]
+    [os.remove(filename) for filename in glob.glob(testdir + "**/**/quicksort", recursive=True)]
 
 
 def test_size_formatting():
@@ -213,9 +205,7 @@ def test_size_formatting():
     # Test some ridiculously large values
     assert utils.format_file_size(8273428342423) == "   7.5 TiB"
     assert utils.format_file_size(81273198731928371) == "72.2 PiB"
-    assert (
-        utils.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
-    )
+    assert utils.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
 
 
 def test_nonblocking_subprocess():
@@ -243,9 +233,7 @@ def test_nonblocking_subprocess():
     # Test the subprocess interruption with custom termination handler with no parameters
     proc_dict = {}
     with pytest.raises(SystemTapStartupException) as exception:
-        with utils.nonblocking_subprocess(
-            target, {}, termination_wrapper
-        ) as waiting_process:
+        with utils.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
             proc_dict["pid"] = waiting_process.pid
             raise SystemTapStartupException("testlog")
     assert "startup error" in str(exception.value)

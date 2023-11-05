@@ -63,9 +63,7 @@ def create_config_cmake(target_path: str, file_paths: list[str]) -> str:
     return cmake_path
 
 
-def create_collector_cmake(
-    target_path: str, file_paths: list[str], exclude_list: list[str]
-) -> str:
+def create_collector_cmake(target_path: str, file_paths: list[str], exclude_list: list[str]) -> str:
     """Creates the cmake file for workload collector executable
 
     :param str target_path: cmake target directory path
@@ -111,9 +109,7 @@ def build_executable(cmake_path: str, target_name: str) -> str:
     cmake_dir = os.path.dirname(cmake_path)
 
     # Try to execute the build commands
-    returncode = utils.run_external_command(
-        ["cmake", "."], cwd=cmake_dir, stdout=DEVNULL
-    )
+    returncode = utils.run_external_command(["cmake", "."], cwd=cmake_dir, stdout=DEVNULL)
     if returncode != 0:
         raise CalledProcessError(returncode, "cmake")
     returncode = utils.run_external_command(["make"], cwd=cmake_dir, stdout=DEVNULL)
@@ -179,9 +175,7 @@ def _add_profile_instructions(cmake_file: TextIO, exclude_list: list[str]) -> No
     cmake_file.write("\n\n")
 
 
-def _add_build_data(
-    cmake_file: TextIO, target_name: str, source_files: list[str]
-) -> None:
+def _add_build_data(cmake_file: TextIO, target_name: str, source_files: list[str]) -> None:
     """Writes build configuration to the cmake file
 
     :param file cmake_file: file handle to the opened cmake file
@@ -196,9 +190,7 @@ def _add_build_data(
     cmake_file.write(sources)
 
     # Specify the executable
-    cmake_file.write(
-        f"# create the executable\nadd_executable({target_name} ${{SOURCE_FILES}})\n"
-    )
+    cmake_file.write(f"# create the executable\nadd_executable({target_name} ${{SOURCE_FILES}})\n")
 
 
 def _find_library(cmake_file: TextIO, lib_name: str, lib_path: str) -> str:
@@ -220,9 +212,7 @@ def _find_library(cmake_file: TextIO, lib_name: str, lib_path: str) -> str:
     return library_var
 
 
-def _link_libraries(
-    cmake_file: TextIO, library_vars: list[str], target_name: str
-) -> None:
+def _link_libraries(cmake_file: TextIO, library_vars: list[str], target_name: str) -> None:
     """Links the profiling library with the collection executable
 
     :param file cmake_file: file handle to the opened cmake file

@@ -213,9 +213,7 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
         else:
             run_non_param_test(
                 runner,
-                moving_average_params
-                + moving_average_methods[method_idx]
-                + test["params"],
+                moving_average_params + moving_average_methods[method_idx] + test["params"],
                 exit_code,
                 test.get("output", "Successfully postprocessed"),
             )
@@ -454,9 +452,7 @@ def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cpro
     for idx, test in enumerate(tests_set):
         run_non_param_test(
             runner,
-            kernel_regression_params
-            + kernel_regression_modes[mode_idx]
-            + test["params"],
+            kernel_regression_params + kernel_regression_modes[mode_idx] + test["params"],
             exit_code,
             test.get("output", "Successfully postprocessed"),
         )
@@ -900,9 +896,7 @@ def test_kernel_regression_correct(pcs_with_root):
 
     # Instantiate the runner first
     runner = CliRunner()
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "postprocess_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "postprocess_profiles")
     profile = os.path.join(pool_path, "kernel_datapoints.perf")
 
     # Perform the testing
@@ -930,23 +924,17 @@ def test_reg_analysis_incorrect(pcs_single_prof):
     asserts.predicate_from_cli(result, "No such option: -f" in result.output)
 
     # Test malformed method argument
-    result = runner.invoke(
-        cli.postprocessby, ["0@i", "regression-analysis", "--metod", "full"]
-    )
+    result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis", "--metod", "full"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "No such option: --metod" in result.output)
 
     # Test missing method value
     result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis", "-m"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "Option '-m' requires an argument." in result.output
-    )
+    asserts.predicate_from_cli(result, "Option '-m' requires an argument." in result.output)
 
     # Test invalid method name
-    result = runner.invoke(
-        cli.postprocessby, ["0@i", "regression-analysis", "--method", "extra"]
-    )
+    result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis", "--method", "extra"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "Invalid value" in result.output)
 
@@ -956,18 +944,14 @@ def test_reg_analysis_incorrect(pcs_single_prof):
         ["0@i", "regression-analysis", "--method", "full", "--regresion_models"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "No such option: --regresion_models" in result.output
-    )
+    asserts.predicate_from_cli(result, "No such option: --regresion_models" in result.output)
 
     # Test missing model value
     result = runner.invoke(
         cli.postprocessby, ["0@i", "regression-analysis", "--method", "full", "-r"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "Option '-r' requires an argument." in result.output
-    )
+    asserts.predicate_from_cli(result, "Option '-r' requires an argument." in result.output)
 
     # Test invalid model name
     result = runner.invoke(
@@ -999,9 +983,7 @@ def test_reg_analysis_incorrect(pcs_single_prof):
         ["0@i", "regression-analysis", "-m", "full", "-r", "all", "-s"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "Option '-s' requires an argument." in result.output
-    )
+    asserts.predicate_from_cli(result, "Option '-s' requires an argument." in result.output)
 
     # Test invalid steps type
     result = runner.invoke(
@@ -1009,9 +991,7 @@ def test_reg_analysis_incorrect(pcs_single_prof):
         ["0@i", "regression-analysis", "-m", "full", "-r", "all", "-s", "0.5"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "'0.5' is not a valid integer range." in result.output
-    )
+    asserts.predicate_from_cli(result, "'0.5' is not a valid integer range." in result.output)
 
     # Test multiple method specification resulting in extra argument
     result = runner.invoke(
@@ -1019,9 +999,7 @@ def test_reg_analysis_incorrect(pcs_single_prof):
         ["0@i", "regression-analysis", "-dp", "snapshots", "-m", "full", "iterative"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "Got unexpected extra argument (iterative)" in result.output
-    )
+    asserts.predicate_from_cli(result, "Got unexpected extra argument (iterative)" in result.output)
 
 
 def test_reg_analysis_correct(pcs_single_prof):
@@ -1040,9 +1018,7 @@ def test_reg_analysis_correct(pcs_single_prof):
     cprof_idx = match.groups(1)[0]
 
     # Test the help printout first
-    result = runner.invoke(
-        cli.postprocessby, [cprof_idx, "regression-analysis", "--help"]
-    )
+    result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "--help"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Usage" in result.output)
 
@@ -1055,23 +1031,17 @@ def test_reg_analysis_correct(pcs_single_prof):
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
     # Test the full computation method with all models set as a default value
-    result = runner.invoke(
-        cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "full"]
-    )
+    result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "full"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
     # Test the iterative method with all models
-    result = runner.invoke(
-        cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "iterative"]
-    )
+    result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "iterative"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
     # Test the interval method with all models
-    result = runner.invoke(
-        cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "interval"]
-    )
+    result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "interval"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
@@ -1083,16 +1053,12 @@ def test_reg_analysis_correct(pcs_single_prof):
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
     # Test the bisection method with all models
-    result = runner.invoke(
-        cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "bisection"]
-    )
+    result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "bisection"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
 
     # Test the bisection method with more complex model
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     complex_file = os.path.join(pool_path, "log2.perf")
     result = runner.invoke(
         cli.postprocessby,
@@ -1369,9 +1335,7 @@ def test_add_correct(pcs_with_root):
 
     Expecting no exceptions, no errors, zero status.
     """
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
     runner = CliRunner()
     added_profile = test_utils.prepare_profile(
         pcs_with_root.get_job_directory(), valid_profile, vcs.get_minor_head()
@@ -1387,9 +1351,7 @@ def test_cli_outside_pcs():
     # Calling add outside of the perun repo
     runner = CliRunner()
     dst_dir = os.getcwd()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
     added_profile = test_utils.prepare_profile(dst_dir, valid_profile, "")
     result = runner.invoke(cli.add, ["--keep-profile", "{}".format(added_profile)])
     asserts.predicate_from_cli(result, result.exit_code == 1)
@@ -1440,22 +1402,16 @@ def test_collect_correct(pcs_with_root):
     Expecting no exceptions, no errors, zero status
     """
     runner = CliRunner()
-    result = runner.invoke(
-        cli.collect, ["-c echo", "-w hello", "time", "--repeat=1", "--warmup=1"]
-    )
+    result = runner.invoke(cli.collect, ["-c echo", "-w hello", "time", "--repeat=1", "--warmup=1"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     current_dir = os.path.split(__file__)[0]
     src_dir = os.path.join(current_dir, "sources", "collect_bounds")
     src_file = os.path.join(src_dir, "partitioning.c")
-    result = runner.invoke(
-        cli.collect, ["-c echo", "-w hello", "bounds", "-d", f"{src_dir}"]
-    )
+    result = runner.invoke(cli.collect, ["-c echo", "-w hello", "bounds", "-d", f"{src_dir}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    result = runner.invoke(
-        cli.collect, ["-c echo", "-w hello", "bounds", "-s", f"{src_file}"]
-    )
+    result = runner.invoke(cli.collect, ["-c echo", "-w hello", "bounds", "-s", f"{src_file}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
@@ -1490,9 +1446,7 @@ def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", "--minor=HEAD"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, f"'{first_tagged}' successfully registered" in result.output
-    )
+    asserts.predicate_from_cli(result, f"'{first_tagged}' successfully registered" in result.output)
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", r"--minor=HEAD^{d"])
@@ -1506,9 +1460,7 @@ def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", "--minor=tag2"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "Ref 'tag2' did not resolve to an object" in result.output
-    )
+    asserts.predicate_from_cli(result, "Ref 'tag2' did not resolve to an object" in result.output)
 
 
 def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
@@ -1536,25 +1488,19 @@ def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, f"'{first_sha}' successfully registered" in result.output
-    )
+    asserts.predicate_from_cli(result, f"'{first_sha}' successfully registered" in result.output)
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(
-        result, f"originates from minor version '{parent}'" in result.output
-    )
+    asserts.predicate_from_cli(result, f"originates from minor version '{parent}'" in result.output)
 
     # Check that force work as intented
     monkeypatch.setattr("click.confirm", lambda _: True)
     runner = CliRunner()
     result = runner.invoke(cli.add, ["--force", "0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, f"'{second_sha}' successfully registered" in result.output
-    )
+    asserts.predicate_from_cli(result, f"'{second_sha}' successfully registered" in result.output)
 
     result = runner.invoke(cli.add, ["10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
@@ -1568,18 +1514,12 @@ def test_add_tag_range(pcs_with_root, valid_profile_pool):
     """
     git_repo = git.Repo(os.path.split(pcs_with_root.get_path())[0])
     head = str(git_repo.head.commit)
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_with_root.get_path(), valid_profile_pool
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), valid_profile_pool)
+    os.path.relpath(
+        test_utils.prepare_profile(pcs_with_root.get_job_directory(), valid_profile_pool[0], head)
     )
     os.path.relpath(
-        test_utils.prepare_profile(
-            pcs_with_root.get_job_directory(), valid_profile_pool[0], head
-        )
-    )
-    os.path.relpath(
-        test_utils.prepare_profile(
-            pcs_with_root.get_job_directory(), valid_profile_pool[1], head
-        )
+        test_utils.prepare_profile(pcs_with_root.get_job_directory(), valid_profile_pool[1], head)
     )
 
     runner = CliRunner()
@@ -1635,9 +1575,7 @@ def test_remove_pending(pcs_with_root, stored_profile_pool):
     jobs_dir = pcs_with_root.get_job_directory()
     runner = CliRunner()
 
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_with_root.get_path(), stored_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     result = runner.invoke(cli.status, [])
     asserts.predicate_from_cli(result, "no untracked" not in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1653,9 +1591,7 @@ def test_remove_pending(pcs_with_root, stored_profile_pool):
     assert len(os.listdir(jobs_dir)) == 2
 
     removed_full_profile = [p for p in os.listdir(jobs_dir) if p != ".index"][0]
-    removed_full_profile = os.path.join(
-        pcs_with_root.get_job_directory(), removed_full_profile
-    )
+    removed_full_profile = os.path.join(pcs_with_root.get_job_directory(), removed_full_profile)
     result = runner.invoke(cli.remove, [removed_full_profile])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1
@@ -1665,9 +1601,7 @@ def test_remove_pending(pcs_with_root, stored_profile_pool):
     asserts.predicate_from_cli(result, "no untracked" in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_with_root.get_path(), stored_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     assert len(os.listdir(jobs_dir)) == 4  # 3 profiles and .index
     result = runner.invoke(cli.remove, ["0@p-10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1679,9 +1613,7 @@ def test_postprocess_tag(pcs_single_prof, valid_profile_pool):
 
     Expecting no errors (or caught errors), everything postprocessed as it should be
     """
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_single_prof.get_path(), valid_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_single_prof.get_path(), "jobs")
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 2
 
@@ -1721,9 +1653,7 @@ def test_show_tag(pcs_single_prof, valid_profile_pool, monkeypatch):
 
     Expecting no errors (or caught errors), everything shown as it should be
     """
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_single_prof.get_path(), valid_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_single_prof.get_path(), "jobs")
 
     runner = CliRunner()
@@ -1763,9 +1693,7 @@ def test_show_tag(pcs_single_prof, valid_profile_pool, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
     # Try getting something from index
-    result = runner.invoke(
-        cli.show, ["prof-2-complexity-2017-03-20-21-40-42.perf", "raw"]
-    )
+    result = runner.invoke(cli.show, ["prof-2-complexity-2017-03-20-21-40-42.perf", "raw"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
@@ -1827,9 +1755,7 @@ def test_reset_outside_pcs(monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "could not reset" in result.output)
 
-    monkeypatch.setattr(
-        "perun.logic.config.lookup_shared_config_dir", lambda: os.getcwd()
-    )
+    monkeypatch.setattr("perun.logic.config.lookup_shared_config_dir", lambda: os.getcwd())
     result = runner.invoke(config_cli.config, ["--shared", "reset"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -1857,17 +1783,13 @@ def test_reset(pcs_with_root):
 
 def test_check_profiles(pcs_with_degradations):
     """Tests checking degradation between two profiles"""
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     profiles = [
         os.path.join(pool_path, "linear_base.perf"),
         os.path.join(pool_path, "linear_base_degradated.perf"),
         os.path.join(pool_path, "quad_base.perf"),
     ]
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_with_degradations.get_path(), profiles
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
@@ -1891,16 +1813,12 @@ def test_model_strategies(pcs_with_degradations, monkeypatch):
     )
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
 
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     profiles = [
         os.path.join(pool_path, "baseline_strategies.perf"),
         os.path.join(pool_path, "target_strategies.perf"),
     ]
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_with_degradations.get_path(), profiles
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
 
     for model_strategy in ["best-param", "all-nonparam", "best-both"]:
         result = runner.invoke(
@@ -2007,14 +1925,11 @@ def test_utils_create(monkeypatch, tmpdir):
     monkeypatch.chdir(str(tmpdir))
 
     runner = CliRunner()
-    result = runner.invoke(
-        utils_cli.create, ["postprocess", "mypostprocessor", "--no-edit"]
-    )
+    result = runner.invoke(utils_cli.create, ["postprocess", "mypostprocessor", "--no-edit"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(
         result,
-        "cannot use" in result.output
-        and "as target developer directory" in result.output,
+        "cannot use" in result.output and "as target developer directory" in result.output,
     )
 
     # Now correctly initialize the directory structure
@@ -2024,9 +1939,7 @@ def test_utils_create(monkeypatch, tmpdir):
     tmpdir.mkdir("check")
 
     # Try to successfully create the new postprocessor
-    result = runner.invoke(
-        utils_cli.create, ["postprocess", "mypostprocessor", "--no-edit"]
-    )
+    result = runner.invoke(utils_cli.create, ["postprocess", "mypostprocessor", "--no-edit"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     target_dir = os.path.join(str(tmpdir), "postprocess", "mypostprocessor")
     created_files = os.listdir(target_dir)
@@ -2194,9 +2107,7 @@ def test_error_runs(pcs_with_root, monkeypatch):
 
     result = runner.invoke(run_cli.run, ["matrix", "-q"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(
-        result, "fokume postprocessor does not exist" in result.output
-    )
+    asserts.predicate_from_cli(result, "fokume postprocessor does not exist" in result.output)
 
     # Test that inner run_postprocessor raises some error
     matrix.data["postprocessors"] = [{"name": "regression_analysis", "params": {}}]
@@ -2210,16 +2121,12 @@ def test_error_runs(pcs_with_root, monkeypatch):
     # Test matrix with collect() that fails
     run_report = RunnerReport(None, "collector", {})
     run_report.status = CollectStatus.ERROR
-    monkeypatch.setattr(
-        "perun.logic.runner.run_all_phases_for", lambda *_, **__: (run_report, {})
-    )
+    monkeypatch.setattr("perun.logic.runner.run_all_phases_for", lambda *_, **__: (run_report, {}))
     result = runner.invoke(run_cli.run, ["matrix", "-q"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "while collecting by time" in result.output)
 
-    monkeypatch.setattr(
-        "perun.logic.runner.run_single_job", lambda *_, **__: CollectStatus.ERROR
-    )
+    monkeypatch.setattr("perun.logic.runner.run_single_job", lambda *_, **__: CollectStatus.ERROR)
     result = runner.invoke(
         run_cli.run,
         [
@@ -2245,9 +2152,7 @@ def test_temp(pcs_with_empty_git):
     # Try to list temporary files with empty tmp/ directory
     result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory()])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "No results for the given parameters in" in result.output
-    )
+    asserts.predicate_from_cli(result, "No results for the given parameters in" in result.output)
 
     # Try to list files in invalid path
     result = runner.invoke(utils_cli.temp_list, ["../"])
@@ -2289,21 +2194,15 @@ def test_temp(pcs_with_empty_git):
     result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), "-s", "size"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     _compare_file_outputs(result.output, os.path.join(files_dir, "list3.ref"))
-    result = runner.invoke(
-        utils_cli.temp_list, [pcs.get_tmp_directory(), "-s", "protection"]
-    )
+    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), "-s", "protection"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     _compare_file_outputs(result.output, os.path.join(files_dir, "list4.ref"))
 
     # Test the protection filter
-    result = runner.invoke(
-        utils_cli.temp_list, [pcs.get_tmp_directory(), "-fp", "protected"]
-    )
+    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), "-fp", "protected"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     _compare_file_outputs(result.output, os.path.join(files_dir, "list5.ref"))
-    result = runner.invoke(
-        utils_cli.temp_list, [pcs.get_tmp_directory(), "-fp", "unprotected"]
-    )
+    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), "-fp", "unprotected"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     _compare_file_outputs(result.output, os.path.join(files_dir, "list6.ref"))
     log.COLOR_OUTPUT = True
@@ -2324,9 +2223,7 @@ def test_temp(pcs_with_empty_git):
     # Try to delete non-existent directory
     result = runner.invoke(utils_cli.temp_delete, ["some/invalid/dir"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "does not exist, no files deleted" in result.output
-    )
+    asserts.predicate_from_cli(result, "does not exist, no files deleted" in result.output)
 
     # Test the warning
     result = runner.invoke(utils_cli.temp_delete, [".", "-w"])
@@ -2389,28 +2286,20 @@ def test_stats(pcs_full_no_prof):
     # Try to list stats files with empty stats/ directory
     result = runner.invoke(utils_cli.stats_list_files, [])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "No results for the given parameters in" in result.output
-    )
+    asserts.predicate_from_cli(result, "No results for the given parameters in" in result.output)
     # Try it with some filtering parameters
     result = runner.invoke(utils_cli.stats_list_files, ["-N", 10, "-m", minor_middle])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "No results for the given parameters in" in result.output
-    )
+    asserts.predicate_from_cli(result, "No results for the given parameters in" in result.output)
 
     # Try to list stats minor versions with empty stats/ directory
     result = runner.invoke(utils_cli.stats_list_versions, [])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "No results for the given parameters in" in result.output
-    )
+    asserts.predicate_from_cli(result, "No results for the given parameters in" in result.output)
     # Try it with some filtering parameters
     result = runner.invoke(utils_cli.stats_list_versions, ["-N", 10, "-m", minor_root])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(
-        result, "No results for the given parameters in" in result.output
-    )
+    asserts.predicate_from_cli(result, "No results for the given parameters in" in result.output)
 
     head_custom = os.path.join(head_dir, "custom_file")
     root_custom = os.path.join(root_dir, "custom_file_2")
@@ -2486,9 +2375,7 @@ def test_stats(pcs_full_no_prof):
     # Delete the minor_middle directory
     result = runner.invoke(utils_cli.stats_delete_minor, [minor_middle])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert not os.path.exists(
-        os.path.join(stats_dir, minor_middle[:2], minor_middle[2:])
-    )
+    assert not os.path.exists(os.path.join(stats_dir, minor_middle[:2], minor_middle[2:]))
 
     log.COLOR_OUTPUT = False
     # Now try lists with invalid minor values
@@ -2514,9 +2401,7 @@ def test_stats(pcs_full_no_prof):
 
     # Recreate the middle version directory, keep it empty however
     stats.add_stats("tmp_stats", ["id_1"], [{"value": 10}], minor_middle)
-    result = runner.invoke(
-        utils_cli.stats_delete_file, ["-k", "-m", minor_middle, "tmp_stats"]
-    )
+    result = runner.invoke(utils_cli.stats_delete_file, ["-k", "-m", minor_middle, "tmp_stats"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert os.path.exists(os.path.join(stats_dir, middle_dir))
     assert not os.path.exists(os.path.join(stats_dir, middle_dir, "tmp_stats"))
@@ -2533,23 +2418,15 @@ def test_stats(pcs_full_no_prof):
     assert not os.path.exists(os.path.join(stats_dir, middle_dir))
 
     # Try to delete file in a version that doesn't have a directory in the stats
-    result = runner.invoke(
-        utils_cli.stats_delete_file, ["-m", minor_middle, "some_file"]
-    )
+    result = runner.invoke(utils_cli.stats_delete_file, ["-m", minor_middle, "some_file"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(
-        result, "does not exist in the stats directory" in result.output
-    )
+    asserts.predicate_from_cli(result, "does not exist in the stats directory" in result.output)
     # Try to delete some file in non-existing minor version
-    result = runner.invoke(
-        utils_cli.stats_delete_file, ["-m", "abcdef12345", "some_file"]
-    )
+    result = runner.invoke(utils_cli.stats_delete_file, ["-m", "abcdef12345", "some_file"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "did not resolve to an object" in result.output)
     # Try deleting a file in a valid version that does not contain the file
-    result = runner.invoke(
-        utils_cli.stats_delete_file, ["-m", minor_head, "file_not_present"]
-    )
+    result = runner.invoke(utils_cli.stats_delete_file, ["-m", minor_head, "file_not_present"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(
         result,
@@ -2560,9 +2437,7 @@ def test_stats(pcs_full_no_prof):
     stats.add_stats("generic_stats", ["id_1"], [{"value": 1}])
     stats.add_stats("generic_stats", ["id_1"], [{"value": 2}], minor_root)
     assert os.path.exists(os.path.join(stats_dir, root_dir, "generic_stats"))
-    result = runner.invoke(
-        utils_cli.stats_delete_file, ["-k", "-m", ".", "generic_stats"]
-    )
+    result = runner.invoke(utils_cli.stats_delete_file, ["-k", "-m", ".", "generic_stats"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert not os.path.exists(os.path.join(stats_dir, root_dir, "generic_stats"))
 
@@ -2628,9 +2503,7 @@ def _compare_file_outputs(runner_result, reference_file):
     with open(reference_file, "r") as f_handle:
         expected_output = f_handle.readlines()
     runner_result = runner_result.splitlines(keepends=True)
-    asserts.predicate_from_cli(
-        runner_result, sorted(runner_result) == sorted(expected_output)
-    )
+    asserts.predicate_from_cli(runner_result, sorted(runner_result) == sorted(expected_output))
 
 
 @pytest.mark.usefixtures("cleandir")

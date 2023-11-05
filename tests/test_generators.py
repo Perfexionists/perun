@@ -44,17 +44,13 @@ def test_integer_generator_for_each():
     collector = Unit("time", {"warmup": 1, "repeat": 1})
     executable = Executable("factor")
     integer_job = Job(collector, [], executable)
-    integer_generator = IntegerGenerator(
-        integer_job, 10, 100, 10, profile_for_each_workload=True
-    )
+    integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=True)
 
     collection_pairs = list(integer_generator.generate(runner.run_collector))
     assert len(collection_pairs) == 10
 
     # When profile_for_each_workload is set, then we merge the resources
-    integer_generator = IntegerGenerator(
-        integer_job, 10, 100, 10, profile_for_each_workload=False
-    )
+    integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=False)
     collection_pairs = list(integer_generator.generate(runner.run_collector))
     assert len(collection_pairs) == 1
 
@@ -104,9 +100,7 @@ def test_loading_generators_from_config(monkeypatch, pcs_with_root):
     monkeypatch.setattr("perun.logic.config.local", lambda _: temp_local)
     monkeypatch.setattr("perun.logic.config.shared", lambda: temp_global)
     # Manually reset the singleton
-    decorators.manual_registered_singletons[
-        "load_generator_specifications"
-    ].instance = None
+    decorators.manual_registered_singletons["load_generator_specifications"].instance = None
 
     spec_map = workload.load_generator_specifications()
     assert len(spec_map.keys()) == 2
@@ -117,16 +111,12 @@ def test_loading_generators_from_config(monkeypatch, pcs_with_root):
 
     # Now test that the generators really work :P
     constructor, params = spec_map["gen1"]
-    for c_status, profile in constructor(integer_job, **params).generate(
-        runner.run_collector
-    ):
+    for c_status, profile in constructor(integer_job, **params).generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile["resources"])
     # Restore the singleton
-    decorators.manual_registered_singletons[
-        "load_generator_specifications"
-    ].instance = None
+    decorators.manual_registered_singletons["load_generator_specifications"].instance = None
 
 
 def test_singleton():
@@ -192,9 +182,7 @@ def test_external_generator(monkeypatch, capsys):
     executable = Executable("wc", "-l")
     file_job = Job(collector, [], executable)
     target_dir = os.path.join(os.getcwd(), "test")
-    external_generator = ExternalGenerator(
-        file_job, "generate", target_dir, "tmp{rows}_{cols}"
-    )
+    external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
 
     # replace the running of generator
     def correct_generation(*_, **__):
@@ -225,9 +213,7 @@ def test_external_generator(monkeypatch, capsys):
 
     target_dir = os.path.join(os.getcwd(), "test2")
     store.touch_dir(target_dir)
-    external_generator = ExternalGenerator(
-        file_job, "generate", target_dir, "tmp{rows}_{cols}"
-    )
+    external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
     monkeypatch.setattr("perun.utils.run_safely_external_command", incorrect_generation)
     profiles = list(external_generator.generate(runner.run_collector))
     assert len(profiles) == 1

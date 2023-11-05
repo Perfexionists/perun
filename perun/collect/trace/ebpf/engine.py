@@ -61,10 +61,7 @@ class BpfEngine(engine.CollectEngine):
         """
         return {
             target: list(
-                {
-                    probe.name.decode("utf-8")
-                    for probe in bcc.USDT(path=target).enumerate_probes()
-                }
+                {probe.name.decode("utf-8") for probe in bcc.USDT(path=target).enumerate_probes()}
             )
             for target in self.targets
         }
@@ -111,9 +108,7 @@ class BpfEngine(engine.CollectEngine):
 
         :return iterable: a generator object that provides profile resources
         """
-        WATCH_DOG.info(
-            "Transforming the raw performance data into a perun profile format"
-        )
+        WATCH_DOG.info("Transforming the raw performance data into a perun profile format")
         func_map = [{}] * (len(probes.func.keys()) + 1)
         # Every function probe keeps track of the current call sequence and sample value
         for func_probe in probes.func.values():

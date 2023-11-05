@@ -139,9 +139,7 @@ def all_profiles_in(directory, sort=False):
     """
     # Build the directory path and list of all profiles in it
     pool_path = os.path.join(os.path.split(__file__)[0], "profiles", directory)
-    profiles = [
-        os.path.join(pool_path, prof_file) for prof_file in os.listdir(pool_path)
-    ]
+    profiles = [os.path.join(pool_path, prof_file) for prof_file in os.listdir(pool_path)]
     # Sort if required
     if sort:
         profiles.sort()
@@ -156,9 +154,7 @@ def valid_profile_pool():
     Returns:
         list: dictionary with profiles that are not assigned and can be distributed
     """
-    yield list(
-        filter(lambda p: "err" not in p, all_profiles_in("to_add_profiles", True))
-    )
+    yield list(filter(lambda p: "err" not in p, all_profiles_in("to_add_profiles", True)))
 
 
 @pytest.fixture(scope="session")
@@ -255,13 +251,9 @@ def pcs_with_degradations():
     * merge commit [] p3
     """
     git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value(
-        "init", "defaultBranch", "master"
-    )
+    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
 
-    pool_path = os.path.join(
-        os.path.split(__file__)[0], "profiles", "degradation_profiles"
-    )
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     profiles = [
         os.path.join(pool_path, "linear_base.perf"),
         os.path.join(pool_path, "linear_base_degradated.perf"),
@@ -347,16 +339,13 @@ def pcs_single_prof(stored_profile_pool):
 
     # Populate PCS with profiles
     jobs_dir = pcs.get_job_directory()
-    chead_profile1 = test_utils.prepare_profile(
-        jobs_dir, profiles[1], str(current_head)
-    )
+    chead_profile1 = test_utils.prepare_profile(jobs_dir, profiles[1], str(current_head))
     commands.add([chead_profile1], str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
     pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
     number_of_perun_objects = sum(
-        len(os.listdir(os.path.join(pcs_object_dir, sub)))
-        for sub in os.listdir(pcs_object_dir)
+        len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
     )
     assert number_of_perun_objects == 2
 
@@ -401,19 +390,14 @@ def pcs_full(stored_profile_pool):
     jobs_dir = pcs.get_job_directory()
     root_profile = test_utils.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
-    chead_profile1 = test_utils.prepare_profile(
-        jobs_dir, profiles[1], str(current_head)
-    )
-    chead_profile2 = test_utils.prepare_profile(
-        jobs_dir, profiles[2], str(current_head)
-    )
+    chead_profile1 = test_utils.prepare_profile(jobs_dir, profiles[1], str(current_head))
+    chead_profile2 = test_utils.prepare_profile(jobs_dir, profiles[2], str(current_head))
     commands.add([chead_profile1, chead_profile2], str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
     pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
     number_of_perun_objects = sum(
-        len(os.listdir(os.path.join(pcs_object_dir, sub)))
-        for sub in os.listdir(pcs_object_dir)
+        len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
     )
     assert number_of_perun_objects == 5
 

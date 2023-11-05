@@ -30,9 +30,7 @@ class WorkloadGenerator:
         for each workload, otherwise the workload will be merged into one single profile
     """
 
-    def __init__(
-        self, job: Job, profile_for_each_workload: bool = False, **_: Any
-    ) -> None:
+    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_: Any) -> None:
         """Initializes the job of the generator
 
         :param Job job: job for which we will initialize the generator
@@ -68,13 +66,9 @@ class WorkloadGenerator:
                 yield c_status, prof
             else:
                 collective_status = (
-                    CollectStatus.ERROR
-                    if collective_status == CollectStatus.ERROR
-                    else c_status
+                    CollectStatus.ERROR if collective_status == CollectStatus.ERROR else c_status
                 )
-                collective_profile = profile.merge_resources_of(
-                    collective_profile, prof
-                )
+                collective_profile = profile.merge_resources_of(collective_profile, prof)
 
         if not self.for_each:
             yield collective_status, collective_profile
@@ -86,6 +80,4 @@ class WorkloadGenerator:
             resources that will be added to profile)
         """
         yield from ()
-        log.error(
-            "using invalid generator: does not implement _generate_next_workload function!"
-        )
+        log.error("using invalid generator: does not implement _generate_next_workload function!")

@@ -100,15 +100,11 @@ def process_resource_key_param(
         return value
     # Validate the keys, if it is one of the set
     if hasattr(ctx, "parent") and ctx.parent is not None:
-        valid_keys = set(
-            ctx.parent.params.get("profile", Profile()).all_resource_fields()
-        )
+        valid_keys = set(ctx.parent.params.get("profile", Profile()).all_resource_fields())
     else:
         valid_keys = set()
     if value not in valid_keys:
-        error_msg_ending = (
-            ", 'snaphots'" if param.human_readable_name == "per_key" else ""
-        )
+        error_msg_ending = ", 'snaphots'" if param.human_readable_name == "per_key" else ""
         valid_keys_str = ", ".join(f"'{vk}'" for vk in valid_keys) + error_msg_ending
         raise click.BadParameter(f"'{value}' is not one of {valid_keys_str}.")
     return value
@@ -131,15 +127,11 @@ def process_continuous_key(
     if value != "snapshots" and ctx.parent is not None:
         # If the requested value is not 'snapshots', then get all the numerical keys
         valid_numeric_keys = set(
-            query.all_numerical_resource_fields_of(
-                ctx.parent.params.get("profile", Profile())
-            )
+            query.all_numerical_resource_fields_of(ctx.parent.params.get("profile", Profile()))
         )
         # Check if the value is valid numeric key
         if value not in valid_numeric_keys:
-            valid_choices = ", ".join(
-                f"'{vnk}'" for vnk in valid_numeric_keys | {"snapshots"}
-            )
+            valid_choices = ", ".join(f"'{vnk}'" for vnk in valid_numeric_keys | {"snapshots"})
             raise click.BadParameter(f"'{value}' is not one of {valid_choices}.")
     return value
 
@@ -192,9 +184,7 @@ def yaml_param_callback(
     return unit_to_params
 
 
-def single_yaml_param_callback(
-    _: click.Context, __: click.Option, value: str
-) -> dict[str, Any]:
+def single_yaml_param_callback(_: click.Context, __: click.Option, value: str) -> dict[str, Any]:
     """Callback function for parsing the yaml files to dictionary object, when called from 'collect'
 
     This does not require specification of the collector to which the params correspond and is
@@ -234,9 +224,7 @@ def minor_version_list_callback(
     return minors
 
 
-def unsupported_option_callback(
-    _: click.Option, param: click.Option, value: Any
-) -> None:
+def unsupported_option_callback(_: click.Option, param: click.Option, value: Any) -> None:
     """Processes the currently unsupported option or argument.
 
     :param click.Context _: called context of the parameter
@@ -246,15 +234,11 @@ def unsupported_option_callback(
     if value:
         err_msg = f"option '{param.human_readable_name}'"
         err_msg += "is unsupported/not implemented in this version of perun"
-        err_msg += (
-            "\n\nPlease update your perun or wait patiently for the implementation"
-        )
+        err_msg += "\n\nPlease update your perun or wait patiently for the implementation"
         log.error(err_msg)
 
 
-def config_key_validation_callback(
-    _: click.Context, param: click.Option, value: str
-) -> str:
+def config_key_validation_callback(_: click.Context, param: click.Option, value: str) -> str:
     """Validates whether the value of the key is in correct format---strings delimited by dot.
 
     :param click.Context _: called context of the command line
@@ -326,9 +310,7 @@ def apply_func_for_range(
             log.warn(f"skipping nonexisting tag {i}{tag}")
 
 
-def lookup_added_profile_callback(
-    _: click.Context, __: click.Option, value: str
-) -> set[str]:
+def lookup_added_profile_callback(_: click.Context, __: click.Option, value: str) -> set[str]:
     """Callback function for looking up the profile which will be added/registered
 
     Profile can either be represented as a pending tag (e.g. 0@p), as a pending tag range
@@ -344,9 +326,7 @@ def lookup_added_profile_callback(
         pending_match = store.PENDING_TAG_REGEX.match(single_value)
         range_match = store.PENDING_TAG_RANGE_REGEX.match(single_value)
         if pending_match:
-            massaged_values.add(
-                lookup_nth_pending_filename(int(pending_match.group(1)))
-            )
+            massaged_values.add(lookup_nth_pending_filename(int(pending_match.group(1))))
         elif range_match:
             apply_func_for_range(
                 range_match,
@@ -358,9 +338,7 @@ def lookup_added_profile_callback(
     return massaged_values
 
 
-def lookup_removed_profile_callback(
-    ctx: click.Context, _: click.Option, value: str
-) -> set[str]:
+def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: str) -> set[str]:
     """Callback function for looking up the profile which will be removed
 
     Profile can either be represented as an index tag (e.g. 0@i), as an index tag range (e.g.
@@ -381,9 +359,7 @@ def lookup_removed_profile_callback(
             index_filename = profiles.get_nth_profile_of(index, ctx.params["minor"])
             start = index_filename.rfind("objects") + len("objects")
             # Remove the .perun/objects/... prefix and merge the directory and file to sha
-            ctx.params["from_index_generator"].add(
-                "".join(index_filename[start:].split("/"))
-            )
+            ctx.params["from_index_generator"].add("".join(index_filename[start:].split("/")))
         except TagOutOfRangeException as exc:
             # Invalid tag value, rethrow as click error
             raise click.BadParameter(str(exc))
@@ -413,9 +389,7 @@ def lookup_removed_profile_callback(
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                apply_func_for_range(
-                    pending_range_match, add_to_removed_from_pending, "p"
-                )
+                apply_func_for_range(pending_range_match, add_to_removed_from_pending, "p")
             # We check if this is actually something from pending, then we will remove it
             elif os.path.exists(single_value) and os.path.samefile(
                 os.path.split(single_value)[0], pcs.get_job_directory()
@@ -464,9 +438,7 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
     return profile_name
 
 
-def lookup_minor_version_callback(
-    _: click.Context, __: click.Option, value: str
-) -> str:
+def lookup_minor_version_callback(_: click.Context, __: click.Option, value: str) -> str:
     """Callback for looking up the minor version, if it was not stated
 
     :param Context _: context of the called command
@@ -482,9 +454,7 @@ def lookup_minor_version_callback(
     return value
 
 
-def lookup_any_profile_callback(
-    _: click.Context, __: click.Argument, value: str
-) -> Profile:
+def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str) -> Profile:
     """Callback for looking up any profile, i.e. anywhere (in index, in pending, etc.)
 
     :param _: context
@@ -504,9 +474,7 @@ def lookup_any_profile_callback(
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
         try:
-            index_profile = profiles.get_nth_profile_of(
-                int(index_tag_match.group(1)), rev
-            )
+            index_profile = profiles.get_nth_profile_of(int(index_tag_match.group(1)), rev)
             return store.load_profile_from_file(index_profile, is_raw_profile=False)
         except TagOutOfRangeException as exc:
             raise click.BadParameter(str(exc))
@@ -515,9 +483,7 @@ def lookup_any_profile_callback(
     if pending_tag_match:
         pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
         # We know it should exist, so we can load it unsafe without check for existence
-        return store.load_profile_from_file(
-            pending_profile, is_raw_profile=True, unsafe_load=True
-        )
+        return store.load_profile_from_file(pending_profile, is_raw_profile=True, unsafe_load=True)
 
     # 1) Check the index, if this is registered
     profile_from_index = commands.load_profile_from_args(value, rev)
@@ -534,9 +500,7 @@ def lookup_any_profile_callback(
     return store.load_profile_from_file(abs_path, is_raw_profile=True, unsafe_load=True)
 
 
-def check_stats_minor_callback(
-    _: click.Context, param: click.Argument, value: str
-) -> str:
+def check_stats_minor_callback(_: click.Context, param: click.Argument, value: str) -> str:
     """Callback for checking existence of the minor version value in the VCS and also checking
     that a corresponding version directory exists in the stats.
 
@@ -566,9 +530,7 @@ def check_stats_minor_callback(
     return value
 
 
-def lookup_stats_file_callback(
-    ctx: click.Context, _: click.Argument, value: str
-) -> Any:
+def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str) -> Any:
     """Callback for looking up the stats file in the stats directory. The stats file is searched
     for in the specific minor version - if provided in 'in_minor' parameter - otherwise no lookup
     is performed.
@@ -580,9 +542,7 @@ def lookup_stats_file_callback(
     :return: either the looked up path of the file or the original value if no lookup was performed
     """
     # Resolve the 'in_minor' to HEAD if not specified
-    in_minor = (
-        vcs.get_minor_head() if not ctx.params["in_minor"] else ctx.params["in_minor"]
-    )
+    in_minor = vcs.get_minor_head() if not ctx.params["in_minor"] else ctx.params["in_minor"]
     # Check the existence only for files with specific 'in_minor'
     if in_minor != ".":
         try:
@@ -770,10 +730,7 @@ def generate_cli_dump(
 
     ctx = {
         "\n".join(
-            [
-                " " * 4 + l
-                for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split("\n")
-            ]
+            [" " * 4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split("\n")]
         )
         for p in config.runtime().safe_get("context.profiles", [])
         if "origin" in p.keys()
@@ -800,19 +757,15 @@ def generate_cli_dump(
                 },
             },
             "command": " ".join(["perun"] + sys.argv[1:]),
-            "output": helpers.escape_ansi(
-                "".join([" " * 4 + l for l in stdout.log.readlines()])
-            ),
-            "error": helpers.escape_ansi(
-                "".join([" " * 4 + l for l in stderr.log.readlines()])
-            ),
+            "output": helpers.escape_ansi("".join([" " * 4 + l for l in stdout.log.readlines()])),
+            "error": helpers.escape_ansi("".join([" " * 4 + l for l in stderr.log.readlines()])),
             "exception": reported_error,
             "trace": "\n".join(
                 [
                     " " * 4 + t
-                    for t in "".join(
-                        traceback.format_tb(catched_exception.__traceback__)
-                    ).split("\n")
+                    for t in "".join(traceback.format_tb(catched_exception.__traceback__)).split(
+                        "\n"
+                    )
                 ]
             ),
             "config": {
@@ -902,9 +855,7 @@ def set_call_graph_type(_: click.Context, __: click.Argument, value: str) -> Non
     Optimization.call_graph_type = CallGraphTypes(value)
 
 
-def configure_metrics(
-    _: click.Context, __: click.Option, value: tuple[str, str]
-) -> None:
+def configure_metrics(_: click.Context, __: click.Option, value: tuple[str, str]) -> None:
     """Set the temp file and ID for the collected metrics.
 
     :param click.core.Context _: click context

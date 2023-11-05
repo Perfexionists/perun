@@ -74,6 +74,6 @@ def generic_profile_provider(
 # to add new profile type - simply add new keyword and specific provider function with signature:
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
-_PROFILE_MAPPER: dict[
-    str, Callable[..., Iterator[tuple[list[float], list[float], str]]]
-] = {"default": generic_profile_provider}
+_PROFILE_MAPPER: dict[str, Callable[..., Iterator[tuple[list[float], list[float], str]]]] = {
+    "default": generic_profile_provider
+}

@@ -111,9 +111,7 @@ class Probes:
         pair = name if probe_type == ProbeType.FUNC else None
         sample = sample if sample > 1 else 1
         # Create the probe dictionary
-        return self.create_probe_record(
-            name, probe_type, pair=pair, lib=lib, sample=sample
-        )
+        return self.create_probe_record(name, probe_type, pair=pair, lib=lib, sample=sample)
 
     @staticmethod
     def create_probe_record(
@@ -148,9 +146,7 @@ class Probes:
         self.sampled_func, self.sampled_usdt = [], []
         # Iterate all probe lists
         for probe_collection in [self.func, self.usdt]:
-            for probe in sorted(
-                probe_collection.values(), key=lambda value: value["name"]
-            ):
+            for probe in sorted(probe_collection.values(), key=lambda value: value["name"]):
                 # Add a unique id to the probe
                 probe["id"] = probe_id
                 probe_id += 1

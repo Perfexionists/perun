@@ -55,9 +55,7 @@ class Configuration:
         self.quiet = cli_config.get("quiet", False)
         self.watchdog = cli_config.get("watchdog", False)
         self.diagnostics = cli_config.get("diagnostics", False)
-        self.output_handling = cli_config.get(
-            "output_handling", OutputHandling.DEFAULT.value
-        )
+        self.output_handling = cli_config.get("output_handling", OutputHandling.DEFAULT.value)
         self.engine = cli_config.get("engine", CollectEngine.default())
         self.stap_cache_off = cli_config.get("stap_cache_off", False)
         self.generate_dynamic_cg = cli_config.get("generate_dynamic_cg", False)

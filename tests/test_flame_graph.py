@@ -17,12 +17,8 @@ def test_flame_graph(pcs_with_root, valid_profile_pool):
     Expecting no errors, and created flame.svg graph
     """
     runner = CliRunner()
-    valid_profile = test_utils.load_profilename(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
-    memory_profile = test_utils.load_profile(
-        "to_add_profiles", "new-prof-2-memory-basic.perf"
-    )
+    valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
+    memory_profile = test_utils.load_profile("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     # First try to create the graph using the convential matters
     flamegraphs.draw_flame_graph(memory_profile, "flame2.svg", 20)

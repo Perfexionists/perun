@@ -42,9 +42,7 @@ def demangle(name: str) -> str:
     return demangle_cache[name]
 
 
-def build_address_to_line_cache(
-    addresses: set[tuple[str, str]], binary_name: str
-) -> None:
+def build_address_to_line_cache(addresses: set[tuple[str, str]], binary_name: str) -> None:
     """Builds global cache for address_to_line() function calls.
 
     Instead of continuous calls to subprocess, this takes all of collected

@@ -32,9 +32,9 @@ def test_stats_filenames(pcs_full):
 
     # Prepare the git-related values
     _, minor_root = _get_vcs_versions()
-    profile_sha = index.get_profile_list_for_minor(
-        pcs.get_object_directory(), minor_root
-    )[0].checksum
+    profile_sha = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_root)[
+        0
+    ].checksum
 
     # Test sha-based stats name on the root minor version profile identified by the profile-sha
     generated_name = stats.build_stats_filename_as_profile_sha(profile_sha, minor_root)
@@ -78,9 +78,7 @@ def test_basic_stats_operations(pcs_with_root):
     # Prepare git values
     minor_head = vcs.get_minor_head()
     minor_path = os.path.join(minor_head[:2], minor_head[2:])
-    expected_stats_file = os.path.join(
-        pcs.get_stats_directory(), minor_path, "custom_stats"
-    )
+    expected_stats_file = os.path.join(pcs.get_stats_directory(), minor_path, "custom_stats")
 
     # Try adding some stats to the file
     stats_file = stats.add_stats("custom_stats", ["entry_1"], [stats_entry_1])
@@ -109,9 +107,7 @@ def test_basic_stats_operations(pcs_with_root):
     ) == stats_entry_3
 
     # Try updating entries 2 and 3 and test that the change has been made
-    stats.update_stats(
-        "custom_stats", ["entry_2", "entry_3"], [entry_2_new, entry_3_new]
-    )
+    stats.update_stats("custom_stats", ["entry_2", "entry_3"], [entry_2_new, entry_3_new])
     stats_content = stats.get_stats_of("custom_stats")
     stats_entry_2.update(entry_2_new)
     stats_entry_3.update(entry_3_new)
@@ -174,11 +170,7 @@ def test_stats_lists(pcs_full_no_prof):
 
     # Test that files and version lists work correctly
     root_files = [file_name for file_name, _ in stats.list_stats_for_minor(minor_root)]
-    assert (
-        len(root_files) == 2
-        and "root_stats" in root_files
-        and "root_stats_2" in root_files
-    )
+    assert len(root_files) == 2 and "root_stats" in root_files and "root_stats_2" in root_files
     head_files = stats.list_stats_for_minor(minor_head)
     assert not head_files
     # Check the actual content of the stats directory
@@ -251,9 +243,7 @@ def test_stats_files_delete(pcs_full_no_prof):
     # Test if disabled 'keep_directory' works with multiple files and empty version directory
     stats.add_stats("middle_stats", ["1"], [{"value": 1}], minor_middle)
     stats.add_stats("middle_stats_2", ["2"], [{"value": 2}], minor_middle)
-    _check_objects(
-        [(minor_head, []), (minor_middle, ["middle_stats", "middle_stats_2"])], [], []
-    )
+    _check_objects([(minor_head, []), (minor_middle, ["middle_stats", "middle_stats_2"])], [], [])
     stats.delete_stats_file("middle_stats", minor_middle)
     _check_objects([(minor_head, []), (minor_middle, ["middle_stats_2"])], [], [])
     stats.delete_stats_file("middle_stats_2", minor_middle)
@@ -291,14 +281,10 @@ def test_stats_files_delete(pcs_full_no_prof):
     )
     # All the minor version directories should still be there
     stats.delete_stats_file_across_versions("custom_stats", keep_directory=True)
-    _check_objects(
-        [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], []
-    )
+    _check_objects([(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], [])
 
     # Try to delete a custom file
-    custom_f = os.path.join(
-        pcs.get_stats_directory(), minor_head[:2], minor_head[2:], "file.txt"
-    )
+    custom_f = os.path.join(pcs.get_stats_directory(), minor_head[:2], minor_head[2:], "file.txt")
     helpers.touch_file(custom_f)
     _check_objects(
         [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])],
@@ -306,9 +292,7 @@ def test_stats_files_delete(pcs_full_no_prof):
         [os.path.join(minor_head[:2], minor_head[2:], "file.txt")],
     )
     stats.delete_stats_file(custom_f, minor_head, keep_directory=True)
-    _check_objects(
-        [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], []
-    )
+    _check_objects([(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], [])
 
     # Try to delete directory instead of a file in a various possible ways
     # Create one new custom directory
@@ -363,9 +347,7 @@ def test_stats_directories_delete(pcs_full_no_prof):
     stats.add_stats("middle_stats", ["1"], [{"value": 10}], minor_middle)
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_root)
     stats.delete_stats_file_across_versions("custom_stats", keep_directory=True)
-    _check_objects(
-        [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], []
-    )
+    _check_objects([(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], [])
 
     # Test the object deletion edge case
     stats._delete_stats_objects(
@@ -376,9 +358,7 @@ def test_stats_directories_delete(pcs_full_no_prof):
     # Test the directories deletion
     # Both 'only_empty' and 'keep_directories' set to True should do nothing
     stats.delete_version_dirs([minor_head, minor_middle, minor_root], True, True)
-    _check_objects(
-        [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], []
-    )
+    _check_objects([(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])], [], [])
     # Delete only empty directories
     stats.delete_version_dirs([minor_head, minor_middle, minor_root], only_empty=True)
     _check_objects([(minor_middle, ["middle_stats"])], [], [])
@@ -387,9 +367,7 @@ def test_stats_directories_delete(pcs_full_no_prof):
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_root)
     stats.delete_stats_file("custom_stats", minor_root, True)
     os.mkdir(os.path.join(stats_dir, custom_dir))
-    _check_objects(
-        [(minor_middle, ["middle_stats"]), (minor_root, [])], [custom_dir], []
-    )
+    _check_objects([(minor_middle, ["middle_stats"]), (minor_root, [])], [custom_dir], [])
     # Delete the content of all the version directories
     stats.delete_version_dirs([minor_middle, minor_root], False, keep_directories=True)
     _check_objects([(minor_middle, []), (minor_root, [])], [], [])
@@ -422,25 +400,17 @@ def test_stats_directories_delete(pcs_full_no_prof):
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_root)
     stats.delete_stats_file("custom_stats", minor_root, keep_directory=True)
     helpers.touch_file(os.path.join(stats_dir, custom_file))
-    _check_objects(
-        [(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file]
-    )
+    _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
     stats.delete_version_dirs([custom_file], False)
-    _check_objects(
-        [(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file]
-    )
+    _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
 
     # Try to delete a non-existent version directory, nothing should happen
     stats.delete_version_dirs([minor_head], False)
-    _check_objects(
-        [(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file]
-    )
+    _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
 
     # Try to delete a custom directory
     stats.delete_version_dirs([custom_root_dir], False)
-    _check_objects(
-        [(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file]
-    )
+    _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
     # Try some custom directory in a version directory, nothing should happen
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_middle)
     stats.delete_stats_file("custom_stats", minor_middle, keep_directory=True)
@@ -480,9 +450,7 @@ def test_stats_directories_delete(pcs_full_no_prof):
     )
     stats.delete_version_dirs([minor_root], False)
     # Now the lower level directory should be also deleted
-    _check_objects(
-        [(minor_middle, [])], [custom_root_dir, custom_dir], [custom_root_file]
-    )
+    _check_objects([(minor_middle, [])], [custom_root_dir, custom_dir], [custom_root_file])
 
 
 def test_stats_sync(pcs_full_no_prof):
@@ -730,9 +698,7 @@ def _check_objects(
     assert locations_count == len(stats_objects.keys())
 
 
-def _transform_paths(
-    versions_with_files, custom_empty_dirs, custom_files, with_index=True
-):
+def _transform_paths(versions_with_files, custom_empty_dirs, custom_files, with_index=True):
     """Transforms the supplied versions with files, custom directories and files to a format that
     is suitable for comparison, i.e. dictionary of directories and their contents:
 
@@ -759,9 +725,7 @@ def _transform_paths(
         base = ""
         # Add records for each of the component
         for path_dir in path_parts:
-            record_dirs = stats_objects.setdefault(base, {"dirs": [], "files": []})[
-                "dirs"
-            ]
+            record_dirs = stats_objects.setdefault(base, {"dirs": [], "files": []})["dirs"]
             # Add the new subdirectory as a successor of the previous one
             if path_dir not in record_dirs:
                 record_dirs.append(path_dir)
@@ -779,9 +743,7 @@ def _transform_paths(
         base_record["files"].append(".index")
 
     # Iterate all the versions and create records for directories and files
-    for version_dir, files in [
-        (os.path.join(v[:2], v[2:]), fs) for v, fs in versions_with_files
-    ]:
+    for version_dir, files in [(os.path.join(v[:2], v[2:]), fs) for v, fs in versions_with_files]:
         _process_dir(version_dir, files)
 
     # Iterate all the custom empty directories

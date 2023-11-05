@@ -97,22 +97,18 @@ def _build_registers_set():
     # Add segment registers as-is
     registers |= set(reg_classes["segment"])
     # Create RIP, EIP, IP registers
-    registers |= {
-        "{}{}".format(pre, reg_classes["ip"]) for pre in reg_classes["prefix"]
-    }
+    registers |= {"{}{}".format(pre, reg_classes["ip"]) for pre in reg_classes["prefix"]}
     # Create 64b register variants R8-R15
     start64, end64 = reg_classes["64b-cnt"]
     for idx in range(start64, end64 + 1):
         registers |= {
-            "{}{}{}".format(reg_classes["64b"], str(idx), post)
-            for post in reg_classes["64b-post"]
+            "{}{}{}".format(reg_classes["64b"], str(idx), post) for post in reg_classes["64b-post"]
         }
     # Create sse and avx register variants XMM0-XMM7 / YMM0 - YMM7
     start_sse, end_sse = reg_classes["sse-cnt"]
     for idx in range(start_sse, end_sse + 1):
         registers |= {
-            "{}{}".format(reg, str(idx))
-            for reg in [reg_classes["sse"], reg_classes["avx"]]
+            "{}{}".format(reg, str(idx)) for reg in [reg_classes["sse"], reg_classes["avx"]]
         }
 
     return registers
@@ -145,9 +141,7 @@ def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
         diff_funcs = set(_filter_leaves(diff_funcs, call_graph))
     # Do not compare the cfg if function is new or already identified as modified
     cfg_candidates = (diff_funcs - new) - modified
-    changes = _compare_cfgs(
-        cfg_candidates, renamed, call_graph.cfg, call_graph_old.cfg, cfg_mode
-    )
+    changes = _compare_cfgs(cfg_candidates, renamed, call_graph.cfg, call_graph_old.cfg, cfg_mode)
     call_graph.set_diff(list(new | modified | changes))
 
 
@@ -160,9 +154,7 @@ def _compare_cg(call_graph, call_graph_old, inspect_all):
 
     :return tuple: sets of new, modified and renamed function according to the CG analysis
     """
-    cg_funcs, cg_old_funcs = set(call_graph.cg_map.keys()), set(
-        call_graph_old.cg_map.keys()
-    )
+    cg_funcs, cg_old_funcs = set(call_graph.cg_map.keys()), set(call_graph_old.cg_map.keys())
     new_funcs = list(cg_funcs - cg_old_funcs)
     deleted_funcs = list(cg_old_funcs - cg_funcs)
     # Find functions that have been only renamed - compare the callers / callees sets
@@ -214,9 +206,7 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
             changes.append(func)
             continue
         # Compare the CFG blocks according to the mode
-        if not _compare_cfg_blocks(
-            f_blocks, f_blocks_old, renames, _DIFFMODE_MAP[mode]
-        ):
+        if not _compare_cfg_blocks(f_blocks, f_blocks_old, renames, _DIFFMODE_MAP[mode]):
             changes.append(func)
             continue
     return set(changes)
@@ -307,9 +297,7 @@ def _cfg_strict(block, block_old):
         return False
     # Also check that the op-codes and operands match
     for (instr, operands), (instr_old, operands_old) in zip(block, block_old):
-        if instr != instr_old or (
-            instr not in JUMP_INSTRUCTIONS and operands != operands_old
-        ):
+        if instr != instr_old or (instr not in JUMP_INSTRUCTIONS and operands != operands_old):
             return False
     return True
 
@@ -336,9 +324,7 @@ def _cfg_coloring(block, block_old):
         for expr in operand_parts:
             if expr in _cfg_coloring.registers:
                 # Fetch the register's color, or assign it a new one
-                instr_colors.append(
-                    color_map.setdefault(expr, str(next(color_counter)))
-                )
+                instr_colors.append(color_map.setdefault(expr, str(next(color_counter))))
                 yield "<r>"
             else:
                 yield expr
@@ -353,9 +339,7 @@ def _cfg_coloring(block, block_old):
         color_counter = itertools.count()
         color_map = {}
         # Parse the instructions and operands, substitute and color registers
-        for instr, oper in [
-            instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS
-        ]:
+        for instr, oper in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
             instr_colors = []
             op_parts = re.split(OPERANDS_SPLIT, oper)
             instr_full = "{} ".format(instr) + "".join(_color_registers(op_parts))
@@ -430,9 +414,7 @@ def _find_renames(new_funcs, del_funcs, call_graph, call_graph_old):
     # Get the deleted functions sorted by level and also obtain their callers / callees
     deleted_funcs = []
     for del_name, _ in call_graph_old.sort_by_level(del_funcs):
-        deleted_funcs.append(
-            (del_name, _get_callers_and_callees(del_name, call_graph_old))
-        )
+        deleted_funcs.append((del_name, _get_callers_and_callees(del_name, call_graph_old)))
 
     # Iterate the new functions and compare the callers / callees
     for new_name, _ in new_funcs:
@@ -458,9 +440,7 @@ def _get_callers_and_callees(func_name, call_graph, rename_map=None):
     """
     func = call_graph[func_name]
     callers, callees = func["callers"], func["callees"]
-    return set(_rename_funcs(callers, rename_map)), set(
-        _rename_funcs(callees, rename_map)
-    )
+    return set(_rename_funcs(callers, rename_map)), set(_rename_funcs(callees, rename_map))
 
 
 def _rename_funcs(collection, rename_map=None):

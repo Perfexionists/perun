@@ -94,8 +94,7 @@ DEV_MODE = False
     "-d",
     default=False,
     is_flag=True,
-    help="Suppresses the catching of all exceptions from the CLI and generating of the "
-    "dump.",
+    help="Suppresses the catching of all exceptions from the CLI and generating of the " "dump.",
 )
 @click.option(
     "--no-pager",
@@ -219,8 +218,7 @@ def configure_local_perun(perun_path: str) -> None:
     metavar="<flag>",
     multiple=True,
     callback=cli_helpers.vcs_parameter_callback,
-    help="Passes additional flag to a initialization of version "
-    "control system, e.g. ``bare``.",
+    help="Passes additional flag to a initialization of version " "control system, e.g. ``bare``.",
 )
 @click.option(
     "--configure",
@@ -286,13 +284,9 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
         UnsupportedModuleException,
         UnsupportedModuleFunctionException,
     ) as unsup_module_exp:
-        perun_log.error(
-            "error while initializing perun: {}".format(str(unsup_module_exp))
-        )
+        perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
     except PermissionError:
-        perun_log.error(
-            "writing to shared config 'shared.yml' requires root permissions"
-        )
+        perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
         err_msg = "cannot launch default editor for configuration.\n"
         err_msg += "Please set 'general.editor' key to a valid text editor (e.g. vim)."
@@ -491,8 +485,7 @@ def remove(
     "-s",
     is_flag=True,
     default=False,
-    help="Shortens the output of ``log`` to include only most "
-    "necessary information.",
+    help="Shortens the output of ``log`` to include only most " "necessary information.",
 )
 def log(head: Optional[str], **kwargs: Any) -> None:
     """Shows history of versions and associated profiles.
@@ -518,9 +511,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     try:
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
-        perun_log.error(
-            "could not print the repository history: {}".format(str(exception))
-        )
+        perun_log.error("could not print the repository history: {}".format(str(exception)))
 
 
 @cli.command()
@@ -530,8 +521,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     required=False,
     default=False,
     is_flag=True,
-    help="Shortens the output of ``status`` to include only most"
-    " necessary information.",
+    help="Shortens the output of ``status`` to include only most" " necessary information.",
 )
 @click.option(
     "--sort-by",
@@ -580,9 +570,7 @@ def status(**kwargs: Any) -> None:
         UnsupportedModuleException,
         MissingConfigSectionException,
     ) as exception:
-        perun_log.error(
-            "could not print status of repository: {}".format(str(exception))
-        )
+        perun_log.error("could not print status of repository: {}".format(str(exception)))
 
 
 @cli.group()
@@ -599,8 +587,7 @@ def status(**kwargs: Any) -> None:
     default=None,
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
-    help="Will check the index of different minor version <hash>"
-    " during the profile lookup",
+    help="Will check the index of different minor version <hash>" " during the profile lookup",
 )
 @click.pass_context
 def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
@@ -676,8 +663,7 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     default=None,
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
-    help="Will check the index of different minor version <hash>"
-    " during the profile lookup",
+    help="Will check the index of different minor version <hash>" " during the profile lookup",
 )
 @click.pass_context
 def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
@@ -779,8 +765,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    help="Additional parameters for <cmd>. E.g. ``status`` or "
-    "``-al`` is command parameter.",
+    help="Additional parameters for <cmd>. E.g. ``status`` or " "``-al`` is command parameter.",
 )
 @click.option(
     "--workload",
@@ -789,8 +774,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload"
-    "for ``ls`` command.",
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload" "for ``ls`` command.",
 )
 @click.option(
     "--params",
@@ -891,9 +875,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
 
 
 @cli.command("fuzz")
-@click.option(
-    "--cmd", "-b", nargs=1, required=True, help="The command which will be fuzzed."
-)
+@click.option("--cmd", "-b", nargs=1, required=True, help="The command which will be fuzzed.")
 @click.option(
     "--args",
     "-a",
@@ -1195,18 +1177,14 @@ def launch_cli_safely() -> None:
         cli()
     except Exception as catched_exception:
         error_module = (
-            catched_exception.__module__ + "."
-            if hasattr(catched_exception, "__module__")
-            else ""
+            catched_exception.__module__ + "." if hasattr(catched_exception, "__module__") else ""
         )
         error_name = error_module + catched_exception.__class__.__name__
 
         reported_error = error_name + ": " + str(catched_exception)
         perun_log.error("Unexpected error: {}".format(reported_error), recoverable=True)
         with helpers.SuppressedExceptions(Exception):
-            cli_helpers.generate_cli_dump(
-                reported_error, catched_exception, stdout_log, stderr_log
-            )
+            cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
 def launch_cli() -> None:

@@ -80,9 +80,7 @@ def create(template_type: str, **kwargs: Any) -> None:
     try:
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
-        perun_log.error(
-            "while invoking external editor: {}".format(str(editor_exception))
-        )
+        perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
 
 
 @utils_group.group("temp")
@@ -160,8 +158,7 @@ def temp_list(root: str, **kwargs: Any) -> None:
     "-k",
     flag_value=True,
     default=False,
-    help="If path refers to directory, empty tmp/ directories and subdirectories "
-    "will be kept.",
+    help="If path refers to directory, empty tmp/ directories and subdirectories " "will be kept.",
 )
 def temp_delete(path: str, warn: bool, force: bool, **kwargs: Any) -> None:
     """Deletes the temporary file or directory.
@@ -317,9 +314,7 @@ def stats_delete_group() -> None:
 
 
 @stats_delete_group.command("file")
-@click.argument(
-    "name", type=click.Path(), callback=cli_helpers.lookup_stats_file_callback
-)
+@click.argument("name", type=click.Path(), callback=cli_helpers.lookup_stats_file_callback)
 @click.option(
     "--in-minor",
     "-m",

@@ -105,9 +105,7 @@ def test_scatter_plot_cli(pcs_with_root):
     Expecting no errors and created scatter_plot_result0.html, scatter_plot_result1.html files
     """
     # Filter the postprocess profiles, test only on the full computation
-    profile = test_utils.load_profilename(
-        "postprocess_profiles", "full_computation.perf"
-    )
+    profile = test_utils.load_profilename("postprocess_profiles", "full_computation.perf")
 
     # Run the cli on the given profile
     runner = CliRunner()
@@ -135,9 +133,7 @@ def test_scatter_plot_cli_errors(pcs_with_root):
     Expecting to fail all commands and not create any graph files.
     """
     # Filter the postprocess profiles, test only on the full computation
-    profile = test_utils.load_profilename(
-        "postprocess_profiles", "full_computation.perf"
-    )
+    profile = test_utils.load_profilename("postprocess_profiles", "full_computation.perf")
 
     runner = CliRunner()
     # Try invalid view argument
@@ -149,13 +145,9 @@ def test_scatter_plot_cli_errors(pcs_with_root):
     asserts.predicate_from_cli(result, "scatterr" in result.output)
 
     # Try invalid --of value
-    result = runner.invoke(
-        cli.show, [profile, "scatter", "--of=amou", "--per=structure-unit-size"]
-    )
+    result = runner.invoke(cli.show, [profile, "scatter", "--of=amou", "--per=structure-unit-size"])
     asserts.invalid_cli_choice(result, "amou")
 
     # Try invalid --per value
-    result = runner.invoke(
-        cli.show, [profile, "scatter", "--of=amount", "--per=struct"]
-    )
+    result = runner.invoke(cli.show, [profile, "scatter", "--of=amount", "--per=struct"])
     asserts.invalid_cli_choice(result, "struct")

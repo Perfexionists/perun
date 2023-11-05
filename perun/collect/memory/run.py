@@ -20,9 +20,7 @@ _tmp_log_filename: str = "MemoryLog"
 DEFAULT_SAMPLING: float = 0.001
 
 
-def before(
-    executable: Executable, **_: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Phase for initialization the collect module
 
     :param Executable executable: executable profiled command
@@ -49,9 +47,7 @@ def before(
     if not syscalls.check_debug_symbols(executable.cmd):
         log.failed()
         error_msg = "Binary does not contain debug info section.\n"
-        error_msg += (
-            "Please recompile your project with debug options (gcc -g | g++ -g)"
-        )
+        error_msg += "Please recompile your project with debug options (gcc -g | g++ -g)"
         return CollectStatus.ERROR, error_msg, {}
     log.done()
     log.info("Finished preprocessing step!\n")
@@ -59,9 +55,7 @@ def before(
     return CollectStatus.OK, "", {}
 
 
-def collect(
-    executable: Executable, **_: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def collect(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Phase for collection of the profile data
 
     :param Executable executable: executable profiled command
@@ -131,9 +125,7 @@ def after(
 
     if exclude_funcs or exclude_sources:
         log.info("Excluding functions and sources: ", end="")
-        filters.allocation_filter(
-            profile, function=exclude_funcs, source=exclude_sources
-        )
+        filters.allocation_filter(profile, function=exclude_funcs, source=exclude_sources)
         log.done()
 
     log.info("Clearing records without assigned UID from profile: ", end="")

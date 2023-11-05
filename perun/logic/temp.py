@@ -107,9 +107,7 @@ class TempFile:
         touch_temp_file(self.filename)
         return self
 
-    def __exit__(
-        self, exc_type: type, exc_val: Exception, exc_tb: BaseException
-    ) -> None:
+    def __exit__(self, exc_type: type, exc_val: Exception, exc_tb: BaseException) -> None:
         """Context manager exit sentinel, deletes the managed temporary file.
 
         :param type exc_type: the type of the exception
@@ -138,8 +136,7 @@ def temp_path(path: str) -> str:
     # The resulting path might end up out of tmp/ for both absolute or relative paths
     if not path.startswith(tmp_location):
         raise exceptions.InvalidTempPathException(
-            "The resulting path '{}' is not located in "
-            "the perun tmp/ directory.".format(path)
+            "The resulting path '{}' is not located in " "the perun tmp/ directory.".format(path)
         )
     return path
 
@@ -385,9 +382,7 @@ def set_protected_status(file_path: str, protected: bool) -> None:
     _add_to_index(file_path, protected=protected)
 
 
-def delete_temp_dir(
-    root: str, ignore_protected: bool = False, force: bool = False
-) -> None:
+def delete_temp_dir(root: str, ignore_protected: bool = False, force: bool = False) -> None:
     """Delete the whole temporary directory given by the 'root' and all its content.
 
     For details regarding the path format, see the module docstring.
@@ -414,9 +409,7 @@ def delete_temp_dir(
     _delete_empty_directories(root)
 
 
-def delete_temp_file(
-    file_path: str, ignore_protected: bool = False, force: bool = False
-) -> None:
+def delete_temp_file(file_path: str, ignore_protected: bool = False, force: bool = False) -> None:
     """Delete the temporary file identified by the 'file_path'.
 
     For details regarding the path format, see the module docstring.
@@ -486,9 +479,7 @@ def _is_tmp_path(path: str) -> None:
     :param str path: the path that should be checked
     """
     if not path.startswith(pcs.get_tmp_directory()) or not os.path.exists(path):
-        raise exceptions.InvalidTempPathException(
-            f"The 'tmp' path '{path}' does not exist."
-        )
+        raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' does not exist.")
 
 
 def _is_tmp_file(path: str) -> None:
@@ -499,9 +490,7 @@ def _is_tmp_file(path: str) -> None:
     """
     _is_tmp_path(path)
     if not os.path.isfile(path):
-        raise exceptions.InvalidTempPathException(
-            f"The 'tmp' path '{path}' is not a file."
-        )
+        raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' is not a file.")
 
 
 def _is_tmp_dir(path: str) -> None:
@@ -512,9 +501,7 @@ def _is_tmp_dir(path: str) -> None:
     """
     _is_tmp_path(path)
     if not os.path.isdir(path):
-        raise exceptions.InvalidTempPathException(
-            f"The 'tmp' path '{path}' is not a directory."
-        )
+        raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' is not a directory.")
 
 
 def _delete_files(tmp_files: list[str], ignore_protected: bool, force: bool) -> None:
@@ -538,8 +525,7 @@ def _delete_files(tmp_files: list[str], ignore_protected: bool, force: bool) -> 
         if protected and not ignore_protected:
             # Abort the operation if ignore_protected is not set
             raise exceptions.ProtectedTempException(
-                "Aborted temporary files deletion due to a "
-                "presence of protected files."
+                "Aborted temporary files deletion due to a " "presence of protected files."
             )
     # Delete all the files and their potential records in the index
     for file in tmp_files:

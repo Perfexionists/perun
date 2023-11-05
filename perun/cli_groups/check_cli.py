@@ -101,11 +101,7 @@ def check_group(**_: Any) -> None:
 
     """
     should_precollect = dutils.strtobool(
-        str(
-            perun_config.lookup_key_recursively(
-                "degradation.collect_before_check", "false"
-            )
-        )
+        str(perun_config.lookup_key_recursively("degradation.collect_before_check", "false"))
     )
     precollect_to_log = dutils.strtobool(
         str(perun_config.lookup_key_recursively("degradation.log_collect", "false"))
@@ -119,9 +115,7 @@ def check_group(**_: Any) -> None:
             end="",
         )
         print("Missing profiles will be freshly collected with respect to the ", end="")
-        print(
-            "nearest job matrix (run `perun config edit` to modify the underlying job matrix)."
-        )
+        print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
             print(
                 "The progress of the pre-collect phase will be stored in logs at {}.".format(
@@ -179,9 +173,7 @@ def check_all(minor_head: str = "HEAD") -> None:
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
-    print(
-        "[!] Running the degradation checks on the whole VCS history. This might take a while!\n"
-    )
+    print("[!] Running the degradation checks on the whole VCS history. This might take a while!\n")
     check.degradation_in_history(minor_head)
 
 
@@ -208,8 +200,7 @@ def check_all(minor_head: str = "HEAD") -> None:
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
     metavar="<hash>",
-    help="Will check the index of different minor version <hash>"
-    " during the profile lookup.",
+    help="Will check the index of different minor version <hash>" " during the profile lookup.",
 )
 @click.pass_context
 def check_profiles(

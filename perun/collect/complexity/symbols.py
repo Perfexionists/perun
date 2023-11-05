@@ -47,13 +47,10 @@ def extract_symbol_map(executable_path: str) -> dict[str, str]:
     :return dict: function symbols map in form 'mangled name: hex address'
     """
     # Get the mangled function names and addresses
-    symbols = _get_symbols(
-        executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN]
-    )
+    symbols = _get_symbols(executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN])
     # Create symbol map as name: address in hex format
     symbol_map = {
-        symbols[i + 1]: ("0x" + symbols[i].lstrip("0"))
-        for i in range(0, len(symbols), 2)
+        symbols[i + 1]: ("0x" + symbols[i].lstrip("0")) for i in range(0, len(symbols), 2)
     }
     return symbol_map
 
@@ -66,13 +63,10 @@ def extract_symbol_address_map(executable_path: str) -> dict[str, str]:
     :return dict: function symbols map in form 'hex address: demangled name'
     """
     # Get the mangled function names and addresses
-    symbols = _get_symbols(
-        executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN]
-    )
+    symbols = _get_symbols(executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN])
     # Create address map as hex address: mangled name
     address_map = {
-        ("0x" + symbols[i].lstrip("0")): symbols[i + 1]
-        for i in range(0, len(symbols), 2)
+        ("0x" + symbols[i].lstrip("0")): symbols[i + 1] for i in range(0, len(symbols), 2)
     }
     # Translate the mangled names
     name_map = translate_mangled_symbols(list(address_map.values()))
@@ -92,9 +86,7 @@ def translate_mangled_symbols(mangled_names: list[str]) -> dict[str, str]:
     mangled_str = "\n".join(mangled_names)
 
     # Create demangled counterparts of the function names
-    demangled_bytes, _ = utils.run_safely_external_command(
-        f"echo '{mangled_str}' | c++filt"
-    )
+    demangled_bytes, _ = utils.run_safely_external_command(f"echo '{mangled_str}' | c++filt")
     demangled_names = demangled_bytes.decode("utf-8").split("\n")
     if "" in demangled_names:
         demangled_names.remove("")
@@ -120,9 +112,7 @@ def filter_symbols(
     # Filter the functions to be profiled
     include_list, exclude_list = _apply_profile_rules(profile_rules, symbols_name_map)
     # Get the final exclude list version and runtime filter
-    final_exclude_list, runtime_filter = _finalize_exclude_lists(
-        exclude_list, include_list
-    )
+    final_exclude_list, runtime_filter = _finalize_exclude_lists(exclude_list, include_list)
     return list(include_list.keys()), final_exclude_list, runtime_filter
 
 
@@ -189,9 +179,7 @@ def _finalize_exclude_lists(
     # operator is the default excluded function since it probably cannot be easily filtered and
     # clutters the performance output
     final_exclude_list = ["operator"]
-    for func_identifier in (
-        getattr(exclude_list[func], "identifier") for func in exclude_list
-    ):
+    for func_identifier in (getattr(exclude_list[func], "identifier") for func in exclude_list):
         final_exclude_list.append(func_identifier)
 
     # Remove the duplicates if any
@@ -367,9 +355,7 @@ def _remove_return_type(function_body: str) -> str:
     # Check if function might contain return type specification
     return_type_delim = -1
     if " " in function_body:
-        control_sequence = [
-            i for i, c in enumerate(function_body) if c in ("<", ">", " ")
-        ]
+        control_sequence = [i for i, c in enumerate(function_body) if c in ("<", ">", " ")]
         inner_state = 0
         for i in control_sequence:
             # Find first whitespace that is not in a template specification
@@ -429,9 +415,7 @@ def _prepare_profile_rules(profile_rules: list[str]) -> dict[str, list[str]]:
         # Get the body and args PrototypeParts value
         parts = [_specification_detail_to_parts(body_template, body_scope, "body")]
         if function_arg:
-            parts.append(
-                _specification_detail_to_parts(arg_template, arg_scope, "args")
-            )
+            parts.append(_specification_detail_to_parts(arg_template, arg_scope, "args"))
 
         details[unified_func] = parts
     return details
@@ -475,9 +459,7 @@ def _check_rule_specification_detail(rule_part: str) -> tuple[bool, bool]:
     return scope, template
 
 
-def _build_symbol_from_rules(
-    symbol_parts: PrototypeParts, rule_details: list[str]
-) -> str:
+def _build_symbol_from_rules(symbol_parts: PrototypeParts, rule_details: list[str]) -> str:
     """Builds the symbol from its part, which are specified in the rule details
 
     :param PrototypeParts symbol_parts: the symbol parts as stored in the namedtuple
@@ -516,9 +498,7 @@ def _apply_profile_rules(
         remove_list = []
         for symbol_key in symbol_parts:
             # Build the symbol according to the rule specification details
-            symbol = _build_symbol_from_rules(
-                symbol_parts[symbol_key], rules_details[rule]
-            )
+            symbol = _build_symbol_from_rules(symbol_parts[symbol_key], rules_details[rule])
             if symbol == rule:
                 # The rule matches with the symbol
                 include_list[RuleKey(symbol_key, rule)] = symbol_parts[symbol_key]
@@ -546,10 +526,7 @@ def _find_exclude_collisions(
     for func_include in include_list.keys():
         collision_list = dict()
         for func_exclude in exclude_list:
-            if (
-                exclude_list[func_exclude].identifier
-                in include_list[func_include].identifier
-            ):
+            if exclude_list[func_exclude].identifier in include_list[func_include].identifier:
                 # Collision found, the excluded function must be runtime filtered instead
                 collision_list[func_exclude] = exclude_list[func_exclude]
 

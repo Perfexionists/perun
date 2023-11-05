@@ -134,9 +134,7 @@ def test_inits(capsys, tmpdir):
     temp_dir = tmpdir.mkdir(".perun")
 
     # First try to init local config
-    config.init_local_config_at(
-        str(temp_dir), {"vcs": {"type": "git", "url": str(temp_dir)}}
-    )
+    config.init_local_config_at(str(temp_dir), {"vcs": {"type": "git", "url": str(temp_dir)}})
 
     # Now try loading the local config
     local_config = config.local(str(temp_dir))
@@ -213,9 +211,7 @@ def test_config_errors(monkeypatch, capsys, tmpdir):
     def raise_scanner_error(*_):
         raise scanner.ScannerError
 
-    monkeypatch.setattr(
-        "perun.utils.streams.safely_load_yaml_from_file", raise_scanner_error
-    )
+    monkeypatch.setattr("perun.utils.streams.safely_load_yaml_from_file", raise_scanner_error)
     with pytest.raises(SystemExit):
         config.read_config_from("dummy")
     _, err = capsys.readouterr()

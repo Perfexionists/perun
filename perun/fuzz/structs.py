@@ -84,11 +84,7 @@ class CoverageConfiguration:
         """
         :return: true if the version of the gcov supports intermediate format
         """
-        return (
-            GCOV_VERSION_W_INTER_FORMAT
-            <= self.gcov_version
-            < GCOV_VERSION_W_JSON_FORMAT
-        )
+        return GCOV_VERSION_W_INTER_FORMAT <= self.gcov_version < GCOV_VERSION_W_JSON_FORMAT
 
     def has_common_format(self) -> bool:
         """

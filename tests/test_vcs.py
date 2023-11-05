@@ -23,9 +23,7 @@ def test_major_versions(pcs_full_no_prof):
     Expecting correct behaviour and no error
     """
     git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value(
-        "init", "defaultBranch", "master"
-    )
+    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
 
     major_versions = list(vcs.walk_major_versions())
 
@@ -71,9 +69,7 @@ def test_saved_states(pcs_full_no_prof):
         assert new_state == previous_state
 
     head = vcs.get_minor_head()
-    minor_versions = list(
-        map(operator.attrgetter("checksum"), vcs.walk_minor_versions(head))
-    )
+    minor_versions = list(map(operator.attrgetter("checksum"), vcs.walk_minor_versions(head)))
 
     with open("file2", "w") as write_handle:
         write_handle.write("".join(previous_state))

@@ -219,9 +219,7 @@ _LREG_EXPECTED_RESULTS = [
 ]
 
 INTEGRAL_COMPARISON_RESULTS = [
-    DegradationInfo(
-        res=pc.MaybeOptimization, loc="alloc", fb="constant", tt="constant", rd=-0.18
-    ),
+    DegradationInfo(res=pc.MaybeOptimization, loc="alloc", fb="constant", tt="constant", rd=-0.18),
     DegradationInfo(
         res=pc.MaybeDegradation,
         loc="alloc",
@@ -229,15 +227,9 @@ INTEGRAL_COMPARISON_RESULTS = [
         tt="regressogram",
         rd=0.16,
     ),
-    DegradationInfo(
-        res=pc.Degradation, loc="ga_grow", fb="constant", tt="constant", rd=1210.03
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc="ga_init2", fb="quadratic", tt="quadratic", rd=2.33
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc="skipwhite", fb="constant", tt="constant", rd=0.30
-    ),
+    DegradationInfo(res=pc.Degradation, loc="ga_grow", fb="constant", tt="constant", rd=1210.03),
+    DegradationInfo(res=pc.Degradation, loc="ga_init2", fb="quadratic", tt="quadratic", rd=2.33),
+    DegradationInfo(res=pc.Degradation, loc="skipwhite", fb="constant", tt="constant", rd=0.30),
     DegradationInfo(
         res=pc.Degradation,
         loc="test_for_current",

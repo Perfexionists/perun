@@ -81,10 +81,7 @@ def exec_linear_regression(
             and abs(diff_b0 - intercept) < 0.000000000001
         ):
             change_type = "constant"
-        elif (
-            utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3)
-            and r_value**2 > 0.95
-        ):
+        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95:
             change_type = "linear"
     else:
         if (
@@ -93,10 +90,7 @@ def exec_linear_regression(
             and utils.abs_in_relative_range(diff_b0, intercept, 0.05)
         ):
             change_type = "constant"
-        elif (
-            utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3)
-            and r_value**2 > 0.95
-        ):
+        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95:
             change_type = "linear"
 
     std_err_profile = fast_check.exec_fast_check(
@@ -123,9 +117,7 @@ def exec_linear_regression(
 
     # We did not classify the change
     if not change_type:
-        std_err_model = detect.get_filtered_best_models_of(
-            std_err_profile, group="param"
-        )
+        std_err_model = detect.get_filtered_best_models_of(std_err_profile, group="param")
         change_type = std_err_model[uid].type
 
     return change_type

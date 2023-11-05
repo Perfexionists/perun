@@ -36,9 +36,7 @@ def timestamp_to_str(timestamp: float) -> str:
     :param int timestamp: timestamp, that will be converted to string
     :returns str: string representation of the timestamp in format %Y-%m-%d %H:%M:%S
     """
-    return datetime.datetime.fromtimestamp(round(timestamp)).strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
+    return datetime.datetime.fromtimestamp(round(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def str_to_timestamp(date_string: str) -> float:
@@ -46,6 +44,4 @@ def str_to_timestamp(date_string: str) -> float:
     :param str date_string: string representation of form %Y-%m-%d %H:%M:%S
     :returns int: timestamp representing the string
     """
-    return time.mktime(
-        datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").timetuple()
-    )
+    return time.mktime(datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").timetuple())

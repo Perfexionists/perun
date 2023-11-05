@@ -47,9 +47,7 @@ def validate_dictionary_keys(
 
     # Raise exception if needed
     if missing_keys or excess_keys:
-        raise exceptions.DictionaryKeysValidationFailed(
-            dictionary, missing_keys, excess_keys
-        )
+        raise exceptions.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
 
 
 def check_points(x_len: int, y_len: int, threshold: int) -> None:
@@ -86,9 +84,7 @@ def split_sequence(length: int, parts: int) -> Iterable[tuple[int, int]]:
         yield start, end
 
 
-def shuffle_points(
-    x_pts: list[float], y_pts: list[float]
-) -> tuple[list[float], list[float]]:
+def shuffle_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], list[float]]:
     """Shuffles the x and y coordinates sequence to produce random points sequence.
 
     :param list x_pts: the x coordinates list
@@ -105,9 +101,7 @@ def shuffle_points(
     return list(res_x_pts), list(res_y_pts)
 
 
-def sort_points(
-    x_pts: list[float], y_pts: list[float]
-) -> tuple[list[float], list[float]]:
+def sort_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], list[float]]:
     """Sorts the x and y_pts coordinates sequence by x values in the ascending order.
 
     :param list x_pts: the x coordinates list

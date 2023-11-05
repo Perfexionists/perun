@@ -47,11 +47,7 @@ def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict[Any, Any]:
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
     """
     # Remove the trailing double quotes screwing correct loading of yaml
-    if (
-        isinstance(yaml_stream, str)
-        and yaml_stream[0] == '"'
-        and yaml_stream[-1] == '"'
-    ):
+    if isinstance(yaml_stream, str) and yaml_stream[0] == '"' and yaml_stream[-1] == '"':
         yaml_stream = yaml_stream[1:-1]
     try:
         loaded_yaml = YAML().load(yaml_stream)

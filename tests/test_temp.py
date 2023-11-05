@@ -125,9 +125,7 @@ def test_temp_file_operations(pcs_with_empty_git):
     assert temp.get_temp_properties(collect_file) == (True, False, True)
     assert temp.read_temp(collect_file) == temp_data
     # Test manually the content to ensure the formatting and compression happened
-    expected_content = store.pack_content(
-        json.dumps(temp_data, indent=2).encode("utf-8")
-    )
+    expected_content = store.pack_content(json.dumps(temp_data, indent=2).encode("utf-8"))
     with open(temp.temp_path(collect_file), "rb") as tmp_handle:
         content = tmp_handle.read()
         assert isinstance(content, (bytes, bytearray))
@@ -158,12 +156,8 @@ def test_temp_file_deletion(pcs_with_empty_git):
     temp.touch_temp_file(file_collect)
     temp.touch_temp_file(file_records)
     temp.touch_temp_file(file_deg_info)
-    temp.create_new_temp(
-        file_deg_records, temp_data, json_format=True, protect=True, compress=True
-    )
-    temp.store_temp(
-        file_deg_log, "Some log data", json_format=False, protect=False, compress=True
-    )
+    temp.create_new_temp(file_deg_records, temp_data, json_format=True, protect=True, compress=True)
+    temp.store_temp(file_deg_log, "Some log data", json_format=False, protect=False, compress=True)
     # Test correct properties
     assert temp.get_temp_properties(file_lock) == (False, True, False)
     assert temp.get_temp_properties(file_deg_records) == (True, True, True)
@@ -273,9 +267,7 @@ def test_temp_file_deletion(pcs_with_empty_git):
 
     # Restore the degradation directory
     temp.touch_temp_file(file_deg_info)
-    temp.store_temp(
-        file_deg_log, "Some log data", json_format=False, protect=False, compress=True
-    )
+    temp.store_temp(file_deg_log, "Some log data", json_format=False, protect=False, compress=True)
 
     # Try to use force with ignore_protected
     temp.delete_all_temps("degradation", ignore_protected=True, force=True)
@@ -291,9 +283,7 @@ def test_temp_file_deletion(pcs_with_empty_git):
     file_log = "trace/details/trace.log"
     temp.touch_temp_file(file_log, protect=True)
     temp.touch_temp_file(file_deg_info, protect=True)
-    temp.store_temp(
-        file_deg_log, "Some log data", json_format=False, protect=False, compress=True
-    )
+    temp.store_temp(file_deg_log, "Some log data", json_format=False, protect=False, compress=True)
 
     # Current status:
     #   trace/
@@ -318,17 +308,13 @@ def test_temp_file_deletion(pcs_with_empty_git):
 
     # Try to delete details with force
     temp.delete_temp_dir("trace/details", force=True)
-    _check_dirs_and_files(
-        ["trace"], ["trace/details"], [file_deg_log, file_deg_info], [file_log]
-    )
+    _check_dirs_and_files(["trace"], ["trace/details"], [file_deg_log, file_deg_info], [file_log])
     _check_index([file_deg_info, file_deg_log])
 
     # Try to delete the whole tmp/ with force
     temp.delete_temp_dir(".", force=True)
     tmp_content = os.listdir(pcs.get_tmp_directory())
-    assert (
-        temp.exists_temp_dir(".") and len(tmp_content) == 1 and ".index" in tmp_content
-    )
+    assert temp.exists_temp_dir(".") and len(tmp_content) == 1 and ".index" in tmp_content
     _check_index([])
 
     # Try to corrupt the index to force exception handling

@@ -65,9 +65,7 @@ class Zipper:
         if self.__enabled:
             self.pack = ZipFile(self.pack_name, "w", compression=ZIP_LZMA).__enter__()
             WATCH_DOG.info(
-                "Packing the temporary files into an archive '{}'.".format(
-                    self.pack_name
-                )
+                "Packing the temporary files into an archive '{}'.".format(self.pack_name)
             )
         return self
 
@@ -143,14 +141,10 @@ def check(dependencies):
     Otherwise an exception is raised.
     """
     # Check that all the dependencies are present
-    WATCH_DOG.debug(
-        "Checking that all the dependencies '{}' are present".format(dependencies)
-    )
+    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(dependencies))
     for dependency in dependencies:
         if not shutil.which(dependency):
-            WATCH_DOG.debug(
-                "Missing dependency command '{}' detected".format(dependency)
-            )
+            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
             raise MissingDependencyException(dependency)
     WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 
@@ -167,25 +161,17 @@ STAP_PHASES = 5  # The number of SystemTap startup phases
 LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
 NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
-DEFAULT_SAMPLE = (
-    20  # The default global sampling for 'sample' strategies if not set by user
-)
+DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
 SUFFIX_DELIMITERS = (
     "_",
     "-",
 )  # The set of supported delimiters between probe and its suffix
-PS_FORMAT = (
-    "pid,ppid,pgid,cmd"  # The format specification for an output from the 'ps' utility
-)
+PS_FORMAT = "pid,ppid,pgid,cmd"  # The format specification for an output from the 'ps' utility
 
 # Various sleep / wait related constants
-HARD_TIMEOUT = (
-    20  # Avoid endless loops with hard timeout value that breaks certain loops
-)
+HARD_TIMEOUT = 20  # Avoid endless loops with hard timeout value that breaks certain loops
 LOG_WAIT = 1  # Sleep value used during periodic SystemTap log checking
-HEARTBEAT_INTERVAL = (
-    30  # Periodically inform user about progress each INTERVAL seconds (roughly)
-)
+HEARTBEAT_INTERVAL = 30  # Periodically inform user about progress each INTERVAL seconds (roughly)
 CLEANUP_TIMEOUT = 2  # The timeout for the cleanup operations
 CLEANUP_REFRESH = 0.2  # The refresh interval for cleaning up the resources
 

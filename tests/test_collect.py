@@ -128,9 +128,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
 
     # Fixme: Add check that the profile was correctly generated
 
-    script_dir = os.path.join(
-        os.path.split(__file__)[0], "sources", "collect_complexity", "target"
-    )
+    script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
     job_params = complexity_collect_job[5]["collector_params"]["complexity"]
 
     files = [
@@ -139,10 +137,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     ]
     rules = ["-r{}".format(rule) for rule in job_params["rules"]]
     samplings = sum(
-        [
-            ["-s {}".format(sample["func"]), sample["sample"]]
-            for sample in job_params["sampling"]
-        ],
+        [["-s {}".format(sample["func"]), sample["sample"]] for sample in job_params["sampling"]],
         [],
     )
     runner = CliRunner()
@@ -198,9 +193,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     monkeypatch.setattr(utils, "run_safely_external_command", mocked_safe_external)
 
     # Get the job.yml parameters
-    script_dir = os.path.join(
-        os.path.split(__file__)[0], "sources", "collect_complexity", "target"
-    )
+    script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
     job_params = complexity_collect_job[5]["collector_params"]["complexity"]
 
     files = [
@@ -209,10 +202,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     ]
     rules = ["-r{}".format(rule) for rule in job_params["rules"]]
     samplings = sum(
-        [
-            ["-s {}".format(sample["func"]), sample["sample"]]
-            for sample in job_params["sampling"]
-        ],
+        [["-s {}".format(sample["func"]), sample["sample"]] for sample in job_params["sampling"]],
         [],
     )
 
@@ -222,17 +212,11 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     # Try missing parameters --target-dir and --files
     result = runner.invoke(cli.collect, ["complexity"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(
-        result, "--target-dir parameter must be supplied" in result.output
-    )
+    asserts.predicate_from_cli(result, "--target-dir parameter must be supplied" in result.output)
 
-    result = runner.invoke(
-        cli.collect, ["complexity", "-t{}".format(job_params["target_dir"])]
-    )
+    result = runner.invoke(cli.collect, ["complexity", "-t{}".format(job_params["target_dir"])])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(
-        result, "--files parameter must be supplied" in result.output
-    )
+    asserts.predicate_from_cli(result, "--files parameter must be supplied" in result.output)
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), "job.yml")
@@ -284,9 +268,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     # Simulate the failure of output processing
     # We mock some data to trace.log
     helpers.touch_dir(os.path.join(job_params["target_dir"], "bin"))
-    with open(
-        os.path.join(job_params["target_dir"], "bin", "trace.log"), "w"
-    ) as mock_handle:
+    with open(os.path.join(job_params["target_dir"], "bin", "trace.log"), "w") as mock_handle:
         mock_handle.write("a b c d\na b c d")
     old_record_processing = complexity._process_file_record
     monkeypatch.setattr(complexity, "_process_file_record", _mocked_record_processing)
@@ -317,19 +299,14 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     monkeypatch.setattr(utils, "run_safely_external_command", mock_raised_exception)
     status, msg, _ = complexity.collect(Executable("pikachu"))
     assert status == CollectStatus.ERROR
-    assert (
-        msg
-        == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
-    )
+    assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
     monkeypatch.setattr(utils, "run_external_command", old_run)
     monkeypatch.setattr(utils, "run_safely_external_command", old_safe_run)
     monkeypatch.setattr(configurator, "create_runtime_config", old_cfg)
 
 
-def test_collect_memory(
-    capsys, pcs_with_root, memory_collect_job, memory_collect_no_debug_job
-):
+def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
@@ -374,9 +351,7 @@ def test_collect_memory(
     assert new_smaller_profile.endswith(".perf")
 
     # Assert that nothing was removed
-    after_second_object_count = test_utils.count_contents_on_path(
-        pcs_with_root.get_path()
-    )[0]
+    after_second_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     assert after_object_count + 1 == after_second_object_count
 
     log.VERBOSITY = log.VERBOSE_DEBUG
@@ -399,9 +374,7 @@ def test_collect_memory(
 
     assert len(list(prof.all_resources())) == 2
 
-    collector_unit = Unit(
-        "memory", {"all": False, "no_source": "memory_collect_test.c"}
-    )
+    collector_unit = Unit("memory", {"all": False, "no_source": "memory_collect_test.c"})
     job = Job("memory", [], executable)
     _, prof = run.run_collector(collector_unit, job)
     prof = Profile(prof)
@@ -414,9 +387,7 @@ def test_collect_memory(
     assert result.exit_code == 0
 
 
-def test_collect_memory_incorrect(
-    monkeypatch, capsys, pcs_with_root, memory_collect_job
-):
+def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_collect_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -489,11 +460,7 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
     """Test collecting the profile using the bounds collector"""
     current_dir = os.path.split(__file__)[0]
     test_dir = os.path.join(current_dir, "sources", "collect_bounds")
-    sources = [
-        os.path.join(test_dir, src)
-        for src in os.listdir(test_dir)
-        if src.endswith(".c")
-    ]
+    sources = [os.path.join(test_dir, src) for src in os.listdir(test_dir) if src.endswith(".c")]
     single_sources = [os.path.join(test_dir, "partitioning.c")]
     job = Job(Unit("bounds", {"sources": sources}), [], Executable("echo", "", "hello"))
 
@@ -501,9 +468,7 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
     assert status == CollectStatus.OK
     assert len(prof["global"]["resources"]) == 19
 
-    job = Job(
-        Unit("bounds", {"sources": single_sources}), [], Executable("echo", "", "hello")
-    )
+    job = Job(Unit("bounds", {"sources": single_sources}), [], Executable("echo", "", "hello"))
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.OK
@@ -514,9 +479,7 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
     def before_returning_error(cmd, **kwargs):
         raise SubprocessError("something happened")
 
-    monkeypatch.setattr(
-        "perun.utils.run_safely_external_command", before_returning_error
-    )
+    monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
 
@@ -526,9 +489,7 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
         else:
             original_function(cmd, **kwargs)
 
-    monkeypatch.setattr(
-        "perun.utils.run_safely_external_command", collect_returning_error
-    )
+    monkeypatch.setattr("perun.utils.run_safely_external_command", collect_returning_error)
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
@@ -605,9 +566,7 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
         else:
             original_phase_f(report, phase)
 
-    monkeypatch.setattr(
-        "perun.logic.runner.run_phase_function", teardown_returning_error
-    )
+    monkeypatch.setattr("perun.logic.runner.run_phase_function", teardown_returning_error)
     status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     _, err = capsys.readouterr()
@@ -624,9 +583,7 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
             result = (CollectStatus.ERROR, "error while before", {})
             report.update_from(*result)
 
-    monkeypatch.setattr(
-        "perun.logic.runner.run_phase_function", teardown_not_screwing_things
-    )
+    monkeypatch.setattr("perun.logic.runner.run_phase_function", teardown_not_screwing_things)
     status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()

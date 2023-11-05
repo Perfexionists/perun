@@ -34,9 +34,7 @@ def custom_rules(
             index = randomizer.rand_index(len(lines))
             lines[index] = comp_regexp.sub(value, lines[index])
 
-        fuzzing_methods.append(
-            (custom_rule, 'User rule: "' + key + '" -> "' + value + '"')
-        )
+        fuzzing_methods.append((custom_rule, 'User rule: "' + key + '" -> "' + value + '"'))
 
 
 def get_filetype(file: str) -> tuple[bool, Optional[str]]:

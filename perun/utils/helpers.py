@@ -175,9 +175,7 @@ class SuppressedExceptions:
         """
         return self
 
-    def __exit__(
-        self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary
-    ) -> bool:
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
         """Context manager exit sentinel, check if the code raised an exception and if the
         exception belongs to the list of suppressed exceptions.
 
@@ -252,9 +250,7 @@ class HandledSignals:
         self.handler_exc = kwargs.get("handler_exception", SignalReceivedException)
         self.callback = kwargs.get("callback")
         self.callback_args = kwargs.get("callback_args", [])
-        self.old_handlers: list[
-            int | None | Callable[[int, Optional[types.FrameType]], Any]
-        ] = []
+        self.old_handlers: list[int | None | Callable[[int, Optional[types.FrameType]], Any]] = []
 
     def __enter__(self) -> "HandledSignals":
         """The CM entry sentinel, register the new signal handlers and store the previous ones.
@@ -265,9 +261,7 @@ class HandledSignals:
             self.old_handlers.append(signal.signal(sig, self.handler))
         return self
 
-    def __exit__(
-        self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary
-    ) -> bool:
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
         """The CM exit sentinel, perform the callback and reset the signal handlers.
 
         :param type exc_type: the type of the exception
@@ -281,9 +275,7 @@ class HandledSignals:
             signal.signal(sig, signal.SIG_IGN)
         # Perform the callback
         if self.callback:
-            self.callback(
-                *self.callback_args, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb
-            )
+            self.callback(*self.callback_args, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
         # Reset the signal handlers
         for sig, sig_handler in zip(self.signals, self.old_handlers):
             signal.signal(sig, sig_handler)

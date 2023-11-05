@@ -35,18 +35,14 @@ def run_benchmark(benchmark_dir, performance_tests):
     store.touch_dir(store_dir)
     for bench in os.listdir(benchmark_dir):
         log.info(" > {}".format(log.in_color(bench, "yellow")))
-        results.append(
-            performance_test(benchmark_dir, bench, store_dir, executed_tests)
-        )
+        results.append(performance_test(benchmark_dir, bench, store_dir, executed_tests))
         log.done()
     log.info("")
     log.info("")
     headers = ["file"] + [pt for pt in possible_tests if pt in executed_tests]
     log.info(tabulate.tabulate(results, headers=headers, floatfmt=".2f"))
     with open(benchmark_dir + ".html", "w") as hh:
-        hh.write(
-            tabulate.tabulate(results, headers=headers, tablefmt="html", floatfmt=".2f")
-        )
+        hh.write(tabulate.tabulate(results, headers=headers, tablefmt="html", floatfmt=".2f"))
 
 
 def performance_test(bench_dir, file, store_dir, executed_tests):
@@ -64,9 +60,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
     profile = store.load_profile_from_file(os.path.join(bench_dir, file), True)
     elapsed = time.time() - before
     results.append(elapsed)
-    log.info(
-        "Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white"))
-    )
+    log.info("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
 
     if "query" in executed_tests:
         before = time.time()
@@ -74,9 +68,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
         elapsed = time.time() - before
         results.append(elapsed)
         log.info(
-            "Iterating all resources: {}".format(
-                log.in_color("{:0.2f}s".format(elapsed), "white")
-            )
+            "Iterating all resources: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white"))
         )
 
     if "convert" in executed_tests:
@@ -85,9 +77,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
         elapsed = time.time() - before
         results.append(elapsed)
         log.info(
-            "Converting to dataframe: {}".format(
-                log.in_color("{:0.2f}s".format(elapsed), "white")
-            )
+            "Converting to dataframe: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white"))
         )
 
     if "store" in executed_tests:
@@ -95,11 +85,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
         streams.store_json(profile.serialize(), os.path.join(store_dir, file))
         elapsed = time.time() - before
         results.append(elapsed)
-        log.info(
-            "Storing profile: {}".format(
-                log.in_color("{:0.2f}s".format(elapsed), "white")
-            )
-        )
+        log.info("Storing profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
     return results
 
 
@@ -112,7 +98,5 @@ if __name__ == "__main__":
         run_benchmark(os.path.join("tests-perf", "monster-profiles"), performance_tests)
     benchmark_time = time.time() - start_time
     log.info(
-        "Benchmark finished in {}".format(
-            log.in_color("{:0.2f}s".format(benchmark_time), "white")
-        )
+        "Benchmark finished in {}".format(log.in_color("{:0.2f}s".format(benchmark_time), "white"))
     )

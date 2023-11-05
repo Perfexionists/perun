@@ -30,9 +30,7 @@ def remove_allocators(profile: dict[str, Any]) -> dict[str, Any]:
     return profile
 
 
-def trace_filter(
-    profile: dict[str, Any], function: list[str], source: list[str]
-) -> dict[str, Any]:
+def trace_filter(profile: dict[str, Any], function: list[str], source: list[str]) -> dict[str, Any]:
     """Remove records in trace section matching source or function
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -80,17 +78,13 @@ def allocation_filter(
         if uid:
             if uid["function"] in function:
                 return False
-            if any(
-                map(lambda s: s is not None and str(uid["source"]).endswith(s), source)
-            ):
+            if any(map(lambda s: s is not None and str(uid["source"]).endswith(s), source)):
                 return False
         return True
 
     snapshots = profile["snapshots"]
     for snapshot in snapshots:
-        snapshot["resources"] = [
-            res for res in snapshot["resources"] if determinate(res["uid"])
-        ]
+        snapshot["resources"] = [res for res in snapshot["resources"] if determinate(res["uid"])]
     set_global_region(profile)
 
     return profile

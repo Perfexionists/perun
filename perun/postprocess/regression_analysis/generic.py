@@ -188,9 +188,7 @@ def generic_regression_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
-    s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(
-        y_sum, num_sqrt
-    )
+    s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(y_sum, num_sqrt)
     s_xx = x_sq_sum - (tools.safe_division(x_sum, num_sqrt) ** 2)
 
     b_1 = tools.safe_division(s_xy, s_xx)

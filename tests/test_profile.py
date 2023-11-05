@@ -16,9 +16,7 @@ def test_loading(pcs_single_prof, valid_profile_pool):
 
     Expecting correct behaviour
     """
-    test_utils.populate_repo_with_untracked_profiles(
-        pcs_single_prof.get_path(), valid_profile_pool
-    )
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     untracked = commands.get_untracked_profiles()
     assert len(untracked) != 0
 
@@ -42,9 +40,7 @@ def test_name_generation(capsys):
     Expecting correct outputs
     """
     rt_config = config.runtime()
-    rt_config.set(
-        "format.output_profile_template", "%collector%-of-%cmd%-%args%-%workload%"
-    )
+    rt_config.set("format.output_profile_template", "%collector%-of-%cmd%-%args%-%workload%")
     profile_name = factory.generate_profile_name(
         {
             "header": {
@@ -57,9 +53,7 @@ def test_name_generation(capsys):
     )
     assert profile_name == "memory-of-mybin-[-O2_-q]-[input.txt].perf"
 
-    rt_config.set(
-        "format.output_profile_template", "%collector%-%postprocessors%-%origin%"
-    )
+    rt_config.set("format.output_profile_template", "%collector%-%postprocessors%-%origin%")
     profile_name = factory.generate_profile_name(
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
@@ -81,9 +75,7 @@ def test_name_generation(capsys):
     )
 
     # Lookup of collectors params
-    rt_config.set(
-        "format.output_profile_template", "%collector%-sampling-[%memory.sampling%]"
-    )
+    rt_config.set("format.output_profile_template", "%collector%-sampling-[%memory.sampling%]")
     profile_name = factory.generate_profile_name(
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",

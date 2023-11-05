@@ -156,9 +156,7 @@ class CollectOptimization:
         self.load_resources(config)
 
         # Infer the optimization parameters
-        self.params.infer_params(
-            self.call_graph, self.selected_pipeline, config.get_target()
-        )
+        self.params.infer_params(self.call_graph, self.selected_pipeline, config.get_target())
 
     def load_resources(self, config):
         """Extract, load and store resources necessary for the given pipeline.
@@ -253,9 +251,7 @@ class CollectOptimization:
                 # The match mode simply uses the call graph functions
                 pass
             elif mode == CGShapingMode.BOTTOM_UP:
-                proj.cg_bottom_up(
-                    self.call_graph, self.params[Parameters.CG_PROJ_LEVELS]
-                )
+                proj.cg_bottom_up(self.call_graph, self.params[Parameters.CG_PROJ_LEVELS])
             elif mode == CGShapingMode.TOP_DOWN:
                 proj.cg_top_down(
                     self.call_graph,
@@ -278,9 +274,7 @@ class CollectOptimization:
             (dbase.wrapper_filter, 0),
         ]
         if Optimizations.BASELINE_DYNAMIC in optimizations:
-            dbase.filter_functions(
-                self.call_graph, self.dynamic_stats.global_stats, checks
-            )
+            dbase.filter_functions(self.call_graph, self.dynamic_stats.global_stats, checks)
         if Optimizations.DYNAMIC_SAMPLING in optimizations:
             sampling.set_sampling(
                 self.call_graph,
@@ -290,9 +284,7 @@ class CollectOptimization:
             )
 
         # Extract the remaining functions from the call graph - these should be probed
-        diff_solo = (
-            len(optimizations) == 1 and Optimizations.DIFF_TRACING in optimizations
-        )
+        diff_solo = len(optimizations) == 1 and Optimizations.DIFF_TRACING in optimizations
         # If only diff tracing is on, probe only the changed functions
         remaining_func = self.call_graph.get_functions(diff_only=diff_solo)
         config.prune_functions(remaining_func)
@@ -310,9 +302,7 @@ class CollectOptimization:
         run_optimization_parameters = {
             Parameters.TIMEDSAMPLE_FREQ.value: self.params[Parameters.TIMEDSAMPLE_FREQ],
             Parameters.PROBING_REATTACH.value: self.params[Parameters.PROBING_REATTACH],
-            Parameters.PROBING_THRESHOLD.value: self.params[
-                Parameters.PROBING_THRESHOLD
-            ],
+            Parameters.PROBING_THRESHOLD.value: self.params[Parameters.PROBING_THRESHOLD],
         }
         # Set the optimization methods and their parameters
         config.set_run_optimization(
@@ -372,12 +362,9 @@ class CollectOptimization:
 
         :return int: the total exclusive time of immediate callers or callees
         """
-        immediate_targets = {
-            c for func in level_funcs for c in self.call_graph[func][target]
-        }
+        immediate_targets = {c for func in level_funcs for c in self.call_graph[func][target]}
         return sum(
-            funcs.get(c, {"total_exclusive": 0})["total_exclusive"]
-            for c in immediate_targets
+            funcs.get(c, {"total_exclusive": 0})["total_exclusive"] for c in immediate_targets
         )
 
     def _level_time_metric(self):
@@ -385,9 +372,7 @@ class CollectOptimization:
         time and its breakdown into specific functions within the level.
         """
         level_time = collections.defaultdict(lambda: collections.defaultdict(int))
-        exclusive_level_time = collections.defaultdict(
-            lambda: collections.defaultdict(int)
-        )
+        exclusive_level_time = collections.defaultdict(lambda: collections.defaultdict(int))
         level_funcs = collections.defaultdict(lambda: collections.defaultdict(list))
 
         max_calls = (None, 0, 0)
@@ -395,9 +380,7 @@ class CollectOptimization:
             for func_name, func_stats in funcs.items():
                 func_cg_level = self.call_graph[func_name]["level"]
                 level_time[tid][func_cg_level] += func_stats["total"]
-                exclusive_level_time[tid][func_cg_level] += func_stats[
-                    "total_exclusive"
-                ]
+                exclusive_level_time[tid][func_cg_level] += func_stats["total_exclusive"]
                 level_funcs[tid][func_cg_level].append(
                     (
                         func_name,
@@ -467,8 +450,7 @@ class CollectOptimization:
                     "toplevel_coverage_count": len(toplevel_funcs),
                     "toplevel_coverage_abs": toplevel_coverage,
                     "toplevel_coverage_relative": toplevel_coverage / main_time,
-                    "hotspot_coverage_relative": 1
-                    - coverages["hotspot_coverage_abs"] / main_time,
+                    "hotspot_coverage_relative": 1 - coverages["hotspot_coverage_abs"] / main_time,
                 }
             )
             # Set the functions as unfiltered again
@@ -517,9 +499,7 @@ class CollectOptimization:
                     for c in self.call_graph[func]["callees"]
                     if c not in self.call_graph.backedges[func]
                 ]
-                violations, confirmations = self._check_assumption(
-                    violations_stats, func, callees
-                )
+                violations, confirmations = self._check_assumption(violations_stats, func, callees)
                 total_violations += violations
                 total_confirmations += confirmations
         # Transform the violations statistics into percents
@@ -621,19 +601,13 @@ def build_stats_names(config, cg_type=CallGraphTypes.STATIC):
 
     :return tuple (str, str): CG stats name, Dynamic Stats name
     """
-    binaries = sanitize_filepart(
-        "--".join([config.binary] + sorted(config.libs))
-    ).replace(".", "_")
+    binaries = sanitize_filepart("--".join([config.binary] + sorted(config.libs))).replace(".", "_")
     binaries_param = sanitize_filepart(
-        "--".join(
-            [arg for arg in [config.executable.args, config.executable.workload] if arg]
-        )
+        "--".join([arg for arg in [config.executable.args, config.executable.workload] if arg])
     ).replace(".", "_")
     cg_prefix = "cg"
     if cg_type == CallGraphTypes.DYNAMIC:
         cg_prefix = "dcg"
     elif cg_type == CallGraphTypes.MIXED:
         cg_prefix = "mcg"
-    return "{}--{}".format(cg_prefix, binaries), "ds--" + "--".join(
-        [binaries, binaries_param]
-    )
+    return "{}--{}".format(cg_prefix, binaries), "ds--" + "--".join([binaries, binaries_param])

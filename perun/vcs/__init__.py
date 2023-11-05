@@ -64,9 +64,7 @@ def get_minor_head() -> str:
     """
     try:
         vcs_type, vcs_url = pcs.get_vcs_type_and_url()
-        return dynamic_module_function_call(
-            "perun.vcs", vcs_type, "_get_minor_head", vcs_url
-        )
+        return dynamic_module_function_call("perun.vcs", vcs_type, "_get_minor_head", vcs_url)
     except ValueError as value_error:
         perun_log.error("while fetching head minor version: {}".format(value_error))
         return ""
@@ -91,9 +89,7 @@ def init(vcs_init_params: dict[str, Any]) -> bool:
         ),
         1,
     )
-    return dynamic_module_function_call(
-        "perun.vcs", vcs_type, "_init", vcs_path, vcs_init_params
-    )
+    return dynamic_module_function_call("perun.vcs", vcs_type, "_init", vcs_path, vcs_init_params)
 
 
 def walk_minor_versions(head_minor_version: str) -> Iterator[MinorVersion]:
@@ -126,9 +122,7 @@ def walk_major_versions() -> Iterator[MajorVersion]:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout("Walking major versions of type {}".format(vcs_type), 1)
-    return dynamic_module_function_call(
-        "perun.vcs", vcs_type, "_walk_major_versions", vcs_path
-    )
+    return dynamic_module_function_call("perun.vcs", vcs_type, "_walk_major_versions", vcs_path)
 
 
 @decorators.singleton_with_args
@@ -193,9 +187,7 @@ def get_head_major_version() -> str:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout("Getting head major version of type {}".format(vcs_type), 1)
-    return dynamic_module_function_call(
-        "perun.vcs", vcs_type, "_get_head_major_version", vcs_path
-    )
+    return dynamic_module_function_call("perun.vcs", vcs_type, "_get_head_major_version", vcs_path)
 
 
 @decorators.singleton_with_args
@@ -311,9 +303,7 @@ def restore_state(saved: bool, state: str) -> None:
     :param str state: the previous state of the repository
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    dynamic_module_function_call(
-        "perun.vcs", vcs_type, "_restore_state", vcs_path, saved, state
-    )
+    dynamic_module_function_call("perun.vcs", vcs_type, "_restore_state", vcs_path, saved, state)
 
 
 def checkout(minor_version: str) -> None:

@@ -46,9 +46,7 @@ registered_singletons: list[Callable[[], Any]] = []
 manual_registered_singletons: dict[str, Callable[[], Any]] = {}
 
 
-def arguments_to_key(
-    func: Callable[..., Any], *args: Any, **kwargs: Any
-) -> tuple[Any, ...]:
+def arguments_to_key(func: Callable[..., Any], *args: Any, **kwargs: Any) -> tuple[Any, ...]:
     """
     Transforms the real parameters of the @p func call, i.e. the combination
     of args and kwargs into unique key. Note that this has to be generic and
@@ -67,9 +65,7 @@ def arguments_to_key(
     updated_defaults = list(f_defaults)
     number_of_updated_keyword_args = len(args) - (len(f_args) - len(f_defaults))
     if number_of_updated_keyword_args != 0:
-        updated_defaults[:number_of_updated_keyword_args] = args[
-            -number_of_updated_keyword_args:
-        ]
+        updated_defaults[:number_of_updated_keyword_args] = args[-number_of_updated_keyword_args:]
     keywords = f_args[-len(f_defaults) :]
 
     # update the defaults with new values

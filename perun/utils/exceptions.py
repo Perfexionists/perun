@@ -8,9 +8,7 @@ from typing import Any
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
 
-    def __init__(
-        self, parameter: str, parameter_value: Any, choices_msg: str = ""
-    ) -> None:
+    def __init__(self, parameter: str, parameter_value: Any, choices_msg: str = "") -> None:
         """
         :param str parameter: name of the parameter that is invalid
         :param object parameter_value: value of the parameter
@@ -23,8 +21,7 @@ class InvalidParameterException(Exception):
 
     def __str__(self) -> str:
         return (
-            f"Invalid value '{self.value}' for the parameter '{self.parameter}'"
-            + self.choices_msg
+            f"Invalid value '{self.value}' for the parameter '{self.parameter}'" + self.choices_msg
         )
 
 
@@ -320,7 +317,9 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
         super().__init__("")
         self.model = model
         self.transformation = transformation
-        self.msg = f"Invalid or unsupported transformation: {self.transformation} for model: {self.model}."
+        self.msg = (
+            f"Invalid or unsupported transformation: {self.transformation} for model: {self.model}."
+        )
 
     def __str__(self) -> str:
         return self.msg
@@ -400,9 +399,7 @@ class MissingDependencyException(Exception):
 class UnexpectedPrototypeSyntaxError(Exception):
     """Raised when the function prototype syntax is somehow different than expected"""
 
-    def __init__(
-        self, prototype_name: str, syntax_error: str = "unknown cause"
-    ) -> None:
+    def __init__(self, prototype_name: str, syntax_error: str = "unknown cause") -> None:
         """
         :param str prototype_name: name of the prototype where the issue happened
         """

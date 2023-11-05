@@ -118,16 +118,14 @@ def test_no_params_exists_pcs_in_parent(capsys):
     os.mkdir(sub_pcs_path)
 
     # Create pcs in sub dir, assert that it was correctly initialized
-    commands.init(
-        sub_pcs_path, **{"vcs_type": None, "vcs_path": None, "vcs_params": None}
-    )
+    commands.init(sub_pcs_path, **{"vcs_type": None, "vcs_path": None, "vcs_params": None})
     assert_perun_successfully_init_at(sub_pcs_path)
 
     # Assert that user was warned, there is a super perun directory
     out, _ = capsys.readouterr()
-    assert out.split("\n")[
-        0
-    ].strip() == "warning: There exists super perun directory at {}".format(pcs_path)
+    assert out.split("\n")[0].strip() == "warning: There exists super perun directory at {}".format(
+        pcs_path
+    )
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -186,9 +184,7 @@ def test_git_other_path():
     git_path = os.path.join(pcs_path, "repo")
 
     # Init perun together with git on different path
-    commands.init(
-        pcs_path, **{"vcs_type": "git", "vcs_path": git_path, "vcs_params": None}
-    )
+    commands.init(pcs_path, **{"vcs_type": "git", "vcs_path": git_path, "vcs_params": None})
 
     # Assert everything was correctly created
     assert_perun_successfully_init_at(pcs_path)
@@ -245,9 +241,7 @@ def test_unsupported_vcs():
 
     # Try to call init with inexistent version control system type
     with pytest.raises(UnsupportedModuleException) as exc:
-        commands.init(
-            pcs_path, **{"vcs_type": "bogusvcs", "vcs_path": None, "vcs_params": None}
-        )
+        commands.init(pcs_path, **{"vcs_type": "bogusvcs", "vcs_path": None, "vcs_params": None})
     assert "'bogusvcs' is not supported" in str(exc.value)
 
     dir_content = os.listdir(pcs_path)
@@ -270,9 +264,7 @@ def test_failed_init_vcs(monkeypatch, capsys):
 
     # Try to call init, when patched init fails
     with pytest.raises(SystemExit):
-        commands.init(
-            pcs_path, **{"vcs_type": "git", "vcs_path": None, "vcs_params": None}
-        )
+        commands.init(pcs_path, **{"vcs_type": "git", "vcs_path": None, "vcs_params": None})
 
     _, err = capsys.readouterr()
     assert "Could not initialize empty git repository" in err

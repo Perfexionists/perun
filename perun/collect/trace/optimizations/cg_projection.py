@@ -54,17 +54,13 @@ def cg_bottom_up(call_graph, chain_length):
     """
     # Check that the parameter is valid
     if chain_length == 0:
-        call_graph.remove_or_filter(
-            set(call_graph.cg_map.keys() - {"main"}), set_filtered=True
-        )
+        call_graph.remove_or_filter(set(call_graph.cg_map.keys() - {"main"}), set_filtered=True)
         return
     # Compute the set of the bottom functions
     call_graph.compute_bottom()
     visited = cg_bottom_sets(call_graph, chain_length)[0]
     # Remove functions that were not added into the set
-    call_graph.remove_or_filter(
-        set(call_graph.cg_map.keys()) - visited, set_filtered=True
-    )
+    call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - visited, set_filtered=True)
 
 
 def cg_bottom_sets(call_graph, chain_length=None):

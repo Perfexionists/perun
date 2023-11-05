@@ -117,11 +117,7 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
     elif strategy == "mixed":
         ratio = compute_safe_ratio(rule_set.hits[index], rule_set.hits[-1])
         rand = randomizer.rand_from_range(0, 10) / 10
-        return (
-            min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE)
-            if rand <= ratio
-            else 0
-        )
+        return min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE) if rand <= ratio else 0
     else:
         return 1
 
@@ -160,9 +156,7 @@ def fuzz(
 
     # fuzzing
     for i, method in enumerate(rule_set.rules):
-        for _ in range(
-            strategy_to_generation_repeats(config.mutations_per_rule, rule_set, i)
-        ):
+        for _ in range(strategy_to_generation_repeats(config.mutations_per_rule, rule_set, i)):
             fuzzed_lines = lines[:]
             # calling specific fuzz method with copy of parent
             method[0](fuzzed_lines)
@@ -199,10 +193,7 @@ def print_legend(rule_set: RuleSet) -> None:
     log.info("Statistics of rule set")
     log.info(
         tabulate.tabulate(
-            [
-                [i, rule_set.hits[i], method[1]]
-                for (i, method) in enumerate(rule_set.rules)
-            ],
+            [[i, rule_set.hits[i], method[1]] for (i, method) in enumerate(rule_set.rules)],
             headers=["id", "Rule Efficiency", "Description"],
         )
     )
@@ -221,25 +212,17 @@ def print_results(
     """
     log.info("Fuzzing: ", end="")
     log.done("\n")
-    log.info(
-        f"Fuzzing time: {fuzzing_report['end_time'] - fuzzing_report['start_time']:.2f}s"
-    )
+    log.info(f"Fuzzing time: {fuzzing_report['end_time'] - fuzzing_report['start_time']:.2f}s")
     log.info(f"Coverage testing: {fuzzing_config.coverage_testing}")
     if fuzzing_config.coverage_testing:
-        log.info(
-            f"Program executions for coverage testing: {fuzzing_report['cov_execs']}"
-        )
-        log.info(
-            f"Program executions for performance testing: {fuzzing_report['perun_execs']}"
-        )
+        log.info(f"Program executions for coverage testing: {fuzzing_report['cov_execs']}")
+        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
         log.info(
             f"Total program tests: {fuzzing_report['perun_execs'] + fuzzing_report['cov_execs']}"
         )
         log.info(f"Maximum coverage ratio: {fuzzing_report['max_cov']}")
     else:
-        log.info(
-            f"Program executions for performance testing: {fuzzing_report['perun_execs']}"
-        )
+        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
     log.info(f"Founded degradation mutations: {(fuzzing_report['degradations'])}")
     log.info(f"Hangs: {fuzzing_report['hangs']}")
     log.info(f"Faults: {fuzzing_report['faults']}")
@@ -336,9 +319,7 @@ def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
     # choose an interval
     interval_idx = np.random.choice(range(num_intervals), replace=False, p=weights)
     # choose a parent from the interval
-    return randomizer.rand_choice(
-        parents[intervals[interval_idx][0] : intervals[interval_idx][1]]
-    )
+    return randomizer.rand_choice(parents[intervals[interval_idx][0] : intervals[interval_idx][1]])
 
 
 def save_fuzz_state(time_series: TimeSeries, state: int) -> None:
@@ -465,9 +446,7 @@ def perform_baseline_coverage_testing(
     log.info("Performing coverage-based testing on parent seeds.")
     try:
         # Note that evaluate workloads modifies config as a side effect
-        base_cov = evaluate_workloads_by_coverage.baseline_testing(
-            executable, parents, config
-        )
+        base_cov = evaluate_workloads_by_coverage.baseline_testing(executable, parents, config)
         log.done()
     except TimeoutExpired:
         log.error(
@@ -511,15 +490,11 @@ def run_fuzzing_for_command(
     rule_set = filetype.choose_ruleset(parents[0].path, config.regex_rules)
 
     # getting max size for generated mutations
-    max_bytes = get_max_size(
-        parents, config.max_size, config.max_size_ratio, config.max_size_gain
-    )
+    max_bytes = get_max_size(parents, config.max_size, config.max_size_ratio, config.max_size_gain)
 
     # Init coverage testing with seeds
     if config.coverage_testing:
-        fuzz_progress.base_cov = perform_baseline_coverage_testing(
-            executable, parents, config
-        )
+        fuzz_progress.base_cov = perform_baseline_coverage_testing(executable, parents, config)
 
     # No gcno files were found, no coverage testing
     if not fuzz_progress.base_cov:
@@ -558,10 +533,7 @@ def run_fuzzing_for_command(
             log.info("Gathering interesting workloads using coverage based testing")
             execs = config.exec_limit
 
-            while (
-                len(fuzz_progress.interesting_workloads) < config.precollect_limit
-                and execs > 0
-            ):
+            while len(fuzz_progress.interesting_workloads) < config.precollect_limit and execs > 0:
                 current_workload = choose_parent(fuzz_progress.parents)
                 mutations = fuzz(current_workload, max_bytes, rule_set, config)
 
@@ -594,9 +566,7 @@ def run_fuzzing_for_command(
                                 config.hang_timeout, output_dirs["hangs"]
                             )
                         )
-                        mutation.path = filesystem.move_file_to(
-                            mutation.path, output_dirs["hangs"]
-                        )
+                        mutation.path = filesystem.move_file_to(mutation.path, output_dirs["hangs"])
                         fuzz_progress.hangs.append(mutation)
                         continue
 
@@ -642,9 +612,7 @@ def run_fuzzing_for_command(
                     **kwargs,
                 )
                 if successful_result:
-                    process_successful_mutation(
-                        mutation, parents, fuzz_progress, rule_set, config
-                    )
+                    process_successful_mutation(mutation, parents, fuzz_progress, rule_set, config)
             # temporarily we ignore error within individual perf testing without previous cov test
             except Exception as exc:
                 log.warn("Executing binary raised an exception: {}".format(exc))

@@ -149,9 +149,7 @@ class DiffProfile:
         )
         if self.location_filter == "*":
             self.location_filter = None
-        self.cut_off: float = float(
-            config.lookup_key_recursively("degradation.cutoff", "0.0")
-        )
+        self.cut_off: float = float(config.lookup_key_recursively("degradation.cutoff", "0.0"))
         self.df: pd.DataFrame = self._merge_and_diff(
             self._prepare_profile(baseline_profile),
             self._prepare_profile(target_profile),
@@ -211,9 +209,7 @@ class DiffProfile:
             "exclusive T Δ [ms]",
             "loc exclusive T Δ [%]",
         ]
-        for _, row in (
-            self.df[columns].groupby(["location"]).sum().reset_index().iterrows()
-        ):
+        for _, row in self.df[columns].groupby(["location"]).sum().reset_index().iterrows():
             if row["loc exclusive T Δ [%]"] > 0:
                 result = PerformanceChange.TotalDegradation
             else:
@@ -320,12 +316,8 @@ class DiffProfile:
         above_up_base = self.df["exclusive T Δ [ms]"] > q3 + IQR_CUTOFF * iqr
         iqr_filter = below_low_base | above_up_base
         # Compute the IQR multiple for outliers
-        self.df.loc[below_low_base, "IQR multiple"] = -(
-            (self.df["exclusive T Δ [ms]"] - q1) / iqr
-        )
-        self.df.loc[above_up_base, "IQR multiple"] = (
-            self.df["exclusive T Δ [ms]"] / iqr - q3
-        )
+        self.df.loc[below_low_base, "IQR multiple"] = -((self.df["exclusive T Δ [ms]"] - q1) / iqr)
+        self.df.loc[above_up_base, "IQR multiple"] = self.df["exclusive T Δ [ms]"] / iqr - q3
         # Flag for easier filtering
         self.df["IQR flag"] = iqr_filter
 
@@ -374,9 +366,7 @@ class DiffProfile:
         )
         # Filter the location based on the provided regex filter
         if self.location_filter is not None:
-            return df[
-                df["location"].str.contains(self.location_filter, regex=True, na=False)
-            ]
+            return df[df["location"].str.contains(self.location_filter, regex=True, na=False)]
         return df
 
     @staticmethod
@@ -400,27 +390,17 @@ class DiffProfile:
 
             :return: absolute exclusive time delta
             """
-            exc_new = (
-                0.0 if pd.isnull(row["+exclusive T [ms]"]) else row["+exclusive T [ms]"]
-            )
-            exc_old = (
-                0.0 if pd.isnull(row["-exclusive T [ms]"]) else row["-exclusive T [ms]"]
-            )
+            exc_new = 0.0 if pd.isnull(row["+exclusive T [ms]"]) else row["+exclusive T [ms]"]
+            exc_old = 0.0 if pd.isnull(row["-exclusive T [ms]"]) else row["-exclusive T [ms]"]
             return exc_new - exc_old
 
         # Rename the exclusive time columns appropriately (- for old, + for new) and merge them
-        baseline_profile.rename(
-            columns={"exclusive": "-exclusive T [ms]"}, inplace=True
-        )
+        baseline_profile.rename(columns={"exclusive": "-exclusive T [ms]"}, inplace=True)
         target_profile.rename(columns={"exclusive": "+exclusive T [ms]"}, inplace=True)
         # Convert ns to ms
         # TODO: dynamic conversion to the most appropriate unit (e.g., seconds, us, ...)
-        baseline_profile["-exclusive T [ms]"] = baseline_profile[
-            "-exclusive T [ms]"
-        ].div(NS_TO_MS)
-        target_profile["+exclusive T [ms]"] = target_profile["+exclusive T [ms]"].div(
-            NS_TO_MS
-        )
+        baseline_profile["-exclusive T [ms]"] = baseline_profile["-exclusive T [ms]"].div(NS_TO_MS)
+        target_profile["+exclusive T [ms]"] = target_profile["+exclusive T [ms]"].div(NS_TO_MS)
         # Rename the locations in the baseline and target profiles to match. We employ a string
         # similarity check to discover possible changes of binaries name, e.g., due to version num.
         rename_old, rename_new = _map_similar_names(
@@ -430,17 +410,13 @@ class DiffProfile:
         baseline_profile["location"].replace(rename_old, inplace=True)
         target_profile["location"].replace(rename_new, inplace=True)
 
-        df_merge = pd.merge(
-            target_profile, baseline_profile, on=["uid", "location"], how="left"
-        )
+        df_merge = pd.merge(target_profile, baseline_profile, on=["uid", "location"], how="left")
         # Compute the exclusive time diff
         df_merge["exclusive T Δ [ms]"] = df_merge.apply(_delta_exc, axis=1)
         # Prepare filters
         new_nan_filt = df_merge["+exclusive T [ms]"].isna()
         old_nan_filt = df_merge["-exclusive T [ms]"].isna()
-        no_nan_filt = ~(
-            df_merge["-exclusive T [ms]"].isna() | df_merge["-exclusive T [ms]"].isna()
-        )
+        no_nan_filt = ~(df_merge["-exclusive T [ms]"].isna() | df_merge["-exclusive T [ms]"].isna())
         # Compute the sum of all exclusive times
         total_exc = df_merge["+exclusive T [ms]"].sum()
         # Compute the impact of change on the total location exclusive time
@@ -451,15 +427,11 @@ class DiffProfile:
             df_merge["+exclusive T [ms]"] / total_exc * 100
         )
         df_merge.loc[no_nan_filt, "loc exclusive T Δ [%]"] = (
-            (df_merge["+exclusive T [ms]"] - df_merge["-exclusive T [ms]"])
-            / total_exc
-            * 100
+            (df_merge["+exclusive T [ms]"] - df_merge["-exclusive T [ms]"]) / total_exc * 100
         )
 
         # Sort by the most significant time difference
-        return df_merge.sort_values(
-            by="exclusive T Δ [ms]", ascending=False
-        ).reset_index(drop=True)
+        return df_merge.sort_values(by="exclusive T Δ [ms]", ascending=False).reset_index(drop=True)
 
 
 def _map_similar_names(

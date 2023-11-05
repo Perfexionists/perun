@@ -50,9 +50,7 @@ def index_filter(file: str) -> bool:
     return file != ".index"
 
 
-def populate_repo_with_untracked_profiles(
-    pcs_path: str, untracked_profiles: list[str]
-) -> None:
+def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: list[str]) -> None:
     """
     Populates the jobs directory in the repo by untracked profiles
 

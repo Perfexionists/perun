@@ -27,9 +27,7 @@ _LLVM_EXT = ".bc"
 _LIB_Z3 = "libz3.so"
 
 
-def before(
-    sources: list[str], **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Compiles the sources into LLVM intermediate code
 
     $ clang-3.5 -g -emit-llvm -c ${sources}
@@ -37,20 +35,14 @@ def before(
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
     include_path = os.path.join(pwd, "include")
     clang_bin = (
-        _CLANG_COMPILER
-        if shutil.which(_CLANG_COMPILER)
-        else os.path.join(pwd, _CLANG_COMPILER)
+        _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
     )
-    cmd = " ".join(
-        [clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources)
-    )
+    cmd = " ".join([clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
     log.info("Compiling source codes: {}".format(",".join(sources)))
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
-        utils.run_safely_external_command(
-            cmd, check_results=True, env=my_env, quiet=False
-        )
+        utils.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
         log.failed()
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
@@ -59,9 +51,7 @@ def before(
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
-def collect(
-    sources: list[str], **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
+def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Runs the Loopus on compiled LLVM sources
 
         $ export $LD_LIBRARY_PATH="${DIR}/libz3.so"
@@ -71,15 +61,11 @@ def collect(
     """
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
     loopus_bin = os.path.join(pwd, "loopus")
-    source_filenames = [
-        os.path.splitext(os.path.split(src)[1])[0] + _LLVM_EXT for src in sources
-    ]
+    source_filenames = [os.path.splitext(os.path.split(src)[1])[0] + _LLVM_EXT for src in sources]
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
 
-    log.info(
-        "Running Loopus on compiled source codes: {}".format(" ".join(source_filenames))
-    )
+    log.info("Running Loopus on compiled source codes: {}".format(" ".join(source_filenames)))
 
     before_analysis = systime.time()
     try:
@@ -88,9 +74,7 @@ def collect(
             + " -zPrintComplexity -zEnableOptimisticAssumptionsOnPointerAliasAndShapes "
             + " ".join(source_filenames)
         )
-        returned_out, _ = utils.run_safely_external_command(
-            cmd, check_results=True, env=my_env
-        )
+        returned_out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = returned_out.decode("utf-8")
     except SubprocessError as sub_err:
         log.failed()
@@ -111,9 +95,7 @@ def collect(
     )
 
 
-def lookup_source_files(
-    ctx: click.Context, __: click.Option, value: list[str]
-) -> list[str]:
+def lookup_source_files(ctx: click.Context, __: click.Option, value: list[str]) -> list[str]:
     """Lookus up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.

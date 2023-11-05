@@ -114,9 +114,7 @@ def test_memory_prof_resources_empty():
     Expected 0 resources.
     """
     # Acquire the memory query profile with empty resources
-    mem_profile = test_utils.load_profile(
-        "query_profiles", "memory-empty-resources.perf"
-    )
+    mem_profile = test_utils.load_profile("query_profiles", "memory-empty-resources.perf")
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
@@ -130,9 +128,7 @@ def test_complexity_prof_resources():
     Expected _COMPLEXITY_RESOURCES_COUNT resources.
     """
     # Acquire the complexity query profile
-    complexity_profile = test_utils.load_profile(
-        "query_profiles", "complexity-basic.perf"
-    )
+    complexity_profile = test_utils.load_profile("query_profiles", "complexity-basic.perf")
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
@@ -230,9 +226,7 @@ def test_unique_resource_values():
     assert unique_values == _MEMORY_AMOUNT_LIST
 
     # Test the searching in dictionary -> list hierarchy
-    unique_values = list(
-        query.unique_resource_values_of(mem_profile, "trace::function")
-    )
+    unique_values = list(query.unique_resource_values_of(mem_profile, "trace::function"))
     unique_values.sort()
     assert len(unique_values) == _MEMORY_TRACE_FUNCTION_COUNT
     assert unique_values == _MEMORY_TRACE_FUNCTION_LIST
@@ -244,9 +238,7 @@ def test_unique_resource_values():
     assert unique_values == _MEMORY_UID_LINE_LIST
 
     # Test key that is not in the resources
-    unique_values = list(
-        query.unique_resource_values_of(mem_profile, "test:testing::test")
-    )
+    unique_values = list(query.unique_resource_values_of(mem_profile, "test:testing::test"))
     assert not unique_values
 
 
@@ -277,9 +269,7 @@ def test_unique_model_values():
 
 
 def test_default_variables():
-    profile = test_utils.load_profile(
-        "query_profiles", "complexity-empty-resources.perf"
-    )
+    profile = test_utils.load_profile("query_profiles", "complexity-empty-resources.perf")
     assert profile is not None
 
     with pytest.raises(SystemExit):

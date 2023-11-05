@@ -65,9 +65,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         self.kernel: str = "rbf"
         self.gamma: Optional[npt.NDArray[np.float64] | float] = gamma
 
-    def fit(
-        self, x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64]
-    ) -> KernelRidge:
+    def fit(self, x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64]) -> KernelRidge:
         """
         The method provides the fitting of the model according to the given set of points.
         If the user entered the sequence of gamma values, then one of these values is
@@ -94,9 +92,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         :param list x_pts: the list of x points coordinates to predict
         :return np.ndarray: array with values of resulting kernel estimates
         """
-        kernel = kernels.pairwise_kernels(
-            self.x_pts, x_pts, metric=self.kernel, gamma=self.gamma
-        )
+        kernel = kernels.pairwise_kernels(self.x_pts, x_pts, metric=self.kernel, gamma=self.gamma)
         return (kernel * self.y_pts[:, None]).sum(axis=0) / kernel.sum(axis=0)
 
     def _optimize_gamma(self, gamma_values: npt.NDArray[np.float64]) -> float:
@@ -113,18 +109,12 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         """
         mse = np.empty_like(gamma_values, dtype=float)
         for i, gamma in enumerate(gamma_values):
-            kernel = kernels.pairwise_kernels(
-                self.x_pts, self.x_pts, self.kernel, gamma=gamma
-            )
+            kernel = kernels.pairwise_kernels(self.x_pts, self.x_pts, self.kernel, gamma=gamma)
             np.fill_diagonal(kernel, 0)
-            err = (kernel * self.y_pts[:, np.newaxis]).sum(axis=0) / kernel.sum(
-                axis=0
-            ) - self.y_pts
+            err = (kernel * self.y_pts[:, np.newaxis]).sum(axis=0) / kernel.sum(axis=0) - self.y_pts
             mse[i] = (err**2).mean()
 
-        self.gamma = float(
-            gamma_values[np.nanargmin(mse) if not np.isnan(mse).all() else 0]
-        )
+        self.gamma = float(gamma_values[np.nanargmin(mse) if not np.isnan(mse).all() else 0])
         return self.gamma
 
 
@@ -146,8 +136,7 @@ def compute_kernel_regression(
     # checking the presence of specific keys according to selected modes of kernel regression
     tools.validate_dictionary_keys(
         config,
-        _MODES_REQUIRED_KEYS[config["kernel_mode"]]
-        + _MODES_REQUIRED_KEYS["common_keys"],
+        _MODES_REQUIRED_KEYS[config["kernel_mode"]] + _MODES_REQUIRED_KEYS["common_keys"],
         [],
     )
 
@@ -299,9 +288,7 @@ def kernel_smoothing(
     # Obtaining the kernel instance from supported types according to the given name
     kernel = _KERNEL_TYPES_MAPS[config["kernel_type"]]
     # Obtaining the method instance from supported regression methods according to the given name
-    method = _SMOOTHING_METHODS_MAPS[config["smoothing_method"]](
-        config["polynomial_order"]
-    )
+    method = _SMOOTHING_METHODS_MAPS[config["smoothing_method"]](config["polynomial_order"])
 
     # User entered the bandwidth value directly
     if config["bandwidth_value"]:
@@ -402,9 +389,7 @@ def execute_kernel_regression(
     :return dict: the output dictionary with result of kernel regression
     """
     # Sort the points to the right order for computation
-    x_pts, y_pts = cast(
-        tuple[list[float], list[float]], zip(*sorted(zip(x_pts, y_pts)))
-    )
+    x_pts, y_pts = cast(tuple[list[float], list[float]], zip(*sorted(zip(x_pts, y_pts))))
 
     # Create the initial dictionary, that contains the common items for all modes
     kernel_model = {

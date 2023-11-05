@@ -51,9 +51,7 @@ def normalize_resources(resources: list[dict[str, Any]]) -> None:
         )
 
 
-def postprocess(
-    profile: Profile, **_: Any
-) -> tuple[PostprocessStatus, str, dict[str, Any]]:
+def postprocess(profile: Profile, **_: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     :param Profile profile: json-like profile that will be preprocessed by normalizer
     """

@@ -58,9 +58,7 @@ def get_vcs_path() -> str:
     :return: url to the wrapped version control system
     :raises MissingConfigSectionException: when vcs.url is not set in local config
     """
-    return os.path.abspath(
-        os.path.join(get_path(), config.local(get_path()).get("vcs.url"))
-    )
+    return os.path.abspath(os.path.join(get_path(), config.local(get_path()).get("vcs.url")))
 
 
 @singleton

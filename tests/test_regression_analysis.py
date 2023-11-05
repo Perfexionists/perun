@@ -19,9 +19,7 @@ import perun.utils.metrics as metrics
 def test_incorrect_calls():
     """Test various incorrect calls and exceptions"""
     # Get any profile, in following we will try to
-    const_model = test_utils.load_profile(
-        "postprocess_profiles", "const_model_datapoints.perf"
-    )
+    const_model = test_utils.load_profile("postprocess_profiles", "const_model_datapoints.perf")
     assert const_model is not None
 
     # Try calling postprocess, while missing keys
@@ -49,9 +47,7 @@ def test_const_model(pcs_with_root):
     metrics.Metrics.configure("test_const_model", "HEAD")
     metrics.Metrics.enabled = True
     # Get the profile with exponential model testing data
-    const_model = test_utils.load_profile(
-        "postprocess_profiles", "const_model_datapoints.perf"
-    )
+    const_model = test_utils.load_profile("postprocess_profiles", "const_model_datapoints.perf")
     assert const_model is not None
 
     # Perform the analysis
@@ -64,9 +60,7 @@ def test_const_model(pcs_with_root):
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(
-        profile, "constant", ["const::test1", "const::test2"]
-    )
+    models = generate_models_by_uid(profile, "constant", ["const::test1", "const::test2"])
 
     # Example no. 1:
     # constant line: y = 3
@@ -101,9 +95,7 @@ def test_linear_model():
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    linear_model = test_utils.load_profile(
-        "postprocess_profiles", "linear_model_datapoints.perf"
-    )
+    linear_model = test_utils.load_profile("postprocess_profiles", "linear_model_datapoints.perf")
     assert linear_model is not None
 
     # Perform the analysis
@@ -116,9 +108,7 @@ def test_linear_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(
-        profile, "linear", ["linear::test1", "linear::test2"]
-    )
+    models = generate_models_by_uid(profile, "linear", ["linear::test1", "linear::test2"])
 
     # Example no. 1:
     # source: Probability and Statistics for Engineering and the Sciences, 8th ed., example 12.4
@@ -128,12 +118,8 @@ def test_linear_model():
     #   r^2    = 0.791
     model = next(models)[0]
     compare_results(model["r_square"], 0.791, 0.001)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 75.212432
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], -0.20938742
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 75.212432)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], -0.20938742)
 
     # Example no. 2:
     # linear line: 8 + 2.5x
@@ -155,9 +141,7 @@ def test_quad_model_using_power():
     Expects to pass all assertions.
     """
     # Get the profile with quadratic model testing data
-    quad_model = test_utils.load_profile(
-        "postprocess_profiles", "quad_model_datapoints.perf"
-    )
+    quad_model = test_utils.load_profile("postprocess_profiles", "quad_model_datapoints.perf")
     assert quad_model is not None
 
     # Perform the analysis of quadratic-expected models
@@ -181,15 +165,9 @@ def test_quad_model_using_power():
     #   r^2    = 0.981224
     model = next(models)[0]
     compare_results(model["r_square"], 0.981224)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], -21.897744
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 14.521171
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b2"][0], -0.173714
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], -21.897744)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 14.521171)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b2"][0], -0.173714)
 
 
 def test_log_model():
@@ -200,9 +178,7 @@ def test_log_model():
     Expects to pass all assertions.
     """
     # Get the profile with logarithmic model testing data
-    pow_model = test_utils.load_profile(
-        "postprocess_profiles", "log_model_datapoints.perf"
-    )
+    pow_model = test_utils.load_profile("postprocess_profiles", "log_model_datapoints.perf")
     assert pow_model is not None
 
     # Perform the analysis
@@ -215,9 +191,7 @@ def test_log_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(
-        profile, "logarithmic", ["log::test1", "log::test2"]
-    )
+    models = generate_models_by_uid(profile, "logarithmic", ["log::test1", "log::test2"])
 
     # Example no. 1:
     # link: 'https://mathbits.com/MathBits/TISection/Statistics2/logarithmic.htm'
@@ -227,12 +201,8 @@ def test_log_model():
     #   r^2    = 0.9863058
     model = next(models)[0]
     compare_results(model["r_square"], 0.9863058)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 6.099, 0.01
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 6.108, 0.01
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 6.099, 0.01)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 6.108, 0.01)
 
     # Example no. 2:
     # logarithmic curve: 0 + 0.434294482 * ln(x)
@@ -243,9 +213,7 @@ def test_log_model():
     model = next(models)[0]
     compare_results(model["r_square"], 1.0)
     compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.434294482
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.434294482)
 
 
 def test_power_model():
@@ -256,9 +224,7 @@ def test_power_model():
     Expects to pass all assertions.
     """
     # Get the profile with power model testing data
-    pow_model = test_utils.load_profile(
-        "postprocess_profiles", "pow_model_datapoints.perf"
-    )
+    pow_model = test_utils.load_profile("postprocess_profiles", "pow_model_datapoints.perf")
     assert pow_model is not None
 
     # Perform the analysis
@@ -271,9 +237,7 @@ def test_power_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(
-        profile, "power", ["pow::test1", "pow::test2", "pow::test3"]
-    )
+    models = generate_models_by_uid(profile, "power", ["pow::test1", "pow::test2", "pow::test3"])
 
     # Example no. 1:
     # link: 'http://www.real-statistics.com/regression/power-regression/'
@@ -283,12 +247,8 @@ def test_power_model():
     #   r^2    = 0.56822483
     model = next(models)[0]
     compare_results(model["r_square"], 0.56822483)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 16.6575389
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.23438143
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 16.6575389)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.23438143)
 
     # Example no. 2:
     # link: 'https://mathbits.com/MathBits/TISection/Statistics2/power.htm'
@@ -298,12 +258,8 @@ def test_power_model():
     #   r^2    = 0.999992507
     model = next(models)[0]
     compare_results(model["r_square"], 0.999992507)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 24.12989312
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.65949782
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 24.12989312)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.65949782)
 
     # Example no. 3:
     # power curve: 3 * x^3
@@ -325,9 +281,7 @@ def test_exp_model():
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    exp_model = test_utils.load_profile(
-        "postprocess_profiles", "exp_model_datapoints.perf"
-    )
+    exp_model = test_utils.load_profile("postprocess_profiles", "exp_model_datapoints.perf")
     assert exp_model is not None
 
     # Perform the analysis
@@ -352,12 +306,8 @@ def test_exp_model():
     #   r^2    = 0.9652
     model = next(models)[0]
     compare_results(model["r_square"], 0.9652)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0.1377
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.023778
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0.1377)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.023778)
 
     # Example no. 2:
     # link: 'http://www.real-statistics.com/regression/exponential-regression-models/
@@ -368,12 +318,8 @@ def test_exp_model():
     #   r^2    = 0.88161289
     model = next(models)[0]
     compare_results(model["r_square"], 0.88161289)
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 14.0513516
-    )
-    compare_results(
-        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.016221137
-    )
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 14.0513516)
+    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.016221137)
 
     # Example no. 3:
     # exponential curve y = 1 * 2^x

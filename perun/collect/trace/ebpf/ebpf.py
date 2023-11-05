@@ -120,13 +120,9 @@ class BpfContext:
         """
         for func in functions:
             # Attach the entry function probe
-            self.bpf.attach_uprobe(
-                name=self.binary, sym=func, fn_name="entry_{}".format(func)
-            )
+            self.bpf.attach_uprobe(name=self.binary, sym=func, fn_name="entry_{}".format(func))
             # Attach the exit function probe
-            self.bpf.attach_uretprobe(
-                name=self.binary, sym=func, fn_name="exit_{}".format(func)
-            )
+            self.bpf.attach_uretprobe(name=self.binary, sym=func, fn_name="exit_{}".format(func))
 
     def attach_usdt(self, usdt_probes):
         """Attach all of the USDT probes to the supplied USDT context object
@@ -202,9 +198,7 @@ def ebpf_runner():
     dynamic_probing_on = Optimizations.DYNAMIC_PROBING.value in BPF_CTX.optimizations
 
     # Attach the probes
-    BPF_CTX.attach_functions(
-        [probe["name"] for probe in BPF_CTX.config["func"].values()]
-    )
+    BPF_CTX.attach_functions([probe["name"] for probe in BPF_CTX.config["func"].values()])
     if timed_sampling_on:
         BPF_CTX.attach_timer()
     # TODO: the USDT and cache locations are not working properly as of now
@@ -222,15 +216,11 @@ def ebpf_runner():
         if dynamic_probing_on:
             cm_stack.enter_context(PeriodicThread(0.5, BPF_CTX.dynamic_probing, []))
         # Run the profiled command
-        profiled = cm_stack.enter_context(
-            nonblocking_subprocess(BPF_CTX.config["command"], {})
-        )
+        profiled = cm_stack.enter_context(nonblocking_subprocess(BPF_CTX.config["command"], {}))
         start_time = time.time()
 
         # Get the BPF output buffer and read the performance data
-        BPF_CTX.bpf["records"].open_perf_buffer(
-            _print_event, page_cnt=128, lost_cb=_log_lost
-        )
+        BPF_CTX.bpf["records"].open_perf_buffer(_print_event, page_cnt=128, lost_cb=_log_lost)
         try:
             while profiled.poll() is None and not timeout.reached():
                 BPF_CTX.bpf.perf_buffer_poll(_BPF_POLL_SLEEP)

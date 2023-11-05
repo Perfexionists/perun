@@ -54,9 +54,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         )
 
     # Initialize the jinja2 environment and load all templates for template_type set
-    env = jinja2.Environment(
-        loader=jinja2.PackageLoader("perun", "templates"), autoescape=True
-    )
+    env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"), autoescape=True)
     list_of_templates = env.list_templates(filter_func=template_name_filter)
 
     # Specify the target dir (for packages we create a new directory)
@@ -74,9 +72,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         # Specify the target filename of the template file
         template_filename, _ = os.path.splitext(template_file)
         template_filename = (
-            kwargs["unit_name"]
-            if "." not in template_filename
-            else template_filename.split(".")[1]
+            kwargs["unit_name"] if "." not in template_filename else template_filename.split(".")[1]
         )
         template_filename += ".py"
         successfully_created_files.append(template_filename)
