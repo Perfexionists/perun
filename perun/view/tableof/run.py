@@ -106,7 +106,10 @@ def process_filter(ctx: click.Context, option: click.Option, value: list[str]) -
             if val[0] not in headers:
                 raise click.BadOptionUsage(
                     option.name or "",
-                    f"invalid key choice for filtering: {val[0]} (choose from {', '.join(headers)})",
+                    (
+                        f"invalid key choice for filtering: {val[0]} (choose from"
+                        f" {', '.join(headers)})"
+                    ),
                 )
         return list(value)
     return value
@@ -181,9 +184,11 @@ def process_output_file(ctx: click.Context, _: click.Option, value: str) -> str:
     "-tf",
     "output_to",
     flag_value="file",
-    help="The table will be saved into a file. By default, the name of the output file"
-    " is automatically generated, unless `--output-file` option does not specify"
-    " the name of the output file.",
+    help=(
+        "The table will be saved into a file. By default, the name of the output file"
+        " is automatically generated, unless `--output-file` option does not specify"
+        " the name of the output file."
+    ),
     default=True,
 )
 @click.option(
@@ -255,8 +260,10 @@ def tableof(*_: Any, **__: Any) -> None:
     multiple=True,
     metavar="<key>",
     callback=process_headers,
-    help="Sets the headers that will be displayed in the table. If none are stated "
-    "then all of the headers will be outputed",
+    help=(
+        "Sets the headers that will be displayed in the table. If none are stated "
+        "then all of the headers will be outputed"
+    ),
 )
 @click.option(
     "--sort-by",
@@ -274,9 +281,11 @@ def tableof(*_: Any, **__: Any) -> None:
     metavar="<key> <value>",
     callback=process_filter,
     multiple=True,
-    help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
-    " several times, then rows satisfying all rules will be selected for different"
-    " keys; and the rows satisfying some rule will be selected for same key.",
+    help=(
+        "Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+        " several times, then rows satisfying all rules will be selected for different"
+        " keys; and the rows satisfying some rule will be selected for same key."
+    ),
 )
 @click.pass_context
 def resources(
@@ -316,8 +325,10 @@ def resources(
     multiple=True,
     metavar="<key>",
     callback=process_headers,
-    help="Sets the headers that will be displayed in the table. If none are stated "
-    "then all of the headers will be outputed",
+    help=(
+        "Sets the headers that will be displayed in the table. If none are stated "
+        "then all of the headers will be outputed"
+    ),
 )
 @click.option(
     "--sort-by",
@@ -335,9 +346,11 @@ def resources(
     metavar="<key> <value>",
     callback=process_filter,
     multiple=True,
-    help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
-    " several times, then rows satisfying all rules will be selected for different"
-    " keys; and the rows satisfying some rule will be sellected for same key.",
+    help=(
+        "Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+        " several times, then rows satisfying all rules will be selected for different"
+        " keys; and the rows satisfying some rule will be sellected for same key."
+    ),
 )
 def models(
     ctx: click.Context,

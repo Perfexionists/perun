@@ -263,7 +263,7 @@ def _validate_input(**kwargs: Any) -> None:
         os.makedirs(target_dir)
     if os.path.exists(target_dir) and not os.path.isdir(target_dir):
         raise click.exceptions.BadParameter(
-            "The given --target-dir already exists and " "is not a directory"
+            "The given --target-dir already exists and is not a directory"
         )
     if not kwargs["files"]:
         raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
@@ -301,9 +301,11 @@ def _sampling_to_dictionary(
     "-f",
     type=click.Path(exists=True, resolve_path=True),
     multiple=True,
-    help="List of C/C++ source files that will be used to build the"
-    " custom binary with injected profiling commands. Must be valid"
-    " resolvable path",
+    help=(
+        "List of C/C++ source files that will be used to build the"
+        " custom binary with injected profiling commands. Must be valid"
+        " resolvable path"
+    ),
 )
 @click.option("--rules", "-r", type=str, multiple=True, help="Marks the function for profiling.")
 @click.option(
@@ -311,8 +313,10 @@ def _sampling_to_dictionary(
     "-if",
     type=str,
     default=configurator.DEFAULT_DATA_FILENAME,
-    help="Sets the different path for internal output filename for"
-    " storing temporary profiling data file name.",
+    help=(
+        "Sets the different path for internal output filename for"
+        " storing temporary profiling data file name."
+    ),
 )
 @click.option(
     "--internal-storage-size",

@@ -53,8 +53,10 @@ def utils_group() -> None:
     "-ne",
     default=False,
     is_flag=True,
-    help="Will open the newly created files in the editor specified by "
-    ":ckey:`general.editor` configuration key.",
+    help=(
+        "Will open the newly created files in the editor specified by "
+        ":ckey:`general.editor` configuration key."
+    ),
 )
 @click.option(
     "--supported-type",
@@ -143,8 +145,10 @@ def temp_list(root: str, **kwargs: Any) -> None:
     "-w",
     flag_value=True,
     default=False,
-    help="Warn the user (and abort the deletion with no files deleted) if protected files"
-    " are present.",
+    help=(
+        "Warn the user (and abort the deletion with no files deleted) if protected files"
+        " are present."
+    ),
 )
 @click.option(
     "--force",
@@ -158,7 +162,7 @@ def temp_list(root: str, **kwargs: Any) -> None:
     "-k",
     flag_value=True,
     default=False,
-    help="If path refers to directory, empty tmp/ directories and subdirectories " "will be kept.",
+    help="If path refers to directory, empty tmp/ directories and subdirectories will be kept.",
 )
 def temp_delete(path: str, warn: bool, force: bool, **kwargs: Any) -> None:
     """Deletes the temporary file or directory.
@@ -200,8 +204,10 @@ def stats_group() -> None:
     type=int,
     default=stats.DEFAULT_STATS_LIST_TOP,
     show_default=True,
-    help="Show only stat files from top N minor versions. Show all results if set to 0. "
-    "The minor version to start at can be changed using --from-minor.",
+    help=(
+        "Show only stat files from top N minor versions. Show all results if set to 0. "
+        "The minor version to start at can be changed using --from-minor."
+    ),
 )
 @click.option(
     "--from-minor",
@@ -257,8 +263,10 @@ def stats_list_files(**kwargs: Any) -> None:
     type=int,
     default=stats.DEFAULT_STATS_LIST_TOP,
     show_default=True,
-    help="Show only top N minor versions. Show all versions if set to 0. "
-    "The minor version to start at can be changed using --from-minor.",
+    help=(
+        "Show only top N minor versions. Show all versions if set to 0. "
+        "The minor version to start at can be changed using --from-minor."
+    ),
 )
 @click.option(
     "--from-minor",
@@ -322,8 +330,10 @@ def stats_delete_group() -> None:
     metavar="<hash>",
     is_eager=True,
     callback=cli_helpers.check_stats_minor_callback,
-    help="Delete the stats file in the specified minor version (HEAD if not specified) "
-    'or across all the minor versions if set to ".".',
+    help=(
+        "Delete the stats file in the specified minor version (HEAD if not specified) "
+        'or across all the minor versions if set to ".".'
+    ),
 )
 @click.option(
     "--keep-directory",

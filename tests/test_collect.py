@@ -53,54 +53,21 @@ def _mocked_record_processing(_, __, ___, ____):
 
 
 def _mocked_symbols_extraction(_):
-    return [
-        "_Z13SLList_insertP6SLListi",
-        "main",
-        "_fini",
-        "_init",
-        "_Z13SLList_removeP6SLListi",
-        "_ZN9SLListclsD1Ev",
-        "_ZN9SLListclsD2Ev",
-        "_ZN9SLListclsC1Ev",
-        "_ZN9SLListclsC2Ev",
-        "_ZN9SLListcls6InsertEi",
-        "__libc_csu_fini",
-        "_Z14SLList_destroyP6SLList",
-        "_start",
-        "_ZN9SLListcls10SLLelemclsC1Ei",
-        "_Z13SLList_searchP6SLListi",
-        "__libc_csu_init",
-        "_Z11SLList_initP6SLList",
-        "_ZN9SLListcls10SLLelemclsC2Ei",
-        "_ZN9SLListcls6SearchEi",
-        "deregister_tm_clones",
-        "register_tm_clones",
-        "__do_global_dtors_aux",
-        "frame_dummy",
-        "_dl_relocate_static_pie",
-        "_Z14SLList_destroyP6SLList",
-        "_ZN9SLListclsD1Ev",
-        "main",
-        "_ZN9SLListclsD2Ev",
-        "_fini",
-        "_ZN9SLListcls6SearchEi",
-        "_start",
-        "_Z11SLList_initP6SLList",
-        "_ZN9SLListcls10SLLelemclsC1Ei",
-        "_init",
-        "_ZN9SLListcls6InsertEi",
-        "_ZN9SLListcls10SLLelemclsC2Ei",
-        "_Z13SLList_insertP6SLListi",
-        "_ZN9SLListclsC2Ev",
-        "_Z13SLList_searchP6SLListi",
-        "__libc_csu_init",
-        "__libc_csu_fini",
-        "_ZN9SLListclsC1Ev",
-        "_Z13SLList_removeP6SLListi",
-        "_ZNSt8__detail12_Insert_baseIiSt4pairIKiSt6vectorI5ColorSaIS4_EEESaIS7_ENS_10_"
-        "Select1stESt8equal_toIiESt4hashIiENS_18_Mod_range_hashingENS_20_Default_ranged_hash"
-        "ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev",
-    ]
+    return ["_Z13SLList_insertP6SLListi", "main", "_fini", "_init", "_Z13SLList_removeP6SLListi",
+            "_ZN9SLListclsD1Ev", "_ZN9SLListclsD2Ev", "_ZN9SLListclsC1Ev", "_ZN9SLListclsC2Ev",
+            "_ZN9SLListcls6InsertEi", "__libc_csu_fini", "_Z14SLList_destroyP6SLList", "_start",
+            "_ZN9SLListcls10SLLelemclsC1Ei", "_Z13SLList_searchP6SLListi", "__libc_csu_init",
+            "_Z11SLList_initP6SLList", "_ZN9SLListcls10SLLelemclsC2Ei", "_ZN9SLListcls6SearchEi",
+            "deregister_tm_clones", "register_tm_clones", "__do_global_dtors_aux", "frame_dummy",
+            "_dl_relocate_static_pie", "_Z14SLList_destroyP6SLList", "_ZN9SLListclsD1Ev", "main",
+            "_ZN9SLListclsD2Ev", "_fini", "_ZN9SLListcls6SearchEi", "_start",
+            "_Z11SLList_initP6SLList", "_ZN9SLListcls10SLLelemclsC1Ei", "_init",
+            "_ZN9SLListcls6InsertEi", "_ZN9SLListcls10SLLelemclsC2Ei", "_Z13SLList_insertP6SLListi",
+            "_ZN9SLListclsC2Ev", "_Z13SLList_searchP6SLListi", "__libc_csu_init", "__libc_csu_fini",
+            "_ZN9SLListclsC1Ev", "_Z13SLList_removeP6SLListi",
+            "_ZNSt8__detail12_Insert_baseIiSt4pairIKiSt6vectorI5ColorSaIS4_EEESaIS7_ENS_10_"
+            "Select1stESt8equal_toIiESt4hashIiENS_18_Mod_range_hashingENS_20_Default_ranged_hash"
+            "ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev"]  # fmt: skip
 
 
 def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
@@ -160,7 +127,10 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     monkeypatch.setattr(symbols, "extract_symbols", _mocked_symbols_extraction)
     more_rules = [
         "Gif::Ctable::Ctable(Gif::Ctable&&)",
-        "std::tuple<int&&>&& std::forward<std::tuple<int&&> >(std::remove_reference<std::tuple<int&&> >::type&)",
+        (
+            "std::tuple<int&&>&& std::forward<std::tuple<int&&>"
+            " >(std::remove_reference<std::tuple<int&&> >::type&)"
+        ),
     ]
     rules.extend(["-r{}".format(rule) for rule in more_rules])
     result = runner.invoke(

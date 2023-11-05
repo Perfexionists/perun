@@ -258,8 +258,7 @@ def _build_model_legend(model: ProfileModel) -> str:
     if model["model"] == "moving_average":
         # Create a legend for moving_average model
         return (
-            f"{model['moving_method']}: window={model['window_width']}, "
-            f"R^2={model['r_square']:.3f}"
+            f"{model['moving_method']}: window={model['window_width']}, R^2={model['r_square']:.3f}"
         )
     if model["model"] == "kernel_regression":
         # Create a legend for kernel model

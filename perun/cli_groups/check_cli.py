@@ -23,10 +23,12 @@ if TYPE_CHECKING:
     "-f",
     is_flag=True,
     default=False,
-    help="Force comparison of the selected profiles even if their configuration"
-    "does not match. This may be necessary when, e.g., different project"
-    "versions build binaries with version information in their name"
-    "(python3.10 and python3.11), thus failing the consistency check. ",
+    help=(
+        "Force comparison of the selected profiles even if their configuration"
+        "does not match. This may be necessary when, e.g., different project"
+        "versions build binaries with version information in their name"
+        "(python3.10 and python3.11), thus failing the consistency check. "
+    ),
 )
 @click.option(
     "--compute-missing",
@@ -36,8 +38,10 @@ if TYPE_CHECKING:
     ),
     is_flag=True,
     default=False,
-    help="whenever there are missing profiles in the given point of history"
-    " the matrix will be rerun and new generated profiles assigned.",
+    help=(
+        "whenever there are missing profiles in the given point of history"
+        " the matrix will be rerun and new generated profiles assigned."
+    ),
 )
 @click.option(
     "--models-type",
@@ -47,10 +51,12 @@ if TYPE_CHECKING:
     multiple=False,
     type=click.Choice(check.get_supported_detection_models_strategies()),
     default=check.get_supported_detection_models_strategies()[0],
-    help="The detection models strategies predict the way of executing "
-    "the detection between two profiles, respectively between relevant "
-    "kinds of its models. Available only in the following detection "
-    "methods: Integral Comparison (IC) and Local Statistics (LS).",
+    help=(
+        "The detection models strategies predict the way of executing "
+        "the detection between two profiles, respectively between relevant "
+        "kinds of its models. Available only in the following detection "
+        "methods: Integral Comparison (IC) and Local Statistics (LS)."
+    ),
 )
 def check_group(**_: Any) -> None:
     """Applies for the points of version history checks for possible performance changes.
@@ -200,7 +206,7 @@ def check_all(minor_head: str = "HEAD") -> None:
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
     metavar="<hash>",
-    help="Will check the index of different minor version <hash>" " during the profile lookup.",
+    help="Will check the index of different minor version <hash> during the profile lookup.",
 )
 @click.pass_context
 def check_profiles(

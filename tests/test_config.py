@@ -192,7 +192,7 @@ def test_shared_dir_lookup(monkeypatch, capsys):
     assert win_dir.endswith("perun")
 
     monkeypatch.setattr("sys.platform", "linux")
-    assert config.lookup_shared_config_dir().endswith((".config/perun"))
+    assert config.lookup_shared_config_dir().endswith(".config/perun")
 
     monkeypatch.setattr("sys.platform", "sun")
     monkeypatch.setenv("PERUN_CONFIG_DIR", "")

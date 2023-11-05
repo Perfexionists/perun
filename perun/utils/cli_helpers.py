@@ -247,7 +247,10 @@ def config_key_validation_callback(_: click.Context, param: click.Option, value:
     :returns object: value for the <key> argument
     """
     if not config.is_valid_key(str(value)):
-        err_msg = f"<key> argument '{value}' for {str(param.param_type_name)} config operation is in invalid format. "
+        err_msg = (
+            f"<key> argument '{value}' for {str(param.param_type_name)} config operation is in"
+            " invalid format. "
+        )
         err_msg += "Valid key should be represented as sections delimited by dot (.), "
         err_msg += "e.g. general.paging is valid key."
         raise click.BadParameter(err_msg)
@@ -549,7 +552,8 @@ def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str
             return stats.get_stats_file_path(value, in_minor, True)
         except StatsFileNotFoundException:
             raise click.BadParameter(
-                f"The requested file '{value}' does not exist in the stats directory for minor version '{in_minor}'."
+                f"The requested file '{value}' does not exist in the stats directory for minor"
+                f" version '{in_minor}'."
             )
     return value
 

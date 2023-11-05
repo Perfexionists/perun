@@ -36,9 +36,11 @@ from typing import Any
     "store_type",
     flag_value="recursive",
     default=True,
-    help="Sets the nearest suitable config as the source config. The"
-    " lookup strategy can differ for ``set`` and "
-    "``get``/``edit``.",
+    help=(
+        "Sets the nearest suitable config as the source config. The"
+        " lookup strategy can differ for ``set`` and "
+        "``get``/``edit``."
+    ),
 )
 @click.pass_context
 def config(ctx: click.Context, **kwargs: Any) -> None:

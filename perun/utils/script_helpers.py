@@ -49,8 +49,8 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
     ):
         log.error(
             f"cannot use {perun_dev_dir} as target developer directory "
-            f"(either not writeable or does not exist)\n\n"
-            f"Perhaps you are not working from perun dev folder?"
+            "(either not writeable or does not exist)\n\n"
+            "Perhaps you are not working from perun dev folder?"
         )
 
     # Initialize the jinja2 environment and load all templates for template_type set

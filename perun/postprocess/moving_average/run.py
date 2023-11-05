@@ -79,14 +79,18 @@ def common_sma_options(
             "--window_width",
             "-ww",
             type=click.IntRange(min=1, max=None),
-            help="Size of the moving window. This is a number of observations used "
-            "for calculating the statistic. Each window will be a fixed size.",
+            help=(
+                "Size of the moving window. This is a number of observations used "
+                "for calculating the statistic. Each window will be a fixed size."
+            ),
         ),
         click.option(
             "--center/--no-center",
             default=_DEFAULT_CENTER,
-            help="If set to False, the result is set to the right edge of the "
-            "window, else is result set to the center of the window",
+            help=(
+                "If set to False, the result is set to the right edge of the "
+                "window, else is result set to the center of the window"
+            ),
         ),
     ]
     return functools.reduce(lambda x, option: option(x), options, func_obj)
@@ -97,8 +101,10 @@ def common_sma_options(
     "--window_type",
     "-wt",
     type=click.Choice(_WINDOW_TYPES),
-    help="Provides the window type, if not set then all points are evenly weighted. "
-    "For further information about window types see the notes in the documentation.",
+    help=(
+        "Provides the window type, if not set then all points are evenly weighted. "
+        "For further information about window types see the notes in the documentation."
+    ),
 )
 @common_sma_options
 @click.pass_context
@@ -175,9 +181,11 @@ def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
     callback=methods.validate_decay_param,
     default=_DEFAULT_DECAY,
     type=click.Tuple([click.Choice(methods.get_supported_decay_params()), float]),
-    help='Exactly one of "com", "span", "halflife", "alpha" can be provided. Allowed '
-    "values and relationship between the parameters are specified in the "
-    "documentation (e.g. --decay=com 3).",
+    help=(
+        'Exactly one of "com", "span", "halflife", "alpha" can be provided. Allowed '
+        "values and relationship between the parameters are specified in the "
+        "documentation (e.g. --decay=com 3)."
+    ),
 )
 @click.pass_context
 def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
@@ -227,8 +235,10 @@ def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     "--min_periods",
     "-mp",
     type=click.IntRange(min=1, max=None),
-    help="Provides the minimum number of observations in window required to have a value."
-    " If the number of possible observations smaller then result is NaN.",
+    help=(
+        "Provides the minimum number of observations in window required to have a value."
+        " If the number of possible observations smaller then result is NaN."
+    ),
 )
 @cli_helpers.resources_key_options
 @click.pass_context

@@ -136,7 +136,7 @@ def temp_path(path: str) -> str:
     # The resulting path might end up out of tmp/ for both absolute or relative paths
     if not path.startswith(tmp_location):
         raise exceptions.InvalidTempPathException(
-            "The resulting path '{}' is not located in " "the perun tmp/ directory.".format(path)
+            "The resulting path '{}' is not located in the perun tmp/ directory.".format(path)
         )
     return path
 
@@ -525,7 +525,7 @@ def _delete_files(tmp_files: list[str], ignore_protected: bool, force: bool) -> 
         if protected and not ignore_protected:
             # Abort the operation if ignore_protected is not set
             raise exceptions.ProtectedTempException(
-                "Aborted temporary files deletion due to a " "presence of protected files."
+                "Aborted temporary files deletion due to a presence of protected files."
             )
     # Delete all the files and their potential records in the index
     for file in tmp_files:

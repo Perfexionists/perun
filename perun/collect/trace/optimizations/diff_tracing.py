@@ -17,40 +17,10 @@ from perun.collect.trace.optimizations.structs import DiffCfgMode
 
 # The set of ASM JUMP instruction that are omitted during the operands check
 JUMP_INSTRUCTIONS = {
-    "call",
-    "jmp",
-    "je",
-    "jne",
-    "jz",
-    "jnz",
-    "jg",
-    "jge",
-    "jnle",
-    "jnl",
-    "jl",
-    "jle",
-    "jnge",
-    "jng",
-    "ja",
-    "jae",
-    "jnbe",
-    "jnb",
-    "jb",
-    "jbe",
-    "jnae",
-    "jna",
-    "jxcz",
-    "jc",
-    "jnc",
-    "jo",
-    "jno",
-    "jp",
-    "jpe",
-    "jnp",
-    "jpo",
-    "js",
-    "jns",
-}
+    "call", "jmp", "je", "jne", "jz", "jnz", "jg", "jge", "jnle", "jnl", "jl", "jle", "jnge",
+    "jng", "ja", "jae", "jnbe", "jnb", "jb", "jbe", "jnae", "jna", "jxcz", "jc", "jnc", "jo",
+    "jno", "jp", "jpe", "jnp", "jpo", "js", "jns",
+}  # fmt: skip
 
 
 # Delimiters used in the disassembly operands specification

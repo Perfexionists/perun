@@ -239,37 +239,25 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
             "collect",
             "-c{}".format(target),
             "trace",
-            "-f",
-            "main",
-            "-f",
-            "main#2",
-            "-u",
-            "BEFORE_CYCLE",
-            "-u",
-            "BEFORE_CYCLE_end#3",
-            "-d",
-            "none",
-            "-d",
-            "none_again#2",
-        ]
-        + [
-            "-g",
-            2,
+            "-f", "main",
+            "-f", "main#2",
+            "-u", "BEFORE_CYCLE",
+            "-u", "BEFORE_CYCLE_end#3",
+            "-d", "none",
+            "-d", "none_again#2",
+            "-g", 2,
             "--no-usdt",
-            "-b",
-            target,
-            "-t",
-            2,
+            "-b", target,
+            "-t", 2,
             "-z",
             "-k",
             "-vt",
             "-q",
             "-w",
-            "-o",
-            "suppress",
+            "-o", "suppress",
             "-i",
         ],
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
 
     # Test that non-existing command is not accepted
@@ -397,32 +385,21 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
         [
             "-c{}".format(target),
             "trace",
-            "-f",
-            "main",
-            "-f",
-            "main",
-            "-f",
-            "main#2",
-            "-f",
-            "main#2",
-            "-u",
-            "BEFORE_CYCLE",
-            "-u",
-            "BEFORE_CYCLE#3",
-            "-u",
-            "BEFORE_CYCLE_end",
-            "-u",
-            "BEFORE_CYCLE;BEFORE_CYCLE_end",
-            "-u",
-            "TEST_SINGLE#4",
-            "-u",
-            "TEST_SINGLE2",
-            "-f",
-            "test#-3",
+            "-f", "main",
+            "-f", "main",
+            "-f", "main#2",
+            "-f", "main#2",
+            "-u", "BEFORE_CYCLE",
+            "-u", "BEFORE_CYCLE#3",
+            "-u", "BEFORE_CYCLE_end",
+            "-u", "BEFORE_CYCLE;BEFORE_CYCLE_end",
+            "-u", "TEST_SINGLE#4",
+            "-u", "TEST_SINGLE2",
+            "-f", "test#-3",
             "-k",
         ]
         + binary,
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
     print("TRACE OUTPUT: {}".format(result.stdout))
     # Compare the created script with the correct one
@@ -515,14 +492,12 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
         [
             "-c{}".format(target),
             "trace",
-            "-s",
-            "userspace",
+            "-s", "userspace",
             "--no-usdt",
-            "-g",
-            "10",
+            "-g", "10",
             "-k",
         ],
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy5_script.txt")
@@ -534,14 +509,12 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
         [
             "-c{}".format(target),
             "trace",
-            "-s",
-            "u_sampled",
+            "-s", "u_sampled",
             "--no-usdt",
-            "-g",
-            "10",
+            "-g", "10",
             "-k",
         ],
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy5_script.txt")
@@ -552,17 +525,13 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
         [
             "-c{}".format(target),
             "trace",
-            "-s",
-            "userspace",
-            "-f",
-            "main#4",
-            "-f",
-            "_Z12QuickSortBadPii",
-            "-f",
-            "invalid",
+            "-s", "userspace",
+            "-f", "main#4",
+            "-f", "_Z12QuickSortBadPii",
+            "-f", "invalid",
             "-k",
         ],
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy6_script.txt")
@@ -573,14 +542,12 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
         [
             "-c{}".format(target),
             "trace",
-            "-s",
-            "userspace",
+            "-s", "userspace",
             "--no-usdt",
-            "-u",
-            "INVALID",
+            "-u", "INVALID",
             "-k",
         ],
-    )
+    )  # fmt: skip
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy7_script.txt")

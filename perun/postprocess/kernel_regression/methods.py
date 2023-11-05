@@ -447,7 +447,10 @@ def valid_range_values(
     else:
         raise click_exp.BadOptionUsage(
             param.name or "",
-            f"Invalid values: 1.value must be < then the 2.value ({value[0]:.2f} >= {value[1]:.2f})",
+            (
+                f"Invalid values: 1.value must be < then the 2.value ({value[0]:.2f} >="
+                f" {value[1]:.2f})"
+            ),
         )
 
 
@@ -471,8 +474,10 @@ def valid_step_size(step: float, step_range: tuple[float, float]) -> bool:
     else:
         raise click_exp.BadOptionUsage(
             "--gamma-step/-gs",
-            f"Invalid values: step must be < then the length of the range "
-            f"({step:.5f} >= {range_length:.5f}) for range {step_range[0]}:{step_range[1]}",
+            (
+                "Invalid values: step must be < then the length of the range "
+                f"({step:.5f} >= {range_length:.5f}) for range {step_range[0]}:{step_range[1]}"
+            ),
         )
 
 

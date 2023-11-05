@@ -243,10 +243,8 @@ probe process("{binary}").thread.end {{
             type=int(RecordType.THREAD_END), timestamp=STOPWATCH_NAME
         ),
         sampling_cleanup=(
-            (
-                "delete {sampling_cnt}[tid(), *]\n    delete {sampling_flag}[tid(), *]".format(
-                    sampling_cnt=ARRAY_SAMPLE_COUNTER, sampling_flag=ARRAY_SAMPLE_FLAG
-                )
+            "delete {sampling_cnt}[tid(), *]\n    delete {sampling_flag}[tid(), *]".format(
+                sampling_cnt=ARRAY_SAMPLE_COUNTER, sampling_flag=ARRAY_SAMPLE_FLAG
             )
             if sampling_on
             else "# Sampling cleanup omitted"

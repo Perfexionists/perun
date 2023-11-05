@@ -139,8 +139,10 @@ def lookup_source_files(ctx: click.Context, __: click.Option, value: list[str]) 
     multiple=True,
     metavar="<dir>",
     callback=lookup_source_files,
-    help="Directory, where source C files are stored. All of the existing files with "
-    "valid extensions (.c).",
+    help=(
+        "Directory, where source C files are stored. All of the existing files with "
+        "valid extensions (.c)."
+    ),
 )
 def bounds(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `memory` performance profile, capturing memory allocations of

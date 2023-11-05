@@ -434,8 +434,10 @@ def sort_profiles(profile_list: list["ProfileInfo"], reverse_profiles: bool = Tr
             perun_log.warn(
                 "invalid sort key '{}'".format(sort_order)
                 + " Profiles will be sorted by '{}'\n\n".format(sort_order)
-                + "Please set sort key in config or cli to one"
-                " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")"
+                + "Please set sort key in config or cli to one of ({}".format(
+                    ", ".join(ProfileInfo.valid_attributes)
+                )
+                + ")"
             )
             sort_order = DEFAULT_SORT_KEY
     except MissingConfigSectionException:
@@ -443,7 +445,8 @@ def sort_profiles(profile_list: list["ProfileInfo"], reverse_profiles: bool = Tr
             "missing set option 'format.sort_profiles_by'!"
             " Profiles will be sorted by '{}'\n\n".format(sort_order)
             + "Please run 'perun config edit' and set 'format.sort_profiles_by' to one"
-            " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")"
+            " of ({}".format(", ".join(ProfileInfo.valid_attributes))
+            + ")"
         )
 
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)

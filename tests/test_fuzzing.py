@@ -71,28 +71,18 @@ def test_fuzzing_correct(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            bin_workload,
-            "--timeout",
-            "0.25",
-            "--max-size",
-            "10",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", bin_workload,
+            "--timeout", "0.25",
+            "--max-size", "10",
             "--no-plotting",
             "--skip-coverage-testing",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 02. Testing tail on a directory of txt files with coverage
@@ -101,37 +91,22 @@ def test_fuzzing_correct(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            txt_workload,
-            "--timeout",
-            "0.25",
-            "--source-path",
-            os.path.dirname(tail),
-            "--gcno-path",
-            os.path.dirname(tail),
-            "--max-size-increase",
-            "35000",
-            "--coverage-increase-rate",
-            "1.05",
-            "--interesting-files-limit",
-            "2",
-            "--workloads-filter",
-            "(?notvalidregex?)",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", txt_workload,
+            "--timeout", "0.25",
+            "--source-path", os.path.dirname(tail),
+            "--gcno-path", os.path.dirname(tail),
+            "--max-size-increase", "35000",
+            "--coverage-increase-rate", "1.05",
+            "--interesting-files-limit", "2",
+            "--workloads-filter", "(?notvalidregex?)",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 03. Testing tail with xml files and regex_rules
@@ -141,32 +116,20 @@ def test_fuzzing_correct(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            xml_workload,
-            "--timeout",
-            "0.25",
-            "--max-size-ratio",
-            "3.5",
-            "--mutations-per-rule",
-            "probabilistic",
-            "--regex-rules",
-            regex_file,
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", xml_workload,
+            "--timeout", "0.25",
+            "--max-size-ratio", "3.5",
+            "--mutations-per-rule", "probabilistic",
+            "--regex-rules", regex_file,
             "--no-plotting",
             "--skip-coverage-testing",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 04. Testing tail with empty xml file
@@ -175,26 +138,17 @@ def test_fuzzing_correct(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            xml_workload,
-            "--timeout",
-            "0.25",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", xml_workload,
+            "--timeout", "0.25",
             "--no-plotting",
             "--skip-coverage-testing",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 05. Testing tail with wierd file type and bad paths for coverage testing (-s, -g)
@@ -203,31 +157,19 @@ def test_fuzzing_correct(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            wierd_workload,
-            "--timeout",
-            "0.25",
-            "--max-size-ratio",
-            "3.5",
-            "--source-path",
-            ".",
-            "--gcno-path",
-            ".",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", wierd_workload,
+            "--timeout", "0.25",
+            "--max-size-ratio", "3.5",
+            "--source-path", ".",
+            "--gcno-path", ".",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
@@ -248,27 +190,17 @@ def test_fuzzing_sigabort(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            sigabrt_init,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            num_workload,
-            "--source-path",
-            os.path.dirname(sigabrt_init),
-            "--gcno-path",
-            os.path.dirname(sigabrt_init),
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--exec-limit",
-            "10",
+            "--cmd", sigabrt_init,
+            "--output-dir", ".",
+            "--input-sample", num_workload,
+            "--source-path", os.path.dirname(sigabrt_init),
+            "--gcno-path", os.path.dirname(sigabrt_init),
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--exec-limit", "10",
             "--no-plotting",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "SIGABRT" in result.output)
 
@@ -282,30 +214,18 @@ def test_fuzzing_sigabort(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            sigabrt_test,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            num_workload,
-            "--timeout",
-            "1",
-            "--source-path",
-            os.path.dirname(sigabrt_test),
-            "--gcno-path",
-            os.path.dirname(sigabrt_test),
-            "--mutations-per-rule",
-            "unitary",
-            "--exec-limit",
-            "1",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
+            "--cmd", sigabrt_test,
+            "--output-dir", ".",
+            "--input-sample", num_workload,
+            "--timeout", "1",
+            "--source-path", os.path.dirname(sigabrt_test),
+            "--gcno-path", os.path.dirname(sigabrt_test),
+            "--mutations-per-rule", "unitary",
+            "--exec-limit", "1",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "exit status 134" in result.output)
 
@@ -327,27 +247,17 @@ def test_fuzzing_hangs(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            hang_init,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            num_workload,
-            "--source-path",
-            os.path.dirname(hang_init),
-            "--gcno-path",
-            os.path.dirname(hang_init),
-            "--hang-timeout",
-            "0.01",
+            "--cmd", hang_init,
+            "--output-dir", ".",
+            "--input-sample", num_workload,
+            "--source-path", os.path.dirname(hang_init),
+            "--gcno-path", os.path.dirname(hang_init),
+            "--hang-timeout", "0.01",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "Timeout" in result.output)
 
@@ -363,33 +273,20 @@ def test_fuzzing_hangs(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            hang_test,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            num_workload,
-            "--timeout",
-            "1",
-            "--source-path",
-            os.path.dirname(hang_test),
-            "--gcno-path",
-            os.path.dirname(hang_test),
-            "--mutations-per-rule",
-            "proportional",
-            "--hang-timeout",
-            "0.05",
-            "--exec-limit",
-            "1",
+            "--cmd", hang_test,
+            "--output-dir", ".",
+            "--input-sample", num_workload,
+            "--timeout", "1",
+            "--source-path", os.path.dirname(hang_test),
+            "--gcno-path", os.path.dirname(hang_test),
+            "--mutations-per-rule", "proportional",
+            "--hang-timeout", "0.05",
+            "--exec-limit", "1",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Timeout" in result.output)
 
@@ -411,33 +308,20 @@ def test_fuzzing_degradation(pcs_with_root, monkeypatch):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            hang_test,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            num_workload,
-            "--timeout",
-            "1",
-            "--source-path",
-            os.path.dirname(hang_test),
-            "--gcno-path",
-            os.path.dirname(hang_test),
+            "--cmd", hang_test,
+            "--output-dir", ".",
+            "--input-sample", num_workload,
+            "--timeout", "1",
+            "--source-path", os.path.dirname(hang_test),
+            "--gcno-path", os.path.dirname(hang_test),
             "--no-plotting",
-            "--interesting-files-limit",
-            "1",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
-            "--mutations-per-rule",
-            "unitary",
-            "--exec-limit",
-            "1",
+            "--interesting-files-limit", "1",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
+            "--mutations-per-rule", "unitary",
+            "--exec-limit", "1",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Founded degradation mutations: 0" not in result.output)
     monkeypatch.setattr(perun_fuzz, "target_testing", original_target_testing)
@@ -452,14 +336,11 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--args",
-            "-al",
-            "--output-dir",
-            ".",
-            "--input-sample",
-            ".",
+            "--args", "-al",
+            "--output-dir", ".",
+            "--input-sample", ".",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--cmd" in result.output)
 
@@ -467,14 +348,11 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--output-dir",
-            ".",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--output-dir", ".",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--input-sample" in result.output)
 
@@ -482,14 +360,11 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--output-dir" in result.output)
 
@@ -497,18 +372,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--source-path",
-            "WTF~~notexisting",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--source-path", "WTF~~notexisting",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--source-path" in result.output)
 
@@ -516,18 +386,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--gcno-path",
-            "WTF~~notexisting",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--gcno-path", "WTF~~notexisting",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--gcno-path" in result.output)
 
@@ -535,18 +400,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--timeout",
-            "not_number",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--timeout", "not_number",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--timeout" in result.output)
 
@@ -554,18 +414,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--hang-timeout",
-            "0",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--hang-timeout", "0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--hang-timeout" in result.output)
 
@@ -573,18 +428,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--max-size",
-            "1.5",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--max-size", "1.5",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--max-size" in result.output)
 
@@ -592,18 +442,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--max-size-increase",
-            "ola",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--max-size-increase", "ola",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--max-size-increase" in result.output)
 
@@ -611,18 +456,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--max-size-ratio",
-            "two_hundred",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--max-size-ratio", "two_hundred",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--max-size-ratio" in result.output)
 
@@ -630,18 +470,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--exec-limit",
-            "1.6",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--exec-limit", "1.6",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--exec-limit" in result.output)
 
@@ -649,18 +484,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--interesting-files-limit",
-            "-1",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--interesting-files-limit", "-1",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--interesting-files-limit" in result.output)
 
@@ -668,18 +498,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--coverage-increase-rate",
-            "notvalidfloat",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--coverage-increase-rate", "notvalidfloat",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "--coverage-increase-rate" in result.output)
 
@@ -687,18 +512,13 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            "ls",
-            "--args",
-            "-al",
-            "--input-sample",
-            ".",
-            "--output-dir",
-            ".",
-            "--regex-rules",
-            "e",
+            "--cmd", "ls",
+            "--args", "-al",
+            "--input-sample", ".",
+            "--output-dir", ".",
+            "--regex-rules", "e",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
@@ -730,33 +550,20 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            txt_workload,
-            "--timeout",
-            "0.25",
-            "--source-path",
-            os.path.dirname(tail),
-            "--gcno-path",
-            os.path.dirname(tail),
-            "--max-size-increase",
-            "35000",
-            "--coverage-increase-rate",
-            "1.05",
-            "--interesting-files-limit",
-            "1",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", txt_workload,
+            "--timeout", "0.25",
+            "--source-path", os.path.dirname(tail),
+            "--gcno-path", os.path.dirname(tail),
+            "--max-size-increase", "35000",
+            "--coverage-increase-rate", "1.05",
+            "--interesting-files-limit", "1",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Faults: 0" not in result.output)
     monkeypatch.setattr(utils, "run_safely_external_command", old_run_process)
@@ -771,33 +578,20 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--cmd",
-            tail,
-            "--output-dir",
-            ".",
-            "--input-sample",
-            txt_workload,
-            "--timeout",
-            "1",
-            "--source-path",
-            os.path.dirname(tail),
-            "--gcno-path",
-            os.path.dirname(tail),
-            "--max-size-increase",
-            "35000",
-            "--coverage-increase-rate",
-            "1.05",
-            "--interesting-files-limit",
-            "1",
+            "--cmd", tail,
+            "--output-dir", ".",
+            "--input-sample", txt_workload,
+            "--timeout", "1",
+            "--source-path", os.path.dirname(tail),
+            "--gcno-path", os.path.dirname(tail),
+            "--max-size-increase", "35000",
+            "--coverage-increase-rate", "1.05",
+            "--interesting-files-limit", "1",
             "--no-plotting",
-            "--collector-params",
-            "time",
-            "repeat: 1",
-            "--collector-params",
-            "time",
-            "warmup: 0",
+            "--collector-params", "time", "repeat: 1",
+            "--collector-params", "time", "warmup: 0",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, "target_testing", old_target_perun_testing)

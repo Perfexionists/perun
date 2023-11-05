@@ -223,8 +223,7 @@ def _link_libraries(cmake_file: TextIO, library_vars: list[str], target_name: st
     libraries = " ".join("${{{0}}}".format(lib) for lib in library_vars)
     # Create the target
     cmake_file.write(
-        f"\n# Link the libraries to the target\n"
-        f"target_link_libraries({target_name} {libraries})\n"
+        f"\n# Link the libraries to the target\ntarget_link_libraries({target_name} {libraries})\n"
     )
 
 
@@ -239,16 +238,20 @@ def _get_libs_path() -> str:
         libs_dir = os.path.join(os.path.dirname(__file__), "lib")
         if not _libraries_exist(libs_dir):
             log.cprintln(
-                "\nOne or more required libraries are missing - please compile them, "
-                "otherwise the data collection will not work.",
+                (
+                    "\nOne or more required libraries are missing - please compile them, "
+                    "otherwise the data collection will not work."
+                ),
                 "white",
             )
         return libs_dir
     except NameError:
         # If the __file__ is not available, the user has to supply the libraries manually
         log.cprintln(
-            "\nUnable to locate the directory with profiling libraries automatically, "
-            'please supply them manually into the "--target-dir" location',
+            (
+                "\nUnable to locate the directory with profiling libraries automatically, "
+                'please supply them manually into the "--target-dir" location'
+            ),
             "white",
         )
         return "${CMAKE_SOURCE_DIR}"

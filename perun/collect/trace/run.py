@@ -119,8 +119,7 @@ def after(**kwargs):
 
     # Inform the user
     WATCH_DOG.info(
-        "Processing raw performance data. "
-        "Note that this may take a while for large raw data files."
+        "Processing raw performance data. Note that this may take a while for large raw data files."
     )
     data_size = os.stat(kwargs["config"].engine.data).st_size
     metrics.add_metric("data_size", data_size)
@@ -176,9 +175,11 @@ def teardown(**kwargs):
     "-e",
     type=click.Choice(CollectEngine.available()),
     default=CollectEngine.default(),
-    help="Sets the data collection engine to be used:\n"
-    " - stap: the SystemTap framework\n"
-    " - ebpf: the eBPF framework",
+    help=(
+        "Sets the data collection engine to be used:\n"
+        " - stap: the SystemTap framework\n"
+        " - ebpf: the eBPF framework"
+    ),
 )
 @click.option(
     "--strategy",
@@ -186,8 +187,10 @@ def teardown(**kwargs):
     type=click.Choice(Strategy.supported()),
     default=Strategy.default(),
     required=True,
-    help="Select strategy for probing the binary. See documentation for"
-    " detailed explanation for each strategy.",
+    help=(
+        "Select strategy for probing the binary. See documentation for"
+        " detailed explanation for each strategy."
+    ),
 )
 @click.option(
     "--func",
@@ -215,8 +218,10 @@ def teardown(**kwargs):
     "-g",
     type=int,
     default=1,
-    help="Set the global sample for all probes, sampling parameter for specific"
-    " rules have higher priority.",
+    help=(
+        "Set the global sample for all probes, sampling parameter for specific"
+        " rules have higher priority."
+    ),
 )
 @click.option(
     "--with-usdt/--no-usdt",
@@ -227,8 +232,10 @@ def teardown(**kwargs):
     "--binary",
     "-b",
     type=click.Path(exists=True),
-    help="The profiled executable. If not set, then the command is considered "
-    "to be the profiled executable and is used as a binary parameter.",
+    help=(
+        "The profiled executable. If not set, then the command is considered "
+        "to be the profiled executable and is used as a binary parameter."
+    ),
 )
 @click.option(
     "--libs",
@@ -244,16 +251,20 @@ def teardown(**kwargs):
     "-t",
     type=float,
     default=0,
-    help="Set time limit (in seconds) for the profiled command, i.e. the command will be "
-    "terminated after reaching the time limit. Useful for, e.g., endless commands.",
+    help=(
+        "Set time limit (in seconds) for the profiled command, i.e. the command will be "
+        "terminated after reaching the time limit. Useful for, e.g., endless commands."
+    ),
 )
 @click.option(
     "--zip-temps",
     "-z",
     is_flag=True,
     default=False,
-    help="Zip and compress the temporary files (SystemTap log, raw performance data, "
-    "watchdog log, etc.) into the Perun log directory before deleting them.",
+    help=(
+        "Zip and compress the temporary files (SystemTap log, raw performance data, "
+        "watchdog log, etc.) into the Perun log directory before deleting them."
+    ),
 )
 @click.option(
     "--keep-temps",
@@ -288,21 +299,25 @@ def teardown(**kwargs):
     "-o",
     type=click.Choice(OutputHandling.to_list()),
     default=OutputHandling.DEFAULT.value,
-    help="Sets the output handling of the profiled command:\n"
-    " - default: the output is displayed in the terminal\n"
-    " - capture: the output is being captured into a file as well as displayed"
-    " in the terminal (note that buffering causes a delay in the terminal output)\n"
-    " - suppress: redirects the output to the DEVNULL",
+    help=(
+        "Sets the output handling of the profiled command:\n"
+        " - default: the output is displayed in the terminal\n"
+        " - capture: the output is being captured into a file as well as displayed"
+        " in the terminal (note that buffering causes a delay in the terminal output)\n"
+        " - suppress: redirects the output to the DEVNULL"
+    ),
 )
 @click.option(
     "--diagnostics",
     "-i",
     is_flag=True,
     default=False,
-    help="Enable detailed surveillance mode of the collector. The collector turns on "
-    "detailed logging (watchdog), verbose trace, capturing output etc. and stores "
-    "the logs and files in an archive (zip-temps) in order to provide as much "
-    "diagnostic data as possible for further inspection.",
+    help=(
+        "Enable detailed surveillance mode of the collector. The collector turns on "
+        "detailed logging (watchdog), verbose trace, capturing output etc. and stores "
+        "the logs and files in an archive (zip-temps) in order to provide as much "
+        "diagnostic data as possible for further inspection."
+    ),
 )
 @click.option(
     "--stap-cache-off",

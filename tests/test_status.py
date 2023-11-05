@@ -316,7 +316,9 @@ def test_status_sort(monkeypatch, pcs_single_prof, capsys, valid_profile_pool):
         {
             "general": {"paging": "never"},
             "format": {
-                "status": "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503",
+                "status": (
+                    "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503"
+                ),
             },
         }
     )
@@ -334,7 +336,9 @@ def test_status_sort(monkeypatch, pcs_single_prof, capsys, valid_profile_pool):
         {
             "general": {"paging": "never"},
             "format": {
-                "status": "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503",
+                "status": (
+                    "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503"
+                ),
                 "sort_profiles_by": "bogus",
             },
         },

@@ -86,7 +86,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     type=click.Choice(methods.get_supported_param_methods()),
     required=True,
     multiple=False,
-    help="Will use the <method> to find the best fitting models for" " the given profile.",
+    help="Will use the <method> to find the best fitting models for the given profile.",
 )
 @click.option(
     "--regression_models",

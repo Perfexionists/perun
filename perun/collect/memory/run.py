@@ -142,27 +142,31 @@ def after(
     "-s",
     default=DEFAULT_SAMPLING,
     type=click.FLOAT,
-    help="Sets the sampling interval for profiling the allocations."
-    " I.e. memory snapshots will be collected each <sampling>"
-    " seconds.",
+    help=(
+        "Sets the sampling interval for profiling the allocations."
+        " I.e. memory snapshots will be collected each <sampling>"
+        " seconds."
+    ),
 )
 @click.option(
     "--no-source",
     multiple=True,
-    help="Will exclude allocations done from <no_source> file during" " the profiling.",
+    help="Will exclude allocations done from <no_source> file during the profiling.",
 )
 @click.option(
     "--no-func",
     multiple=True,
-    help="Will exclude allocations done by <no func> function during" " the profiling.",
+    help="Will exclude allocations done by <no func> function during the profiling.",
 )
 @click.option(
     "--all",
     "-a",
     is_flag=True,
     default=False,
-    help="Will record the full trace for each allocation, i.e. it"
-    " will include all allocators and even unreachable records.",
+    help=(
+        "Will record the full trace for each allocation, i.e. it"
+        " will include all allocators and even unreachable records."
+    ),
 )
 @click.pass_context
 def memory(ctx: click.Context, **kwargs: Any) -> None:

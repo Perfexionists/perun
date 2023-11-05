@@ -71,8 +71,10 @@ def postprocess(
     required=False,
     default=_DEFAULT_STATISTIC,
     multiple=False,
-    help="Will use the <statistic_function> to compute the values "
-    "for points within each bucket of regressogram.",
+    help=(
+        "Will use the <statistic_function> to compute the values "
+        "for points within each bucket of regressogram."
+    ),
 )
 @cli_helpers.resources_key_options
 @pass_profile

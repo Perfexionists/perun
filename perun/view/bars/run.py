@@ -51,8 +51,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     metavar="<of_resource_key>",
     is_eager=True,
     callback=cli_helpers.process_resource_key_param,
-    help="Sets key that is source of the data for the bars,"
-    " i.e. what will be displayed on Y axis.",
+    help="Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.",
 )
 @click.option(
     "--per",
@@ -74,7 +73,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     metavar="<by_resource_key>",
     is_eager=True,
     callback=cli_helpers.process_resource_key_param,
-    help="Sets the key that will be used either for stacking or" " grouping of values",
+    help="Sets the key that will be used either for stacking or grouping of values",
 )
 @click.option(
     "--stacked",
@@ -83,7 +82,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     flag_value="stacked",
     default=True,
     is_eager=True,
-    help="Will stack the values by <resource_key> specified by" " option --by.",
+    help="Will stack the values by <resource_key> specified by option --by.",
 )
 @click.option(
     "--grouped",
@@ -91,7 +90,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "grouping_type",
     flag_value="grouped",
     is_eager=True,
-    help="Will stack the values by <resource_key> specified by" " option --by.",
+    help="Will stack the values by <resource_key> specified by option --by.",
 )
 # Bokeh graph specific
 @click.option(
@@ -130,7 +129,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-v",
     default=False,
     is_flag=True,
-    help="The generated graph will be immediately opened in the" " browser (firefox will be used).",
+    help="The generated graph will be immediately opened in the browser (firefox will be used).",
 )
 @pass_profile
 def bars(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:

@@ -315,7 +315,7 @@ def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
     index_version = store.read_int_from_handle(index_handle)
     if index_version > INDEX_VERSION:
         raise MalformedIndexFileException(
-            f"read index file is in format of different index version "
+            "read index file is in format of different index version "
             f"(read index file = {index_version}, supported = {INDEX_VERSION})"
         )
 
@@ -354,7 +354,8 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
     number_of_entries = store.read_int_from_handle(index_handle)
 
     print(
-        f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n"
+        f"{index_prefix.decode('utf-8')}, index version {index_version} with"
+        f" {number_of_entries} entries\n"
     )
 
     for entry in walk_index(index_handle):

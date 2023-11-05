@@ -150,7 +150,7 @@ def postprocess(
     default=0.01,
     type=click.FLOAT,
     required=False,
-    help="Specifies the width of the window" ", i.e. how many values will be taken by window.",
+    help="Specifies the width of the window, i.e. how many values will be taken by window.",
 )
 @click.option(
     "--relative-window-width",

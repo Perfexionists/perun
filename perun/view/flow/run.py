@@ -52,9 +52,11 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     metavar="<of_resource_key>",
     is_eager=True,
     callback=cli_helpers.process_resource_key_param,
-    help="Sets key that is source of the data for the flow,"
-    " i.e. what will be displayed on Y axis, e.g. the amount of"
-    " resources.",
+    help=(
+        "Sets key that is source of the data for the flow,"
+        " i.e. what will be displayed on Y axis, e.g. the amount of"
+        " resources."
+    ),
 )
 @click.option(
     "--through",
@@ -66,9 +68,11 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     is_eager=True,
     callback=cli_helpers.process_continuous_key,
     default="snapshots",
-    help="Sets key that is source of the data value, i.e. the"
-    " independent variable, like e.g. snapshots or size of the"
-    " structure.",
+    help=(
+        "Sets key that is source of the data value, i.e. the"
+        " independent variable, like e.g. snapshots or size of the"
+        " structure."
+    ),
 )
 @click.option(
     "--by",
@@ -79,16 +83,20 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     metavar="<by_resource_key>",
     is_eager=True,
     callback=cli_helpers.process_resource_key_param,
-    help="For each <by_resource_key> one graph will be output, e.g."
-    " for each subtype or for each location of resource.",
+    help=(
+        "For each <by_resource_key> one graph will be output, e.g."
+        " for each subtype or for each location of resource."
+    ),
 )
 @click.option(
     "--stacked",
     "-s",
     is_flag=True,
     default=False,
-    help="Will stack the y axis values for different <by> keys"
-    " on top of each other. Additionaly shows the sum of the values.",
+    help=(
+        "Will stack the y axis values for different <by> keys"
+        " on top of each other. Additionaly shows the sum of the values."
+    ),
 )
 @click.option(
     "--accumulate/--no-accumulate",
@@ -132,7 +140,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-v",
     default=False,
     is_flag=True,
-    help="The generated graph will be immediately opened in the" " browser (firefox will be used).",
+    help="The generated graph will be immediately opened in the browser (firefox will be used).",
 )
 @pass_profile
 # Fixme: Consider breaking this to two

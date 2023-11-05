@@ -35,7 +35,7 @@ class MissingConfigSectionException(Exception):
     def __str__(self) -> str:
         return (
             f"key '{self.section_key}' is not specified in configuration.\n"
-            f"See docs/config.rst for more details."
+            "See docs/config.rst for more details."
         )
 
 
@@ -49,7 +49,10 @@ class TagOutOfRangeException(Exception):
         self.tag = tag_source
 
     def __str__(self) -> str:
-        return f"invalid tag '{self.pos}@{self.tag}' (choose from interval <0@{self.tag}, {self.total}@{self.tag}>)"
+        return (
+            f"invalid tag '{self.pos}@{self.tag}' (choose from interval <0@{self.tag},"
+            f" {self.total}@{self.tag}>)"
+        )
 
 
 class ExternalEditorErrorException(Exception):
@@ -334,7 +337,10 @@ class InvalidBinaryException(Exception):
         """
         super().__init__("")
         self.binary = binary
-        self.msg = f"Supplied binary parameter '{self.binary}' does not exist or is not an executable ELF file."
+        self.msg = (
+            f"Supplied binary parameter '{self.binary}' does not exist or is not an executable ELF"
+            " file."
+        )
 
     def __str__(self) -> str:
         return self.msg
@@ -353,7 +359,10 @@ class SystemTapScriptCompilationException(Exception):
         self.code = code
 
     def __str__(self) -> str:
-        return f"SystemTap script compilation failure (code: {self.code}), see the corresponding {self.logfile} file."
+        return (
+            f"SystemTap script compilation failure (code: {self.code}), see the corresponding"
+            f" {self.logfile} file."
+        )
 
 
 class SystemTapStartupException(Exception):

@@ -98,10 +98,12 @@ def postprocess(
     "-bw",
     type=click.Choice(_BANDWIDTH_METHODS),
     default=_BANDWIDTH_METHODS[0],
-    help='Provides the method for bandwidth selection. Supported values are: "cv-ls": '
-    'least-squares cross validation and "aic": AIC Hurvich bandwidth estimation. '
-    'Default is "cv-ls". For more information about these methods you can visit '
-    "Perun Documentation.",
+    help=(
+        'Provides the method for bandwidth selection. Supported values are: "cv-ls": '
+        'least-squares cross validation and "aic": AIC Hurvich bandwidth estimation. '
+        'Default is "cv-ls". For more information about these methods you can visit '
+        "Perun Documentation."
+    ),
 )
 @click.option(
     "--efficient/--uniformly",
@@ -291,8 +293,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
     "-bv",
     type=click.FloatRange(min=1e-10, max=None),
     required=True,
-    help="The float value of <bandwidth> defined by user, which "
-    "will be used at kernel regression.",
+    help="The float value of <bandwidth> defined by user, which will be used at kernel regression.",
 )
 @click.pass_context
 def user_selection(ctx: click.Context, **kwargs: Any) -> None:
@@ -336,9 +337,11 @@ def user_selection(ctx: click.Context, **kwargs: Any) -> None:
     "-bm",
     type=click.Choice(methods.BW_SELECTION_METHODS),
     default=methods.BW_SELECTION_METHODS[0],
-    help="Provides the helper method to determine the kernel bandwidth. The "
-    "<method_name> will be used to compute the bandwidth, which will be "
-    "used at kernel regression.",
+    help=(
+        "Provides the helper method to determine the kernel bandwidth. The "
+        "<method_name> will be used to compute the bandwidth, which will be "
+        "used at kernel regression."
+    ),
 )
 @click.pass_context
 def method_selection(ctx: click.Context, **kwargs: Any) -> None:
@@ -607,9 +610,11 @@ def kernel_smoothing(ctx: click.Context, **kwargs: Any) -> None:
     "-gs",
     type=click.FloatRange(min=1e-10, max=None),
     default=_DEFAULT_GAMMA_STEP,
-    help="Provides the size of the step, with which will be executed the iteration over "
-    "the given <gamma-range>. Cannot be greater than length of <gamma-range>, else "
-    "will be set to value of the lower bound of the <gamma_range>.",
+    help=(
+        "Provides the size of the step, with which will be executed the iteration over "
+        "the given <gamma-range>. Cannot be greater than length of <gamma-range>, else "
+        "will be set to value of the lower bound of the <gamma_range>."
+    ),
 )
 @click.pass_context
 def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:

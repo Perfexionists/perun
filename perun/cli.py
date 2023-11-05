@@ -94,15 +94,17 @@ DEV_MODE = False
     "-d",
     default=False,
     is_flag=True,
-    help="Suppresses the catching of all exceptions from the CLI and generating of the " "dump.",
+    help="Suppresses the catching of all exceptions from the CLI and generating of the dump.",
 )
 @click.option(
     "--no-pager",
     default=False,
     is_flag=True,
-    help="Disables the paging of the long standard output (currently"
-    " affects only ``status`` and ``log`` outputs). See "
-    ":ckey:`paging` to change the default paging strategy.",
+    help=(
+        "Disables the paging of the long standard output (currently"
+        " affects only ``status`` and ``log`` outputs). See "
+        ":ckey:`paging` to change the default paging strategy."
+    ),
 )
 @click.option(
     "--no-color",
@@ -116,8 +118,10 @@ DEV_MODE = False
     "-v",
     count=True,
     default=0,
-    help="Increases the verbosity of the standard output. Verbosity "
-    "is incremental, and each level increases the extent of output.",
+    help=(
+        "Increases the verbosity of the standard output. Verbosity "
+        "is incremental, and each level increases the extent of output."
+    ),
 )
 @click.option(
     "--version",
@@ -133,8 +137,10 @@ DEV_MODE = False
     type=(str, str),
     default=["", ""],
     callback=cli_helpers.configure_metrics,
-    help="Enables the collection of metrics into the given temp file"
-    "(first argument) under the supplied ID (second argument).",
+    help=(
+        "Enables the collection of metrics into the given temp file"
+        "(first argument) under the supplied ID (second argument)."
+    ),
 )
 def cli(
     dev_mode: bool = False,
@@ -195,13 +201,15 @@ def configure_local_perun(perun_path: str) -> None:
     metavar="<type>",
     default="git",
     type=click.Choice(utils.get_supported_module_names("vcs")),
-    help="In parallel to initialization of Perun, initialize the vcs"
-    " of <type> as well (by default ``git``).",
+    help=(
+        "In parallel to initialization of Perun, initialize the vcs"
+        " of <type> as well (by default ``git``)."
+    ),
 )
 @click.option(
     "--vcs-path",
     metavar="<path>",
-    help="Sets the destination of wrapped vcs initialization at " "<path>.",
+    help="Sets the destination of wrapped vcs initialization at <path>.",
 )
 @click.option(
     "--vcs-param",
@@ -209,8 +217,10 @@ def configure_local_perun(perun_path: str) -> None:
     metavar="<param>",
     multiple=True,
     callback=cli_helpers.vcs_parameter_callback,
-    help="Passes additional (key, value) parameter to initialization"
-    " of version control system, e.g. ``separate-git-dir dir``.",
+    help=(
+        "Passes additional (key, value) parameter to initialization"
+        " of version control system, e.g. ``separate-git-dir dir``."
+    ),
 )
 @click.option(
     "--vcs-flag",
@@ -218,25 +228,29 @@ def configure_local_perun(perun_path: str) -> None:
     metavar="<flag>",
     multiple=True,
     callback=cli_helpers.vcs_parameter_callback,
-    help="Passes additional flag to a initialization of version " "control system, e.g. ``bare``.",
+    help="Passes additional flag to a initialization of version control system, e.g. ``bare``.",
 )
 @click.option(
     "--configure",
     "-c",
     is_flag=True,
     default=False,
-    help="After successful initialization of both systems, opens "
-    "the local configuration using the :ckey:`editor` set in shared "
-    "config.",
+    help=(
+        "After successful initialization of both systems, opens "
+        "the local configuration using the :ckey:`editor` set in shared "
+        "config."
+    ),
 )
 @click.option(
     "--config-template",
     "-t",
     type=click.STRING,
     default="master",
-    help="States the configuration template that will be used for initialization of local"
-    " configuration. See :ref:`config-templates` for more details about predefined "
-    " configurations.",
+    help=(
+        "States the configuration template that will be used for initialization of local"
+        " configuration. See :ref:`config-templates` for more details about predefined "
+        " configurations."
+    ),
 )
 def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None:
     """Initializes performance versioning system at the destination path.
@@ -316,8 +330,10 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
     is_flag=True,
     required=False,
     default=False,
-    help="Keeps the profile in filesystem after registering it in"
-    " Perun storage. Otherwise it is deleted.",
+    help=(
+        "Keeps the profile in filesystem after registering it in"
+        " Perun storage. Otherwise it is deleted."
+    ),
 )
 @click.option(
     "--force",
@@ -325,9 +341,11 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
     is_flag=True,
     default=False,
     required=False,
-    help="If set to true, then the profile will be registered in the <hash> minor version"
-    "index, even if its origin <hash> is different. WARNING: This can screw the "
-    "performance history of your project.",
+    help=(
+        "If set to true, then the profile will be registered in the <hash> minor version"
+        "index, even if its origin <hash> is different. WARNING: This can screw the "
+        "performance history of your project."
+    ),
 )
 def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     """Links profile to concrete minor version storing its content in the
@@ -485,7 +503,7 @@ def remove(
     "-s",
     is_flag=True,
     default=False,
-    help="Shortens the output of ``log`` to include only most " "necessary information.",
+    help="Shortens the output of ``log`` to include only most necessary information.",
 )
 def log(head: Optional[str], **kwargs: Any) -> None:
     """Shows history of versions and associated profiles.
@@ -521,7 +539,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     required=False,
     default=False,
     is_flag=True,
-    help="Shortens the output of ``status`` to include only most" " necessary information.",
+    help="Shortens the output of ``status`` to include only most necessary information.",
 )
 @click.option(
     "--sort-by",
@@ -532,9 +550,11 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     callback=cli_helpers.set_config_option_from_flag(
         pcs.local_config, "format.sort_profiles_by", str
     ),
-    help="Sets the <key> in the local configuration for sorting profiles. "
-    "Note that after setting the <key> it will be used for sorting which is "
-    "considered in pending and index tags!",
+    help=(
+        "Sets the <key> in the local configuration for sorting profiles. "
+        "Note that after setting the <key> it will be used for sorting which is "
+        "considered in pending and index tags!"
+    ),
 )
 def status(**kwargs: Any) -> None:
     """Shows the status of vcs, associated profiles and perun.
@@ -587,7 +607,7 @@ def status(**kwargs: Any) -> None:
     default=None,
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
-    help="Will check the index of different minor version <hash>" " during the profile lookup",
+    help="Will check the index of different minor version <hash> during the profile lookup",
 )
 @click.pass_context
 def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
@@ -651,10 +671,12 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     callback=cli_helpers.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
-    help="Specifies the template for automatic generation of output filename"
-    " This way the postprocessed file will have a resulting filename w.r.t to this"
-    " parameter. Refer to :ckey:`format.output_profile_template` for more"
-    " details about the format of the template.",
+    help=(
+        "Specifies the template for automatic generation of output filename"
+        " This way the postprocessed file will have a resulting filename w.r.t to this"
+        " parameter. Refer to :ckey:`format.output_profile_template` for more"
+        " details about the format of the template."
+    ),
 )
 @click.option(
     "--minor",
@@ -663,7 +685,7 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     default=None,
     is_eager=True,
     callback=cli_helpers.lookup_minor_version_callback,
-    help="Will check the index of different minor version <hash>" " during the profile lookup",
+    help="Will check the index of different minor version <hash> during the profile lookup",
 )
 @click.pass_context
 def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
@@ -746,8 +768,10 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     is_flag=True,
     default=False,
     is_eager=True,
-    help="If set to true, then for each specified minor versions, profiles for parents"
-    " will be collected as well",
+    help=(
+        "If set to true, then for each specified minor versions, profiles for parents"
+        " will be collected as well"
+    ),
 )
 @click.option(
     "--cmd",
@@ -756,8 +780,10 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Command that is being profiled. Either corresponds to some"
-    " script, binary or command, e.g. ``./mybin`` or ``perun``.",
+    help=(
+        "Command that is being profiled. Either corresponds to some"
+        " script, binary or command, e.g. ``./mybin`` or ``perun``."
+    ),
 )
 @click.option(
     "--args",
@@ -765,7 +791,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    help="Additional parameters for <cmd>. E.g. ``status`` or " "``-al`` is command parameter.",
+    help="Additional parameters for <cmd>. E.g. ``status`` or ``-al`` is command parameter.",
 )
 @click.option(
     "--workload",
@@ -774,7 +800,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload" "for ``ls`` command.",
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workloadfor ``ls`` command.",
 )
 @click.option(
     "--params",
@@ -783,7 +809,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.single_yaml_param_callback,
-    help="Additional parameters for called collector read from " "file in YAML format.",
+    help="Additional parameters for called collector read from file in YAML format.",
 )
 @click.option(
     "--output-filename-template",
@@ -792,10 +818,12 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     callback=cli_helpers.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
-    help="Specifies the template for automatic generation of output filename"
-    " This way the file with collected data will have a resulting filename w.r.t "
-    " to this parameter. Refer to :ckey:`format.output_profile_template` for more"
-    " details about the format of the template.",
+    help=(
+        "Specifies the template for automatic generation of output filename"
+        " This way the file with collected data will have a resulting filename w.r.t "
+        " to this parameter. Refer to :ckey:`format.output_profile_template` for more"
+        " details about the format of the template."
+    ),
 )
 @click.option(
     "--optimization-pipeline",
@@ -890,10 +918,12 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=1,
     required=True,
     multiple=True,
-    help="Initial sample of workloads (the so called corpus)."
-    "These will serve as initial workloads to evaluate the baseline for performance testing."
-    "The parameter expects either paths to files (which will be directly added), or "
-    "paths to directories (which will be recursively searched).",
+    help=(
+        "Initial sample of workloads (the so called corpus)."
+        "These will serve as initial workloads to evaluate the baseline for performance testing."
+        "The parameter expects either paths to files (which will be directly added), or "
+        "paths to directories (which will be recursively searched)."
+    ),
 )
 @click.option(
     "--collector",
@@ -901,9 +931,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=1,
     default="time",
     type=click.Choice(utils.get_supported_module_names("collect")),
-    help="Collector that will be used to collect performance data and used to infer "
-    "baseline or target performance profiles. "
-    "The profiles are further used for performance testing.",
+    help=(
+        "Collector that will be used to collect performance data and used to infer "
+        "baseline or target performance profiles. "
+        "The profiles are further used for performance testing."
+    ),
 )
 @click.option(
     "--collector-params",
@@ -912,8 +944,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <collector>: "
-    "can be specified as a file in YAML format or as YAML string",
+    help=(
+        "Additional parameters for the <collector>: "
+        "can be specified as a file in YAML format or as YAML string"
+    ),
 )
 @click.option(
     "--postprocessor",
@@ -922,9 +956,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     type=click.Choice(utils.get_supported_module_names("postprocess")),
-    help="After each collection of performance data, the fuzzer can run <postprocessor> to "
-    "postprocess the collected resources (e.g. to create models of resources). "
-    "This can be used for more thorough performance analysis.",
+    help=(
+        "After each collection of performance data, the fuzzer can run <postprocessor> to "
+        "postprocess the collected resources (e.g. to create models of resources). "
+        "This can be used for more thorough performance analysis."
+    ),
 )
 @click.option(
     "--postprocessor-params",
@@ -933,8 +969,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <postprocessor>: "
-    "can be specified as a file in YAML format or as YAML string",
+    help=(
+        "Additional parameters for the <postprocessor>: "
+        "can be specified as a file in YAML format or as YAML string"
+    ),
 )
 @click.option(
     "--minor-version",
@@ -944,8 +982,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     multiple=True,
     callback=cli_helpers.minor_version_list_callback,
     default=["HEAD"],
-    help="Specifies the head minor version in the wrapped repository. "
-    "The fuzzing will be performed for this particular version of the project.",
+    help=(
+        "Specifies the head minor version in the wrapped repository. "
+        "The fuzzing will be performed for this particular version of the project."
+    ),
 )
 @click.option(
     "--workloads-filter",
@@ -955,16 +995,21 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     type=str,
     metavar="<regexp>",
     default="",
-    help="Regular expression that will the filter input workloads/corpus. "
-    "E.g. to restrict to certain filetypes, filenames or subdirectories.",
+    help=(
+        "Regular expression that will the filter input workloads/corpus. "
+        "E.g. to restrict to certain filetypes, filenames or subdirectories."
+    ),
 )
 @click.option(
     "--skip-coverage-testing",
     is_flag=True,
     required=False,
-    help="If set to true, then the evaluation of mutations based on coverage testing will not be performed. "
-    "The coverage testing is a fast heuristic to filter out mutations that will probably not lead "
-    "to severe real degradation. The testing through perun is costly, though very precise.",
+    help=(
+        "If set to true, then the evaluation of mutations based on coverage testing will not be"
+        " performed. The coverage testing is a fast heuristic to filter out mutations that will"
+        " probably not lead to severe real degradation. The testing through perun is costly, though"
+        " very precise."
+    ),
 )
 @click.option(
     "--source-path",
@@ -1013,8 +1058,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     default=10,
     type=click.FloatRange(0.001, None, False),
     metavar="<float>",
-    help="The time limit before the input is classified as a hang/timeout (in seconds)."
-    " Default value is 10s.",
+    help=(
+        "The time limit before the input is classified as a hang/timeout (in seconds)."
+        " Default value is 10s."
+    ),
 )
 @click.option(
     "--max-size",
@@ -1023,10 +1070,12 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     type=click.IntRange(1, None, False),
     metavar="<int>",
-    help="Absolute value of the maximum size of the generated mutation wrt parent corpus. "
-    "The value will be adjusted wrt to the maximal size of the workloads in corpus. "
-    "Using this option, the maximal size of the generated mutation will be set to "
-    "max(size of the largest workload in corpus, <int>). ",
+    help=(
+        "Absolute value of the maximum size of the generated mutation wrt parent corpus. "
+        "The value will be adjusted wrt to the maximal size of the workloads in corpus. "
+        "Using this option, the maximal size of the generated mutation will be set to "
+        "max(size of the largest workload in corpus, <int>). "
+    ),
 )
 @click.option(
     "--max-size-increase",
@@ -1036,10 +1085,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     default=1000000,
     type=click.IntRange(0, None, False),
     metavar="<int>",
-    help="Absolute value of the maximal increase in the size of the generated mutation wrt parent corpus. "
-    "Using this option, the maximal size of generated mutation will be set to "
-    "(size of the largest corpus in workload + <INT>). "
-    "Default value is 1 000 000 B = 1MB.",
+    help=(
+        "Absolute value of the maximal increase in the size of the generated mutation wrt parent"
+        " corpus. Using this option, the maximal size of generated mutation will be set to (size of"
+        " the largest corpus in workload + <INT>). Default value is 1 000 000 B = 1MB."
+    ),
 )
 @click.option(
     "--max-size-ratio",
@@ -1048,10 +1098,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     type=click.FloatRange(0.1, None, False),
     metavar="<float>",
-    help="Relative value of the maximal increase in the size of the generated mutation wrt parent corpus. "
-    "Using this option, the maximal size of generated mutation will be set to "
-    "(size of the largest corpus in workload * <INT>). "
-    " E.g. 1.5, max size=largest workload size * 1.5",
+    help=(
+        "Relative value of the maximal increase in the size of the generated mutation wrt parent"
+        " corpus. Using this option, the maximal size of generated mutation will be set to (size of"
+        " the largest corpus in workload * <INT>).  E.g. 1.5, max size=largest workload size * 1.5"
+    ),
 )
 @click.option(
     "--exec-limit",
@@ -1061,9 +1112,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     default=100,
     type=click.IntRange(1, None, False),
     metavar="<int>",
-    help="The maximum number of fuzzing iteration while gathering interesting inputs. "
-    "By interesting inputs we mean files that might potentially lead to timeouts, hang or severe "
-    "severe performance degradation.",
+    help=(
+        "The maximum number of fuzzing iteration while gathering interesting inputs. By interesting"
+        " inputs we mean files that might potentially lead to timeouts, hang or severe severe"
+        " performance degradation."
+    ),
 )
 @click.option(
     "--interesting-files-limit",
@@ -1073,10 +1126,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     type=click.IntRange(1, None, False),
     metavar="<int>",
     default=20,
-    help="The minimum number of gathered mutations, that are so called interesting, "
-    "before perun testing is performed. "
-    "By interesting inputs we mean files that might potentially lead to timeouts, hang or severe "
-    "severe performance degradation.",
+    help=(
+        "The minimum number of gathered mutations, that are so called interesting, before perun"
+        " testing is performed. By interesting inputs we mean files that might potentially lead to"
+        " timeouts, hang or severe severe performance degradation."
+    ),
 )
 @click.option(
     "--coverage-increase-rate",
@@ -1086,9 +1140,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     default=1.5,
     type=click.FloatRange(0, None, False),
     metavar="<int>",
-    help="The threshold of coverage increase against base coverage, which is used to evaluate, "
-    "whether the generated mutation is interesting for further evaluation by performance testing. "
-    "E.g 1.5, base coverage = 100 000, so threshold = 150 000.",
+    help=(
+        "The threshold of coverage increase against base coverage, which is used to evaluate,"
+        " whether the generated mutation is interesting for further evaluation by performance"
+        " testing. E.g 1.5, base coverage = 100 000, so threshold = 150 000."
+    ),
 )
 @click.option(
     "--mutations-per-rule",
@@ -1098,8 +1154,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     default="mixed",
     type=click.Choice(["unitary", "proportional", "probabilistic", "mixed"]),
     metavar="<str>",
-    help="Strategy which determines how many mutations will be generated by certain"
-    " fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed",
+    help=(
+        "Strategy which determines how many mutations will be generated by certain"
+        " fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed"
+    ),
 )
 @click.option(
     "--regex-rules",
@@ -1109,8 +1167,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     multiple=True,
     callback=cli_helpers.single_yaml_param_callback,
     metavar="<file>",
-    help="Option for adding custom fuzzing rules specified by regular expressions,"
-    " written in YAML format file.",
+    help=(
+        "Option for adding custom fuzzing rules specified by regular expressions,"
+        " written in YAML format file."
+    ),
 )
 @click.option(
     "--no-plotting",

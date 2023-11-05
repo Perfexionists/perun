@@ -22,10 +22,12 @@ from perun.utils.structs import CollectStatus
     callback=cli_helpers.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
-    help="Specifies the template for automatic generation of output filename"
-    " This way the file with collected data will have a resulting filename w.r.t "
-    " to this parameter. Refer to :ckey:`format.output_profile_template` for more"
-    " details about the format of the template.",
+    help=(
+        "Specifies the template for automatic generation of output filename"
+        " This way the file with collected data will have a resulting filename w.r.t "
+        " to this parameter. Refer to :ckey:`format.output_profile_template` for more"
+        " details about the format of the template."
+    ),
 )
 @click.option(
     "--minor-version",
@@ -43,8 +45,10 @@ from perun.utils.structs import CollectStatus
     is_flag=True,
     default=False,
     is_eager=True,
-    help="If set to true, then for each specified minor versions, profiles for parents"
-    " will be collected as well",
+    help=(
+        "If set to true, then for each specified minor versions, profiles for parents"
+        " will be collected as well"
+    ),
 )
 @click.option(
     "--force-dirty",
@@ -52,7 +56,7 @@ from perun.utils.structs import CollectStatus
     is_flag=True,
     default=False,
     callback=cli_helpers.unsupported_option_callback,
-    help="If set to true, then even if the repository is dirty, " "the changes will not be stashed",
+    help="If set to true, then even if the repository is dirty, the changes will not be stashed",
 )
 @click.pass_context
 def run(ctx: click.Context, **kwargs: Any) -> None:
@@ -105,8 +109,10 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=True,
     multiple=True,
-    help="Command that is being profiled. Either corresponds to some"
-    " script, binary or command, e.g. ``./mybin`` or ``perun``.",
+    help=(
+        "Command that is being profiled. Either corresponds to some"
+        " script, binary or command, e.g. ``./mybin`` or ``perun``."
+    ),
 )
 @click.option(
     "--args",
@@ -114,7 +120,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    help="Additional parameters for <cmd>. E.g. ``status`` or " "``-al`` is command parameter.",
+    help="Additional parameters for <cmd>. E.g. ``status`` or ``-al`` is command parameter.",
 )
 @click.option(
     "--workload",
@@ -123,7 +129,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload" "for ``ls`` command.",
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workloadfor ``ls`` command.",
 )
 @click.option(
     "--collector",
@@ -132,7 +138,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=True,
     multiple=True,
     type=click.Choice(utils.get_supported_module_names("collect")),
-    help="Profiler used for collection of profiling data for the" " given <cmd>",
+    help="Profiler used for collection of profiling data for the given <cmd>",
 )
 @click.option(
     "--collector-params",
@@ -141,7 +147,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <collector> read from the" " file in YAML format",
+    help="Additional parameters for the <collector> read from the file in YAML format",
 )
 @click.option(
     "--postprocessor",
@@ -150,8 +156,10 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     type=click.Choice(utils.get_supported_module_names("postprocess")),
-    help="After each collection of data will run <postprocessor> to "
-    "postprocess the collected resources.",
+    help=(
+        "After each collection of data will run <postprocessor> to "
+        "postprocess the collected resources."
+    ),
 )
 @click.option(
     "--postprocessor-params",
@@ -160,7 +168,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     required=False,
     multiple=True,
     callback=cli_helpers.yaml_param_callback,
-    help="Additional parameters for the <postprocessor> read from the" " file in YAML format",
+    help="Additional parameters for the <postprocessor> read from the file in YAML format",
 )
 @click.pass_context
 def job(ctx: click.Context, **kwargs: Any) -> None:

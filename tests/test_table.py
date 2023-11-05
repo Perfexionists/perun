@@ -65,14 +65,11 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "-h",
-            "uid",
-            "-h",
-            "model",
-            "-h",
-            "coeffs",
+            "-h", "uid",
+            "-h", "model",
+            "-h", "coeffs",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, "table_models_ref_pruned"), "r") as trb:
         assert_files_match_output(result, trb)
@@ -84,14 +81,11 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "-h",
-            "non-existant",
-            "-h",
-            "model",
-            "-h",
-            "coeffs",
+            "-h", "non-existant",
+            "-h", "model",
+            "-h", "coeffs",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(
         result, "invalid choice for table header: non-existant" in result.output
@@ -104,17 +98,13 @@ def test_table_cli(pcs_full):
             "0@p",
             "tableof",
             "--to-stdout",
-            "-f",
-            "latex",
+            "-f", "latex",
             "models",
-            "-h",
-            "uid",
-            "-h",
-            "model",
-            "-h",
-            "coeffs",
+            "-h", "uid",
+            "-h", "model",
+            "-h", "coeffs",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, "table_models_ref_latex"), "r") as trb:
         assert_files_match_output(result, trb)
@@ -125,17 +115,13 @@ def test_table_cli(pcs_full):
         [
             "0@p",
             "tableof",
-            "--output-file",
-            "test_output",
+            "--output-file", "test_output",
             "models",
-            "-h",
-            "uid",
-            "-h",
-            "model",
-            "-h",
-            "coeffs",
+            "-h", "uid",
+            "-h", "model",
+            "-h", "coeffs",
         ],
-    )
+    )  # fmt: skip
     output_file = os.path.join(os.getcwd(), "test_output")
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert os.path.exists(output_file)
@@ -151,16 +137,11 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "--sort-by",
-            "r_square",
-            "--filter-by",
-            "model",
-            "linear",
-            "--filter-by",
-            "model",
-            "quadratic",
+            "--sort-by", "r_square",
+            "--filter-by", "model", "linear",
+            "--filter-by", "model", "quadratic",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, "table_models_ref_sorted_filtered"), "r") as trb:
         assert_files_match_output(result, trb)
@@ -191,14 +172,10 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "--filter-by",
-            "r_square",
-            "0",
-            "--filter-by",
-            "model",
-            "linear",
+            "--filter-by", "r_square", "0",
+            "--filter-by", "model", "linear",
         ],
-    )
+    )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, "table_models_ref_empty"), "r") as trb:
         assert_files_match_output(result, trb)

@@ -162,10 +162,7 @@ LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
 NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
 DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
-SUFFIX_DELIMITERS = (
-    "_",
-    "-",
-)  # The set of supported delimiters between probe and its suffix
+SUFFIX_DELIMITERS = ("_", "-")  # The set of supported delimiters between probe and its suffix
 PS_FORMAT = "pid,ppid,pgid,cmd"  # The format specification for an output from the 'ps' utility
 
 # Various sleep / wait related constants
