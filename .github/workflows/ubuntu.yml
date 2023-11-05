@@ -9,6 +9,7 @@ on:
       - devel
 
 jobs:
+  # Tests classic build using Tox for selected Python versions
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -37,6 +38,56 @@ jobs:
           flags: coverage-${{ matrix.python-version }}
           verbose: true
 
+  # Tests that perun is buildable from distribution packages (this is precursor for pypi install).
+  # We limit the test to version 3.11 in order to have less clutter in Actions
+  build-from-dist:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, Ubuntu and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create tarball or wheel
+        run: |
+          pip3 install -q build
+          make pypi-release
+
+      - name: Install from dist (wheel)
+        run: |
+          pip3 install dist/*.whl
+
+      - name: Install from dist (tar.gz)
+        run: |
+          pip3 install dist/*.tar.gz
+
+  # Tests that documentation is buildable. We limit the test to version 3.11 in order to have less clutter in Actions
+  build-docs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, Ubuntu and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Generate docs for Python ${{ matrix.python-version }} using Tox
+        run: |
+          tox -e docs
+
+  # Tests correctes of typing for all versions
   typing:
     runs-on: ubuntu-latest
     strategy:
@@ -55,3 +106,23 @@ jobs:
       - name: Check type correctness for Python ${{ matrix.python-version }} using Tox
         run: |
           tox -e typing
+
+  # Test linting only for the latest version of python
+  linting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, Ubuntu and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Check lint correctness for Python ${{ matrix.python-version }} using Tox
+        run: |
+          tox -e lint || true
+
