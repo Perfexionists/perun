@@ -3,7 +3,7 @@ requires = ["setuptools>=60", "setuptools-scm>=8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "perun"
+name = "perun-toolsuite"
 description = "Perun: Lightweight Performance Version System"
 requires-python = ">=3.9"
 readme = "README.md"
@@ -116,6 +116,7 @@ exclude = [
     "build",
     "docs",
     "perun.egg-info",
+    "perun_toolsuite.egg-info",
     "venv",
     # Fixme: Temporary exclude
     "perun/collect/trace"

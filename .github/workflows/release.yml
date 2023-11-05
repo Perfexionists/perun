@@ -18,7 +18,7 @@ jobs:
           ref: devel
 
       - name: Tag the new version
-        uses: phish108/autotag-action@1.1.51
+        uses: phish108/autotag-action@1.1.64
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch: devel
@@ -42,9 +42,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
-      - name: Compile the documentation
+      - name: Generate docs for Python using Tox
         run: |
-          make -C docs html
+          tox -e docs
 
       - name: Deploy to GH pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -77,7 +77,7 @@ jobs:
           # Install dependencies for build and deplo
           python3 -m pip install setuptools wheel twine
 
-      - name: Build python release distrubution package
+      - name: Build python release distribution package
         run: |
           pip3 install -q build
           make pypi-release
