@@ -813,8 +813,8 @@ def launch_cli_safely() -> None:
 
         reported_error = error_name + ": " + str(catched_exception)
         perun_log.error("Unexpected error: {}".format(reported_error), recoverable=True)
-        with helpers.SuppressedExceptions(Exception):
-            cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
+        #with helpers.SuppressedExceptions(Exception):
+        cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
 def launch_cli() -> None:
