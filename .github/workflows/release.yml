@@ -9,7 +9,7 @@ on:
 
 jobs:
   release:
-    if: ${{ github.event.pull_request.merged == true }} && ${{ contains(github.event.head_commit.message, 'Release') }}
+    if: ${{ github.event.pull_request.merged == true && contains(github.event.head_commit.message, 'Release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest version
@@ -99,4 +99,4 @@ jobs:
           python3 -m twine upload dist/*
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TESTPYPI_SECRET_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_SECRET_TOKEN }}
