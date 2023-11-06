@@ -7,7 +7,7 @@ import pytest
 import perun.utils.metrics as metrics
 
 
-@pytest.mark.usefixtures('cleandir')
+@pytest.mark.usefixtures("cleandir")
 def test_metrics(pcs_with_root, capsys):
     prev_enabled = metrics.Metrics.enabled
     metrics.Metrics.enabled = True
@@ -17,31 +17,31 @@ def test_metrics(pcs_with_root, capsys):
     # Basic configuration
     metrics.Metrics.configure("some_stats_file", "someid")
     assert metrics.Metrics.metrics_id == "someid"
-    assert metrics.Metrics.records == {'someid': {'id': 'someid'}}
+    assert metrics.Metrics.records == {"someid": {"id": "someid"}}
 
     # Switching metrics
     metrics.Metrics.switch_id("newid")
     assert metrics.Metrics.metrics_id == "newid"
     assert metrics.Metrics.records == {
-        'someid': {'id': 'someid'},
-        'newid': {'id': 'newid'}
+        "someid": {"id": "someid"},
+        "newid": {"id": "newid"},
     }
     metrics.Metrics.add_sub_id("subid")
     assert metrics.Metrics.metrics_id == "newid.subid"
     assert metrics.Metrics.records == {
-        'someid': {'id': 'someid'},
-        'newid.subid': {'id': 'newid.subid'}
+        "someid": {"id": "someid"},
+        "newid.subid": {"id": "newid.subid"},
     }
 
     metrics.start_timer("test")
     metrics.end_timer("test")
-    assert isinstance(metrics.Metrics.records['newid.subid']['test'], float)
+    assert isinstance(metrics.Metrics.records["newid.subid"]["test"], float)
 
     metrics.add_metric("metric", 1)
     assert metrics.read_metric("metric") == 1
 
     metrics.save()
-    stats_dir = os.path.join('.perun', 'tmp')
+    stats_dir = os.path.join(".perun", "tmp")
     assert "some_stats_file" in os.listdir(stats_dir)
 
     metrics.Metrics.metrics_filename = None

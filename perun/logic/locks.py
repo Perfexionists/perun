@@ -36,18 +36,19 @@ from perun.utils.exceptions import ResourceLockedException, InvalidTempPathExcep
 
 
 class LockType(Enum):
-    """ Specifies different lock types that are used in the trace collector.
+    """Specifies different lock types that are used in the trace collector.
 
     Each lock has its own unique suffix to prevent lock file overwriting in case
     of e.g. cleverly chosen binary names.
     """
-    Binary = '.b_lock'
-    Module = '.m_lock'
-    SystemTap = '.s_lock'
+
+    Binary = ".b_lock"
+    Module = ".m_lock"
+    SystemTap = ".s_lock"
 
     @classmethod
-    def suffix_to_type(cls, suffix: str) -> Optional['LockType']:
-        """ Transforms the given suffix into the corresponding LockType item.
+    def suffix_to_type(cls, suffix: str) -> Optional["LockType"]:
+        """Transforms the given suffix into the corresponding LockType item.
 
         :param str suffix: the suffix to transform
         :return LockType or None: corresponding LockType or None if the suffix has none
@@ -59,7 +60,7 @@ class LockType(Enum):
 
 
 class ResourceLock:
-    """ A class for locking certain resources (given by the LockType enum) used by the trace
+    """A class for locking certain resources (given by the LockType enum) used by the trace
     collector.
 
     :ivar str name: the name of the lock (e.g. the name of the profiled binary file)
@@ -68,8 +69,11 @@ class ResourceLock:
     :ivar str locks_dir: the path to the .perun directory where lock files are stored
     :ivar str file: the full path of the resulting lock file
     """
-    def __init__(self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str) -> None:
-        """ Construct lock object
+
+    def __init__(
+        self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str
+    ) -> None:
+        """Construct lock object
 
         :param LockType resource_type: the type of the resource to lock
         :param str resource_name: the name of the lock (e.g. the name of the profiled binary file)
@@ -80,20 +84,18 @@ class ResourceLock:
         self.type = resource_type
         self.pid = pid
         self.locks_dir = locks_dir
-        self.file = os.path.join(
-            locks_dir, '{}:{}{}'.format(self.name, self.pid, self.type.value)
-        )
+        self.file = os.path.join(locks_dir, "{}:{}{}".format(self.name, self.pid, self.type.value))
 
     @classmethod
-    def fromfile(cls, lock_file: str) -> Optional['ResourceLock']:
-        """ Construct ResourceLock object from a lock file
+    def fromfile(cls, lock_file: str) -> Optional["ResourceLock"]:
+        """Construct ResourceLock object from a lock file
 
         :param str lock_file: the path of the lock file
         :return ResourceLock or None: the lock object or None if the file does not represent a lock
         """
         with SuppressedExceptions(ValueError):
             # Get the resource name and pid
-            name, rest = os.path.basename(lock_file).rsplit(':', maxsplit=1)
+            name, rest = os.path.basename(lock_file).rsplit(":", maxsplit=1)
             pid = int(rest[:-LOCK_SUFFIX_LEN])
             # Transform the suffix into a LockResourceType
             resource_type = LockType.suffix_to_type(rest[-LOCK_SUFFIX_LEN:])
@@ -102,8 +104,7 @@ class ResourceLock:
         return None
 
     def lock(self) -> None:
-        """ Actually locks the resource represented by the lock object.
-        """
+        """Actually locks the resource represented by the lock object."""
         WATCH_DOG.debug(
             "Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid)
         )
@@ -118,18 +119,18 @@ class ResourceLock:
         WATCH_DOG.debug("Resource locked: '{}'".format(self.file))
 
     def unlock(self) -> None:
-        """ Unlocks the resource represented by the lock object.
-        """
+        """Unlocks the resource represented by the lock object."""
         # Attempt to delete the lock file if it was not deleted before
         self.delete_file()
 
     def check_validity(self) -> None:
-        """ Checks the validity of the lock, i.e. if there are no other lock files representing the
+        """Checks the validity of the lock, i.e. if there are no other lock files representing the
         same resource (e.g. the profiled binary). If a collision is encountered, an exception
         is raised.
         """
-        WATCH_DOG.debug("Checking lock validity for a resource '{}' with pid '{}'"
-                        .format(self.name, self.pid))
+        WATCH_DOG.debug(
+            "Checking lock validity for a resource '{}' with pid '{}'".format(self.name, self.pid)
+        )
 
         # Iterate all the lock files related to the resource + resource type
         for active_lock in get_active_locks_for(self.locks_dir, [self.name], [self.type]):
@@ -139,22 +140,25 @@ class ResourceLock:
 
             # Check if the resource is actually locked by a running perun process
             if _is_running_perun_process(active_lock.pid):
-                WATCH_DOG.debug("Resource '{}' already locked by a process '{}'"
-                                .format(self.name, active_lock.pid))
+                WATCH_DOG.debug(
+                    "Resource '{}' already locked by a process '{}'".format(
+                        self.name, active_lock.pid
+                    )
+                )
                 raise ResourceLockedException(self.name, active_lock.pid)
             # If not, remove the lock file and report the obsolete lock
             WATCH_DOG.info(
                 "Encountered obsolete lock file that should have been deleted during teardown: "
-                "Resource '{}', pid '{}'. Attempting to remove the lock."
-                .format(self.name, active_lock.pid)
+                "Resource '{}', pid '{}'. Attempting to remove the lock.".format(
+                    self.name, active_lock.pid
+                )
             )
             active_lock.delete_file()
 
         WATCH_DOG.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
 
     def delete_file(self) -> None:
-        """ Attempts to remove the lock file from the file system.
-        """
+        """Attempts to remove the lock file from the file system."""
         try:
             if os.path.exists(self.file):
                 WATCH_DOG.debug("Attempting to remove a lock file '{}'".format(self.file))
@@ -167,12 +171,12 @@ class ResourceLock:
 
 
 def get_active_locks_for(
-        locks_dir: str,
-        names: Optional[list[str]] = None,
-        resource_types: Optional[list[LockType]] = None,
-        pids: Optional[list[int]] = None
+    locks_dir: str,
+    names: Optional[list[str]] = None,
+    resource_types: Optional[list[LockType]] = None,
+    pids: Optional[list[int]] = None,
 ) -> list[ResourceLock]:
-    """ Lists the active locks, i.e. the lock files in the locks_dir that match the supplied
+    """Lists the active locks, i.e. the lock files in the locks_dir that match the supplied
     constraints in terms of resource name, type and PIDs. If the constraint is set to None, then
     it is simply ignored.
 
@@ -184,8 +188,10 @@ def get_active_locks_for(
     :return list: the list of ResourceLock objects
     """
 
-    def is_matching(name: Optional[str], r_type: Optional[LockType], lock_pid: Optional[int]) -> bool:
-        """ Checks the given parameters and compares them with the filtering constraints.
+    def is_matching(
+        name: Optional[str], r_type: Optional[LockType], lock_pid: Optional[int]
+    ) -> bool:
+        """Checks the given parameters and compares them with the filtering constraints.
 
         :param str name: the resource name to check
         :param LockType r_type: the type of resource lock
@@ -193,9 +199,11 @@ def get_active_locks_for(
 
         :return bool: true if the parameters are conforming to the filtering rules
         """
-        return ((names is None or name in names) and
-                (pids is None or lock_pid in pids) and
-                (resource_types is None or r_type in resource_types))
+        return (
+            (names is None or name in names)
+            and (pids is None or lock_pid in pids)
+            and (resource_types is None or r_type in resource_types)
+        )
 
     locks = []
     for lock_file in temp.list_all_temps(locks_dir):
@@ -208,7 +216,7 @@ def get_active_locks_for(
 
 
 def _is_running_perun_process(pid: int) -> bool:
-    """ Checks if the given PID represents a currently running perun process,
+    """Checks if the given PID represents a currently running perun process,
 
     :param int pid: the PID of the process
 
@@ -216,12 +224,12 @@ def _is_running_perun_process(pid: int) -> bool:
     """
     # Request information about process with the given PID
     WATCH_DOG.debug("Checking the details of a process '{}'".format(pid))
-    query = 'ps -o {} -p {}'.format(PS_FORMAT, pid)
-    result = utils.run_safely_external_command(query, False)[0].decode('utf-8').splitlines()
-    WATCH_DOG.log_variable('process::{}'.format(pid), result)
+    query = "ps -o {} -p {}".format(PS_FORMAT, pid)
+    result = utils.run_safely_external_command(query, False)[0].decode("utf-8").splitlines()
+    WATCH_DOG.log_variable("process::{}".format(pid), result)
     # If no such process exists then the output contains only header line
     if len(result) < 2:
         return False
     # Otherwise take the CMD record in the second line and test if it is related to perun
     command = result[1].strip().split()[3:]
-    return 'perun' in command
+    return "perun" in command

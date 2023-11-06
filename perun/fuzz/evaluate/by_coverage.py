@@ -18,8 +18,12 @@ import perun.utils as utils
 
 from perun.utils.helpers import SuppressedExceptions
 from perun.utils.structs import Executable
-from perun.fuzz.structs import FuzzingConfiguration, Mutation, FuzzingProgress, \
-    CoverageConfiguration
+from perun.fuzz.structs import (
+    FuzzingConfiguration,
+    Mutation,
+    FuzzingProgress,
+    CoverageConfiguration,
+)
 
 
 def prepare_workspace(source_path: str) -> None:
@@ -37,12 +41,12 @@ def prepare_workspace(source_path: str) -> None:
     :param str source_path: path to dir with source files, where coverage info files are stored
     """
     for file in os.listdir(source_path):
-        if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith('.gcov.json.gz'):
+        if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith(".gcov.json.gz"):
             os.remove(path.join(source_path, file))
 
 
 def get_src_files(source_path: str) -> list[str]:
-    """ Gathers all C/C++ source files in the directory specified by `source_path`
+    """Gathers all C/C++ source files in the directory specified by `source_path`
 
     C/C++ files are identified with extensions: .c, .cc, .cpp. All these types of files located in
     source directory are collected together.
@@ -54,18 +58,21 @@ def get_src_files(source_path: str) -> list[str]:
 
     for root, _, files in os.walk(source_path):
         if files:
-            sources.extend([
-                path.join(path.abspath(root), filename) for filename in files
-                if path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]
-            ])
+            sources.extend(
+                [
+                    path.join(path.abspath(root), filename)
+                    for filename in files
+                    if path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]
+                ]
+            )
 
     return sources
 
 
 def baseline_testing(
-        executable: Executable, workloads: list[Mutation], config: FuzzingConfiguration
+    executable: Executable, workloads: list[Mutation], config: FuzzingConfiguration
 ) -> int:
-    """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
+    """Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
     :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
@@ -75,18 +82,20 @@ def baseline_testing(
     """
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
-    log.info('Detected gcov version ', end='')
-    log.cprint("{}".format(config.coverage.gcov_version), 'white')
+    log.info("Detected gcov version ", end="")
+    log.cprint("{}".format(config.coverage.gcov_version), "white")
     log.info("")
 
     return get_initial_coverage(executable, workloads, config.hang_timeout, config)
 
 
 def get_initial_coverage(
-        executable: Executable, seeds: list[Mutation], timeout: int | float,
-        fuzzing_config: FuzzingConfiguration
+    executable: Executable,
+    seeds: list[Mutation],
+    timeout: int | float,
+    fuzzing_config: FuzzingConfiguration,
 ) -> int:
-    """ Provides initial testing with initial samples given by user.
+    """Provides initial testing with initial samples given by user.
 
     :param int timeout: specified timeout for run of target application
     :param Executable executable: called command with arguments
@@ -114,8 +123,12 @@ def get_initial_coverage(
 
 
 def target_testing(
-        executable: Executable, workload: Mutation, config: FuzzingConfiguration, parent: Mutation,
-        fuzzing_progress: FuzzingProgress, **__: Any
+    executable: Executable,
+    workload: Mutation,
+    config: FuzzingConfiguration,
+    parent: Mutation,
+    fuzzing_progress: FuzzingProgress,
+    **__: Any,
 ) -> bool:
     """
     Testing function for coverage based fuzzing. Before testing it prepares the workspace
@@ -138,7 +151,7 @@ def target_testing(
     except subprocess.CalledProcessError as err:
         log.error(
             "Testing with file " + workload.path + " caused an error: " + str(err),
-            recoverable=True
+            recoverable=True,
         )
         raise err
 
@@ -149,7 +162,7 @@ def target_testing(
 
 
 def get_gcov_files(directory: str) -> list[str]:
-    """ Searches for gcov files in `directory`.
+    """Searches for gcov files in `directory`.
     :param str directory: path of a directory, where searching will be provided
     :return list: absolute paths of found gcov files
     """
@@ -213,9 +226,9 @@ def get_coverage_from_dir(cwd: str, config: CoverageConfiguration) -> int:
 
 
 def check_if_coverage_increased(
-        base_cov: int, cov: int, parent_cov: int, increase_ratio: float = 1.5
+    base_cov: int, cov: int, parent_cov: int, increase_ratio: float = 1.5
 ) -> bool:
-    """ Condition for adding mutated input to set of candidates(parents).
+    """Condition for adding mutated input to set of candidates(parents).
 
     :param int base_cov: base coverage
     :param int cov: measured coverage

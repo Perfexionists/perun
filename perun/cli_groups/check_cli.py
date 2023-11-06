@@ -12,30 +12,52 @@ import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 
 from typing import Any, TYPE_CHECKING, Optional
+
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-@click.group('check')
-@click.option('--force', '-f',
-              is_flag=True, default=False,
-              help="Force comparison of the selected profiles even if their configuration"
-                   "does not match. This may be necessary when, e.g., different project"
-                   "versions build binaries with version information in their name"
-                   "(python3.10 and python3.11), thus failing the consistency check. ")
-@click.option('--compute-missing', '-c',
-              callback=cli_helpers.set_config_option_from_flag(
-                  perun_config.runtime, 'degradation.collect_before_check'),
-              is_flag=True, default=False,
-              help='whenever there are missing profiles in the given point of history'
-                   ' the matrix will be rerun and new generated profiles assigned.')
-@click.option('--models-type', '-m', nargs=1, required=False, multiple=False,
-              type=click.Choice(check.get_supported_detection_models_strategies()),
-              default=check.get_supported_detection_models_strategies()[0],
-              help="The detection models strategies predict the way of executing "
-                   "the detection between two profiles, respectively between relevant "
-                   "kinds of its models. Available only in the following detection "
-                   "methods: Integral Comparison (IC) and Local Statistics (LS).")
+@click.group("check")
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    default=False,
+    help=(
+        "Force comparison of the selected profiles even if their configuration"
+        "does not match. This may be necessary when, e.g., different project"
+        "versions build binaries with version information in their name"
+        "(python3.10 and python3.11), thus failing the consistency check. "
+    ),
+)
+@click.option(
+    "--compute-missing",
+    "-c",
+    callback=cli_helpers.set_config_option_from_flag(
+        perun_config.runtime, "degradation.collect_before_check"
+    ),
+    is_flag=True,
+    default=False,
+    help=(
+        "whenever there are missing profiles in the given point of history"
+        " the matrix will be rerun and new generated profiles assigned."
+    ),
+)
+@click.option(
+    "--models-type",
+    "-m",
+    nargs=1,
+    required=False,
+    multiple=False,
+    type=click.Choice(check.get_supported_detection_models_strategies()),
+    default=check.get_supported_detection_models_strategies()[0],
+    help=(
+        "The detection models strategies predict the way of executing "
+        "the detection between two profiles, respectively between relevant "
+        "kinds of its models. Available only in the following detection "
+        "methods: Integral Comparison (IC) and Local Statistics (LS)."
+    ),
+)
 def check_group(**_: Any) -> None:
     """Applies for the points of version history checks for possible performance changes.
 
@@ -84,33 +106,46 @@ def check_group(**_: Any) -> None:
         8. Exclusive Time Outliers (ETO)
 
     """
-    should_precollect = dutils.strtobool(str(
-        perun_config.lookup_key_recursively('degradation.collect_before_check', 'false')
-    ))
-    precollect_to_log = dutils.strtobool(str(
-        perun_config.lookup_key_recursively('degradation.log_collect', 'false')
-    ))
+    should_precollect = dutils.strtobool(
+        str(perun_config.lookup_key_recursively("degradation.collect_before_check", "false"))
+    )
+    precollect_to_log = dutils.strtobool(
+        str(perun_config.lookup_key_recursively("degradation.log_collect", "false"))
+    )
     if should_precollect:
-        print("{} is set to {}. ".format(
-            log.in_color('degradation.collect_before_check', 'white', 'bold'),
-            log.in_color('true', 'green', 'bold')
-        ), end='')
-        print("Missing profiles will be freshly collected with respect to the ", end='')
+        print(
+            "{} is set to {}. ".format(
+                log.in_color("degradation.collect_before_check", "white", "bold"),
+                log.in_color("true", "green", "bold"),
+            ),
+            end="",
+        )
+        print("Missing profiles will be freshly collected with respect to the ", end="")
         print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
-            print("The progress of the pre-collect phase will be stored in logs at {}.".format(
-                log.in_color(pcs.get_log_directory(), 'white', 'bold')
-            ))
+            print(
+                "The progress of the pre-collect phase will be stored in logs at {}.".format(
+                    log.in_color(pcs.get_log_directory(), "white", "bold")
+                )
+            )
         else:
-            print("The progress of the pre-collect phase will be redirected to {}.".format(
-                log.in_color('black hole', 'white', 'bold')
-            ))
+            print(
+                "The progress of the pre-collect phase will be redirected to {}.".format(
+                    log.in_color("black hole", "white", "bold")
+                )
+            )
 
 
-@check_group.command('head')
-@click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
-                callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_head(head_minor: str = 'HEAD') -> None:
+@check_group.command("head")
+@click.argument(
+    "head_minor",
+    required=False,
+    metavar="<hash>",
+    nargs=1,
+    callback=cli_helpers.lookup_minor_version_callback,
+    default="HEAD",
+)
+def check_head(head_minor: str = "HEAD") -> None:
     """Checks for changes in performance between between specified minor version (or current `head`)
     and its predecessor minor versions.
 
@@ -126,10 +161,16 @@ def check_head(head_minor: str = 'HEAD') -> None:
     check.degradation_in_minor(head_minor)
 
 
-@check_group.command('all')
-@click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
-                callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_all(minor_head: str = 'HEAD') -> None:
+@check_group.command("all")
+@click.argument(
+    "minor_head",
+    required=False,
+    metavar="<hash>",
+    nargs=1,
+    callback=cli_helpers.lookup_minor_version_callback,
+    default="HEAD",
+)
+def check_all(minor_head: str = "HEAD") -> None:
     """Checks for changes in performance for the specified interval of version history.
 
     The commands crawls through the whole history of project versions starting from the specified
@@ -142,18 +183,38 @@ def check_all(minor_head: str = 'HEAD') -> None:
     check.degradation_in_history(minor_head)
 
 
-@check_group.command('profiles')
-@click.argument('baseline_profile', required=True, metavar='<baseline>', nargs=1,
-                callback=cli_helpers.lookup_any_profile_callback)
-@click.argument('target_profile', required=True, metavar='<target>', nargs=1,
-                callback=cli_helpers.lookup_any_profile_callback)
-@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=cli_helpers.lookup_minor_version_callback, metavar='<hash>',
-              help='Will check the index of different minor version <hash>'
-                   ' during the profile lookup.')
+@check_group.command("profiles")
+@click.argument(
+    "baseline_profile",
+    required=True,
+    metavar="<baseline>",
+    nargs=1,
+    callback=cli_helpers.lookup_any_profile_callback,
+)
+@click.argument(
+    "target_profile",
+    required=True,
+    metavar="<target>",
+    nargs=1,
+    callback=cli_helpers.lookup_any_profile_callback,
+)
+@click.option(
+    "--minor",
+    "-m",
+    nargs=1,
+    default=None,
+    is_eager=True,
+    callback=cli_helpers.lookup_minor_version_callback,
+    metavar="<hash>",
+    help="Will check the index of different minor version <hash> during the profile lookup.",
+)
 @click.pass_context
 def check_profiles(
-        ctx: click.Context, baseline_profile: Profile, target_profile: Profile, minor: Optional[str], **_: str
+    ctx: click.Context,
+    baseline_profile: Profile,
+    target_profile: Profile,
+    minor: Optional[str],
+    **_: str,
 ) -> None:
     """Checks for changes in performance between two profiles.
 
@@ -183,6 +244,9 @@ def check_profiles(
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     log.newline()
     check.degradation_between_files(
-        baseline_profile, target_profile, minor,
-        ctx.parent.params['models_type'], ctx.parent.params['force']
+        baseline_profile,
+        target_profile,
+        minor,
+        ctx.parent.params["models_type"],
+        ctx.parent.params["force"],
     )

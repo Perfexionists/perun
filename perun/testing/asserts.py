@@ -21,7 +21,7 @@ def predicate_from_cli(cli_result: click.testing.Result | list[str] | str, predi
     try:
         assert predicate
     except AssertionError as failed_assertion:
-        if hasattr(cli_result, 'output') and cli_result.output:
+        if hasattr(cli_result, "output") and cli_result.output:
             print("=== Captured output ===")
             print(cli_result.output)
         elif isinstance(cli_result, list):
@@ -31,14 +31,16 @@ def predicate_from_cli(cli_result: click.testing.Result | list[str] | str, predi
             print("=== Captured output ===")
             print(cli_result)
         print("=== Inner traceback ===")
-        if hasattr(cli_result, 'exception') and cli_result.exception:
+        if hasattr(cli_result, "exception") and cli_result.exception:
             print(cli_result.exception)
-        if hasattr(cli_result, 'exc_info') and cli_result.exc_info is not None:
+        if hasattr(cli_result, "exc_info") and cli_result.exc_info is not None:
             traceback.print_tb(cli_result.exc_info[2])
         raise failed_assertion
 
 
-def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None) -> None:
+def invalid_cli_choice(
+    cli_result: click.testing.Result, choice: str, file: Optional[str] = None
+) -> None:
     """Checks, that click correctly ended as invalid choice
 
     :param click.testing.Result cli_result: result of the commandline interface
@@ -51,7 +53,9 @@ def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Opti
         assert file not in os.listdir(os.getcwd())
 
 
-def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None) -> None:
+def invalid_param_choice(
+    cli_result: click.testing.Result, choice: str, file: Optional[str] = None
+) -> None:
     """Checks that click correctly ended with invalid choice and 1 return code
     :param click.test.Result cli_result: result of the commandline interface
     :param str choice: choice that we tried

@@ -14,10 +14,10 @@ from perun.utils.structs import PerformanceChange, ModelRecord
 
 
 def classify_change(
-        diff_value: float,
-        no_change_threshold: float,
-        change_threshold: float,
-        baseline_per: float = 1
+    diff_value: float,
+    no_change_threshold: float,
+    change_threshold: float,
+    baseline_per: float = 1,
 ) -> PerformanceChange:
     """
     Classification of changes according to the value of relative error.
@@ -44,20 +44,22 @@ def classify_change(
     if abs(diff_value) <= no_change_threshold * baseline_per:
         result = PerformanceChange.NoChange
     elif abs(diff_value) <= change_threshold * baseline_per:
-        result = PerformanceChange.MaybeOptimization if diff_value < 0 else \
-            PerformanceChange.MaybeDegradation
+        result = (
+            PerformanceChange.MaybeOptimization
+            if diff_value < 0
+            else PerformanceChange.MaybeDegradation
+        )
     else:
-        result = PerformanceChange.Optimization if diff_value < 0 else \
-            PerformanceChange.Degradation
+        result = PerformanceChange.Optimization if diff_value < 0 else PerformanceChange.Degradation
 
     return result
 
 
 def unify_buckets_in_regressogram(
-        uid: str,
-        baseline_model_record: ModelRecord,
-        target_model_record: ModelRecord,
-        target_profile: Profile
+    uid: str,
+    baseline_model_record: ModelRecord,
+    target_model_record: ModelRecord,
+    target_profile: Profile,
 ) -> ModelRecord:
     """
     The method unifies the regressograms into the same count of buckets.
@@ -74,26 +76,24 @@ def unify_buckets_in_regressogram(
     :param Profile target_profile: target profile corresponding to the checked minor version
     :return dict: new regressogram model with the required 'uid'
     """
-    uid = re.sub(baseline_model_record.type + '$', '', uid)
+    uid = re.sub(baseline_model_record.type + "$", "", uid)
     baseline_coeff_len = baseline_model_record.coeff_size()
     target_coeff_len = target_model_record.coeff_size()
     log.warn(
-        '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
+        "{0}: {1} models with different length ({2} != {3}) are slicing".format(
             uid, baseline_model_record.type, baseline_coeff_len, target_coeff_len
-        ), end=": "
+        ),
+        end=": ",
     )
-    log.cprint('Target regressogram model will be post-processed again.\n', 'yellow')
+    log.cprint("Target regressogram model will be post-processed again.\n", "yellow")
     # find target model with all needed items from target profile
     target_model = target_profile.get_model_of(target_model_record.type, uid)
     # set needed parameters for regressogram post-processors
-    mapper_keys = {
-        'per_key': target_model['per_key'],
-        'of_key': target_model['of_key']
-    }
+    mapper_keys = {"per_key": target_model["per_key"], "of_key": target_model["of_key"]}
     config = {
-        'statistic_function': target_model['statistic_function'],
-        'bucket_number': baseline_coeff_len,
-        'bucket_method': None,
+        "statistic_function": target_model["statistic_function"],
+        "bucket_number": baseline_coeff_len,
+        "bucket_method": None,
     }
     config.update(mapper_keys)
     # compute new regressogram models with the new parameters needed to unification
@@ -102,15 +102,15 @@ def unify_buckets_in_regressogram(
     )
 
     # match the regressogram model with the right 'uid'
-    model = [model for model in new_regressogram_models if model['uid'] == uid][0]
+    model = [model for model in new_regressogram_models if model["uid"] == uid][0]
     return methods.create_model_record(model)
 
 
 def preprocess_nonparam_models(
-        uid: str,
-        baseline_model: ModelRecord,
-        target_profile: Profile,
-        target_model: ModelRecord
+    uid: str,
+    baseline_model: ModelRecord,
+    target_profile: Profile,
+    target_model: ModelRecord,
 ) -> tuple[list[float], list[float], list[float]]:
     """
     Function prepare models to execute the computation of statistics between them.
@@ -128,6 +128,7 @@ def preprocess_nonparam_models(
     :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
+
     def get_model_coordinates(model: ModelRecord) -> tuple[list[float], list[float]]:
         """
         Function obtains the coordinates of given model.
@@ -165,18 +166,24 @@ def preprocess_nonparam_models(
         target_y_pts_len = len(target_y_pts)
         if baseline_y_pts_len != target_y_pts_len:
             log.warn(
-                '{0}: {1} models with different length ({2} != {3}) are slicing'
-                .format(uid, baseline_model.type, baseline_y_pts_len, target_y_pts_len)
+                "{0}: {1} models with different length ({2} != {3}) are slicing".format(
+                    uid, baseline_model.type, baseline_y_pts_len, target_y_pts_len
+                )
             )
-            return baseline_x_pts[:min(baseline_x_pts_len, target_x_pts_len)], \
-                baseline_y_pts[:min(baseline_y_pts_len, target_y_pts_len)], \
-                target_x_pts[:min(baseline_x_pts_len, target_x_pts_len)], \
-                target_y_pts[:min(baseline_y_pts_len, target_y_pts_len)]
+            return (
+                baseline_x_pts[: min(baseline_x_pts_len, target_x_pts_len)],
+                baseline_y_pts[: min(baseline_y_pts_len, target_y_pts_len)],
+                target_x_pts[: min(baseline_x_pts_len, target_x_pts_len)],
+                target_y_pts[: min(baseline_y_pts_len, target_y_pts_len)],
+            )
         return baseline_x_pts, baseline_y_pts, target_x_pts, target_y_pts
 
     # check whether both models are regressogram and whether there are not about the same length
-    if baseline_model.type == 'regressogram' and target_model.type == 'regressogram' and \
-            baseline_model.coeff_size() != target_model.coeff_size():
+    if (
+        baseline_model.type == "regressogram"
+        and target_model.type == "regressogram"
+        and baseline_model.coeff_size() != target_model.coeff_size()
+    ):
         target_model = unify_buckets_in_regressogram(
             uid, baseline_model, target_model, target_profile
         )
@@ -184,6 +191,11 @@ def preprocess_nonparam_models(
     # obtains coordinates from both models and perform the check their lengths
     baseline_x_pts, baseline_y_pts = get_model_coordinates(baseline_model)
     target_x_pts, target_y_pts = get_model_coordinates(target_model)
-    baseline_x_pts, baseline_y_pts, target_x_pts, target_y_pts = check_model_coordinates()
+    (
+        baseline_x_pts,
+        baseline_y_pts,
+        target_x_pts,
+        target_y_pts,
+    ) = check_model_coordinates()
 
     return baseline_x_pts, baseline_y_pts, target_y_pts

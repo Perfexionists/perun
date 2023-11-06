@@ -51,17 +51,17 @@ from perun.profile.factory import Profile
 
 CONFIDENCE_THRESHOLD = 0.9
 MODEL_ORDERING = [
-    'constant',
-    'logarithmic',
-    'linear',
-    'quadratic',
-    'power',
-    'exponential'
+    "constant",
+    "logarithmic",
+    "linear",
+    "quadratic",
+    "power",
+    "exponential",
 ]
 
 
 def best_model_order_equality(
-        baseline_profile: Profile, target_profile: Profile, **_: Any
+    baseline_profile: Profile, target_profile: Profile, **_: Any
 ) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
@@ -73,15 +73,14 @@ def best_model_order_equality(
     :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    best_baseline_models = detection.get_filtered_best_models_of(baseline_profile, group='param')
-    best_target_models = detection.get_filtered_best_models_of(target_profile, group='param')
+    best_baseline_models = detection.get_filtered_best_models_of(baseline_profile, group="param")
+    best_target_models = detection.get_filtered_best_models_of(target_profile, group="param")
 
     for uid, best_model in best_target_models.items():
         best_baseline_model = best_baseline_models.get(uid)
         if best_baseline_model:
             confidence = min(best_baseline_model.r_square, best_model.r_square)
-            if confidence >= CONFIDENCE_THRESHOLD \
-               and best_baseline_model.type != best_model.type:
+            if confidence >= CONFIDENCE_THRESHOLD and best_baseline_model.type != best_model.type:
                 baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
                 target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:
@@ -100,5 +99,6 @@ def best_model_order_equality(
                 fb=best_baseline_model.type,
                 tt=best_model.type,
                 rd=degradation_rate,
-                ct="r_square", cr=confidence
+                ct="r_square",
+                cr=confidence,
             )

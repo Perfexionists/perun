@@ -2,7 +2,5 @@
 of allocations, type of allocations, etc.
 """
 
-COLLECTOR_TYPE = 'memory'
-COLLECTOR_DEFAULT_UNITS = {
-    'memory': 'B'
-}
+COLLECTOR_TYPE = "memory"
+COLLECTOR_DEFAULT_UNITS = {"memory": "B"}

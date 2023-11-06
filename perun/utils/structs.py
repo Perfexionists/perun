@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     import numpy
 
 
-GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
+GeneratorSpec = collections.namedtuple("GeneratorSpec", "constructor params")
 
 
 class PerformanceChange(Enum):
@@ -35,12 +35,14 @@ class PerformanceChange(Enum):
 
 class CollectStatus(Enum):
     """Simple enumeration for statuses of the collectors"""
+
     OK = 0
     ERROR = 1
 
 
 class PostprocessStatus(Enum):
     """Simple enumeration for statuses of the postprocessors"""
+
     OK = 0
     ERROR = 1
 
@@ -58,13 +60,14 @@ class RunnerReport:
     :ivar str message: string message describing the result of run
     :ivar dict kwargs: kwargs of the process (should include "profile")
     """
+
     ok_statuses: dict[str, CollectStatus | PostprocessStatus] = {
-        'collector': CollectStatus.OK,
-        'postprocessor': PostprocessStatus.OK
+        "collector": CollectStatus.OK,
+        "postprocessor": PostprocessStatus.OK,
     }
     error_statues: dict[str, CollectStatus | PostprocessStatus] = {
-        'collector': CollectStatus.ERROR,
-        'postprocessor': PostprocessStatus.ERROR
+        "collector": CollectStatus.ERROR,
+        "postprocessor": PostprocessStatus.ERROR,
     }
 
     def __init__(self, runner: types.ModuleType, runner_type: str, kwargs: Any) -> None:
@@ -96,7 +99,7 @@ class RunnerReport:
         self.stat_code = stat_code
         self.kwargs.update(params or {})
 
-        is_enum = hasattr(self.stat_code, 'value')
+        is_enum = hasattr(self.stat_code, "value")
         if not (self.stat_code == 0 or (is_enum and cast(Enum, self.stat_code).value == 0)):
             self.status = self.error_status
 
@@ -123,6 +126,7 @@ class Executable:
         note that this is to differentiate between actually generated workloads from generators and
         names of the generators.
     """
+
     def __init__(self, cmd: str, args: str = "", workload: str = "") -> None:
         """Initializes the executable
 
@@ -162,6 +166,7 @@ class Unit:
     :ivar str name: name of the unit
     :ivar dict params: parameters for the unit
     """
+
     def __init__(self, name: str, params: dict[str, Any]) -> None:
         """Constructs the unit, with name being sanitized
 
@@ -170,7 +175,6 @@ class Unit:
         """
         self.name = Unit.sanitize_unit_name(name)
         self.params = params
-
 
     @classmethod
     def desanitize_unit_name(cls, unit_name: str) -> str:
@@ -182,7 +186,7 @@ class Unit:
         :param str unit_name: name of the unit that is desanitized
         :return:
         """
-        return unit_name.replace('_', '-')
+        return unit_name.replace("_", "-")
 
     @classmethod
     def sanitize_unit_name(cls, unit_name: str) -> str:
@@ -197,7 +201,7 @@ class Unit:
         :param str unit_name: module name that we are sanitizing
         :return: sanitized module name usable inside the Perun (with underscores instead of dashes)
         """
-        return unit_name.replace('-', '_')
+        return unit_name.replace("-", "_")
 
 
 class DegradationInfo:
@@ -217,17 +221,17 @@ class DegradationInfo:
     """
 
     def __init__(
-            self,
-            res: PerformanceChange,
-            loc: str,
-            fb: str,
-            tt: str,
-            t: str = "-",
-            rd: float = 0,
-            ct: str = "no",
-            cr: float = 0,
-            pi: Optional[list[tuple[PerformanceChange, float, float, float]]] = None,
-            rdr: float = 0.0
+        self,
+        res: PerformanceChange,
+        loc: str,
+        fb: str,
+        tt: str,
+        t: str = "-",
+        rd: float = 0,
+        ct: str = "no",
+        cr: float = 0,
+        pi: Optional[list[tuple[PerformanceChange, float, float, float]]] = None,
+        rdr: float = 0.0,
     ) -> None:
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
@@ -258,7 +262,9 @@ class DegradationInfo:
         self.rate_degradation: float = rd
         self.confidence_type: str = ct
         self.confidence_rate: float = cr
-        self.partial_intervals: list[tuple[PerformanceChange, float, float, float]] = pi if pi is not None else []
+        self.partial_intervals: list[tuple[PerformanceChange, float, float, float]] = (
+            pi if pi is not None else []
+        )
         self.rate_degradation_relative: float = rdr
 
     def to_storage_record(self) -> str:
@@ -286,6 +292,7 @@ class Job:
     :ivar list postprocessors: list of postprocessing units applied after the collection
     :ivar Executable executable: System Under Profiling (SUP)
     """
+
     def __init__(self, collector: Unit, postprocessors: list[Unit], executable: Executable) -> None:
         """
         :param Unit collector: collection unit used to collect the SUP
@@ -301,14 +308,14 @@ class Job:
         :return: representation as dictionary
         """
         return {
-            'collector': self.collector,
-            'postprocessors': self.postprocessors,
-            'executable': self.executable
+            "collector": self.collector,
+            "postprocessors": self.postprocessors,
+            "executable": self.executable,
         }
 
 
 class OrderedEnum(Enum):
-    """ An ordered enumeration structure that ranks the elements so that they can be compared in
+    """An ordered enumeration structure that ranks the elements so that they can be compared in
     regards of their order. Taken from:
         https://stackoverflow.com/questions/42369749/use-definition-order-of-enum-as-natural-order
 
@@ -316,7 +323,7 @@ class OrderedEnum(Enum):
     """
 
     def __init__(self, *args: Any) -> None:
-        """ Create the new enumeration element and compute its order.
+        """Create the new enumeration element and compute its order.
 
         :param args: additional element arguments
         """
@@ -330,7 +337,7 @@ class OrderedEnum(Enum):
         self.order = ordered
 
     def __ge__(self, other: object) -> bool:
-        """ Comparison operator >=.
+        """Comparison operator >=.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
@@ -340,7 +347,7 @@ class OrderedEnum(Enum):
         return NotImplemented
 
     def __gt__(self, other: object) -> bool:
-        """ Comparison operator >.
+        """Comparison operator >.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
@@ -350,7 +357,7 @@ class OrderedEnum(Enum):
         return NotImplemented
 
     def __le__(self, other: object) -> bool:
-        """ Comparison operator <=.
+        """Comparison operator <=.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
@@ -360,7 +367,7 @@ class OrderedEnum(Enum):
         return NotImplemented
 
     def __lt__(self, other: object) -> bool:
-        """ Comparison operator <.
+        """Comparison operator <.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
@@ -380,6 +387,7 @@ class ProfileListConfig:
         the profile in the list
     :ivar int header_width: overall width of the profile list
     """
+
     def __init__(self, list_type: str, short: bool, profile_list: list[Any]) -> None:
         """Initializes the configuration for the profile list.
 
@@ -387,10 +395,10 @@ class ProfileListConfig:
         :param bool short: true if the list should be short
         :param list profile_list: list of profiles
         """
-        self.colour = 'white' if list_type == 'tracked' else 'red'
-        self.ending = ':\n\n' if not short else "\n"
+        self.colour = "white" if list_type == "tracked" else "red"
+        self.ending = ":\n\n" if not short else "\n"
         self.list_len = len(profile_list)
-        self.id_char = 'i' if list_type == 'tracked' else 'p'
+        self.id_char = "i" if list_type == "tracked" else "p"
         self.id_width = len(str(self.list_len))
         # The magic 3 corresponds to the fixed string @p or @i
         self.header_width = self.id_width + 3
@@ -407,6 +415,7 @@ class MinorVersion:
     :ivar str desc: description of the changes commited in the minor version
     :ivar list parents: list of parents of the minor version (empty if root)
     """
+
     date: str
     author: Optional[str]
     email: Optional[str]
@@ -425,7 +434,7 @@ class MinorVersion:
             self.email,
             self.checksum,
             self.desc.split("\n")[0],
-            self.parents
+            self.parents,
         )
 
     @staticmethod
@@ -443,6 +452,7 @@ class MajorVersion:
     :ivar str name: name of the major version
     :ivar str head: sha checksum of the corresponding head minor version
     """
+
     name: str
     head: str
 
@@ -460,6 +470,7 @@ class ModelRecord:
     :ivar int x_start: start of the interval, where the model holds
     :ivar int x_end: end of the interval, where the model holds
     """
+
     type: str
     r_square: float
     b0: float | npt.NDArray[numpy.float64]
@@ -473,4 +484,4 @@ class ModelRecord:
 
         :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
         """
-        return len(self.b0) if hasattr(self.b0, '__len__') else 1 + self.b1 != 0.0 + self.b2 != 0.0
+        return len(self.b0) if hasattr(self.b0, "__len__") else 1 + self.b1 != 0.0 + self.b2 != 0.0

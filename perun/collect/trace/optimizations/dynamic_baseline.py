@@ -13,7 +13,7 @@ _WRAPPER_THRESHOLD_RATIO = 0.8
 
 
 def filter_functions(call_graph, stats_map, checks):
-    """ The Dynamic Baseline method.
+    """The Dynamic Baseline method.
 
     :param CallGraphResource call_graph: the CGR optimization resource
     :param dict stats_map: the Dynamic Stats resource
@@ -29,8 +29,12 @@ def filter_functions(call_graph, stats_map, checks):
 
         # Run all the check functions
         for check_f, check_threshold in checks:
-            if check_f(call_graph=call_graph, stats=stats_map, func=func_name,
-                       threshold=check_threshold):
+            if check_f(
+                call_graph=call_graph,
+                stats=stats_map,
+                func=func_name,
+                threshold=check_threshold,
+            ):
                 filtered_funcs.append(func_name)
                 break
 
@@ -39,7 +43,7 @@ def filter_functions(call_graph, stats_map, checks):
 
 
 def call_limit_filter(stats, func, threshold, **_):
-    """ Checks whether the call limit has exceeded the hard threshold.
+    """Checks whether the call limit has exceeded the hard threshold.
 
     :param dict stats: the Dynamic Stats resource
     :param str func: name of the checked function
@@ -47,11 +51,11 @@ def call_limit_filter(stats, func, threshold, **_):
 
     :return bool: True if the function should be filtered, False otherwise
     """
-    return stats[func]['count'] > threshold
+    return stats[func]["count"] > threshold
 
 
 def constant_filter(stats, func, threshold, **_):
-    """ Checks whether the call limit has exceeded the soft threshold and moreover, if the
+    """Checks whether the call limit has exceeded the soft threshold and moreover, if the
     function shows a constant-like behaviour.
 
     :param dict stats: the Dynamic Stats resource
@@ -60,13 +64,14 @@ def constant_filter(stats, func, threshold, **_):
 
     :return bool: True if the function should be filtered, False otherwise
     """
-    calls, iqr, median = stats[func]['count'], stats[func]['IQR'], stats[func]['median']
-    return (calls > threshold) and (iqr < median * _CONSTANT_MEDIAN_RATIO
-                                    or median <= _MEDIAN_RESOLUTION)
+    calls, iqr, median = stats[func]["count"], stats[func]["IQR"], stats[func]["median"]
+    return (calls > threshold) and (
+        iqr < median * _CONSTANT_MEDIAN_RATIO or median <= _MEDIAN_RESOLUTION
+    )
 
 
 def wrapper_filter(call_graph, func, stats, **_):
-    """ Inspects all callers of the given function and checks if the wrapper-wrapped conditions
+    """Inspects all callers of the given function and checks if the wrapper-wrapped conditions
     are met - if as much as a single caller does not meet the requirements, we do not filter the
     function.
 
@@ -77,8 +82,8 @@ def wrapper_filter(call_graph, func, stats, **_):
     :return bool: True if the function should be filtered, False otherwise
     """
     # Inspect all func callers
-    calls, median = stats[func]['count'], stats[func]['median']
-    callers = call_graph[func]['callers']
+    calls, median = stats[func]["count"], stats[func]["median"]
+    callers = call_graph[func]["callers"]
     if len(callers) < 1:
         return False
     for parent in callers:
@@ -86,9 +91,16 @@ def wrapper_filter(call_graph, func, stats, **_):
         if parent not in stats:
             return False
         # Check if all callers satisfy the wrapper constraints
-        p_callees, parent_median = call_graph[parent]['callees'], stats[parent]['median']
-        if (stats[parent]['count'] != calls or len(p_callees) != 1 or func != p_callees[0] or
-                median < parent_median * _WRAPPER_THRESHOLD_RATIO):
+        p_callees, parent_median = (
+            call_graph[parent]["callees"],
+            stats[parent]["median"],
+        )
+        if (
+            stats[parent]["count"] != calls
+            or len(p_callees) != 1
+            or func != p_callees[0]
+            or median < parent_median * _WRAPPER_THRESHOLD_RATIO
+        ):
             return False
     # All of the callers satisfy the constraints, func is wrapped
     return True

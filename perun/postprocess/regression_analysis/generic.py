@@ -21,9 +21,9 @@ import perun.postprocess.regression_analysis.tools as tools
 
 
 def generic_compute_regression(
-        data_gen: Iterable[dict[str, Any]],
-        func_list: list[Callable[..., dict[str, Any]]],
-        **model: Any
+    data_gen: Iterable[dict[str, Any]],
+    func_list: list[Callable[..., dict[str, Any]]],
+    **model: Any,
 ) -> Iterable[dict[str, Any]]:
     """The core of the computation process.
 
@@ -52,12 +52,12 @@ def generic_compute_regression(
 
 
 def generic_regression_data(
-        x_pts: list[float],
-        y_pts: list[float],
-        f_x: Callable[[float], float],
-        f_y: Callable[[float], float],
-        steps: int,
-        **_: Any
+    x_pts: list[float],
+    y_pts: list[float],
+    f_x: Callable[[float], float],
+    f_y: Callable[[float], float],
+    steps: int,
+    **_: Any,
 ) -> Iterable[dict[str, float]]:
     """The generic data generator.
 
@@ -95,7 +95,6 @@ def generic_regression_data(
     for part_start, part_end in tools.split_sequence(len(x_pts), steps):
         skipped = 0
         for x_pt, y_pt in zip(x_pts[part_start:part_end], y_pts[part_start:part_end]):
-
             # Account for possible domain errors with f_x and f_y functions, simply skip the point
             try:
                 x_tmp = f_x(x_pt)
@@ -107,8 +106,8 @@ def generic_regression_data(
             # Compute the intermediate results
             x_sum += x_tmp
             y_sum += y_tmp
-            x_square_sum += x_tmp ** 2
-            y_square_sum += y_tmp ** 2
+            x_square_sum += x_tmp**2
+            y_square_sum += y_tmp**2
             xy_sum += x_tmp * y_tmp
 
             # Check the min and max
@@ -117,23 +116,29 @@ def generic_regression_data(
         # Computation step is complete, save the data
         pts_num = part_end - skipped
         data = dict(
-            x_sum=x_sum, y_sum=y_sum, xy_sum=xy_sum, x_sq_sum=x_square_sum,
-            y_sq_sum=y_square_sum, pts_num=pts_num, num_sqrt=sqrt(pts_num),
-            x_start=x_min, x_end=x_max
+            x_sum=x_sum,
+            y_sum=y_sum,
+            xy_sum=xy_sum,
+            x_sq_sum=x_square_sum,
+            y_sq_sum=y_square_sum,
+            pts_num=pts_num,
+            num_sqrt=sqrt(pts_num),
+            x_start=x_min,
+            x_end=x_max,
         )
         yield data
 
 
 def generic_regression_coefficients(
-        f_a: Callable[[float], float],
-        f_b: Callable[[float], float],
-        x_sum: float,
-        y_sum: float,
-        xy_sum: float,
-        x_sq_sum: float,
-        pts_num: int,
-        num_sqrt: float,
-        **_: Any
+    f_a: Callable[[float], float],
+    f_b: Callable[[float], float],
+    x_sum: float,
+    y_sum: float,
+    xy_sum: float,
+    x_sq_sum: float,
+    pts_num: int,
+    num_sqrt: float,
+    **_: Any,
 ) -> dict[str, list[float] | float]:
     """The generic function for coefficients computation.
 
@@ -190,11 +195,11 @@ def generic_regression_coefficients(
     b_0 = tools.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
-    return {'coeffs': [f_a(b_0), f_b(b_1)], 's_xy': s_xy, 's_xx': s_xx}
+    return {"coeffs": [f_a(b_0), f_b(b_1)], "s_xy": s_xy, "s_xx": s_xx}
 
 
 def generic_regression_error(
-        s_xy: float, s_xx: float, y_sum: float, y_sq_sum: float, num_sqrt: float, **_: Any
+    s_xy: float, s_xx: float, y_sum: float, y_sq_sum: float, num_sqrt: float, **_: Any
 ) -> dict[str, float]:
     """The generic function for error (r^2) computation.
 

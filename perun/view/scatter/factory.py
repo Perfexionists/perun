@@ -76,14 +76,17 @@ def create_from_params(
             hv.opts.Curve(
                 # The max function is here so that when there are no models, the Cycle object
                 # is initialized properly
-                color=hv.Cycle(list(palettes.viridis(max(len(models_slice), 1)))), line_width=3.5
+                color=hv.Cycle(list(palettes.viridis(max(len(models_slice), 1)))),
+                line_width=3.5,
             ),
         )
 
         yield f"{data_slice.uid.values[0]}", scatter
 
 
-def _generate_plot_data_slices(profile: Profile) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
+def _generate_plot_data_slices(
+    profile: Profile,
+) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
     """Generates data slices for plotting resources and models.
 
     The resources are split per UID and models are sliced per UID and interval.
@@ -203,7 +206,8 @@ def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[h
         if uid == model["uid"]:
             # Build the model
             yield hv.Curve(
-                (sorted(x_pts), model.get("kernel_stats", model.get("bucket_stats"))), label=legend
+                (sorted(x_pts), model.get("kernel_stats", model.get("bucket_stats"))),
+                label=legend,
             )
 
 
@@ -222,7 +226,9 @@ def _create_regressogram_model(model: ProfileModel) -> hv.Curve:
     return _render_step_function(x_pts, y_pts, legend=_build_model_legend(model))
 
 
-def _render_step_function(x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64], legend: str) -> hv.Curve:
+def _render_step_function(
+    x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64], legend: str
+) -> hv.Curve:
     """Build regressogram's step lines according to given coordinates.
 
     :param x_pts: the x-coordinates for the line.
@@ -252,8 +258,7 @@ def _build_model_legend(model: ProfileModel) -> str:
     if model["model"] == "moving_average":
         # Create a legend for moving_average model
         return (
-            f"{model['moving_method']}: window={model['window_width']}, "
-            f"R^2={model['r_square']:.3f}"
+            f"{model['moving_method']}: window={model['window_width']}, R^2={model['r_square']:.3f}"
         )
     if model["model"] == "kernel_regression":
         # Create a legend for kernel model

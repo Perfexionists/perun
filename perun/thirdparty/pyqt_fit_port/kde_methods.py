@@ -865,7 +865,7 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.pdf(self, kde, points, out)
         if not kde.closed:
             raise ValueError(
-                "Cyclic boundary conditions can only be used with " "closed or un-bounded domains."
+                "Cyclic boundary conditions can only be used with closed or un-bounded domains."
             )
 
         xdata = kde.xdata
@@ -902,7 +902,7 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.cdf(self, kde, points, out)
         if not kde.closed:
             raise ValueError(
-                "Cyclic boundary conditions can only be used with " "closed or unbounded domains."
+                "Cyclic boundary conditions can only be used with closed or unbounded domains."
             )
 
         xdata = kde.xdata
@@ -948,7 +948,7 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.grid(self, kde, N, cut)
         if kde.bounded and not kde.closed:
             raise ValueError(
-                "Error, cyclic boundary conditions require " "a closed or un-bounded domain."
+                "Error, cyclic boundary conditions require a closed or un-bounded domain."
             )
         bw = kde.bandwidth * kde.lambdas
         data = kde.xdata
@@ -982,7 +982,7 @@ class CyclicMethod(KDE1DMethod):
         if kde.lambdas.shape:
             return KDE1DMethod.cdf_grid(self, kde, N, cut)
         if not kde.closed:
-            raise ValueError("Error, cyclic boundary conditions require " "a closed domain.")
+            raise ValueError("Error, cyclic boundary conditions require a closed domain.")
         N = self.grid_size(N)
 
         if N <= 2**12:

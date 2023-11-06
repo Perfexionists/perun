@@ -35,41 +35,113 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 
 
 @click.command()
-@click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(helpers.AGGREGATIONS), is_eager=True)
-@click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Sets key that is source of the data for the flow,"
-              " i.e. what will be displayed on Y axis, e.g. the amount of"
-              " resources.")
-@click.option('--through', '-t', 'through_key', nargs=1, required=False, metavar="<through_key>",
-              is_eager=True, callback=cli_helpers.process_continuous_key, default='snapshots',
-              help="Sets key that is source of the data value, i.e. the"
-              " independent variable, like e.g. snapshots or size of the"
-              " structure.")
-@click.option('--by', '-b', 'by_key', nargs=1, required=True, metavar="<by_resource_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="For each <by_resource_key> one graph will be output, e.g."
-              " for each subtype or for each location of resource.")
-@click.option('--stacked', '-s', is_flag=True, default=False,
-              help="Will stack the y axis values for different <by> keys"
-              " on top of each other. Additionaly shows the sum of the values.")
-@click.option('--accumulate/--no-accumulate', default=True,
-              help="Will accumulate the values for all previous values of X axis.")
+@click.argument(
+    "func",
+    required=False,
+    default="sum",
+    metavar="<aggregation_function>",
+    type=click.Choice(helpers.AGGREGATIONS),
+    is_eager=True,
+)
+@click.option(
+    "--of",
+    "-o",
+    "of_key",
+    nargs=1,
+    required=True,
+    metavar="<of_resource_key>",
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help=(
+        "Sets key that is source of the data for the flow,"
+        " i.e. what will be displayed on Y axis, e.g. the amount of"
+        " resources."
+    ),
+)
+@click.option(
+    "--through",
+    "-t",
+    "through_key",
+    nargs=1,
+    required=False,
+    metavar="<through_key>",
+    is_eager=True,
+    callback=cli_helpers.process_continuous_key,
+    default="snapshots",
+    help=(
+        "Sets key that is source of the data value, i.e. the"
+        " independent variable, like e.g. snapshots or size of the"
+        " structure."
+    ),
+)
+@click.option(
+    "--by",
+    "-b",
+    "by_key",
+    nargs=1,
+    required=True,
+    metavar="<by_resource_key>",
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help=(
+        "For each <by_resource_key> one graph will be output, e.g."
+        " for each subtype or for each location of resource."
+    ),
+)
+@click.option(
+    "--stacked",
+    "-s",
+    is_flag=True,
+    default=False,
+    help=(
+        "Will stack the y axis values for different <by> keys"
+        " on top of each other. Additionaly shows the sum of the values."
+    ),
+)
+@click.option(
+    "--accumulate/--no-accumulate",
+    default=True,
+    help="Will accumulate the values for all previous values of X axis.",
+)
 # Other options and arguments
-@click.option('--filename', '-f', default="flow.html", metavar="<html>",
-              help="Sets the outputs for the graph to the file.")
-@click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Sets the custom label on the X axis of the flow graph.")
-@click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Sets the custom label on the Y axis of the flow graph.")
-@click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Sets the custom title of the flow graph.")
-@click.option('--view-in-browser', '-v', default=False, is_flag=True,
-              help="The generated graph will be immediately opened in the"
-              " browser (firefox will be used).")
+@click.option(
+    "--filename",
+    "-f",
+    default="flow.html",
+    metavar="<html>",
+    help="Sets the outputs for the graph to the file.",
+)
+@click.option(
+    "--x-axis-label",
+    "-xl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Sets the custom label on the X axis of the flow graph.",
+)
+@click.option(
+    "--y-axis-label",
+    "-yl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Sets the custom label on the Y axis of the flow graph.",
+)
+@click.option(
+    "--graph-title",
+    "-gt",
+    metavar="<text>",
+    default=None,
+    callback=process_title,
+    help="Sets the custom title of the flow graph.",
+)
+@click.option(
+    "--view-in-browser",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="The generated graph will be immediately opened in the browser (firefox will be used).",
+)
 @pass_profile
 # Fixme: Consider breaking this to two
 def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:

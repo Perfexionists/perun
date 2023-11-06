@@ -27,31 +27,27 @@ from perun.utils.structs import Executable, CollectStatus
 
 
 # The profiling record template
-_ProfileRecord = collections.namedtuple('_ProfileRecord', ['action', 'func', 'timestamp', 'size'])
+_ProfileRecord = collections.namedtuple("_ProfileRecord", ["action", "func", "timestamp", "size"])
 
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {
-    0: 'OK',
-    1: 'Err: profile output file cannot be opened.',
-    2: 'Err: profile output file closed unexpectedly.',
-    11: 'Err: runtime configuration file does not exists.',
-    12: 'Err: runtime configuration file syntax error.',
-    21: 'Err: command could not be run.'
+    0: "OK",
+    1: "Err: profile output file cannot be opened.",
+    2: "Err: profile output file closed unexpectedly.",
+    11: "Err: runtime configuration file does not exists.",
+    12: "Err: runtime configuration file syntax error.",
+    21: "Err: command could not be run.",
 }
 
 # The collector subtypes
-_COLLECTOR_SUBTYPES = {
-    'delta': 'time delta'
-}
+_COLLECTOR_SUBTYPES = {"delta": "time delta"}
 
 # The time conversion constant
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(
-        executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
-    """ Builds, links and configures the complexity collector executable
+def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
+    """Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
     (used for the data collection itself)
@@ -69,44 +65,51 @@ def before(
         _check_dependencies()
 
         # Extract several keywords to local variables
-        target_dir, files, rules = kwargs['target_dir'], kwargs['files'], kwargs['rules']
+        target_dir, files, rules = (
+            kwargs["target_dir"],
+            kwargs["files"],
+            kwargs["rules"],
+        )
 
         # Create the configuration cmake and build the configuration executable
-        log.cprint('Building the configuration executable...', 'white')
+        log.cprint("Building the configuration executable...", "white")
         cmake_path = makefiles.create_config_cmake(target_dir, files)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
         log.done()
 
         # Extract some configuration data using the configuration executable
-        log.cprint('Extracting the configuration...', 'white')
+        log.cprint("Extracting the configuration...", "white")
         function_sym = symbols.extract_symbols(exec_path)
         include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
         log.done()
 
         # Create the collector cmake and build the collector executable
-        log.cprint('Building the collector executable...', 'white')
+        log.cprint("Building the collector executable...", "white")
         cmake_path = makefiles.create_collector_cmake(target_dir, files, exclude_list)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
         log.done()
 
         # Create the internal configuration file
-        log.cprint('Creating runtime config...', 'white')
+        log.cprint("Creating runtime config...", "white")
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
         log.done()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
-    except (OSError, ValueError, CalledProcessError,
-            UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
+    except (
+        OSError,
+        ValueError,
+        CalledProcessError,
+        UnicodeError,
+        exceptions.UnexpectedPrototypeSyntaxError,
+    ) as exception:
         log.failed()
         return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
-def collect(
-        executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
-    """ Runs the collector executable and extracts the performance data
+def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
+    """Runs the collector executable and extracts the performance data
 
     :param Executable executable: executable configuration (command, arguments and workloads)
     :param kwargs: the configuration settings for the complexity collector
@@ -115,7 +118,7 @@ def collect(
                     string as a status message, mainly for error states
                     dict of unmodified kwargs
     """
-    log.cprint('Running the collector...', 'white')
+    log.cprint("Running the collector...", "white")
     collect_dir = os.path.dirname(executable.cmd)
     # Run the command and evaluate the returncode
     try:
@@ -124,13 +127,15 @@ def collect(
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:
         log.failed()
-        return CollectStatus.ERROR, _COLLECTOR_STATUS_MSG[21] + f": {str(err)}", dict(kwargs)
+        return (
+            CollectStatus.ERROR,
+            _COLLECTOR_STATUS_MSG[21] + f": {str(err)}",
+            dict(kwargs),
+        )
 
 
-def after(
-        executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict[str, Any]]:
-    """ Performs the transformation of the raw data output into the profile format
+def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
+    """Performs the transformation of the raw data output into the profile format
 
     :param Executable executable: full collected command with arguments and workload
     :param kwargs: the configuration settings for the complexity collector
@@ -140,8 +145,8 @@ def after(
                     dict of modified kwargs with 'profile' value representing the resulting profile
     """
     # Get the trace log path
-    log.cprint('Starting the post-processing phase...', 'white')
-    internal_filename = kwargs.get('internal_data_filename', configurator.DEFAULT_DATA_FILENAME)
+    log.cprint("Starting the post-processing phase...", "white")
+    internal_filename = kwargs.get("internal_data_filename", configurator.DEFAULT_DATA_FILENAME)
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
@@ -149,7 +154,7 @@ def after(
     call_stack: list[_ProfileRecord] = []
     profile_start, profile_end = 0, 0
 
-    with open(data_path, 'r') as profile:
+    with open(data_path, "r") as profile:
         is_first_line = True
         for line in profile:
             # Split the line into action, function name, timestamp and size
@@ -158,10 +163,11 @@ def after(
             # Process the record
             if _process_file_record(record, call_stack, resources, address_map) != 0:
                 # Stack error
-                err_msg = 'Call stack error, record: ' + record.func + ', ' + record.action
-                err_msg += ', stack top: '
-                err_msg += \
-                    call_stack[-1].func + ', ' + call_stack[-1].action if call_stack else 'empty'
+                err_msg = "Call stack error, record: " + record.func + ", " + record.action
+                err_msg += ", stack top: "
+                err_msg += (
+                    call_stack[-1].func + ", " + call_stack[-1].action if call_stack else "empty"
+                )
                 log.failed()
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
 
@@ -172,10 +178,10 @@ def after(
                 profile_start = record.timestamp
 
     # Update the profile dictionary
-    kwargs['profile'] = {
-        'global': {
-            'time': str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + 's',
-            'resources': resources
+    kwargs["profile"] = {
+        "global": {
+            "time": str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + "s",
+            "resources": resources,
         }
     }
     log.done()
@@ -183,12 +189,12 @@ def after(
 
 
 def _process_file_record(
-        record: _ProfileRecord,
-        call_stack: list[_ProfileRecord],
-        resources: list[dict[str, Any]],
-        address_map: dict[str, str]
+    record: _ProfileRecord,
+    call_stack: list[_ProfileRecord],
+    resources: list[dict[str, Any]],
+    address_map: dict[str, str],
 ) -> int:
-    """ Processes the next profile record and tries to pair it with stack record if possible
+    """Processes the next profile record and tries to pair it with stack record if possible
 
     :param _ProfileRecord record: the _ProfileRecord tuple containing the record data
     :param list call_stack: the call stack with file records
@@ -198,17 +204,21 @@ def _process_file_record(
     :return int: the status code, nonzero values for errors
     """
     returned_code = 1
-    if record.action == 'i':
+    if record.action == "i":
         call_stack.append(record)
         returned_code = 0
-    elif call_stack and call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
+    elif call_stack and call_stack[-1].action == "i" and call_stack[-1].func == record.func:
         # Function exit, match with the function enter to create resources record
         matching_record = call_stack.pop()
-        resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
-                          'uid': address_map[record.func],
-                          'type': 'mixed',
-                          'subtype': _COLLECTOR_SUBTYPES['delta'],
-                          'structure-unit-size': int(record.size)})
+        resources.append(
+            {
+                "amount": int(record.timestamp) - int(matching_record.timestamp),
+                "uid": address_map[record.func],
+                "type": "mixed",
+                "subtype": _COLLECTOR_SUBTYPES["delta"],
+                "structure-unit-size": int(record.size),
+            }
+        )
         returned_code = 0
     # Call stack function frames not matching
     return returned_code
@@ -216,18 +226,21 @@ def _process_file_record(
 
 def _check_dependencies() -> None:
     """Validates that dependencies (cmake and make) are met"""
-    log.cprint('Checking dependencies...', 'white')
+    log.cprint("Checking dependencies...", "white")
     log.newline()
-    log.cprint("make:", 'white')
+    log.cprint("make:", "white")
     log.info("\t", end="")
-    if not shutil.which('make'):
+    if not shutil.which("make"):
         log.no()
-        log.error("Could not find 'make'. Please, install the makefile package.", recoverable=True)
+        log.error(
+            "Could not find 'make'. Please, install the makefile package.",
+            recoverable=True,
+        )
     else:
         log.yes()
-    log.cprint("cmake:", 'white')
+    log.cprint("cmake:", "white")
     log.info("\t", end="")
-    if not shutil.which('cmake'):
+    if not shutil.which("cmake"):
         log.no()
         log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
@@ -243,20 +256,21 @@ def _validate_input(**kwargs: Any) -> None:
     :param kwargs: the collector input parameters
     :return dict: validated input parameters
     """
-    target_dir = kwargs['target_dir']
+    target_dir = kwargs["target_dir"]
     if not target_dir:
         raise click.exceptions.BadParameter("The --target-dir parameter must be supplied.")
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     if os.path.exists(target_dir) and not os.path.isdir(target_dir):
-        raise click.exceptions.BadParameter("The given --target-dir already exists and "
-                                            "is not a directory")
-    if not kwargs['files']:
+        raise click.exceptions.BadParameter(
+            "The given --target-dir already exists and is not a directory"
+        )
+    if not kwargs["files"]:
         raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
 
 
 def _sampling_to_dictionary(
-        _: click.Context, __: click.Option, value: list[tuple[str, int]]
+    _: click.Context, __: click.Option, value: list[tuple[str, int]]
 ) -> list[dict[str, Any]]:
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
@@ -271,35 +285,65 @@ def _sampling_to_dictionary(
         sampling_list = []
         # Transform the tuple to more human readable dictionary
         for sample in value:
-            sampling_list.append({
-                "func": sample[0],
-                "sample": sample[1]
-            })
+            sampling_list.append({"func": sample[0], "sample": sample[1]})
         return sampling_list
 
 
 @click.command()
-@click.option('--target-dir', '-t', type=click.Path(resolve_path=True),
-              help='Target directory path for compiled binary and temporary build data.')
-@click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True,
-              help='List of C/C++ source files that will be used to build the'
-                   ' custom binary with injected profiling commands. Must be valid'
-                   ' resolvable path')
-@click.option('--rules', '-r', type=str, multiple=True,
-              help='Marks the function for profiling.')
-@click.option('--internal-data-filename', '-if', type=str,
-              default=configurator.DEFAULT_DATA_FILENAME,
-              help='Sets the different path for internal output filename for'
-                   ' storing temporary profiling data file name.')
-@click.option('--internal-storage-size', '-is', type=int, default=configurator.DEFAULT_STORAGE_SIZE,
-              help='Increases the size of internal profiling data storage.')
-@click.option('--internal-direct-output', '-id', is_flag=True,
-              default=configurator.DEFAULT_DIRECT_OUTPUT,
-              help=('If set, profiling data will be stored into the internal'
-                    ' log file directly instead of being saved into data '
-                    'structure and printed later.'))
-@click.option('--sampling', '-s', type=(str, int), multiple=True, callback=_sampling_to_dictionary,
-              help='Sets the sampling of the given function to every <int> call.')
+@click.option(
+    "--target-dir",
+    "-t",
+    type=click.Path(resolve_path=True),
+    help="Target directory path for compiled binary and temporary build data.",
+)
+@click.option(
+    "--files",
+    "-f",
+    type=click.Path(exists=True, resolve_path=True),
+    multiple=True,
+    help=(
+        "List of C/C++ source files that will be used to build the"
+        " custom binary with injected profiling commands. Must be valid"
+        " resolvable path"
+    ),
+)
+@click.option("--rules", "-r", type=str, multiple=True, help="Marks the function for profiling.")
+@click.option(
+    "--internal-data-filename",
+    "-if",
+    type=str,
+    default=configurator.DEFAULT_DATA_FILENAME,
+    help=(
+        "Sets the different path for internal output filename for"
+        " storing temporary profiling data file name."
+    ),
+)
+@click.option(
+    "--internal-storage-size",
+    "-is",
+    type=int,
+    default=configurator.DEFAULT_STORAGE_SIZE,
+    help="Increases the size of internal profiling data storage.",
+)
+@click.option(
+    "--internal-direct-output",
+    "-id",
+    is_flag=True,
+    default=configurator.DEFAULT_DIRECT_OUTPUT,
+    help=(
+        "If set, profiling data will be stored into the internal"
+        " log file directly instead of being saved into data "
+        "structure and printed later."
+    ),
+)
+@click.option(
+    "--sampling",
+    "-s",
+    type=(str, int),
+    multiple=True,
+    callback=_sampling_to_dictionary,
+    help="Sets the sampling of the given function to every <int> call.",
+)
 @click.pass_context
 def complexity(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `complexity` performance profile, capturing running times of
@@ -338,4 +382,4 @@ def complexity(ctx: click.Context, **kwargs: Any) -> None:
     Refer to :ref:`collectors-complexity` for more thorough description and
     examples of `complexity` collector.
     """
-    runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)
+    runner.run_collector_from_cli_context(ctx, "complexity", kwargs)

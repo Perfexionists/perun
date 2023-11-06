@@ -119,11 +119,15 @@ def construct_data_source_from(
             accumulated_value = 0
             for index in range(minimal_x_value, maximal_x_value):
                 # FIXME: This should be handled better, since, we simply assume it is [int, int]
-                accumulated_value += cast(IntTableLike, source_data_frame[of_key]).get(index + minimal_x_value, 0)
+                accumulated_value += cast(IntTableLike, source_data_frame[of_key]).get(
+                    index + minimal_x_value, 0
+                )
                 data_source[group_name][index] = accumulated_value
         else:
             # FIXME: This should be handled better, since, we simply assume it is [int, int]
-            for through_key_value, of_key_value in cast(list[tuple[int, int]], source_data_frame[of_key].items()):
+            for through_key_value, of_key_value in cast(
+                list[tuple[int, int]], source_data_frame[of_key].items()
+            ):
                 data_source[group_name][through_key_value - minimal_x_value] = of_key_value
     return data_source
 

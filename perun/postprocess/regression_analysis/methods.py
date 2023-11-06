@@ -28,10 +28,10 @@ def get_supported_param_methods() -> list[str]:
 
 
 def compute(
-        data_gen: Iterator[tuple[list[float], list[float], str]],
-        method: str,
-        models: tuple[str],
-        **kwargs: Any
+    data_gen: Iterator[tuple[list[float], list[float], str]],
+    method: str,
+    models: tuple[str],
+    **kwargs: Any,
 ) -> list[dict[str, Any]]:
     """The regression analysis wrapper for various computation methods.
 
@@ -52,8 +52,8 @@ def compute(
         try:
             # First compute all the standard models
             for result in _METHODS[method](chunk[0], chunk[1], models, **kwargs):
-                result['uid'] = chunk[2]
-                result['method'] = method
+                result["uid"] = chunk[2]
+                result["method"] = method
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as exc:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
@@ -66,7 +66,7 @@ def compute(
 
 
 def compute_derived(
-        derived_models: tuple[str], analysis: list[dict[str, Any]], **kwargs: Any
+    derived_models: tuple[str], analysis: list[dict[str, Any]], **kwargs: Any
 ) -> Iterator[dict[str, Any]]:
     """The computation wrapper for derived models.
 
@@ -77,15 +77,12 @@ def compute_derived(
     """
     if derived_models:
         for der in mod.map_keys_to_models(derived_models):
-            for result in der['derived'](analysis, der, **kwargs):
+            for result in der["derived"](analysis, der, **kwargs):
                 yield result
 
 
 def full_computation(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        **_: Any
+    x_pts: list[float], y_pts: list[float], computation_models: tuple[str], **_: Any
 ) -> Iterator[dict[str, Any]]:
     """The full computation method which fully computes every specified regression model.
 
@@ -104,19 +101,19 @@ def full_computation(
     # Get all the models properties
     for model in mod.map_keys_to_models(computation_models):
         # Update the properties accordingly
-        model['steps'] = 1
+        model["steps"] = 1
         model = _build_uniform_regression_data_format(x_pts, y_pts, model)
         # Compute each model
-        for result in model['computation'](**model):
+        for result in model["computation"](**model):
             yield result
 
 
 def iterative_computation(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        steps: int,
-        **_: Any
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    steps: int,
+    **_: Any,
 ) -> Iterator[dict[str, Any]]:
     """The iterative computation method.
 
@@ -154,11 +151,11 @@ def iterative_computation(
 
 
 def interval_computation(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        steps: int,
-        **_: Any
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    steps: int,
+    **_: Any,
 ) -> Iterator[dict[str, Any]]:
     """The interval computation method.
 
@@ -183,8 +180,9 @@ def interval_computation(
     x_pts, y_pts = tools.sort_points(x_pts, y_pts)
     # Split the data into intervals and do a full computation on each one of them
     for part_start, part_end in tools.split_sequence(len(x_pts), steps):
-        interval_gen = full_computation(x_pts[part_start:part_end], y_pts[part_start:part_end],
-                                        computation_models)
+        interval_gen = full_computation(
+            x_pts[part_start:part_end], y_pts[part_start:part_end], computation_models
+        )
         # Provide result for each model on every interval
         results = []
         for model in interval_gen:
@@ -196,11 +194,11 @@ def interval_computation(
 
 
 def initial_guess_computation(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        steps: int,
-        **_: Any
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    steps: int,
+    **_: Any,
 ) -> Iterator[dict[str, Any]]:
     """The initial guess computation method.
 
@@ -238,10 +236,7 @@ def initial_guess_computation(
 
 
 def bisection_computation(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        **_: Any
+    x_pts: list[float], y_pts: list[float], computation_models: tuple[str], **_: Any
 ) -> Iterator[dict[str, Any]]:
     """The bisection computation method.
 
@@ -269,10 +264,10 @@ def bisection_computation(
 
 
 def _compute_bisection_model(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        **kwargs: Any
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    **kwargs: Any,
 ) -> dict[str, Any]:
     """Compute specified models on a given data set and find the best fitting model.
 
@@ -299,10 +294,10 @@ def _compute_bisection_model(
 
 
 def _bisection_step(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        last_model: dict[str, Any]
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    last_model: dict[str, Any],
 ) -> Iterator[dict[str, Any]]:
     """The bisection step computation.
 
@@ -325,13 +320,19 @@ def _bisection_step(
     parts = []
     for part_start, part_end in tools.split_sequence(len(x_pts), 2):
         half_models.append(
-            _compute_bisection_model(x_pts[part_start:part_end], y_pts[part_start:part_end],
-                                     computation_models))
+            _compute_bisection_model(
+                x_pts[part_start:part_end],
+                y_pts[part_start:part_end],
+                computation_models,
+            )
+        )
         parts.append((part_start, part_end))
 
     # The half models are not different, return the full interval model
-    if (half_models[0]['model'] == last_model['model'] and
-            half_models[1]['model'] == last_model['model']):
+    if (
+        half_models[0]["model"] == last_model["model"]
+        and half_models[1]["model"] == last_model["model"]
+    ):
         yield last_model
         return
 
@@ -342,7 +343,7 @@ def _bisection_step(
         """
         x, y = parts[i][0], parts[i][1]
         for half_model in _bisection_solve_half_model(
-                x_pts[x:y], y_pts[x:y], computation_models, half_models[i], last_model
+            x_pts[x:y], y_pts[x:y], computation_models, half_models[i], last_model
         ):
             yield half_model
 
@@ -353,11 +354,11 @@ def _bisection_step(
 
 
 def _bisection_solve_half_model(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        half_model: dict[str, Any],
-        last_model: dict[str, Any]
+    x_pts: list[float],
+    y_pts: list[float],
+    computation_models: tuple[str],
+    half_model: dict[str, Any],
+    last_model: dict[str, Any],
 ) -> Iterator[dict[str, Any]]:
     """Helper function for solving half intervals and producing their results.
 
@@ -370,7 +371,7 @@ def _bisection_solve_half_model(
     :param dict half_model: the half interval model
     :param dict last_model: the full interval model that is split
     """
-    if half_model['model'] != last_model['model']:
+    if half_model["model"] != last_model["model"]:
         # The model is different, continue with bisection
         try:
             for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
@@ -384,10 +385,7 @@ def _bisection_solve_half_model(
 
 
 def _models_initial_step(
-        x_pts: list[float],
-        y_pts: list[float],
-        computation_models: tuple[str],
-        steps: int
+    x_pts: list[float], y_pts: list[float], computation_models: tuple[str], steps: int
 ) -> tuple[list[Iterator[dict[str, Any]]], list[dict[str, Any]]]:
     """Performs initial step with specified models in multistep methods.
 
@@ -406,10 +404,10 @@ def _models_initial_step(
     # Get all the models properties
     for model in mod.map_keys_to_models(computation_models):
         # Transform the properties
-        model['steps'] = steps
+        model["steps"] = steps
         data = _build_uniform_regression_data_format(x_pts, y_pts, model)
         # Do a single computational step for each model
-        model_generators.append(model['computation'](**data))
+        model_generators.append(model["computation"](**data))
         results.append(next(model_generators[-1]))
     return model_generators, results
 
@@ -427,12 +425,14 @@ def _find_best_fitting_model(model_results: list[dict[str, Any]]) -> int:
     best_fit = 0
     for i in range(1, len(model_results)):
         # Compare and find the best one
-        if model_results[i]['r_square'] > model_results[best_fit]['r_square']:
+        if model_results[i]["r_square"] > model_results[best_fit]["r_square"]:
             best_fit = i
     return best_fit
 
 
-def _transform_to_output_data(data: dict[str, Any], extra_keys: Optional[list[str]] = None) -> dict[str, Any]:
+def _transform_to_output_data(
+    data: dict[str, Any], extra_keys: Optional[list[str]] = None
+) -> dict[str, Any]:
     """Transforms the data dictionary into their output format - omitting computational details
     and keys that are not important for the result and its further manipulation.
 
@@ -447,25 +447,22 @@ def _transform_to_output_data(data: dict[str, Any], extra_keys: Optional[list[st
     :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     :returns dict: the output dictionary
     """
-    tools.validate_dictionary_keys(data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
+    tools.validate_dictionary_keys(data, ["model", "coeffs", "r_square", "x_start", "x_end"], [])
 
     # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'r_square', 'x_start', 'x_end', 'method', 'uid']
+    transform_keys = ["model", "r_square", "x_start", "x_end", "method", "uid"]
     transform_keys += extra_keys or []
     transformed = {key: data[key] for key in transform_keys if key in data}
     # Transform the coefficients
-    transformed['coeffs'] = []
-    for idx, coeff in enumerate(data['coeffs']):
-        transformed['coeffs'].append({
-            'name': 'b{0}'.format(idx),
-            'value': coeff
-        })
+    transformed["coeffs"] = []
+    for idx, coeff in enumerate(data["coeffs"]):
+        transformed["coeffs"].append({"name": "b{0}".format(idx), "value": coeff})
 
     return transformed
 
 
 def _build_uniform_regression_data_format(
-        x_pts: list[float], y_pts: list[float], model: dict[str, Any]
+    x_pts: list[float], y_pts: list[float], model: dict[str, Any]
 ) -> dict[str, Any]:
     """Creates the uniform regression data dictionary from the model properties and regression
     data points.
@@ -483,24 +480,24 @@ def _build_uniform_regression_data_format(
     """
     # Check the requirements
     tools.check_points(len(x_pts), len(y_pts), tools.MIN_POINTS_COUNT)
-    tools.validate_dictionary_keys(model, ['data_gen'], ['x', 'y'])
+    tools.validate_dictionary_keys(model, ["data_gen"], ["x", "y"])
 
-    model['x_pts'] = x_pts
-    model['y_pts'] = y_pts
+    model["x_pts"] = x_pts
+    model["y_pts"] = y_pts
     # Initialize the data generator
-    model['data_gen'] = model['data_gen'](**model)
+    model["data_gen"] = model["data_gen"](**model)
     return model
 
 
 # supported methods mapping
 # - every method must be called with proper argument signature in 'compute' function
 # -- the signature: x, y, models, **kwargs
-_METHODS: collections.OrderedDict[
-    str, ComputationMethod
-] = collections.OrderedDict([
-    ('full', full_computation),
-    ('iterative', iterative_computation),
-    ('interval', interval_computation),
-    ('initial_guess', initial_guess_computation),
-    ('bisection', bisection_computation)
-])
+_METHODS: collections.OrderedDict[str, ComputationMethod] = collections.OrderedDict(
+    [
+        ("full", full_computation),
+        ("iterative", iterative_computation),
+        ("interval", interval_computation),
+        ("initial_guess", initial_guess_computation),
+        ("bisection", bisection_computation),
+    ]
+)

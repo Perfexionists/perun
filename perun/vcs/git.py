@@ -40,12 +40,14 @@ def create_repo_from_path(func: Callable[..., Any]) -> Callable[..., Any]:
 
     :param function func: wrapped function for which we will do the lookup
     """
+
     def wrapper(repo_path: str | Repo, *args: Any, **kwargs: Any) -> Any:
         """Wrapper function for the decorator"""
         if isinstance(repo_path, Repo):
             return func(repo_path, *args, **kwargs)
         else:
             return func(Repo(repo_path), *args, **kwargs)
+
     return wrapper
 
 
@@ -153,9 +155,9 @@ def _get_minor_version_info(git_repo: Repo, minor_version: str) -> MinorVersion:
 
 @create_repo_from_path
 def _minor_versions_diff(
-        git_repo: Repo, baseline_minor_version: str, target_minor_version: str
+    git_repo: Repo, baseline_minor_version: str, target_minor_version: str
 ) -> str:
-    """ Create diff of two supplied minor versions.
+    """Create diff of two supplied minor versions.
 
     :param Repo git_repo: wrapped repository of the perun
     :param str baseline_minor_version: the specification of the first minor version
@@ -163,8 +165,8 @@ def _minor_versions_diff(
     :param str target_minor_version: the specification of the second minor version
     :return str: the version diff as presented by git
     """
-    baseline_minor_version = baseline_minor_version or 'HEAD~1'
-    target_minor_version = target_minor_version or 'HEAD'
+    baseline_minor_version = baseline_minor_version or "HEAD~1"
+    target_minor_version = target_minor_version or "HEAD"
     return git_repo.git.diff(baseline_minor_version, target_minor_version)
 
 
@@ -194,14 +196,14 @@ def _check_minor_version_validity(git_repo: Repo, minor_version: str) -> None:
         git_repo.rev_parse(str(minor_version))
     except (BadName, ValueError) as inner_exception:
         raise VersionControlSystemException(
-            "minor version '{}' could not be found: {}", minor_version, str(inner_exception)
+            "minor version '{}' could not be found: {}",
+            minor_version,
+            str(inner_exception),
         )
 
 
 @create_repo_from_path
-def _massage_parameter(
-        git_repo: Repo, parameter: str, parameter_type: Optional[str] = None
-) -> str:
+def _massage_parameter(git_repo: Repo, parameter: str, parameter_type: Optional[str] = None) -> str:
     """Parameter massaging takes a parameter and unites it to the unified context
 
     Given a parameter (in the context of git, this is rev), of a given parameter_type (e.g. tree,
@@ -216,14 +218,16 @@ def _massage_parameter(
         parameter += "^{{{0}}}".format(parameter_type) if parameter_type else ""
         return str(git_repo.rev_parse(parameter))
     except BadName as bo_exception:
-        raise VersionControlSystemException("parameter '{}' could not be found: {}".format(
-            parameter, str(bo_exception)
-        ))
+        raise VersionControlSystemException(
+            "parameter '{}' could not be found: {}".format(parameter, str(bo_exception))
+        )
     except (IndentationError, ValueError) as ve_exception:
-        raise VersionControlSystemException("parameter '{}' could not be parsed: {}".format(
-            parameter.replace('{', '{{').replace('}', '}}'),
-            ve_exception.args[0].replace('{', '{{').replace('}', '}}')
-        ))
+        raise VersionControlSystemException(
+            "parameter '{}' could not be parsed: {}".format(
+                parameter.replace("{", "{{").replace("}", "}}"),
+                ve_exception.args[0].replace("{", "{{").replace("}", "}}"),
+            )
+        )
 
 
 @create_repo_from_path
@@ -250,7 +254,7 @@ def _save_state(git_repo: Repo) -> tuple[bool, str]:
     """
     saved_stashed_changes = False
     if _is_dirty(git_repo):
-        git_repo.git.stash('save')
+        git_repo.git.stash("save")
         saved_stashed_changes = True
 
     # If we are in state of detached head, we return the commit, otherwise we return the ref
@@ -273,7 +277,7 @@ def _restore_state(git_repo: Repo, has_saved_stashed_changes: bool, previous_sta
     """
     _checkout(git_repo, previous_state)
     if has_saved_stashed_changes:
-        git_repo.git.stash('pop')
+        git_repo.git.stash("pop")
 
 
 @create_repo_from_path

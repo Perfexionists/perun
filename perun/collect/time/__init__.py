@@ -2,7 +2,5 @@
 nothing special about this, the profiles are simple, and no visualization is
 especially suitable for this mode.
 """
-COLLECTOR_TYPE = 'time'
-COLLECTOR_DEFAULT_UNITS = {
-    'time': 's'
-}
+COLLECTOR_TYPE = "time"
+COLLECTOR_DEFAULT_UNITS = {"time": "s"}

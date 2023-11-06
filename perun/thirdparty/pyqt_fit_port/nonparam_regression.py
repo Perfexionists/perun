@@ -241,9 +241,9 @@ class NonParamRegression:
 
     @ytrans.setter
     def ytrans(self, tr):
-        assert hasattr(tr, "__call__") and hasattr(tr, "inv"), (
-            "The transform must be a callable with an `inv` attribute"
-        )
+        assert hasattr(tr, "__call__") and hasattr(
+            tr, "inv"
+        ), "The transform must be a callable with an `inv` attribute"
         self._ytrans = tr
 
     @ytrans.deleter
@@ -313,19 +313,21 @@ class NonParamRegression:
         self._d = D
         lower = self.lower
         upper = self.upper
-        assert len(lower) == D, (
-            "The 'lower' property must have one value per dimension of the domain."
-        )
-        assert len(upper) == D, (
-            "The 'upper' property must have one value per dimension of the domain."
-        )
+        assert (
+            len(lower) == D
+        ), "The 'lower' property must have one value per dimension of the domain."
+        assert (
+            len(upper) == D
+        ), "The 'upper' property must have one value per dimension of the domain."
         self._fitted_method = self._method.fit(self)
-        assert self.bandwidth.shape == (D, D), (
-            f"The bandwidth should have a shape of ({D},{D}) (actual: {self.bandwidth.shape})"
-        )
-        assert self.covariance.shape == (D, D), (
-            f"The covariance should have a shape of ({D},{D}) (actual: {self.covariance.shape})"
-        )
+        assert self.bandwidth.shape == (
+            D,
+            D,
+        ), f"The bandwidth should have a shape of ({D},{D}) (actual: {self.bandwidth.shape})"
+        assert self.covariance.shape == (
+            D,
+            D,
+        ), f"The covariance should have a shape of ({D},{D}) (actual: {self.covariance.shape})"
         self._fitted = True
 
     def evaluate(self, points, out=None):

@@ -19,6 +19,7 @@ import numbers
 import perun.utils.helpers as helpers
 
 from typing import Any, TYPE_CHECKING, Iterable
+
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
@@ -48,13 +49,11 @@ def flattened_values(root_key: Any, root_value: Any) -> Iterable[tuple[str, str 
     elif isinstance(root_value, list):
         # Lists that represent variable length dictionary
         if helpers.is_variable_len_dict(root_value):
-            dictionary = {
-                v['name']: v['value'] for v in root_value
-            }
+            dictionary = {v["name"]: v["value"] for v in root_value}
             yield from flattened_values(root_key, dictionary)
         # Lists are merged as comma separated keys
         else:
-            yield root_key, ','.join(
+            yield root_key, ",".join(
                 ":".join(str(nested_value[1]) for nested_value in flattened_values(i, lv))
                 for (i, lv) in enumerate(root_value)
             )
@@ -134,7 +133,7 @@ def _all_fields_of(item_generator: Iterable[tuple[int, dict[str, Any]]]) -> Iter
     :return: iterable stream of field keys represented as `str`
     """
     resource_fields = set()
-    for (_, resource) in item_generator:
+    for _, resource in item_generator:
         for key, __ in all_items_of(resource):
             if key not in resource_fields:
                 resource_fields.add(key)
@@ -163,7 +162,7 @@ def all_numerical_resource_fields_of(profile: Profile) -> Iterable[str]:
     """
     resource_fields = set()
     exclude_fields = set()
-    for (_, resource) in profile.all_resources():
+    for _, resource in profile.all_resources():
         for key, value in all_items_of(resource):
             # Instances that are not numbers are removed from the resource fields (i.e. there was
             # some inconsistency between value) and added to exclude for future usages
@@ -240,10 +239,10 @@ def all_key_values_of(resource: dict[str, Any], resource_key: str) -> Iterable[A
 
     # Iterate the hierarchy
     for level_idx, key_level in enumerate(key_hierarchy):
-        if key_level == '' and isinstance(resource, (list, set)):
+        if key_level == "" and isinstance(resource, (list, set)):
             # The level is list, iterate all the members recursively
             for item in resource:
-                for result in all_key_values_of(item, ':'.join(key_hierarchy[level_idx + 1:])):
+                for result in all_key_values_of(item, ":".join(key_hierarchy[level_idx + 1 :])):
                     yield result
             return
         elif key_level in resource:
@@ -295,7 +294,7 @@ def _unique_values_generator(key: str, blocks_gen: Iterable[tuple[Any, dict[str,
     """
     # value can be dict, list, set etc and not only simple type, thus the list
     unique_values = list()
-    for (_, resource) in blocks_gen:
+    for _, resource in blocks_gen:
         # Get all values the key contains
         for value in all_key_values_of(resource, key):
             # Return only the unique ones

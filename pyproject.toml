@@ -207,4 +207,14 @@ exclude_also = [
 
     # Not implemented asserst are omitted
     "assert NotImplementedError(.*)",
+
+# Formatting configuration
+# ----------------------
+[tool.black]
+target-version = [
+    "py39",
+    "py310",
+    "py311"
 ]
+line-length = 100
+

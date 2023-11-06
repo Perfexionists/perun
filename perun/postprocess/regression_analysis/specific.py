@@ -12,7 +12,7 @@ import perun.postprocess.regression_analysis.tools as tools
 
 
 def specific_quad_data(
-        x_pts: list[float], y_pts: list[float], steps: int, **_: Any
+    x_pts: list[float], y_pts: list[float], steps: int, **_: Any
 ) -> Iterable[dict[str, Any]]:
     """The quadratic data generator.
 
@@ -44,16 +44,15 @@ def specific_quad_data(
     for part_start, part_end in tools.split_sequence(len(x_pts), steps):
         skipped = 0
         for x_pt, y_pt in zip(x_pts[part_start:part_end], y_pts[part_start:part_end]):
-
             # Compute the intermediate results
             x_sum += x_pt
             y_sum += y_pt
-            y_square_sum += y_pt ** 2
-            x_square_sum += x_pt ** 2
-            x_cube_sum += x_pt ** 3
-            x4_sum += x_pt ** 4
+            y_square_sum += y_pt**2
+            x_square_sum += x_pt**2
+            x_cube_sum += x_pt**3
+            x4_sum += x_pt**4
             xy_sum += x_pt * y_pt
-            x_square_y_sum += (x_pt ** 2) * y_pt
+            x_square_y_sum += (x_pt**2) * y_pt
 
             # Check the min and max
             x_min, x_max = min(x_min, x_pt), max(x_max, x_pt)
@@ -61,23 +60,31 @@ def specific_quad_data(
         # Computation step is complete, save the data
         pts_num = part_end - skipped
         data = {
-            'x_sum': x_sum, 'y_sum': y_sum, 'xy_sum': xy_sum, 'x_sq_sum': x_square_sum,
-            'y_sq_sum': y_square_sum, 'x_cube_sum': x_cube_sum, 'x4_sum': x4_sum,
-            'x_sq_y_sum': x_square_y_sum, 'pts_num': pts_num, 'x_start': x_min, 'x_end': x_max
+            "x_sum": x_sum,
+            "y_sum": y_sum,
+            "xy_sum": xy_sum,
+            "x_sq_sum": x_square_sum,
+            "y_sq_sum": y_square_sum,
+            "x_cube_sum": x_cube_sum,
+            "x4_sum": x4_sum,
+            "x_sq_y_sum": x_square_y_sum,
+            "pts_num": pts_num,
+            "x_start": x_min,
+            "x_end": x_max,
         }
         yield data
 
 
 def specific_quad_coefficients(
-        x_sum: float,
-        y_sum: float,
-        xy_sum: float,
-        x_sq_sum: float,
-        x_cube_sum: float,
-        x4_sum: float,
-        x_sq_y_sum: float,
-        pts_num: int,
-        **_: Any
+    x_sum: float,
+    y_sum: float,
+    xy_sum: float,
+    x_sq_sum: float,
+    x_cube_sum: float,
+    x4_sum: float,
+    x_sq_y_sum: float,
+    pts_num: int,
+    **_: Any,
 ) -> dict[str, list[float]]:
     """The quadratic specific function for coefficients computation.
 
@@ -113,12 +120,12 @@ def specific_quad_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the intermediate values
-    s_xx = x_sq_sum - (x_sum ** 2 / pts_num)
+    s_xx = x_sq_sum - (x_sum**2 / pts_num)
     s_xy = xy_sum - (x_sum * y_sum / pts_num)
     s_xx2 = x_cube_sum - (x_sq_sum * x_sum / pts_num)
     s_x2y = x_sq_y_sum - (x_sq_sum * y_sum / pts_num)
-    s_x2x2 = x4_sum - ((x_sq_sum ** 2) / pts_num)
-    det_m = s_xx * s_x2x2 - s_xx2 ** 2
+    s_x2x2 = x4_sum - ((x_sq_sum**2) / pts_num)
+    det_m = s_xx * s_x2x2 - s_xx2**2
 
     # Compute the coefficients
     b_2 = (s_x2y * s_xx - s_xy * s_xx2) / det_m
@@ -131,13 +138,13 @@ def specific_quad_coefficients(
 
 
 def specific_quad_error(
-        coeffs: list[float],
-        y_sum: float,
-        y_sq_sum: float,
-        xy_sum: float,
-        x_sq_y_sum: float,
-        pts_num: int,
-        **_: Any
+    coeffs: list[float],
+    y_sum: float,
+    y_sq_sum: float,
+    xy_sum: float,
+    x_sq_y_sum: float,
+    pts_num: int,
+    **_: Any,
 ) -> dict[str, float]:
     """The quadratic specific function for error (r^2) computation.
 
@@ -164,7 +171,7 @@ def specific_quad_error(
     :returns dict: data dictionary with error value, tss and sse results
     """
     # Compute the TSS
-    tss = y_sq_sum - ((y_sum ** 2) / pts_num)
+    tss = y_sq_sum - ((y_sum**2) / pts_num)
     # Compute the RSS
     sse = y_sq_sum - coeffs[0] * y_sum - coeffs[1] * xy_sum - coeffs[2] * x_sq_y_sum
 

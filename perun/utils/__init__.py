@@ -19,7 +19,18 @@ import types
 from contextlib import contextmanager
 import magic
 
-from typing import Iterable, Optional, Any, Callable, IO, Iterator, Protocol, TYPE_CHECKING, overload
+from typing import (
+    Iterable,
+    Optional,
+    Any,
+    Callable,
+    IO,
+    Iterator,
+    Protocol,
+    TYPE_CHECKING,
+    overload,
+)
+
 if TYPE_CHECKING:
     from perun.utils.structs import CollectStatus, PostprocessStatus
 
@@ -48,10 +59,10 @@ from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionExc
 #  - digit(s) specifying the version component
 #  - additional postfixes, such as characters or +, -
 # e.g., 3.11a, 3.1.2b, 3.6.8+
-PYTHON_VERSION = re.compile(r'^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?')
+PYTHON_VERSION = re.compile(r"^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?")
 
 
-def get_build_directories(root: str = '.', template: Optional[list[str]] = None) -> Iterable[str]:
+def get_build_directories(root: str = ".", template: Optional[list[str]] = None) -> Iterable[str]:
     """Search for build directories in project tree. The build directories can be specified as an
     argument or default templates are used.
 
@@ -60,15 +71,15 @@ def get_build_directories(root: str = '.', template: Optional[list[str]] = None)
     :return: generator object of build directories
     """
     if template is None:
-        template = ['build', '_build', '__build']
+        template = ["build", "_build", "__build"]
     # Find all build directories in directory tree
-    root = os.path.join(root, '')
+    root = os.path.join(root, "")
     for current, subdirs, _ in os.walk(root):
         # current directory without root section
         # (to prevent nesting detection if root contains template directory)
-        relative = current[len(root):]
+        relative = current[len(root) :]
         # Do not traverse hidden directories
-        subdirs[:] = [d for d in subdirs if not d[0] == '.']
+        subdirs[:] = [d for d in subdirs if not d[0] == "."]
         for build_dir in template:
             # find directories conforming to the templates without nested ones
             if build_dir in subdirs and not _is_nested(relative, template):
@@ -89,18 +100,20 @@ def _is_nested(path: str, templates: Iterable[str]) -> bool:
     return False
 
 
-def get_directory_elf_executables(root: str = '.', only_not_stripped: bool = False) -> Iterable[str]:
+def get_directory_elf_executables(
+    root: str = ".", only_not_stripped: bool = False
+) -> Iterable[str]:
     """Get all ELF executable (stripped or not) from directory tree recursively.
 
     :param str root: directory tree root
     :param bool only_not_stripped: flag indicating whether collect only binaries not stripped
     :return: generator object of executable binaries as file paths
     """
-    root = os.path.join(root, '')
+    root = os.path.join(root, "")
     for current, subdirs, files in os.walk(root):
         # Ignore hidden directories and files
-        subdirs[:] = [d for d in subdirs if not d[0] == '.']
-        files = [f for f in files if f[0] != '.']
+        subdirs[:] = [d for d in subdirs if not d[0] == "."]
+        files = [f for f in files if f[0] != "."]
         for file in files:
             # Check if file is executable binary
             filepath = os.path.join(current, file)
@@ -117,13 +130,13 @@ def is_executable_elf(file: str, only_not_stripped: bool = False) -> bool:
     """
     # Determine file magic code, we are looking out for ELF files
     f_magic = magic.from_file(file)
-    is_elf = f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic)
+    is_elf = f_magic.startswith("ELF") and ("executable" in f_magic or "shared object" in f_magic)
     if is_elf and only_not_stripped:
-        return 'not stripped' in f_magic
+        return "not stripped" in f_magic
     return is_elf
 
 
-def get_project_elf_executables(root: str = '.', only_not_stripped: bool = False) -> list[str]:
+def get_project_elf_executables(root: str = ".", only_not_stripped: bool = False) -> list[str]:
     """Get all ELF executable files stripped or not from project specified by root
     The function searches for executable files in build directories - if there are any, otherwise
     the whole project directory tree is traversed.
@@ -133,7 +146,7 @@ def get_project_elf_executables(root: str = '.', only_not_stripped: bool = False
     :return: list of project executable binaries as file paths
     """
     # Get possible binaries in build directories
-    root = os.path.join(root, '')
+    root = os.path.join(root, "")
     build = list(get_build_directories(root))
 
     # No build directories, find all binaries instead
@@ -149,7 +162,7 @@ def get_project_elf_executables(root: str = '.', only_not_stripped: bool = False
 
 
 def find_executable(cmd: Optional[str]) -> Optional[str]:
-    """ Check if the supplied cmd is executable and find its real path
+    """Check if the supplied cmd is executable and find its real path
     (i.e. absolute path with resolved symlinks)
 
     :param str cmd: the command to check
@@ -185,12 +198,12 @@ def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
 
 @contextmanager
 def nonblocking_subprocess(
-        command: str,
-        subprocess_kwargs: dict[str, Any],
-        termination: Optional[Callable[..., Any]] = None,
-        termination_kwargs: Optional[dict[str, Any]] = None
+    command: str,
+    subprocess_kwargs: dict[str, Any],
+    termination: Optional[Callable[..., Any]] = None,
+    termination_kwargs: Optional[dict[str, Any]] = None,
 ) -> Iterator[subprocess.Popen[bytes]]:
-    """ Runs a non-blocking process in the background using subprocess without shell.
+    """Runs a non-blocking process in the background using subprocess without shell.
 
     The process handle is available by using the context manager approach. It is possible to
     supply custom process termination function (and its arguments) that will be used instead of
@@ -205,8 +218,8 @@ def nonblocking_subprocess(
     parsed_cmd = shlex.split(command)
 
     # Do not allow shell=True
-    if 'shell' in subprocess_kwargs:
-        del subprocess_kwargs['shell']
+    if "shell" in subprocess_kwargs:
+        del subprocess_kwargs["shell"]
 
     # Start the process and do not block it (user can tho)
     with subprocess.Popen(parsed_cmd, shell=False, **subprocess_kwargs) as proc:
@@ -229,7 +242,11 @@ def nonblocking_subprocess(
 
 
 def run_safely_external_command(
-        cmd: str, check_results: bool = True, quiet: bool = True, timeout: Optional[float | int] = None, **kwargs: Any
+    cmd: str,
+    check_results: bool = True,
+    quiet: bool = True,
+    timeout: Optional[float | int] = None,
+    **kwargs: Any,
 ) -> tuple[bytes, bytes]:
     """Safely runs the piped command, without executing of the shell
 
@@ -253,17 +270,21 @@ def run_safely_external_command(
         executed_command = shlex.split(unpiped_commands[i])
 
         # set streams
-        stdin = None if i == 0 else objects[i-1].stdout
+        stdin = None if i == 0 else objects[i - 1].stdout
         stderr = subprocess.STDOUT if i < (cmd_no - 1) else subprocess.PIPE
 
         # run the piped command and close the previous one
         piped_command = subprocess.Popen(
             executed_command,
-            shell=False, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr, **kwargs
+            shell=False,
+            stdin=stdin,
+            stdout=subprocess.PIPE,
+            stderr=stderr,
+            **kwargs,
         )
         if i != 0:
             # Fixme: we ignore this, as it is tricky to handle
-            objects[i-1].stdout.close()  # type: ignore
+            objects[i - 1].stdout.close()  # type: ignore
         objects.append(piped_command)
 
     try:
@@ -283,11 +304,9 @@ def run_safely_external_command(
         for i in range(cmd_no):
             if objects[i].returncode:
                 if not quiet and (cmdout or cmderr):
-                    cprintln(f"captured stdout: {cmdout.decode('utf-8')}", 'red')
-                    cprintln(f"captured stderr: {cmderr.decode('utf-8')}", 'red')
-                raise subprocess.CalledProcessError(
-                    objects[i].returncode, unpiped_commands[i]
-                )
+                    cprintln(f"captured stdout: {cmdout.decode('utf-8')}", "red")
+                    cprintln(f"captured stderr: {cmderr.decode('utf-8')}", "red")
+                raise subprocess.CalledProcessError(objects[i].returncode, unpiped_commands[i])
 
     return cmdout, cmderr
 
@@ -302,9 +321,9 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
         print(">", cmd)
         out, err = run_safely_external_command(cmd)
         if out:
-            print(out.decode('utf-8'), end='')
+            print(out.decode("utf-8"), end="")
         if err:
-            cprint(err.decode('utf-8'), 'red')
+            cprint(err.decode("utf-8"), "red")
 
 
 def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[bytes]] = None) -> str:
@@ -315,13 +334,13 @@ def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[byte
     :return: string representation of output of command
     """
     output = subprocess.check_output(
-        [c for c in command if c != ''], stderr=subprocess.STDOUT, stdin=stdin
+        [c for c in command if c != ""], stderr=subprocess.STDOUT, stdin=stdin
     )
-    return output.decode('utf-8')
+    return output.decode("utf-8")
 
 
 def dynamic_module_function_call(
-        package_name: str, module_name: str, fun_name: str, *args: Any, **kwargs: Any
+    package_name: str, module_name: str, fun_name: str, *args: Any, **kwargs: Any
 ) -> Any:
     """Dynamically calls the function from other package with given arguments
 
@@ -393,16 +412,22 @@ def get_supported_module_names(package: str) -> list[str]:
                         one of ('vcs', 'collect', 'postprocess')
     :return: list of names of supported modules for the given package
     """
-    if package not in ('vcs', 'collect', 'postprocess', 'view'):
-        error("trying to call get_supported_module_names with incorrect package '{}'".format(
-            package
-        ))
+    if package not in ("vcs", "collect", "postprocess", "view"):
+        error(
+            "trying to call get_supported_module_names with incorrect package '{}'".format(package)
+        )
     return {
-        'vcs': ['git'],
-        'collect': ['trace', 'memory', 'time', 'complexity', 'bounds'],
-        'postprocess': ['clusterizer', 'normalizer', 'regression-analysis',
-                        'regressogram', 'moving-average', 'kernel-regression'],
-        'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter', 'tableof']
+        "vcs": ["git"],
+        "collect": ["trace", "memory", "time", "complexity", "bounds"],
+        "postprocess": [
+            "clusterizer",
+            "normalizer",
+            "regression-analysis",
+            "regressogram",
+            "moving-average",
+            "kernel-regression",
+        ],
+        "view": ["bars", "flamegraph", "flow", "heapmap", "raw", "scatter", "tableof"],
     }[package]
 
 
@@ -430,7 +455,9 @@ def merge_dict_range(*args: dict[Any, Any]) -> dict[Any, Any]:
     return res
 
 
-def partition_list(input_list: Iterable[Any], condition: Callable[[Any], bool]) -> tuple[list[Any], list[Any]]:
+def partition_list(
+    input_list: Iterable[Any], condition: Callable[[Any], bool]
+) -> tuple[list[Any], list[Any]]:
     """Utility function for list partitioning on a condition so that the list is not iterated
     twice and the condition is evaluated only once.
 
@@ -490,10 +517,10 @@ def format_file_size(size: Optional[float]) -> str:
     :return str: the formatted size for output
     """
     if size is None:
-        return ' ' * 10
-    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
+        return " " * 10
+    for unit in ["", "Ki", "Mi", "Gi", "Ti"]:
         if abs(size) < 1024.0:
-            if unit == '':
+            if unit == "":
                 return f"{size:6.0f} B  "
             return f"{size:6.1f} {unit}B"
         size /= 1024.0
@@ -501,7 +528,7 @@ def format_file_size(size: Optional[float]) -> str:
 
 
 def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
-    """ Slice generator into multiple generators and each generator yields up to chunk_size items.
+    """Slice generator into multiple generators and each generator yields up to chunk_size items.
 
     Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
 
@@ -521,19 +548,23 @@ def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
 
 
 @overload
-def create_empty_pass(return_code: CollectStatus) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
+def create_empty_pass(
+    return_code: CollectStatus,
+) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
     """Typing signature for creating empty pass returning CollectStatus"""
     pass
 
 
 @overload
-def create_empty_pass(return_code: PostprocessStatus) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
+def create_empty_pass(
+    return_code: PostprocessStatus,
+) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
     """Typing signature for creating empty pass returning PostpProcessStatus"""
     pass
 
 
 def create_empty_pass(
-        return_code: CollectStatus | PostprocessStatus
+    return_code: CollectStatus | PostprocessStatus,
 ) -> Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]]:
     """Returns a function which will do nothing
 
@@ -542,18 +573,24 @@ def create_empty_pass(
     :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
     :return: function that does nothing
     """
-    def empty_pass(**kwargs: Any) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
+
+    def empty_pass(
+        **kwargs: Any,
+    ) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
         """Empty collection or postprocessing phase, doing nothing
 
         :param dict kwargs: arguments of the phase
         :return: return code, empty return message, non-modified arguments
         """
         return return_code, "", kwargs
+
     return empty_pass
 
 
-def get_current_interpreter(required_version: Optional[str] = None, fallback: str = 'python3') -> str:
-    """ Obtains the currently running python interpreter path. Typical use-case for this utility
+def get_current_interpreter(
+    required_version: Optional[str] = None, fallback: str = "python3"
+) -> str:
+    """Obtains the currently running python interpreter path. Typical use-case for this utility
     is running 'sudo python' as a subprocess which unfortunately ignores any active virtualenv,
     thus possibly running the command in an incompatible python version with missing packages etc.
 
@@ -571,8 +608,11 @@ def get_current_interpreter(required_version: Optional[str] = None, fallback: st
     :return str: the absolute path to the currently running python3 interpreter,
                  if not found, returns fallback interpreter instead
     """
-    def _parse_version(python_version: str) -> tuple[list[int], Callable[[Comparable, Comparable], bool]]:
-        """ Parse the python version represented as a string into the 3 digit version number and
+
+    def _parse_version(
+        python_version: str,
+    ) -> tuple[list[int], Callable[[Comparable, Comparable], bool]]:
+        """Parse the python version represented as a string into the 3 digit version number and
         additional postfixes, such as characters or '+' and '-'.
 
         :param str python_version: the version as a string (e.g., '3.6.5+')
@@ -587,8 +627,8 @@ def get_current_interpreter(required_version: Optional[str] = None, fallback: st
             # Check for interval specifiers, i.e., + or - and use them to infer the comparison operator
             cmp_op: Callable[[Comparable, Comparable], bool] = operator.ne
             for char in reversed(min_max):
-                if char in ('+', '-'):
-                    cmp_op = operator.lt if char == '+' else operator.gt
+                if char in ("+", "-"):
+                    cmp_op = operator.lt if char == "+" else operator.gt
                     break
             # Add default version digits if missing, we expect 3 version digits
             while len(version_digits) != 3:
@@ -601,7 +641,7 @@ def get_current_interpreter(required_version: Optional[str] = None, fallback: st
     # Ensure that the found interpreter satisfies the required version
     if interpreter and required_version is not None:
         # The format of --version should be 'Python x.y.z'
-        version = run_safely_external_command(f'{interpreter} --version')[0].decode('utf-8')
+        version = run_safely_external_command(f"{interpreter} --version")[0].decode("utf-8")
         version = version.split()[1]
         interpreter_version = _parse_version(version)[0]
         parsed_required_version, cmp_operator = _parse_version(required_version)

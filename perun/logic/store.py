@@ -16,7 +16,12 @@ from typing import BinaryIO, Optional
 
 import perun.utils.log as log
 
-from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES, touch_file, touch_dir
+from perun.utils.helpers import (
+    LINE_PARSING_REGEX,
+    SUPPORTED_PROFILE_TYPES,
+    touch_file,
+    touch_dir,
+)
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.profile.factory import Profile
@@ -48,7 +53,7 @@ def is_sha1(checksum: str) -> bool:
 
 
 def version_path_to_sha(sha_path: str) -> Optional[str]:
-    """ Transforms the path of the minor version file / directory (represented by the SHA value) to
+    """Transforms the path of the minor version file / directory (represented by the SHA value) to
     the actual SHA value as a string.
 
     :param str sha_path: path to the minor version directory
@@ -79,7 +84,7 @@ def read_and_deflate_chunk(file_handle: BinaryIO) -> str:
     packed_content = file_handle.read()
 
     decompressor = zlib.decompressobj()
-    return decompressor.decompress(packed_content).decode('utf-8')
+    return decompressor.decompress(packed_content).decode("utf-8")
 
 
 def split_object_name(base_dir: str, object_name: str, object_ext: str = "") -> tuple[str, str]:
@@ -111,7 +116,7 @@ def add_loose_object_to_dir(base_dir: str, object_name: str, object_content: byt
     # Write the content of the object
     # Note: That in some universe, there may become some collision, but in reality it should not
     if not os.path.exists(object_file_full_path):
-        with open(object_file_full_path, 'wb') as object_handle:
+        with open(object_file_full_path, "wb") as object_handle:
             object_handle.write(object_content)
 
 
@@ -121,7 +126,7 @@ def read_int_from_handle(file_handle: BinaryIO) -> int:
     :param file file_handle: read file
     :returns int: one integer
     """
-    return struct.unpack('i', file_handle.read(4))[0]
+    return struct.unpack("i", file_handle.read(4))[0]
 
 
 def read_char_from_handle(file_handle: BinaryIO) -> str:
@@ -130,7 +135,7 @@ def read_char_from_handle(file_handle: BinaryIO) -> str:
     :param file file_handle: read file
     :returns char: one read char
     """
-    return struct.unpack('c', file_handle.read(1))[0].decode('utf-8')
+    return struct.unpack("c", file_handle.read(1))[0].decode("utf-8")
 
 
 def read_number_of_entries_from_handle(index_handle: BinaryIO) -> int:
@@ -147,7 +152,9 @@ def read_number_of_entries_from_handle(index_handle: BinaryIO) -> int:
     return number_of_entries
 
 
-def write_list_to_handle(file_handle: BinaryIO, list_content: list[str], separator: str = ' ') -> None:
+def write_list_to_handle(
+    file_handle: BinaryIO, list_content: list[str], separator: str = " "
+) -> None:
     """Writes list to the opened handle
 
     :param File file_handle: opened file handle of the index
@@ -158,7 +165,7 @@ def write_list_to_handle(file_handle: BinaryIO, list_content: list[str], separat
     write_string_to_handle(file_handle, string_list)
 
 
-def read_list_from_handle(file_handle: BinaryIO, separator: str = ' ') -> list[str]:
+def read_list_from_handle(file_handle: BinaryIO, separator: str = " ") -> list[str]:
     """Reads list from the opened file index handle
 
     :param File file_handle: opened file handle of the index
@@ -177,9 +184,9 @@ def write_string_to_handle(file_handle: BinaryIO, content: str) -> None:
     :param File file_handle: opened file handle of the index
     :param str content: string content to be written
     """
-    binary_content = bytes(content, 'utf-8')
+    binary_content = bytes(content, "utf-8")
     content_len = len(binary_content)
-    binary_len = struct.pack('<I', content_len)
+    binary_len = struct.pack("<I", content_len)
     file_handle.write(binary_len)
     file_handle.write(binary_content)
 
@@ -193,12 +200,14 @@ def read_string_from_handle(file_handle: BinaryIO) -> str:
     :return: read data
     """
     content_len = read_int_from_handle(file_handle)
-    binary_content = file_handle.read(content_len).decode('utf-8')
+    binary_content = file_handle.read(content_len).decode("utf-8")
     return binary_content
 
 
 def save_degradation_list_for(
-        base_dir: str, minor_version: str, degradation_list: list[tuple[DegradationInfo, str, str]]
+    base_dir: str,
+    minor_version: str,
+    degradation_list: list[tuple[DegradationInfo, str, str]],
 ) -> None:
     """Saves the given degradation list to a minor version storage
 
@@ -216,11 +225,7 @@ def save_degradation_list_for(
     list_of_registered_changes = dict()
     already_saved_changes.extend(degradation_list)
     for deg_info, cmdstr, source in already_saved_changes:
-        info_string = " ".join([
-            deg_info.to_storage_record(),
-            source,
-            cmdstr
-        ])
+        info_string = " ".join([deg_info.to_storage_record(), source, cmdstr])
         uid = (deg_info.location, deg_info.type, cmdstr)
         list_of_registered_changes[uid] = info_string
 
@@ -231,7 +236,7 @@ def save_degradation_list_for(
     minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
     touch_dir(minor_dir)
     touch_file(minor_storage_file)
-    with open(minor_storage_file, 'w') as write_handle:
+    with open(minor_storage_file, "w") as write_handle:
         write_handle.write("\n".join(to_be_stored_changes))
 
 
@@ -243,24 +248,26 @@ def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:
     """
     if tokens := LINE_PARSING_REGEX.match(line):
         deg_info = DegradationInfo(
-            res=PerformanceChange[tokens.group('result')],
-            t=tokens.group('type'),
-            loc=tokens.group('location'),
-            fb=tokens.group('from'),
-            tt=tokens.group('to'),
-            rd=float(tokens.group('drate')),
-            ct=tokens.group('ctype'),
-            cr=float(tokens.group('crate')),
-            rdr=float(tokens.group('rdrate')),
+            res=PerformanceChange[tokens.group("result")],
+            t=tokens.group("type"),
+            loc=tokens.group("location"),
+            fb=tokens.group("from"),
+            tt=tokens.group("to"),
+            rd=float(tokens.group("drate")),
+            ct=tokens.group("ctype"),
+            cr=float(tokens.group("crate")),
+            rdr=float(tokens.group("rdrate")),
         )
-        return deg_info, tokens.group('cmdstr'), tokens.group('minor')
+        return deg_info, tokens.group("cmdstr"), tokens.group("minor")
     else:
         log.error(f"could not parse changelog line '{line}'")
         # Note: this is never executed and is only for typechecking
-        return DegradationInfo(PerformanceChange.Unknown, '', '', ''), '', ''
+        return DegradationInfo(PerformanceChange.Unknown, "", "", ""), "", ""
 
 
-def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[DegradationInfo, str, str]]:
+def load_degradation_list_for(
+    base_dir: str, minor_version: str
+) -> list[tuple[DegradationInfo, str, str]]:
     """Loads a list of degradations stored for the minor version.
 
     This opens a file in the .perun/objects directory in the minor version subdirectory with the
@@ -274,7 +281,7 @@ def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[D
     minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
     touch_dir(minor_dir)
     touch_file(minor_storage_file)
-    with open(minor_storage_file, 'r') as read_handle:
+    with open(minor_storage_file, "r") as read_handle:
         lines = read_handle.readlines()
 
     degradation_list = []
@@ -285,12 +292,14 @@ def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[D
             degradation_list.append(parsed_triple)
         except ValueError:
             if not warned_about_error:
-                log.warn('Malformed changelog line in {}'.format(minor_storage_file))
+                log.warn("Malformed changelog line in {}".format(minor_storage_file))
                 warned_about_error = True
     return degradation_list
 
 
-def load_profile_from_file(file_name: str, is_raw_profile: bool, unsafe_load: bool = False) -> Profile:
+def load_profile_from_file(
+    file_name: str, is_raw_profile: bool, unsafe_load: bool = False
+) -> Profile:
     """Loads profile w.r.t :ref:`profile-spec` from file.
 
     :param file_name: file path, where the profile is stored
@@ -306,11 +315,13 @@ def load_profile_from_file(file_name: str, is_raw_profile: bool, unsafe_load: bo
     if not unsafe_load and not os.path.exists(file_name):
         raise IncorrectProfileFormatException(file_name, "file '{}' not found")
 
-    with open(file_name, 'rb') as file_handle:
+    with open(file_name, "rb") as file_handle:
         return load_profile_from_handle(file_name, file_handle, is_raw_profile)
 
 
-def load_profile_from_handle(file_name: str, file_handle: BinaryIO, is_raw_profile: bool) -> Profile:
+def load_profile_from_handle(
+    file_name: str, file_handle: BinaryIO, is_raw_profile: bool
+) -> Profile:
     """
     Fixme: Add check that the loaded profile is in valid format!!!
     TODO: This should be broken into two parts
@@ -323,16 +334,19 @@ def load_profile_from_handle(file_name: str, file_handle: BinaryIO, is_raw_profi
         or when the profile is not in correct supported format or when the profile is malformed
     """
     if is_raw_profile:
-        body = file_handle.read().decode('utf-8')
+        body = file_handle.read().decode("utf-8")
     else:
         # Read deflated contents and split to header and body
         contents = read_and_deflate_chunk(file_handle)
-        header, body = contents.split('\0')
-        prefix, profile_type, profile_size = header.split(' ')
+        header, body = contents.split("\0")
+        prefix, profile_type, profile_size = header.split(" ")
 
         # Check the header, if the body is not malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
-                len(body) != int(profile_size):
+        if (
+            prefix != "profile"
+            or profile_type not in SUPPORTED_PROFILE_TYPES
+            or len(body) != int(profile_size)
+        ):
             raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
 
     # Try to load the json, if there is issue with the profile
@@ -340,7 +354,5 @@ def load_profile_from_handle(file_name: str, file_handle: BinaryIO, is_raw_profi
         return Profile(json.loads(body))
     except ValueError:
         raise IncorrectProfileFormatException(
-            file_name, "profile '{}' is not in profile format".format(
-                file_name
-            )
+            file_name, "profile '{}' is not in profile format".format(file_name)
         )

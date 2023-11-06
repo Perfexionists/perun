@@ -52,6 +52,10 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
     import perun.postprocess.regressogram.run as regressogram_run
 
     return [
-        clusterizer_run.clusterizer, kernel_regression_run.kernel_regression, moving_average_run.moving_average,
-        normalizer_run.normalizer, regression_analysis_run.regression_analysis, regressogram_run.regressogram
+        clusterizer_run.clusterizer,
+        kernel_regression_run.kernel_regression,
+        moving_average_run.moving_average,
+        normalizer_run.normalizer,
+        regression_analysis_run.regression_analysis,
+        regressogram_run.regressogram,
     ]

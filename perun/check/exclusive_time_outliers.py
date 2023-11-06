@@ -92,7 +92,7 @@ NS_TO_MS = 1000000
 
 
 def exclusive_time_outliers(
-        baseline_profile: Profile, target_profile: Profile, **_: Any
+    baseline_profile: Profile, target_profile: Profile, **_: Any
 ) -> Iterable[DegradationInfo]:
     """Checks the pair of (baseline, target) profiles for changes in function exclusive times.
 
@@ -109,7 +109,7 @@ def exclusive_time_outliers(
 
 
 class DiffProfile:
-    """ A representation of a difference profile.
+    """A representation of a difference profile.
 
     Contains a merge of the baseline and target profiles, as well as their exclusive time deltas
     (absolute and relative).
@@ -137,6 +137,7 @@ class DiffProfile:
                    of 'loc exclusive T Δ [%]'
     :ivar df: the difference profile as specified above
     """
+
     def __init__(self, baseline_profile: Profile, target_profile: Profile) -> None:
         """Constructor.
 
@@ -148,11 +149,10 @@ class DiffProfile:
         )
         if self.location_filter == "*":
             self.location_filter = None
-        self.cut_off: float = float(config.lookup_key_recursively(
-            "degradation.cutoff", "0.0")
-        )
+        self.cut_off: float = float(config.lookup_key_recursively("degradation.cutoff", "0.0"))
         self.df: pd.DataFrame = self._merge_and_diff(
-            self._prepare_profile(baseline_profile), self._prepare_profile(target_profile)
+            self._prepare_profile(baseline_profile),
+            self._prepare_profile(target_profile),
         )
 
     def detect_changes(self) -> Iterable[DegradationInfo]:
@@ -176,82 +176,92 @@ class DiffProfile:
         # Transform the DataFrame to DegradationInfo for each function in the DF
         for _, row in self.df.iterrows():
             # Do not report changes that are below the cutoff threshold
-            if -self.cut_off < row['loc exclusive T Δ [%]'] < self.cut_off:
+            if -self.cut_off < row["loc exclusive T Δ [%]"] < self.cut_off:
                 continue
             # Determine the severity and confidence of the changes
             result, ct, cr = self._determine_result_and_confidence(row)
             # Report the changes of function exclusive times
             yield DegradationInfo(
                 res=result,
-                loc=row['uid'],
-                fb=str(0.0 if pd.isnull(row['-exclusive T [ms]']) else
-                       round(row['-exclusive T [ms]'], 3)),
-                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else
-                       round(row['+exclusive T [ms]'], 3)),
-                t='time',
-                rd=row['exclusive T Δ [ms]'],
-                rdr=row['loc exclusive T Δ [%]'],
+                loc=row["uid"],
+                fb=str(
+                    0.0
+                    if pd.isnull(row["-exclusive T [ms]"])
+                    else round(row["-exclusive T [ms]"], 3)
+                ),
+                tt=str(
+                    0.0
+                    if pd.isnull(row["+exclusive T [ms]"])
+                    else round(row["+exclusive T [ms]"], 3)
+                ),
+                t="time",
+                rd=row["exclusive T Δ [ms]"],
+                rdr=row["loc exclusive T Δ [%]"],
                 ct=ct,
-                cr=round(cr, 2)
+                cr=round(cr, 2),
             )
 
         # Provide a summary degradation / optimization info per location (binary)
         columns = [
-            'location',
-            '-exclusive T [ms]', '+exclusive T [ms]',
-            'exclusive T Δ [ms]', 'loc exclusive T Δ [%]'
+            "location",
+            "-exclusive T [ms]",
+            "+exclusive T [ms]",
+            "exclusive T Δ [ms]",
+            "loc exclusive T Δ [%]",
         ]
-        for _, row in self.df[columns].groupby(['location']).sum().reset_index().iterrows():
-            if row['loc exclusive T Δ [%]'] > 0:
+        for _, row in self.df[columns].groupby(["location"]).sum().reset_index().iterrows():
+            if row["loc exclusive T Δ [%]"] > 0:
                 result = PerformanceChange.TotalDegradation
             else:
                 result = PerformanceChange.TotalOptimization
             yield DegradationInfo(
                 res=result,
-                loc=row['location'],
-                fb=round(row['-exclusive T [ms]'], 3),
-                tt=round(row['+exclusive T [ms]'], 3),
-                t='time',
-                rd=row['exclusive T Δ [ms]'],
-                rdr=row['loc exclusive T Δ [%]'],
-                ct='N/A'
+                loc=row["location"],
+                fb=round(row["-exclusive T [ms]"], 3),
+                tt=round(row["+exclusive T [ms]"], 3),
+                t="time",
+                rd=row["exclusive T Δ [ms]"],
+                rdr=row["loc exclusive T Δ [%]"],
+                ct="N/A",
             )
 
     @staticmethod
-    def _determine_result_and_confidence(row: pd.Series[Any]) -> tuple[PerformanceChange, str, float]:
+    def _determine_result_and_confidence(
+        row: pd.Series[Any],
+    ) -> tuple[PerformanceChange, str, float]:
         """Select the severity, confidence type and confidence rate of the exclusive time change.
 
         :param row: DataFrame row of specific 'uid' (i.e., function) record
 
         :return: severity, confidence type and confidence rate
         """
-        exc_time = row['exclusive T Δ [ms]']
-        if row['Mzs flag']:
+        exc_time = row["exclusive T Δ [ms]"]
+        if row["Mzs flag"]:
             if exc_time > 0:
                 result = PerformanceChange.SevereDegradation
             else:
                 result = PerformanceChange.SevereOptimization
             # We use IQR multiple instead of the mod. z-score to make the human comparison easier
             # ct, cr = 'Modified Z-score', row['Modified Z-score']
-            ct, cr = 'IQR_multiple', row['IQR multiple']
-        elif row['IQR flag']:
+            ct, cr = "IQR_multiple", row["IQR multiple"]
+        elif row["IQR flag"]:
             if exc_time > 0:
                 result = PerformanceChange.Degradation
             else:
                 result = PerformanceChange.Optimization
-            ct, cr = 'IQR_multiple', row['IQR multiple']
-        elif row['StdDev flag']:
+            ct, cr = "IQR_multiple", row["IQR multiple"]
+        elif row["StdDev flag"]:
             if exc_time > 0:
                 result = PerformanceChange.MaybeDegradation
             else:
                 result = PerformanceChange.MaybeOptimization
-            ct, cr = 'StdDev_multiple', row['StdDev multiple']
+            ct, cr = "StdDev_multiple", row["StdDev multiple"]
         else:
             result = PerformanceChange.NoChange
-            ct, cr = 'StdDev_multiple', row['StdDev multiple']
+            ct, cr = "StdDev_multiple", row["StdDev multiple"]
 
         # Update the result if the function is actually new or deleted
-        if row['NewDel flag']:
+        if row["NewDel flag"]:
             if exc_time > 0:
                 result = PerformanceChange.NotInBaseline
             else:
@@ -277,19 +287,20 @@ class DiffProfile:
         Recommendation for cut-off score 3.5
         https://hwbdocuments.env.nm.gov/Los%20Alamos%20National%20Labs/TA%2054/11587.pdf
         """
-        mad = stats.median_abs_deviation(self.df['exclusive T Δ [ms]'], scale=1.0)
-        median = self.df['exclusive T Δ [ms]'].median()
-        self.df['AD'] = abs(self.df['exclusive T Δ [ms]'] - median)
+        mad = stats.median_abs_deviation(self.df["exclusive T Δ [ms]"], scale=1.0)
+        median = self.df["exclusive T Δ [ms]"].median()
+        self.df["AD"] = abs(self.df["exclusive T Δ [ms]"] - median)
         try:
-            self.df['Modified Z-score'] = (MZS_CORRECTION * self.df[['AD']]) / mad
+            self.df["Modified Z-score"] = (MZS_CORRECTION * self.df[["AD"]]) / mad
         except ZeroDivisionError:
             # Make the MAD as close to 0 as possible
             mad = np.nextafter(0, 1)
-            self.df['Modified Z-score'] = (MZS_CORRECTION * self.df[['AD']]) / mad
-        mzs_filter = (self.df['Modified Z-score'] < -MZS_CUTOFF) | \
-                     (self.df['Modified Z-score'] > MZS_CUTOFF)
+            self.df["Modified Z-score"] = (MZS_CORRECTION * self.df[["AD"]]) / mad
+        mzs_filter = (self.df["Modified Z-score"] < -MZS_CUTOFF) | (
+            self.df["Modified Z-score"] > MZS_CUTOFF
+        )
         # Flag for easier filtering
-        self.df['Mzs flag'] = mzs_filter
+        self.df["Mzs flag"] = mzs_filter
 
     def iqr_multiple(self) -> None:
         """Compute the IQR multiple for each function in the DataFrame.
@@ -297,18 +308,18 @@ class DiffProfile:
         Also flag those records that are below or above the IQR cut-off score.
         """
         # Compute IQR
-        q1 = self.df['exclusive T Δ [ms]'].quantile(0.25)
-        q3 = self.df['exclusive T Δ [ms]'].quantile(0.75)
+        q1 = self.df["exclusive T Δ [ms]"].quantile(0.25)
+        q3 = self.df["exclusive T Δ [ms]"].quantile(0.75)
         iqr = q3 - q1
         # Create an IQR filter based on the distance of IQR_CUTOFF * IQR from Q1 and Q3
-        below_low_base = self.df['exclusive T Δ [ms]'] < q1 - IQR_CUTOFF * iqr
-        above_up_base = self.df['exclusive T Δ [ms]'] > q3 + IQR_CUTOFF * iqr
-        iqr_filter = (below_low_base | above_up_base)
+        below_low_base = self.df["exclusive T Δ [ms]"] < q1 - IQR_CUTOFF * iqr
+        above_up_base = self.df["exclusive T Δ [ms]"] > q3 + IQR_CUTOFF * iqr
+        iqr_filter = below_low_base | above_up_base
         # Compute the IQR multiple for outliers
-        self.df.loc[below_low_base, 'IQR multiple'] = -((self.df['exclusive T Δ [ms]'] - q1) / iqr)
-        self.df.loc[above_up_base, 'IQR multiple'] = self.df['exclusive T Δ [ms]'] / iqr - q3
+        self.df.loc[below_low_base, "IQR multiple"] = -((self.df["exclusive T Δ [ms]"] - q1) / iqr)
+        self.df.loc[above_up_base, "IQR multiple"] = self.df["exclusive T Δ [ms]"] / iqr - q3
         # Flag for easier filtering
-        self.df['IQR flag'] = iqr_filter
+        self.df["IQR flag"] = iqr_filter
 
     def std_dev_multiple(self) -> None:
         """Compute the StdDev multiple for each function in the DataFrame.
@@ -317,19 +328,20 @@ class DiffProfile:
         Note that we compute the stddev without the previously detected outliers that would
         otherwise heavily skew the stddev value.
         """
-        df_filtered = self.df.loc[~(self.df['Mzs flag']) & ~(self.df['IQR flag'])]
-        stddev = df_filtered['exclusive T Δ [ms]'].std()
-        self.df['StdDev multiple'] = self.df['exclusive T Δ [ms]'] / stddev
-        stddev_filter = (self.df['StdDev multiple'] < -STDDEV_CUTOFF) | \
-                        (self.df['StdDev multiple'] > STDDEV_CUTOFF)
-        self.df['StdDev flag'] = stddev_filter
+        df_filtered = self.df.loc[~(self.df["Mzs flag"]) & ~(self.df["IQR flag"])]
+        stddev = df_filtered["exclusive T Δ [ms]"].std()
+        self.df["StdDev multiple"] = self.df["exclusive T Δ [ms]"] / stddev
+        stddev_filter = (self.df["StdDev multiple"] < -STDDEV_CUTOFF) | (
+            self.df["StdDev multiple"] > STDDEV_CUTOFF
+        )
+        self.df["StdDev flag"] = stddev_filter
 
     def new_deleted_functions(self) -> None:
         """Flag functions that are new or missing in the target profile."""
         new_removed_filter = (
-                self.df['+exclusive T [ms]'].isna() | self.df['-exclusive T [ms]'].isna()
+            self.df["+exclusive T [ms]"].isna() | self.df["-exclusive T [ms]"].isna()
         )
-        self.df['NewDel flag'] = new_removed_filter
+        self.df["NewDel flag"] = new_removed_filter
 
     def _prepare_profile(self, profile: Profile) -> pd.DataFrame:
         """Extract the profile resources as DataFrame in the desired format.
@@ -343,19 +355,23 @@ class DiffProfile:
 
         :return: an appropriately formatted DataFrame
         """
-        columns = ['uid', 'exclusive', 'location']
+        columns = ["uid", "exclusive", "location"]
         # Obtain "Uid (function name), exclusive time, location" DataFrame
         # and sum the exclusive times of individual functions
-        df = convert.resources_to_pandas_dataframe(profile)[columns]\
-            .groupby(['uid', 'location']).sum().reset_index()
+        df = (
+            convert.resources_to_pandas_dataframe(profile)[columns]
+            .groupby(["uid", "location"])
+            .sum()
+            .reset_index()
+        )
         # Filter the location based on the provided regex filter
         if self.location_filter is not None:
-            return df[df['location'].str.contains(self.location_filter, regex=True, na=False)]
+            return df[df["location"].str.contains(self.location_filter, regex=True, na=False)]
         return df
 
     @staticmethod
     def _merge_and_diff(
-            baseline_profile: pd.DataFrame, target_profile: pd.DataFrame
+        baseline_profile: pd.DataFrame, target_profile: pd.DataFrame
     ) -> pd.DataFrame:
         """Merge the baseline and target DataFrames and compute the absolute and relative deltas.
 
@@ -364,8 +380,9 @@ class DiffProfile:
 
         :return: the merged and extended DataFrame
         """
+
         def _delta_exc(row: pd.Series[Any]) -> float:
-            """ Helper function for properly computing the absolute exclusive time delta even
+            """Helper function for properly computing the absolute exclusive time delta even
             when the function is new / deleted (in those cases, one of the exclusive times is
             nan, which breaks the computation).
 
@@ -373,51 +390,52 @@ class DiffProfile:
 
             :return: absolute exclusive time delta
             """
-            exc_new = 0.0 if pd.isnull(row['+exclusive T [ms]']) else row['+exclusive T [ms]']
-            exc_old = 0.0 if pd.isnull(row['-exclusive T [ms]']) else row['-exclusive T [ms]']
+            exc_new = 0.0 if pd.isnull(row["+exclusive T [ms]"]) else row["+exclusive T [ms]"]
+            exc_old = 0.0 if pd.isnull(row["-exclusive T [ms]"]) else row["-exclusive T [ms]"]
             return exc_new - exc_old
 
         # Rename the exclusive time columns appropriately (- for old, + for new) and merge them
-        baseline_profile.rename(columns={'exclusive': '-exclusive T [ms]'}, inplace=True)
-        target_profile.rename(columns={'exclusive': '+exclusive T [ms]'}, inplace=True)
+        baseline_profile.rename(columns={"exclusive": "-exclusive T [ms]"}, inplace=True)
+        target_profile.rename(columns={"exclusive": "+exclusive T [ms]"}, inplace=True)
         # Convert ns to ms
         # TODO: dynamic conversion to the most appropriate unit (e.g., seconds, us, ...)
-        baseline_profile['-exclusive T [ms]'] = baseline_profile['-exclusive T [ms]'].div(NS_TO_MS)
-        target_profile['+exclusive T [ms]'] = target_profile['+exclusive T [ms]'].div(NS_TO_MS)
+        baseline_profile["-exclusive T [ms]"] = baseline_profile["-exclusive T [ms]"].div(NS_TO_MS)
+        target_profile["+exclusive T [ms]"] = target_profile["+exclusive T [ms]"].div(NS_TO_MS)
         # Rename the locations in the baseline and target profiles to match. We employ a string
         # similarity check to discover possible changes of binaries name, e.g., due to version num.
         rename_old, rename_new = _map_similar_names(
-            list(baseline_profile['location'].unique()), list(target_profile['location'].unique())
+            list(baseline_profile["location"].unique()),
+            list(target_profile["location"].unique()),
         )
-        baseline_profile['location'].replace(rename_old, inplace=True)
-        target_profile['location'].replace(rename_new, inplace=True)
+        baseline_profile["location"].replace(rename_old, inplace=True)
+        target_profile["location"].replace(rename_new, inplace=True)
 
-        df_merge = pd.merge(target_profile, baseline_profile, on=['uid', 'location'], how='left')
+        df_merge = pd.merge(target_profile, baseline_profile, on=["uid", "location"], how="left")
         # Compute the exclusive time diff
-        df_merge['exclusive T Δ [ms]'] = df_merge.apply(_delta_exc, axis=1)
+        df_merge["exclusive T Δ [ms]"] = df_merge.apply(_delta_exc, axis=1)
         # Prepare filters
-        new_nan_filt = df_merge['+exclusive T [ms]'].isna()
-        old_nan_filt = df_merge['-exclusive T [ms]'].isna()
-        no_nan_filt = ~(df_merge['-exclusive T [ms]'].isna() | df_merge['-exclusive T [ms]'].isna())
+        new_nan_filt = df_merge["+exclusive T [ms]"].isna()
+        old_nan_filt = df_merge["-exclusive T [ms]"].isna()
+        no_nan_filt = ~(df_merge["-exclusive T [ms]"].isna() | df_merge["-exclusive T [ms]"].isna())
         # Compute the sum of all exclusive times
-        total_exc = df_merge['+exclusive T [ms]'].sum()
+        total_exc = df_merge["+exclusive T [ms]"].sum()
         # Compute the impact of change on the total location exclusive time
-        df_merge.loc[new_nan_filt, 'loc exclusive T Δ [%]'] = (
-                df_merge['-exclusive T [ms]'] / total_exc * (-100)
+        df_merge.loc[new_nan_filt, "loc exclusive T Δ [%]"] = (
+            df_merge["-exclusive T [ms]"] / total_exc * (-100)
         )
-        df_merge.loc[old_nan_filt, 'loc exclusive T Δ [%]'] = (
-                df_merge['+exclusive T [ms]'] / total_exc * 100
+        df_merge.loc[old_nan_filt, "loc exclusive T Δ [%]"] = (
+            df_merge["+exclusive T [ms]"] / total_exc * 100
         )
-        df_merge.loc[no_nan_filt, 'loc exclusive T Δ [%]'] = (
-                (df_merge['+exclusive T [ms]'] - df_merge['-exclusive T [ms]']) / total_exc * 100
+        df_merge.loc[no_nan_filt, "loc exclusive T Δ [%]"] = (
+            (df_merge["+exclusive T [ms]"] - df_merge["-exclusive T [ms]"]) / total_exc * 100
         )
 
         # Sort by the most significant time difference
-        return df_merge.sort_values(by='exclusive T Δ [ms]', ascending=False).reset_index(drop=True)
+        return df_merge.sort_values(by="exclusive T Δ [ms]", ascending=False).reset_index(drop=True)
 
 
 def _map_similar_names(
-        strings_old: list[str], strings_new: list[str]
+    strings_old: list[str], strings_new: list[str]
 ) -> tuple[OldLocMap, NewLocMap]:
     """Map profile location names that might have slightly changed in different versions.
 

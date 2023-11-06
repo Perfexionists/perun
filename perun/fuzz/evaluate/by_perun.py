@@ -21,14 +21,14 @@ DEGRADATION_RATIO_TRESHOLD = 0.0
 
 
 def baseline_testing(
-        executable: Executable,
-        seeds: list[Mutation],
-        collector: str,
-        postprocessor: list[str],
-        minor_version_list: list[MinorVersion],
-        **kwargs: Any
+    executable: Executable,
+    seeds: list[Mutation],
+    collector: str,
+    postprocessor: list[str],
+    minor_version_list: list[MinorVersion],
+    **kwargs: Any,
 ) -> Iterable[tuple[CollectStatus, Profile, str]]:
-    """ Generates a profile for specified command with init seeds, compares each other.
+    """Generates a profile for specified command with init seeds, compares each other.
 
     :param Executable executable: called command with arguments
     :param list seeds: list of workloads
@@ -40,17 +40,31 @@ def baseline_testing(
     """
 
     # create baseline profile
-    base_pg = list(run.generate_profiles_for(
-        [executable.cmd], [executable.args], [seeds[0].path], [collector], postprocessor,
-        minor_version_list, **kwargs
-    ))
+    base_pg = list(
+        run.generate_profiles_for(
+            [executable.cmd],
+            [executable.args],
+            [seeds[0].path],
+            [collector],
+            postprocessor,
+            minor_version_list,
+            **kwargs,
+        )
+    )
 
     for file in seeds[1:]:
         # target profile
-        target_pg = list(run.generate_profiles_for(
-            [executable.cmd], [executable.args], [file.path], [collector], postprocessor,
-            minor_version_list, **kwargs
-        ))
+        target_pg = list(
+            run.generate_profiles_for(
+                [executable.cmd],
+                [executable.args],
+                [file.path],
+                [collector],
+                postprocessor,
+                minor_version_list,
+                **kwargs,
+            )
+        )
 
         file.deg_ratio = check_for_change(base_pg, target_pg)
         if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
@@ -59,15 +73,15 @@ def baseline_testing(
 
 
 def target_testing(
-        executable: Executable,
-        workload: Mutation,
-        collector: str,
-        postprocessor: list[str],
-        minor_version_list: list[MinorVersion],
-        base_result: Iterable[tuple[CollectStatus, Profile, str]],
-        **kwargs: Any
+    executable: Executable,
+    workload: Mutation,
+    collector: str,
+    postprocessor: list[str],
+    minor_version_list: list[MinorVersion],
+    base_result: Iterable[tuple[CollectStatus, Profile, str]],
+    **kwargs: Any,
 ) -> bool:
-    """ Generates a profile for specified command with fuzzed workload, compares with
+    """Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 
     :param Executable executable: called command with arguments
@@ -80,10 +94,17 @@ def target_testing(
     :return bool: True if performance degradation was detected, False otherwise.
     """
     # target profile with a new workload
-    target_pg = list(run.generate_profiles_for(
-        [executable.cmd], [executable.args], [workload.path], [collector], postprocessor,
-        minor_version_list, **kwargs
-    ))
+    target_pg = list(
+        run.generate_profiles_for(
+            [executable.cmd],
+            [executable.args],
+            [workload.path],
+            [collector],
+            postprocessor,
+            minor_version_list,
+            **kwargs,
+        )
+    )
 
     # check
     workload.deg_ratio = check_for_change(base_result, target_pg)
@@ -91,9 +112,9 @@ def target_testing(
 
 
 def check_for_change(
-        base_pg: Iterable[tuple[CollectStatus, Profile, str]],
-        target_pg: Iterable[tuple[CollectStatus, Profile, str]],
-        method: str = 'best-model'
+    base_pg: Iterable[tuple[CollectStatus, Profile, str]],
+    target_pg: Iterable[tuple[CollectStatus, Profile, str]],
+    method: str = "best-model",
 ) -> float:
     """Function that randomly choose an index from list.
 

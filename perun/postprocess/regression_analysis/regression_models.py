@@ -26,7 +26,7 @@ def get_formula_of(model: str) -> Callable[..., float]:
     :param str model: the type of model which formula is required
     :return lambda: formula for y coordinates computation
     """
-    return _MODELS[model]['transformations']['plot_model']['formula']
+    return _MODELS[model]["transformations"]["plot_model"]["formula"]
 
 
 def get_supported_models() -> list[str]:
@@ -46,7 +46,7 @@ def get_supported_transformations(model_key: str) -> list[str]:
     :param str model_key: model key (e.g. 'log') for which the transformations are gathered
     :returns list of str: the names of all supported transformations for given model
     """
-    return [t for t in _MODELS.get(model_key, {}).get('transformations', {}).keys()]
+    return [t for t in _MODELS.get(model_key, {}).get("transformations", {}).keys()]
 
 
 def get_transformation_data_for(regression_model: str, transformation: str) -> dict[str, Any]:
@@ -67,7 +67,7 @@ def get_transformation_data_for(regression_model: str, transformation: str) -> d
     if transformation not in get_supported_transformations(key):
         # Model does not support requested transformation
         raise exceptions.InvalidTransformationException(regression_model, transformation)
-    return _MODELS[key]['transformations'][transformation]
+    return _MODELS[key]["transformations"][transformation]
 
 
 def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str, Any]]:
@@ -84,9 +84,9 @@ def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str,
         regression_models_keys = tuple(regression_models_keys)
 
     # Get all models
-    if not regression_models_keys or 'all' in regression_models_keys:
+    if not regression_models_keys or "all" in regression_models_keys:
         for model in sorted(_MODELS.keys()):
-            if model != 'all':
+            if model != "all":
                 yield _MODELS[model].copy()
     # Specific models
     else:
@@ -98,14 +98,14 @@ def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str,
 
 
 def map_model_to_key(model: str) -> str:
-    """ The mapping function which takes model name and provides the _MODELS key containing
+    """The mapping function which takes model name and provides the _MODELS key containing
         the model dictionary.
 
     :param str model: the model name to map
     :returns str:  the _MODELS key containing the model data
     """
     # Collect all models in _MODELS as a dict of model: key
-    elements = {_MODELS[m].get('model'): m for m in _MODELS}
+    elements = {_MODELS[m].get("model"): m for m in _MODELS}
     # Check the key validity
     if model in elements:
         return elements[model]
@@ -119,8 +119,10 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
     :returns tuple, tuple: the derived models and standard models in separated tuples
     """
     # Get all models
-    if not regression_models_keys or 'all' in regression_models_keys:
-        regression_models_keys = cast(tuple[str], tuple(filter(lambda m: m != 'all', get_supported_models())))
+    if not regression_models_keys or "all" in regression_models_keys:
+        regression_models_keys = cast(
+            tuple[str], tuple(filter(lambda m: m != "all", get_supported_models()))
+        )
 
     # Split the models into derived and non-derived
     der: list[str] = []
@@ -128,18 +130,18 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
     for model in regression_models_keys:
         if model not in _MODELS.keys():
             raise exceptions.InvalidModelException(model)
-        if 'derived' in _MODELS[model]:
+        if "derived" in _MODELS[model]:
             der.append(model)
         else:
             normal.append(model)
 
     # Add models that are required by derived models if not already present
     for model in der:
-        if 'required' in _MODELS[model] and _MODELS[model]['required'] not in normal:
+        if "required" in _MODELS[model] and _MODELS[model]["required"] not in normal:
             # Check if the model exists
-            if _MODELS[model]['required'] not in _MODELS.keys():
+            if _MODELS[model]["required"] not in _MODELS.keys():
                 raise exceptions.InvalidModelException(model)
-            normal.append(_MODELS[model]['required'])
+            normal.append(_MODELS[model]["required"])
     return cast(tuple[str], tuple(der)), cast(tuple[str], tuple(normal))
 
 
@@ -165,123 +167,123 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
 # -- m_fx: function that modifies x coordinates according to formulae
 # -- formula: function with formula for y coordinates computation
 _MODELS: dict[str, dict[str, Any]] = {
-    'all': {},  # key representing all models
-    'constant': {
-        'model': 'constant',
-        'f_x': 0,
-        'derived': derived.derived_const,
-        'required': 'linear',
-        'b1_threshold': 0.01,
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'formula': lambda x, b0, b1: b0 + b1 * x
+    "all": {},  # key representing all models
+    "constant": {
+        "model": "constant",
+        "f_x": 0,
+        "derived": derived.derived_const,
+        "required": "linear",
+        "b1_threshold": 0.01,
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.generic_plot_y_pts,
+                "formula": lambda x, b0, b1: b0 + b1 * x,
             }
-        }
+        },
     },
-    'linear': {
-        'model': 'linear',
-        'f_x': lambda x: x,
-        'f_y': lambda y: y,
-        'f_a': lambda a: a,
-        'f_b': lambda b: b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
+    "linear": {
+        "model": "linear",
+        "f_x": lambda x: x,
+        "f_y": lambda y: y,
+        "f_a": lambda a: a,
+        "f_b": lambda b: b,
+        "data_gen": generic.generic_regression_data,
+        "computation": generic.generic_compute_regression,
+        "func_list": [
             generic.generic_regression_coefficients,
-            generic.generic_regression_error
+            generic.generic_regression_error,
         ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'formula': lambda x, b0, b1: b0 + b1 * x
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.generic_plot_y_pts,
+                "formula": lambda x, b0, b1: b0 + b1 * x,
             }
-        }
+        },
     },
-    'logarithmic': {
-        'model': 'logarithmic',
-        'f_x': math.log,
-        'f_y': lambda y: y,
-        'f_a': lambda a: a,
-        'f_b': lambda b: b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
+    "logarithmic": {
+        "model": "logarithmic",
+        "f_x": math.log,
+        "f_y": lambda y: y,
+        "f_a": lambda a: a,
+        "f_b": lambda b: b,
+        "data_gen": generic.generic_regression_data,
+        "computation": generic.generic_compute_regression,
+        "func_list": [
             generic.generic_regression_coefficients,
-            generic.generic_regression_error
+            generic.generic_regression_error,
         ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'm_fx': math.log,
-                'formula': lambda x, b0, b1: b0 + b1 * x
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.generic_plot_y_pts,
+                "m_fx": math.log,
+                "formula": lambda x, b0, b1: b0 + b1 * x,
             }
-        }
+        },
     },
     # Should not be used for new profiles, the quadratic model can be achieved using the power model
-    'quadratic': {
-        'model': 'quadratic',
-        'data_gen': specific.specific_quad_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
+    "quadratic": {
+        "model": "quadratic",
+        "data_gen": specific.specific_quad_data,
+        "computation": generic.generic_compute_regression,
+        "func_list": [
             specific.specific_quad_coefficients,
-            specific.specific_quad_error
+            specific.specific_quad_error,
         ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.quad_plot_y_pts,
-                'formula': lambda x, b0, b1, b2: b0 + b1 * x + b2 * (x ** 2)
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.quad_plot_y_pts,
+                "formula": lambda x, b0, b1, b2: b0 + b1 * x + b2 * (x**2),
             }
-        }
+        },
     },
-    'power': {
-        'model': 'power',
-        'f_x': math.log10,
-        'f_y': math.log10,
-        'f_a': lambda a: 10 ** a,
-        'f_b': lambda b: b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
+    "power": {
+        "model": "power",
+        "f_x": math.log10,
+        "f_y": math.log10,
+        "f_a": lambda a: 10**a,
+        "f_b": lambda b: b,
+        "data_gen": generic.generic_regression_data,
+        "computation": generic.generic_compute_regression,
+        "func_list": [
             generic.generic_regression_coefficients,
-            generic.generic_regression_error
+            generic.generic_regression_error,
         ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'formula': lambda x, b0, b1: b0 * x ** b1
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.generic_plot_y_pts,
+                "formula": lambda x, b0, b1: b0 * x**b1,
             }
-        }
+        },
     },
-    'exponential': {
-        'model': 'exponential',
-        'f_x': lambda x: x,
-        'f_y': math.log10,
-        'f_a': lambda a: 10 ** a,
-        'f_b': lambda b: 10 ** b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
+    "exponential": {
+        "model": "exponential",
+        "f_x": lambda x: x,
+        "f_y": math.log10,
+        "f_a": lambda a: 10**a,
+        "f_b": lambda b: 10**b,
+        "data_gen": generic.generic_regression_data,
+        "computation": generic.generic_compute_regression,
+        "func_list": [
             generic.generic_regression_coefficients,
-            generic.generic_regression_error
+            generic.generic_regression_error,
         ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'formula': lambda x, b0, b1: b0 * b1 ** x
+        "transformations": {
+            "plot_model": {
+                "computation": plot.model_plot_computation,
+                "model_x": plot.generic_plot_x_pts,
+                "model_y": plot.generic_plot_y_pts,
+                "formula": lambda x, b0, b1: b0 * b1**x,
             }
-        }
-    }
+        },
+    },
 }

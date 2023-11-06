@@ -5,5 +5,4 @@ profiling resources using the constant function at the individual parts of
 the whole interval.
 """
 
-SUPPORTED_PROFILES = ['mixed|memory|time']
-
+SUPPORTED_PROFILES = ["mixed|memory|time"]
