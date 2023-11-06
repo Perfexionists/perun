@@ -191,8 +191,7 @@ In the following, we list the foremost features and advantages of Perun:
     rather packed and allows easy distribution.
 
   * **Multiplatform-support**---Perun is implemented in Python 3 and its implementation is supported
-    both by Windows and Unix-like platforms. However, several visualizations currently requires
-    support for ``ncurses`` library (e.g. :ref:`views-heapmap`).
+    both by Windows and Unix-like platforms.
 
   * **Regression Analysis**---Perun's suite contains a postprocessing module for
     :ref:`postprocessors-regression-analysis`, which supports several different strategies for

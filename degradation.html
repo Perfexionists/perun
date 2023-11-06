@@ -1,30 +1,20 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Detecting Performance Changes &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Detecting Performance Changes &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Perun Configuration files" href="config.html" />
+    <link rel="next" title="Performance Fuzz-testing" href="fuzzing.html" />
     <link rel="prev" title="Automating Runs" href="jobs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -32,8 +22,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -43,8 +32,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="detecting-performance-changes">
-<span id="degradation-overview"></span><h1>Detecting Performance Changes<a class="headerlink" href="#detecting-performance-changes" title="Permalink to this headline">¶</a></h1>
+  <section id="detecting-performance-changes">
+<span id="degradation-overview"></span><h1>Detecting Performance Changes<a class="headerlink" href="#detecting-performance-changes" title="Link to this heading">¶</a></h1>
 <p>For every new minor version of project (or every project release), developers should usually
 generate new batch of performance profiles with the same concrete configuration of resource
 collection (i.e. the set of collectors and postprocessors run on the same commands).These profiles
@@ -71,19 +60,18 @@ minor version from two days ago, etc.). During the check of degradation of one p
 corresponding to the target, we find the nearest baseline profile in the history. Then for one pair
 of target and baseline profiles we can use multiple methods and these methods can then report
 multiple performance changes (such as optimizations and degradations).</p>
-<a class="reference internal image-reference" href="_images/diff-analysis.svg"><div align="center" class="align-center"><img alt="_images/diff-analysis.svg" src="_images/diff-analysis.svg" width="100%" /></div>
-</a>
-<div class="section" id="results-of-detection">
-<span id="degradation-output"></span><h2>Results of Detection<a class="headerlink" href="#results-of-detection" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/diff-analysis.svg"><img alt="_images/diff-analysis.svg" class="align-center" src="_images/diff-analysis.svg" width="100%" /></a>
+<section id="results-of-detection">
+<span id="degradation-output"></span><h2>Results of Detection<a class="headerlink" href="#results-of-detection" title="Link to this heading">¶</a></h2>
 <p>Between the pair of target and baseline profile one can use multiple methods, each suitable for
 specific type of change. Each such method can then yield multiple reports about detected
 performance changes (however, some of these can be spurious). Each degradation report can contain
 the following details:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first"><strong>Type of the change</strong>—the overall general classification of the performance change, which
+<li><p><strong>Type of the change</strong>—the overall general classification of the performance change, which
 can be one of the following six values representing both certain and uncertain answers:</p>
-<p><code class="docutils literal"><span class="pre">No</span> <span class="pre">Change</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">Change</span></code>:</p>
 <blockquote>
 <div><p>Represents that the performance of the given uniquely identified resource group was not
 changed in any way and it stayed the same (within some bound of error). By default these
@@ -91,79 +79,101 @@ changes are not reported in the standard output, but can be made visible by incr
 verbosity of the command line interface (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> how to increase the verbosity of the
 output).</p>
 </div></blockquote>
-<p><code class="docutils literal"><span class="pre">Degradation</span></code> or <code class="docutils literal"><span class="pre">Optimization</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Total</span> <span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Total</span> <span class="pre">Optimization</span></code>:</p>
 <blockquote>
-<div><p>Represents that the performance of resource group has degradated (resp optimized), i.e. got
+<div><p>Represents an overall program degradation or optimization. The overall degradation or
+optimization report may actually be further divided into per-binary or per-file reports
+(e.g., a standalone report for <code class="docutils literal notranslate"><span class="pre">mybin</span></code> and its library <code class="docutils literal notranslate"><span class="pre">mylib</span></code> as done by
+<a class="reference internal" href="#degradation-method-eto"><span class="std std-ref">Exclusive Time Outliers</span></a>).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">Not</span> <span class="pre">in</span> <span class="pre">Baseline</span></code> or <code class="docutils literal notranslate"><span class="pre">Not</span> <span class="pre">in</span> <span class="pre">Target</span></code>:</p>
+<blockquote>
+<div><p>Represents a performance change caused by new or deleted resources, e.g., functions that
+are newly introduced (resp newly missing) in the new project version. Reporting these
+changes is useful since even a simple function refactoring may introduce serious performance
+slowdown or speedup.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">Severe</span> <span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Severe</span> <span class="pre">Optimization</span></code>:</p>
+<blockquote>
+<div><p>Represents that the performance of resource group has severely degraded (resp optimized),
+i.e., got severely worse (resp better) with a high confidence. Each report also usually
+shows the confidence of this report, e.g. by the value of coefficient of determination (see
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>), which quantifies how the prediction or
+regression models of both versions were fitting the data.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Optimization</span></code>:</p>
+<blockquote>
+<div><p>Represents that the performance of resource group has degraded (resp optimized), i.e. got
 worse (resp got better) with a fairly high confidence. Each report also usually shows the
 confidence of this report, e.g. by the value of coefficient of determination (see
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>), which quantifies how the prediction or
 regression models of both versions were fitting the data.</p>
 </div></blockquote>
-<p><code class="docutils literal"><span class="pre">Maybe</span> <span class="pre">Degradation</span></code> or <code class="docutils literal"><span class="pre">Maybe</span> <span class="pre">Optimization</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Maybe</span> <span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Maybe</span> <span class="pre">Optimization</span></code>:</p>
 <blockquote>
 <div><p>Represents detected performance change which is either unverified or with a low confidence
 (so the change can be either false positive or false negative). This classification of
 changes allows methods to provide more broader evaluation of performance change.</p>
 </div></blockquote>
-<p><code class="docutils literal"><span class="pre">Unknown</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Unknown</span></code>:</p>
 <blockquote>
 <div><p>Represents that the given method could not determine anything at all.</p>
 </div></blockquote>
 </li>
-<li><p class="first"><strong>Subtype of the change</strong>—the description of the type of the change in more details, such as
+<li><p><strong>Subtype of the change</strong>—the description of the type of the change in more details, such as
 that the change was in <cite>complexity order</cite> (e.g. the performance model degraded from linear
-model to power model) or <cite>ratio</cite> (e.g. the average speed degraded two times)</p>
-</li>
-<li><p class="first"><strong>Confidence</strong>—an indication how likely the degradation is real and not spurious or caused
+model to power model) or <cite>ratio</cite> (e.g. the average speed degraded two times)</p></li>
+<li><p><strong>Confidence</strong>—an indication how likely the degradation is real and not spurious or caused
 by badly collected data. The actual form of confidence is dependent on the underlying
 detection method. E.g. for methods based on <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> this
 can correspond to the coefficient of determination which shows the fitness of the function
-models to the actually measured values.</p>
-</li>
-<li><p class="first"><strong>Location</strong>—the unique identification of the group of resources, such as the name of the
-function, the precise chunk of the code or line in code.</p>
-</li>
+models to the actually measured values.</p></li>
+<li><p><strong>Location</strong>—the unique identification of the group of resources, such as the name of the
+function, the precise chunk of the code or line in code.</p></li>
 </ol>
 </div></blockquote>
 <p>If the underlying method does not detect any change between two profiles, by default nothing is
 reported at all. However, this behaviour can be changed by increasing the verbosity of the output
 (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> how to increase the verbosity of the output)</p>
-</div>
-<div class="section" id="detection-methods">
-<span id="degradation-methods"></span><h2>Detection Methods<a class="headerlink" href="#detection-methods" title="Permalink to this headline">¶</a></h2>
-<p>Currently we support two simple strategies for detection of the performance changes:</p>
+</section>
+<section id="detection-methods">
+<span id="degradation-methods"></span><h2>Detection Methods<a class="headerlink" href="#detection-methods" title="Link to this heading">¶</a></h2>
+<p>Currently we support three simple strategies for detection of the performance changes:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><a class="reference internal" href="#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> which is based on results of
+<li><p><a class="reference internal" href="#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> which is based on results of
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> and only checks for each uniquely identified group
 of resources, whether the best performance (or prediction) model has changed (considering
 lexicographic ordering of model types), e.g. that the best model changed from <cite>linear</cite> to
-<cite>quadratic</cite>.</li>
-<li><a class="reference internal" href="#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a> which computes averages as a representation of the performance
+<cite>quadratic</cite>.</p></li>
+<li><p><a class="reference internal" href="#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a> which computes averages as a representation of the performance
 for each uniquely identified group of resources. Each average of the target is then compared
 with the average of the baseline and if the their ration exceeds a certain threshold interval,
-the method reports the change.</li>
+the method reports the change.</p></li>
+<li><p><a class="reference internal" href="#degradation-method-eto"><span class="std std-ref">Exclusive Time Outliers</span></a> which identifies outliers within the function exclusive time
+deltas. The outliers are identified using three different statistical techniques, resulting in
+three different change severity categories based on which technique discovered the outlier.</p></li>
 </ol>
 </div></blockquote>
 <p>Refer to <a class="reference internal" href="#degradation-custom"><span class="std std-ref">Create Your Own Degradation Checker</span></a> to create your own detection method.</p>
-<div class="section" id="module-perun.check.best_model_order_equality">
-<span id="best-model-order-equality"></span><span id="degradation-method-bmoe"></span><h3>Best Model Order Equality<a class="headerlink" href="#module-perun.check.best_model_order_equality" title="Permalink to this headline">¶</a></h3>
+<section id="module-perun.check.best_model_order_equality">
+<span id="best-model-order-equality"></span><span id="degradation-method-bmoe"></span><h3>Best Model Order Equality<a class="headerlink" href="#module-perun.check.best_model_order_equality" title="Link to this heading">¶</a></h3>
 <p>The <cite>Best Model Order Equality</cite> chooses the best model (i.e. the one with the highest
 <cite>coefficient of determination</cite>) as the representant of the performance of each group of uniquely
 identified resources (e.g. corresponding to the same function). Then each pair of baseline and
 target models is compared lexicographically (e.g. the <cite>linear</cite> model is lexicographically smaller
-than <cite>quadratic</cite> model), and any change in this ordering is detected as either <code class="docutils literal"><span class="pre">Optimization</span></code> or
-<code class="docutils literal"><span class="pre">Degradation</span></code> if the minimal confidence of the models is above certain threshold.</p>
+than <cite>quadratic</cite> model), and any change in this ordering is detected as either <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Degradation</span></code> if the minimal confidence of the models is above certain threshold.</p>
 <blockquote>
 <div><ul class="simple">
-<li><strong>Detects</strong>: <cite>Order</cite> changes; <code class="docutils literal"><span class="pre">Optimization</span></code> and <code class="docutils literal"><span class="pre">Degradation</span></code></li>
-<li><strong>Confidence</strong>: Minimal <cite>coefficient of determination</cite> of best models of baseline and target
-minor versions</li>
-<li><strong>Limitations</strong>: Profiles postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a></li>
+<li><p><strong>Detects</strong>: <cite>Order</cite> changes; <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> and <code class="docutils literal notranslate"><span class="pre">Degradation</span></code></p></li>
+<li><p><strong>Confidence</strong>: Minimal <cite>coefficient of determination</cite> of best models of baseline and target
+minor versions</p></li>
+<li><p><strong>Limitations</strong>: Profiles postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a></p></li>
 </ul>
 </div></blockquote>
 <p>The example of the output generated by the <cite>BMOE</cite> method is as follows</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="mi">1</span><span class="n">eb3d6</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">the</span> <span class="n">degradation</span> <span class="n">of</span> <span class="n">search</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="mi">1</span><span class="n">eb3d6</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">the</span> <span class="n">degradation</span> <span class="n">of</span> <span class="n">search</span>
 <span class="o">|</span>    <span class="o">|</span> <span class="o">*</span> <span class="mf">7813e3</span><span class="p">:</span> <span class="n">Implement</span> <span class="n">new</span> <span class="n">version</span> <span class="n">of</span> <span class="n">search</span>
 <span class="o">|</span>   <span class="o">&gt;</span> <span class="n">collected</span> <span class="n">by</span> <span class="n">complexity</span><span class="o">+</span><span class="n">regression_analysis</span> <span class="k">for</span> <span class="n">cmd</span><span class="p">:</span> <span class="s1">&#39;$ mybin&#39;</span>
 <span class="o">|</span>     <span class="o">&gt;</span> <span class="n">applying</span> <span class="s1">&#39;best_model_order_equality&#39;</span> <span class="n">method</span>
@@ -180,32 +190,32 @@ minor versions</li>
 <span class="o">*</span> <span class="mi">503885</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">minor</span> <span class="n">issues</span>
 </pre></div>
 </div>
-<p>In the output above, we detected the <code class="docutils literal"><span class="pre">Optimization</span></code> between commits <code class="docutils literal"><span class="pre">1eb3d6</span></code> (target) and
-<code class="docutils literal"><span class="pre">7813e3</span></code> (baseline), where the best performance model of running time of <code class="docutils literal"><span class="pre">SLList_search</span></code>
+<p>In the output above, we detected the <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> between commits <code class="docutils literal notranslate"><span class="pre">1eb3d6</span></code> (target) and
+<code class="docutils literal notranslate"><span class="pre">7813e3</span></code> (baseline), where the best performance model of running time of <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code>
 function changed from <strong>power</strong> model to <strong>linear</strong>. For the methods based on
-<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> we use the <cite>coefficient of determination</cite> (<span class="math">\(r^2\)</span>)
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> we use the <cite>coefficient of determination</cite> (<span class="math notranslate nohighlight">\(r^2\)</span>)
 to represent a confidence, and take the minimal <cite>coefficient of determination</cite> of target and
-baseline model as a confidence for this detected change. Since <span class="math">\(r^2\)</span> is almost close to the
+baseline model as a confidence for this detected change. Since <span class="math notranslate nohighlight">\(r^2\)</span> is almost close to the
 value <cite>1.0</cite> (which would mean, that the model precisely fits the measured values), this signifies
 that the best model fit the data tightly and hence the detected optimization is <strong>not spurious</strong>.</p>
-</div>
-<div class="section" id="module-perun.check.average_amount_threshold">
-<span id="average-amount-threshold"></span><span id="degradation-method-aat"></span><h3>Average Amount Threshold<a class="headerlink" href="#module-perun.check.average_amount_threshold" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-perun.check.average_amount_threshold">
+<span id="average-amount-threshold"></span><span id="degradation-method-aat"></span><h3>Average Amount Threshold<a class="headerlink" href="#module-perun.check.average_amount_threshold" title="Link to this heading">¶</a></h3>
 <p>The <cite>Average Amount Threshold</cite> groups all of the resources according to the unique identifier
 (uid; e.g. the function name) and then computes the averages of resource amounts as performance
 representants of baseline and target profiles. The computed averages are then compared (by division
-, and according to the set threshold the checker detects either <code class="docutils literal"><span class="pre">Optimization</span></code> or <code class="docutils literal"><span class="pre">Degradation</span></code>
-(the threshold is <code class="docutils literal"><span class="pre">2.0</span></code> ratio for detecting degradation and <code class="docutils literal"><span class="pre">0.5</span></code> ratio for detecting
+, and according to the set threshold the checker detects either <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> or <code class="docutils literal notranslate"><span class="pre">Degradation</span></code>
+(the threshold is <code class="docutils literal notranslate"><span class="pre">2.0</span></code> ratio for detecting degradation and <code class="docutils literal notranslate"><span class="pre">0.5</span></code> ratio for detecting
 optimization, i.e. the threshold is two times speed-up or speed-down)</p>
 <blockquote>
 <div><ul class="simple">
-<li><strong>Detects</strong>: <cite>Ratio</cite> changes; <code class="docutils literal"><span class="pre">Optimization</span></code> and <code class="docutils literal"><span class="pre">Degradation</span></code></li>
-<li><strong>Confidence</strong>: <cite>None</cite></li>
-<li><strong>Limitations</strong>: <cite>None</cite></li>
+<li><p><strong>Detects</strong>: <cite>Ratio</cite> changes; <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> and <code class="docutils literal notranslate"><span class="pre">Degradation</span></code></p></li>
+<li><p><strong>Confidence</strong>: <cite>None</cite></p></li>
+<li><p><strong>Limitations</strong>: <cite>None</cite></p></li>
 </ul>
 </div></blockquote>
 <p>The example of output generated by <cite>AAT</cite> method is as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="mi">1</span><span class="n">eb3d6</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">the</span> <span class="n">degradation</span> <span class="n">of</span> <span class="n">search</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="mi">1</span><span class="n">eb3d6</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">the</span> <span class="n">degradation</span> <span class="n">of</span> <span class="n">search</span>
 <span class="o">|</span>    <span class="o">|</span> <span class="o">*</span> <span class="mf">7813e3</span><span class="p">:</span> <span class="n">Implement</span> <span class="n">new</span> <span class="n">version</span> <span class="n">of</span> <span class="n">search</span>
 <span class="o">|</span>   <span class="o">&gt;</span> <span class="n">collected</span> <span class="n">by</span> <span class="n">complexity</span><span class="o">+</span><span class="n">regression_analysis</span> <span class="k">for</span> <span class="n">cmd</span><span class="p">:</span> <span class="s1">&#39;$ mybin&#39;</span>
 <span class="o">|</span>     <span class="o">&gt;</span> <span class="n">applying</span> <span class="s1">&#39;average_amount_threshold&#39;</span> <span class="n">method</span>
@@ -222,109 +232,172 @@ optimization, i.e. the threshold is two times speed-up or speed-down)</p>
 <span class="o">*</span> <span class="mi">503885</span><span class="p">:</span> <span class="n">Fix</span> <span class="n">minor</span> <span class="n">issues</span>
 </pre></div>
 </div>
-<p>In the output above, we detected the <code class="docutils literal"><span class="pre">Optimization</span></code> between commits <code class="docutils literal"><span class="pre">1eb3d6</span></code> (target) and
-<code class="docutils literal"><span class="pre">7813e3</span></code> (baseline), where the average amount of running time for <code class="docutils literal"><span class="pre">SLList_search</span></code> function
+<p>In the output above, we detected the <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> between commits <code class="docutils literal notranslate"><span class="pre">1eb3d6</span></code> (target) and
+<code class="docutils literal notranslate"><span class="pre">7813e3</span></code> (baseline), where the average amount of running time for <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code> function
 changed from about six seconds to hundred miliseconds. For these detected changes we report no
 confidence at all.</p>
+</section>
+<section id="module-perun.check.exclusive_time_outliers">
+<span id="exclusive-time-outliers"></span><span id="degradation-method-eto"></span><h3>Exclusive Time Outliers<a class="headerlink" href="#module-perun.check.exclusive_time_outliers" title="Link to this heading">¶</a></h3>
+<p>Detection method that is based on finding outliers in deltas of function exclusive (self) times
+(i.e., function duration without the duration of its callee functions). The exclusive time outliers
+method does not expect any pre-computed models and works on profiles generated by the Tracer
+collector.</p>
+<dl class="simple">
+<dt>We use three different methods for detecting the outliers:</dt><dd><ol class="arabic simple">
+<li><p><cite>Modified z-score</cite></p></li>
+<li><p><cite>IQR multiple</cite></p></li>
+<li><p><cite>Standard deviation multiple</cite></p></li>
+</ol>
+</dd>
+</dl>
+<p>The outliers identified by the mod. z-score are regarded as <code class="docutils literal notranslate"><span class="pre">Severe</span> <span class="pre">Optimization</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Severe</span> <span class="pre">Degradation</span></code> changes due to them being very distant from the expected values.</p>
+<p>The outliers identified by the IQR multiple are regarded as ordinary <code class="docutils literal notranslate"><span class="pre">Degradation</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Optimization</span></code>.</p>
+<p>The outliers found by the stddev multiple are rather insignificant, thus we report them as only
+<code class="docutils literal notranslate"><span class="pre">Maybe</span> <span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Maybe</span> <span class="pre">Optimization</span></code>.</p>
+<p>This method utilizes two configuration values from the perun config:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>degradation.location_filter</strong>: regex used to filter the checked locations (binaries),</p></li>
+<li><p><strong>degradation.cutoff</strong>: float value that defines the cut-off threshold for relative
+degradation rate (total location exclusive time delta in %)</p></li>
+</ul>
+</div></blockquote>
+<p>Note that this method has certain limitations that stem from the usage of outliers. It might
+not work properly with certain distributions of delta values.
+However, we always report the <code class="docutils literal notranslate"><span class="pre">Total</span> <span class="pre">Degradation</span></code> or <code class="docutils literal notranslate"><span class="pre">Total</span> <span class="pre">Optimization</span></code>, thus even in such
+cases, the user is informed about the total change and may utilize other, more suitable, detection
+method (e.g., the <a class="reference internal" href="#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a>).</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Detects</strong>: <cite>Exclusive time</cite> changes; <code class="docutils literal notranslate"><span class="pre">Optimization</span></code> and <code class="docutils literal notranslate"><span class="pre">Degradation</span></code>.</p></li>
+<li><p><strong>Confidence</strong>: <cite>IQR multiple</cite> for severe and ordinary changes and <cite>StdDev multiple</cite> for
+potential changes.</p></li>
+<li><p><strong>Limitations</strong>: Profiles collected by <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>.</p></li>
+</ul>
+</div></blockquote>
+<p>An example of the <cite>ETO</cite> method output</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Python 3.11.0a7
+
+...
+at _ctypes.cpython-31:
+└ 136.92ms (9.19%): time Total Degradation base: 1353.431 targ: 1490.351
+    (with confidence N/A = 0.0)
+at _ctypes_callproc:
+└ 2.84ms (0.19%): time Degradation base: 589.177 targ: 592.02
+    (with confidence IQR multiple = 5.48)
+at _ctypes_get_fielddesc:
+└ 52.9ms (3.55%): time Severe Degradation base: 76.473 targ: 129.378
+    (with confidence IQR multiple = 110.46)
+at _ctypes_init_fielddesc:
+└ 77.95ms (5.23%): time Not in Baseline base: 0.0 targ: 77.953
+    (with confidence IQR multiple = 162.98)
+...
+
+10 changes | +--
+optimization(+), 3 degradations(-)
+</pre></div>
 </div>
-<div class="section" id="module-perun.check.fast_check">
-<span id="fast-check"></span><span id="degradation-fast-check"></span><h3>Fast Check<a class="headerlink" href="#module-perun.check.fast_check" title="Permalink to this headline">¶</a></h3>
+<p>In the example above, we detected a <code class="docutils literal notranslate"><span class="pre">Severe</span> <span class="pre">Degradation</span></code> in function <code class="docutils literal notranslate"><span class="pre">_ctypes_get_fielddesc</span></code>
+compared to the previous version profile (<cite>v3.10.4</cite>). The absolute exclusive time difference is
+<cite>52.9ms</cite> (from <cite>76.473ms</cite> to <cite>129.378ms</cite>) and the relative difference of <cite>3.55%</cite> represents the
+overall slowdown of the program (in this case, the CPython ctypes library). The confidence is
+reported as the IQR multiple of <cite>110.46</cite>.</p>
+</section>
+<section id="module-perun.check.fast_check">
+<span id="fast-check"></span><span id="degradation-fast-check"></span><h3>Fast Check<a class="headerlink" href="#module-perun.check.fast_check" title="Link to this heading">¶</a></h3>
 <p>The module contains the method for detection with using regression analysis.</p>
 <p>This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the regression analysis.</p>
-</div>
-<div class="section" id="module-perun.check.linear_regression">
-<span id="linear-regression"></span><span id="degradation-lreg"></span><h3>Linear Regression<a class="headerlink" href="#module-perun.check.linear_regression" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-perun.check.linear_regression">
+<span id="linear-regression"></span><span id="degradation-lreg"></span><h3>Linear Regression<a class="headerlink" href="#module-perun.check.linear_regression" title="Link to this heading">¶</a></h3>
 <p>The module contains the method for detection with using linear regression.</p>
 <p>This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the linear regression.</p>
-</div>
-<div class="section" id="module-perun.check.polynomial_regression">
-<span id="polynomial-regression"></span><span id="degradation-preg"></span><h3>Polynomial Regression<a class="headerlink" href="#module-perun.check.polynomial_regression" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-perun.check.polynomial_regression">
+<span id="polynomial-regression"></span><span id="degradation-preg"></span><h3>Polynomial Regression<a class="headerlink" href="#module-perun.check.polynomial_regression" title="Link to this heading">¶</a></h3>
 <p>The module contains the method for detection with using polynomial regression.</p>
 <p>This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the polynomial regression.</p>
-</div>
-</div>
-<div class="section" id="configuring-degradation-detection">
-<span id="degradation-config"></span><h2>Configuring Degradation Detection<a class="headerlink" href="#configuring-degradation-detection" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="configuring-degradation-detection">
+<span id="degradation-config"></span><h2>Configuring Degradation Detection<a class="headerlink" href="#configuring-degradation-detection" title="Link to this heading">¶</a></h2>
 <p>We apply concrete methods of performance change detection to concrete pairs of profiles according
 to the specified <cite>rules</cite> based on profile collection configuration. By <cite>configuration</cite> we mean the
 tuple of <cite>(command, arguments, workload, collector, postprocessors)</cite> which represent how the data
 were collected for the given minor version. This way for each new version of project, it is
 meaningful to collect new data using the same config and then compare the results. The actual rules
-are specified in configuration files by <a class="reference internal" href="config.html#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a>. The strategies are
+are specified in configuration files by <a class="reference internal" href="config.html#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a>. The strategies are
 specified as an ordered list, and all of the applicable rules are collected through all of the
 configurations (starting from the runtime configuration, through local ones, up to the global
 configuration). This yields a <cite>list of rules</cite> (each rule represented as key-value dictionary)
 ordered by the priority of their application. So for each pair of tested profiles, we iterate
 through this ordered list and find either the first that is applicable according to the set rules
-(by setting the <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.apply</span></code></a> key to value <code class="docutils literal"><span class="pre">first</span></code>) or all applicable rules (by
-setting the <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.apply</span></code></a> key to value <code class="docutils literal"><span class="pre">all</span></code>).</p>
+(by setting the <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.apply</span></code></a> key to value <code class="docutils literal notranslate"><span class="pre">first</span></code>) or all applicable rules (by
+setting the <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.apply</span></code></a> key to value <code class="docutils literal notranslate"><span class="pre">all</span></code>).</p>
 <p>The example of configuration snippet that sets rules and strategies for one project can be as
 follows:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
-  <span class="nt">apply</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first</span>
-  <span class="nt">strategies</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
-      <span class="nt">postprocessor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="nt">cmd</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mybin</span>
-      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">memory</span>
-      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">apply</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">first</span>
+<span class="w">  </span><span class="nt">strategies</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mixed</span>
+<span class="w">      </span><span class="nt">postprocessor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+<span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">cmd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mybin</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">memory</span>
+<span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aat</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p>The following list of strategies will first try to apply the <a class="reference internal" href="#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> method
 to either mixed profiles postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> or to memory
-profiles collected from command <code class="docutils literal"><span class="pre">mybin</span></code>. All of the other profiles will be checked using
+profiles collected from command <code class="docutils literal notranslate"><span class="pre">mybin</span></code>. All of the other profiles will be checked using
 <a class="reference internal" href="#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a>. Note that applied methods can either be specified by their full name
 or using the short strings by taking the first letters of each word of the name of the method, so
 e.g. <cite>BMOE</cite> stands for <a class="reference internal" href="#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a>.</p>
-</div>
-<div class="section" id="create-your-own-degradation-checker">
-<span id="degradation-custom"></span><h2>Create Your Own Degradation Checker<a class="headerlink" href="#create-your-own-degradation-checker" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="create-your-own-degradation-checker">
+<span id="degradation-custom"></span><h2>Create Your Own Degradation Checker<a class="headerlink" href="#create-your-own-degradation-checker" title="Link to this heading">¶</a></h2>
 <p>New performance change checkers can be registered within Perun in several steps. The checkers have
 just small requirements and have to <cite>yield</cite> the reports about degradation as a instances of
-<code class="xref py py-class docutils literal"><span class="pre">DegradationInfo</span></code> objects specified as follows:</p>
-<dl class="class">
-<dt id="perun.utils.structs.DegradationInfo">
-<em class="property">class </em><code class="descclassname">perun.utils.structs.</code><code class="descname">DegradationInfo</code><span class="sig-paren">(</span><em>res</em>, <em>t</em>, <em>loc</em>, <em>fb</em>, <em>tt</em>, <em>rd=0</em>, <em>ct='no'</em>, <em>cr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/utils/structs.html#DegradationInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.utils.structs.DegradationInfo" title="Permalink to this definition">¶</a></dt>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DegradationInfo</span></code> objects specified as follows:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.utils.structs.DegradationInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">perun.utils.structs.</span></span><span class="sig-name descname"><span class="pre">DegradationInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PerformanceChange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'no'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">PerformanceChange</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/utils/structs.html#DegradationInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.utils.structs.DegradationInfo" title="Link to this definition">¶</a></dt>
 <dd><p>The returned results for performance check methods</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> (<em>PerformanceChange</em>) – result of the performance change, either can be optimization,
-degradation, no change, or certain type of unknown</li>
-<li><strong>type</strong> (<em>str</em>) – string representing the type of the degradation, e.g. “order” degradation</li>
-<li><strong>location</strong> (<em>str</em>) – location, where the degradation has happened</li>
-<li><strong>from_baseline</strong> (<em>str</em>) – value or model representing the baseline, i.e. from which the new
-version was optimized or degraded</li>
-<li><strong>to_target</strong> (<em>str</em>) – value or model representing the target, i.e. to which the new version was
-optimized or degraded</li>
-<li><strong>confidence_type</strong> (<em>str</em>) – type of the confidence we have in the detected degradation, e.g. r^2</li>
-<li><strong>confidence_rate</strong> (<em>float</em>) – value of the confidence we have in the detected degradation</li>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<em>PerformanceChange</em>) – result of the performance change, either can be optimization,
+degradation, no change, or certain type of unknown</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – string representing the type of the degradation, e.g. “order” degradation</p></li>
+<li><p><strong>location</strong> (<em>str</em>) – location, where the degradation has happened</p></li>
+<li><p><strong>from_baseline</strong> (<em>str</em>) – value or model representing the baseline, i.e. from which the new
+version was optimized or degraded</p></li>
+<li><p><strong>to_target</strong> (<em>str</em>) – value or model representing the target, i.e. to which the new version was
+optimized or degraded</p></li>
+<li><p><strong>confidence_type</strong> (<em>str</em>) – type of the confidence we have in the detected degradation, e.g. r^2</p></li>
+<li><p><strong>confidence_rate</strong> (<em>float</em>) – value of the confidence we have in the detected degradation</p></li>
+<li><p><strong>rate_degradation_relative</strong> (<em>float</em>) – relative rate of the degradation</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="perun.utils.structs.DegradationInfo.to_storage_record">
-<code class="descname">to_storage_record</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/utils/structs.html#DegradationInfo.to_storage_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.utils.structs.DegradationInfo.to_storage_record" title="Permalink to this definition">¶</a></dt>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.utils.structs.DegradationInfo.to_storage_record">
+<span class="sig-name descname"><span class="pre">to_storage_record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/utils/structs.html#DegradationInfo.to_storage_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.utils.structs.DegradationInfo.to_storage_record" title="Link to this definition">¶</a></dt>
 <dd><p>Transforms the degradation info to a storage_record</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string representation of the degradation as a stored record in the file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string representation of the degradation as a stored record in the file</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -332,12 +405,12 @@ optimized or degraded</li>
 <p>You can register your new performance change checker as follows:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">check</span> <span class="pre">my_degradation_checker</span></code> to generate a new modules in
-<code class="docutils literal"><span class="pre">perun/check</span></code> directory with the following structure. The command takes a predefined
-templates for new degradation checkers and creates <code class="docutils literal"><span class="pre">my_degradation_checker.py</span></code> according
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">check</span> <span class="pre">my_degradation_checker</span></code> to generate a new modules in
+<code class="docutils literal notranslate"><span class="pre">perun/check</span></code> directory with the following structure. The command takes a predefined
+templates for new degradation checkers and creates <code class="docutils literal notranslate"><span class="pre">my_degradation_checker.py</span></code> according
 to the supplied command line arguments (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more information about
-interface of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
+interface of <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
 <span class="o">|--</span> <span class="o">/</span><span class="n">check</span>
     <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
     <span class="o">|--</span> <span class="n">average_amount_threshold</span><span class="o">.</span><span class="n">py</span>
@@ -345,90 +418,65 @@ interface of <code class="docutils literal"><span class="pre">perun</span> <span
 </pre></div>
 </div>
 </li>
-<li><p class="first">Implement the <code class="docutils literal"><span class="pre">my_degradation_checker.py</span></code> file, including the module docstring with brief
-description of the change check with the following structure:</p>
-</li>
+<li><p>Implement the <code class="docutils literal notranslate"><span class="pre">my_degradation_checker.py</span></code> file, including the module docstring with brief
+description of the change check with the following structure:</p></li>
 </ol>
 <blockquote>
-<div><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">perun.utils.structs</span> <span class="kn">import</span> <span class="n">DegradationInfo</span>
-
-
-<span class="k">def</span> <span class="nf">my_degradation_checker</span><span class="p">(</span><span class="n">baseline_profile</span><span class="p">,</span> <span class="n">target_profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
-    <span class="k">yield</span> <span class="n">DegradationInfo</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="kn">from</span> <span class="nn">perun.utils.structs</span> <span class="kn">import</span> <span class="n">DegradationInfo</span>
+<span class="linenos">4</span>
+<span class="linenos">5</span>
+<span class="linenos">6</span><span class="k">def</span> <span class="nf">my_degradation_checker</span><span class="p">(</span><span class="n">baseline_profile</span><span class="p">,</span> <span class="n">target_profile</span><span class="p">):</span>
+<span class="linenos">7</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<span class="linenos">8</span>    <span class="k">yield</span> <span class="n">DegradationInfo</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 </div></blockquote>
 <ol class="arabic simple" start="3">
-<li>Next, in the <code class="docutils literal"><span class="pre">__init__.py</span></code> module register the short string for your new method as
-follows:</li>
+<li><p>Next, in the <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> module register the short string for your new method as
+follows:</p></li>
 </ol>
 <blockquote>
-<div><div class="highlight-udiff"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/degradation_init.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/degradation_init_new_check.py</span>
-<span class="gu">@@ -3,8 +3,10 @@</span>
-     short_strings = {
-         &#39;aat&#39;: &#39;average_amount_threshold&#39;,
-         &#39;bmoe&#39;: &#39;best_model_order_equality&#39;,
-<span class="gi">+        &#39;mdc&#39;: &#39;my_degradation_checker&#39;</span>
-     }
-     if strategy in short_strings.keys():
-         return short_strings[strategy]
-     else:
-         return strategy
-<span class="gi">+</span>
+<div><div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/degradation_init.py</span>
+<span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/degradation_init_new_check.py</span>
+<span class="linenos"> 3</span><span class="gu">@@ -3,6 +3,7 @@</span>
+<span class="linenos"> 4</span><span class="w"> </span>    short_strings = {
+<span class="linenos"> 5</span><span class="w"> </span>        &quot;aat&quot;: &quot;average_amount_threshold&quot;,
+<span class="linenos"> 6</span><span class="w"> </span>        &quot;bmoe&quot;: &quot;best_model_order_equality&quot;,
+<span class="linenos"> 7</span><span class="gi">+        &quot;mdc&quot;: &quot;my_degradation_checker&quot;,</span>
+<span class="linenos"> 8</span><span class="w"> </span>    }
+<span class="linenos"> 9</span><span class="w"> </span>    if strategy in short_strings.keys():
+<span class="linenos">10</span><span class="w"> </span>        return short_strings[strategy]
 </pre></div>
-</td></tr></table></div>
+</div>
 </div></blockquote>
 <ol class="arabic" start="4">
-<li><p class="first">Preferably, verify that registering did not break anything in the Perun and if you are not
+<li><p>Preferably, verify that registering did not break anything in the Perun and if you are not
 using developer instalation, then reinstall Perun:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 <span class="n">make</span> <span class="n">install</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">At this point you can start using your check using <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">head</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span>
-<span class="pre">all</span></code> or <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">profiles</span></code>.</p>
-</li>
-<li><p class="first">If you think your collector could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p>
-</li>
+<li><p>At this point you can start using your check using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">head</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span>
+<span class="pre">all</span></code> or <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">profiles</span></code>.</p></li>
+<li><p>If you think your collector could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p></li>
 </ol>
 </div></blockquote>
-</div>
-<div class="section" id="degradation-cli">
-<span id="id1"></span><h2>Degradation CLI<a class="headerlink" href="#degradation-cli" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> contains group of two commands for running the checks in the current project—<code class="docutils literal"><span class="pre">perun</span>
+</section>
+<section id="degradation-cli">
+<span id="id1"></span><h2>Degradation CLI<a class="headerlink" href="#degradation-cli" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> contains group of two commands for running the checks in the current project—<code class="docutils literal notranslate"><span class="pre">perun</span>
 <span class="pre">check</span> <span class="pre">head</span></code> (for running the check for one minor version of the project; e.g. the current <cite>head</cite>)
-and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">all</span></code> for iterative application of the degradation check for all minor versions
+and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">all</span></code> for iterative application of the degradation check for all minor versions
 of the project. The first command is mostly meant to run as a hook after each new commit (obviously
 after successfull run o f``perun run matrix`` generating the new batch of profiles), while the
 latter is meant to be used for new projects, after crawling through the whole history of the
-project and collecting the profiles. Additionally <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">profiles</span></code> can be used for an
+project and collecting the profiles. Additionally <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">profiles</span></code> can be used for an
 isolate comparison of two standalone profiles (either registered in index or as a standalone file).</p>
-<div class="section" id="perun-check-head">
-<h3>perun check head<a class="headerlink" href="#perun-check-head" title="Permalink to this headline">¶</a></h3>
+<section id="perun-check-head">
+<h3>perun check head<a class="headerlink" href="#perun-check-head" title="Link to this heading">¶</a></h3>
 <p>Checks for changes in performance between between specified minor version (or current <cite>head</cite>)
 and its predecessor minor versions.</p>
 <p>The command iterates over all of the registered profiles of the specified <cite>minor version</cite>
@@ -436,85 +484,85 @@ and its predecessor minor versions.</p>
 (<cite>baseline</cite>), where the profile with the same configuration as the tested target profile exists.
 When it finds such a pair, it runs the check according to the strategies set in the
 configuration (see <a class="reference internal" href="#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
-<p>By default the <code class="docutils literal"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check head <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
+<p>By default the <code class="docutils literal notranslate"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>head<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-check-head-arg-hash">
-<code class="descname">&lt;hash&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-head-arg-hash" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-check-head-arg-hash">
+<span class="sig-name descname"><span class="pre">&lt;hash&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-check-head-arg-hash" title="Link to this definition">¶</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
-</div>
-<div class="section" id="perun-check-all">
-<h3>perun check all<a class="headerlink" href="#perun-check-all" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="perun-check-all">
+<h3>perun check all<a class="headerlink" href="#perun-check-all" title="Link to this heading">¶</a></h3>
 <p>Checks for changes in performance for the specified interval of version history.</p>
 <p>The commands crawls through the whole history of project versions starting from the specified
-<code class="docutils literal"><span class="pre">&lt;hash&gt;</span></code> and for all of the registered profiles (corresponding to some <cite>target</cite> minor version)
+<code class="docutils literal notranslate"><span class="pre">&lt;hash&gt;</span></code> and for all of the registered profiles (corresponding to some <cite>target</cite> minor version)
 tries to find a suitable predecessor profile (corresponding to some <cite>baseline</cite> minor version)
 and runs the performance check according to the set of strategies set in the configuration
 (see <a class="reference internal" href="#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check all <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>all<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-check-all-arg-hash">
-<code class="descname">&lt;hash&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-all-arg-hash" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-check-all-arg-hash">
+<span class="sig-name descname"><span class="pre">&lt;hash&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-check-all-arg-hash" title="Link to this definition">¶</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
-</div>
-<div class="section" id="perun-check-profiles">
-<h3>perun check profiles<a class="headerlink" href="#perun-check-profiles" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="perun-check-profiles">
+<h3>perun check profiles<a class="headerlink" href="#perun-check-profiles" title="Link to this heading">¶</a></h3>
 <p>Checks for changes in performance between two profiles.</p>
-<p>The commands checks for the changes between two isolate profiles, that can be stored in pending
+<p>The command checks for the changes between two isolate profiles, that can be stored in pending
 profiles, registered in index, or be simply stored in filesystem. Then for the pair of profiles
-&lt;baseline&gt; and &lt;target&gt; the command runs the performance chekc according to the set of
+&lt;baseline&gt; and &lt;target&gt; the command runs the performance check according to the set of
 strategies set in the configuration (see <a class="reference internal" href="#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
 <p>&lt;baseline&gt; and &lt;target&gt; profiles will be looked up in the following steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>If profile is in form <code class="docutils literal"><span class="pre">i&#64;i</span></code> (i.e, an <cite>index tag</cite>), then <cite>ith</cite>
-record registered in the minor version &lt;hash&gt; index will be used.</li>
-<li>If profile is in form <code class="docutils literal"><span class="pre">i&#64;p</span></code> (i.e., an <cite>pending tag</cite>), then
-<cite>ith</cite> profile stored in <code class="docutils literal"><span class="pre">.perun/jobs</span></code> will be used.</li>
-<li>Profile is looked-up within the minor version &lt;hash&gt; index for a
-match. In case the &lt;profile&gt; is registered there, it will be used.</li>
-<li>Profile is looked-up within the <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory. In case
-there is a match, the found profile will be used.</li>
-<li>Otherwise, the directory is walked for any match. Each found match
-is asked for confirmation by user.</li>
+<li><p>If profile is in form <code class="docutils literal notranslate"><span class="pre">i&#64;i</span></code> (i.e, an <cite>index tag</cite>), then <cite>ith</cite>
+record registered in the minor version &lt;hash&gt; index will be used.</p></li>
+<li><p>If profile is in form <code class="docutils literal notranslate"><span class="pre">i&#64;p</span></code> (i.e., an <cite>pending tag</cite>), then
+<cite>ith</cite> profile stored in <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> will be used.</p></li>
+<li><p>Profile is looked-up within the minor version &lt;hash&gt; index for a
+match. In case the &lt;profile&gt; is registered there, it will be used.</p></li>
+<li><p>Profile is looked-up within the <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory. In case
+there is a match, the found profile will be used.</p></li>
+<li><p>Otherwise, the directory is walked for any match. Each found match
+is asked for confirmation by user.</p></li>
 </ol>
 </div></blockquote>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check profiles <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;baseline&gt; &lt;target&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>profiles<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;baseline&gt;<span class="w"> </span>&lt;target&gt;
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-check-profiles-m">
-<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-check-profiles-m" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-check-profiles-m">
+<span id="cmdoption-perun-check-profiles-minor"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--minor</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;hash&gt;</span></span><a class="headerlink" href="#cmdoption-perun-check-profiles-m" title="Link to this definition">¶</a></dt>
 <dd><p>Will check the index of different minor version &lt;hash&gt; during the profile lookup.</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-check-profiles-arg-baseline">
-<code class="descname">&lt;baseline&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-baseline" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-check-profiles-arg-baseline">
+<span class="sig-name descname"><span class="pre">&lt;baseline&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-baseline" title="Link to this definition">¶</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-check-profiles-arg-target">
-<code class="descname">&lt;target&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-target" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-check-profiles-arg-target">
+<span class="sig-name descname"><span class="pre">&lt;target&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-target" title="Link to this definition">¶</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -527,20 +575,28 @@ is asked for confirmation by user.</li>
     <h3>Perun</h3>
   </a>
 </p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Detecting Performance Changes</a><ul>
 <li><a class="reference internal" href="#results-of-detection">Results of Detection</a></li>
 <li><a class="reference internal" href="#detection-methods">Detection Methods</a><ul>
 <li><a class="reference internal" href="#module-perun.check.best_model_order_equality">Best Model Order Equality</a></li>
 <li><a class="reference internal" href="#module-perun.check.average_amount_threshold">Average Amount Threshold</a></li>
+<li><a class="reference internal" href="#module-perun.check.exclusive_time_outliers">Exclusive Time Outliers</a></li>
 <li><a class="reference internal" href="#module-perun.check.fast_check">Fast Check</a></li>
 <li><a class="reference internal" href="#module-perun.check.linear_regression">Linear Regression</a></li>
 <li><a class="reference internal" href="#module-perun.check.polynomial_regression">Polynomial Regression</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#configuring-degradation-detection">Configuring Degradation Detection</a></li>
-<li><a class="reference internal" href="#create-your-own-degradation-checker">Create Your Own Degradation Checker</a></li>
+<li><a class="reference internal" href="#create-your-own-degradation-checker">Create Your Own Degradation Checker</a><ul>
+<li><a class="reference internal" href="#perun.utils.structs.DegradationInfo"><code class="docutils literal notranslate"><span class="pre">DegradationInfo</span></code></a><ul>
+<li><a class="reference internal" href="#perun.utils.structs.DegradationInfo.to_storage_record"><code class="docutils literal notranslate"><span class="pre">DegradationInfo.to_storage_record()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#degradation-cli">Degradation CLI</a><ul>
 <li><a class="reference internal" href="#perun-check-head">perun check head</a></li>
 <li><a class="reference internal" href="#perun-check-all">perun check all</a></li>
@@ -550,12 +606,13 @@ is asked for confirmation by user.</li>
 </ul>
 </li>
 </ul>
-<div class="relations">
+
+  </div><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="jobs.html" title="previous chapter">Automating Runs</a></li>
-      <li>Next: <a href="config.html" title="next chapter">Perun Configuration files</a></li>
+      <li>Next: <a href="fuzzing.html" title="next chapter">Performance Fuzz-testing</a></li>
   </ul></li>
 </ul>
 </div>
@@ -567,15 +624,15 @@ is asked for confirmation by user.</li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -584,8 +641,8 @@ is asked for confirmation by user.</li>
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/degradation.rst.txt"

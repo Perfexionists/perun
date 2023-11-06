@@ -1,27 +1,15 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="../../../">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.profile.query &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profile.query &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../_static/documentation_options.js?v=6081af2d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -30,8 +18,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -55,64 +42,23 @@
 <span class="sd">Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.</span>
 <span class="sd">`Pandas library`_ one can obtain efficient interpreter for executing more</span>
 <span class="sd">complex queries and statistical tests over the profiles.</span>
-
-
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">numbers</span>
-<span class="kn">import</span> <span class="nn">perun.utils.exceptions</span> <span class="k">as</span> <span class="nn">exceptions</span>
 <span class="kn">import</span> <span class="nn">perun.utils.helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
 
-<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
-<span class="n">__coauthored__</span> <span class="o">=</span> <span class="s2">&quot;Jiri Pavela&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">perun.profile.factory</span> <span class="kn">import</span> <span class="n">Profile</span>
 
 
-<div class="viewcode-block" id="all_resources_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_resources_of">[docs]</a><span class="k">def</span> <span class="nf">all_resources_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator for iterating through all of the resources contained in the</span>
-<span class="sd">    performance profile.</span>
+<span class="k">def</span> <span class="nf">flattened_values</span><span class="p">(</span><span class="n">root_key</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">root_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the (root_key, root_value) pair to something that can be added to table.</span>
 
-<span class="sd">    Generator iterates through all of the snapshots, and subsequently yields</span>
-<span class="sd">    collected resources. For more thorough description of format of resources</span>
-<span class="sd">    refer to :pkey:`resources`. Resources are not flattened and, thus, can</span>
-<span class="sd">    contain nested dictionaries (e.g. for `traces` or `uids`).</span>
-
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :returns: iterable stream of resources represented as pair ``(int, dict)``</span>
-<span class="sd">        of snapshot number and the resources w.r.t. the specification of the</span>
-<span class="sd">        :pkey:`resources`</span>
-<span class="sd">    :raises AttributeError: when the profile is not in the format as given</span>
-<span class="sd">        by :ref:`profile-spec`</span>
-<span class="sd">    :raises KeyError: when the profile misses some expected key, as given</span>
-<span class="sd">        by :ref:`profile-spec`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># Get snapshot resources</span>
-        <span class="n">snapshots</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;snapshots&#39;</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="k">for</span> <span class="n">snap_no</span><span class="p">,</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">snapshots</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">]:</span>
-                <span class="k">yield</span> <span class="n">snap_no</span><span class="p">,</span> <span class="n">resource</span>
-
-        <span class="c1"># Get global resources</span>
-        <span class="n">resources</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;global&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;resources&#39;</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="nb">len</span><span class="p">(</span><span class="n">snapshots</span><span class="p">),</span> <span class="n">resource</span>
-
-    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">attr_error</span><span class="p">:</span>
-        <span class="c1"># Element is not dict-like type with get method</span>
-        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">IncorrectProfileFormatException</span><span class="p">(</span>
-            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Expected dictionary, got different type:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attr_error</span><span class="p">))</span>
-        <span class="p">)</span> <span class="kn">from</span> <span class="nn">None</span>
-    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">key_error</span><span class="p">:</span>
-        <span class="c1"># Dictionary does not contain specified key</span>
-        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">IncorrectProfileFormatException</span><span class="p">(</span>
-            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Missing key in dictionary: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key_error</span><span class="p">)))</span> <span class="kn">from</span> <span class="nn">None</span></div>
-
-
-<span class="k">def</span> <span class="nf">flattened_values</span><span class="p">(</span><span class="n">root_key</span><span class="p">,</span> <span class="n">root_value</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts the (root_key, root_value) pair to something that can be added to table.</span>
-
-<span class="sd">    Flattens all of the dictionaries to single level and &lt;key&gt;(:&lt;key&gt;)? values, lists are processed</span>
+<span class="sd">    Flattens all the dictionaries to single level and &lt;key&gt;(:&lt;key&gt;)? values, lists are processed</span>
 <span class="sd">    to comma separated representation and rest is left as it is.</span>
 
 <span class="sd">    :param str or int root_key: name (or index) of the processed key, that is going to be flattened</span>
@@ -131,19 +77,26 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">nested_values</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">uid_getter</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">nested_values</span><span class="p">)))</span>
-    <span class="c1"># Lists are merged as comma separated keys</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nested_value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">nested_value</span> <span class="ow">in</span> <span class="n">flattened_values</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">))</span>
-            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">root_value</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="c1"># Lists that represent variable length dictionary</span>
+        <span class="k">if</span> <span class="n">helpers</span><span class="o">.</span><span class="n">is_variable_len_dict</span><span class="p">(</span><span class="n">root_value</span><span class="p">):</span>
+            <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">root_value</span><span class="p">}</span>
+            <span class="k">yield from</span> <span class="n">flattened_values</span><span class="p">(</span><span class="n">root_key</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+        <span class="c1"># Lists are merged as comma separated keys</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nested_value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">nested_value</span> <span class="ow">in</span> <span class="n">flattened_values</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">))</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">root_value</span><span class="p">)</span>
+            <span class="p">)</span>
     <span class="c1"># Rest of the values are left as they are</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="n">root_value</span>
 
 
-<div class="viewcode-block" id="all_items_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_items_of">[docs]</a><span class="k">def</span> <span class="nf">all_items_of</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator for iterating through all of the flattened items contained</span>
+<div class="viewcode-block" id="all_items_of">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_items_of">[docs]</a>
+<span class="k">def</span> <span class="nf">all_items_of</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all of the flattened items contained</span>
 <span class="sd">    inside the resource w.r.t :pkey:`resources` specification.</span>
 
 <span class="sd">    Generator iterates through all of the items contained in the `resource` in</span>
@@ -184,45 +137,51 @@
             <span class="k">yield</span> <span class="n">flattened_key</span><span class="p">,</span> <span class="n">flattened_value</span></div>
 
 
-<div class="viewcode-block" id="all_resource_fields_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_resource_fields_of">[docs]</a><span class="k">def</span> <span class="nf">all_resource_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator for iterating through all of the fields (both flattened and</span>
-<span class="sd">    original) that are occuring in the resources.</span>
 
-<span class="sd">    Generator iterates through all of the resources and checks their flattened</span>
-<span class="sd">    keys. In case some of the keys were not yet processed, they are yielded.</span>
+<span class="k">def</span> <span class="nf">all_model_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the fields (both flattened and</span>
+<span class="sd">    original) that are occurring in the models.</span>
 
-<span class="sd">    E.g. considering the example profiles from :pkey:`resources`, the function</span>
-<span class="sd">    yields the following for `memory`, `time` and `trace` profiles</span>
-<span class="sd">    respectively (considering we convert the stream to list)::</span>
+<span class="sd">    E.g. considering the example profiles from :ref:`postprocessors-regression-analysis`, the function</span>
+<span class="sd">    yields the following model keys:</span>
 
+<span class="sd">        model_keys = [&#39;coeffs:b1&#39;, &#39;coeffs:b0&#39;, &#39;coeffs&#39;, &#39;r_square&#39;, &#39;x_interval_end&#39;, &#39;model&#39;, &#39;method&#39;, &#39;uid&#39;, &#39;x_interval_start&#39;, &#39;coeffs:b2&#39;]</span>
 <span class="sd">        memory_resource_fields = [</span>
 <span class="sd">            &#39;type&#39;, &#39;address&#39;, &#39;amount&#39;, &#39;uid:function&#39;, &#39;uid:source&#39;,</span>
 <span class="sd">            &#39;uid:line&#39;, &#39;uid&#39;, &#39;trace&#39;, &#39;subtype&#39;</span>
 <span class="sd">        ]</span>
-<span class="sd">        time_resource_fields = [</span>
-<span class="sd">            &#39;type&#39;, &#39;amount&#39;, &#39;uid&#39;</span>
-<span class="sd">        ]</span>
-<span class="sd">        complexity_resource_fields = [</span>
-<span class="sd">            &#39;type&#39;, &#39;amount&#39;, &#39;structure-unit-size&#39;, &#39;subtype&#39;, &#39;uid&#39;</span>
-<span class="sd">        ]</span>
 
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :returns: iterable stream of resource field keys represented as `str`</span>
+<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :returns: iterable stream of model field keys represented as `str`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield from</span> <span class="n">_all_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">_all_fields_of</span><span class="p">(</span><span class="n">item_generator</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper generator for iterating through all the fields generated by the item_generator</span>
+
+<span class="sd">    Generator iterates through all the resources and checks their flattened</span>
+<span class="sd">    keys. In case some of the keys were not yet processed, they are yielded.</span>
+
+<span class="sd">    :param iterable item_generator: iterable stream of items</span>
+<span class="sd">    :return: iterable stream of field keys represented as `str`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resource_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_resources_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">item_generator</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">__</span> <span class="ow">in</span> <span class="n">all_items_of</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resource_fields</span><span class="p">:</span>
                 <span class="n">resource_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                <span class="k">yield</span> <span class="n">key</span></div>
+                <span class="k">yield</span> <span class="n">key</span>
 
 
-<div class="viewcode-block" id="all_numerical_resource_fields_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_numerical_resource_fields_of">[docs]</a><span class="k">def</span> <span class="nf">all_numerical_resource_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator for iterating through all of the fields (both flattened and</span>
+<div class="viewcode-block" id="all_numerical_resource_fields_of">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_numerical_resource_fields_of">[docs]</a>
+<span class="k">def</span> <span class="nf">all_numerical_resource_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the fields (both flattened and</span>
 <span class="sd">    original) that are occuring in the resources and takes as domain integer</span>
 <span class="sd">    values.</span>
 
-<span class="sd">    Generator iterates through all of the resources and checks their flattened</span>
+<span class="sd">    Generator iterates through all the resources and checks their flattened</span>
 <span class="sd">    keys and yields them in case they were not yet processed. If the instance</span>
 <span class="sd">    of the key does not contain integer values, it is skipped.</span>
 
@@ -234,19 +193,18 @@
 <span class="sd">        time_num_resource_fields = [&#39;amount&#39;]</span>
 <span class="sd">        complexity_num_resource_fields = [&#39;amount&#39;, &#39;structure-unit-size&#39;]</span>
 
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :returns: iterable stream of resource fields key as `str`, that takes</span>
-<span class="sd">        integer values</span>
+<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :returns: iterable stream of resource fields key as `str`, that takes integer values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resource_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">exclude_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_resources_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_resources</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">all_items_of</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
             <span class="c1"># Instances that are not numbers are removed from the resource fields (i.e. there was</span>
             <span class="c1"># some inconsistency between value) and added to exclude for future usages</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
-                <span class="n">resource_fields</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                <span class="n">exclude_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">resource_fields</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">exclude_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="c1"># If we previously encountered incorrect non-numeric value for the key, we do not add</span>
             <span class="c1"># it as a numeric key</span>
             <span class="k">elif</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_fields</span><span class="p">:</span>
@@ -257,11 +215,14 @@
         <span class="k">yield</span> <span class="n">key</span></div>
 
 
-<div class="viewcode-block" id="unique_resource_values_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.unique_resource_values_of">[docs]</a><span class="k">def</span> <span class="nf">unique_resource_values_of</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator of all unique key values occurring in the resources, w.r.t.</span>
+
+<div class="viewcode-block" id="unique_resource_values_of">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.query.unique_resource_values_of">[docs]</a>
+<span class="k">def</span> <span class="nf">unique_resource_values_of</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator of all unique key values occurring in the resources, w.r.t.</span>
 <span class="sd">    :pkey:`resources` specification of resources.</span>
 
-<span class="sd">    Iterates through all of the values of given ``resource_keys`` and yields</span>
+<span class="sd">    Iterates through all the values of given ``resource_keys`` and yields</span>
 <span class="sd">    only unique values. Note that the key can contain &#39;:&#39; symbol indicating</span>
 <span class="sd">    another level of dictionary hierarchy or &#39;::&#39; for specifying keys in list</span>
 <span class="sd">    or set level, e.g. in case of `traces` one uses ``trace::function``.</span>
@@ -278,17 +239,20 @@
 <span class="sd">        [&#39;SLList_init(SLList*)&#39;, &#39;SLList_search(SLList*, int)&#39;,</span>
 <span class="sd">         &#39;SLList_insert(SLList*, int)&#39;, &#39;SLList_destroy(SLList*)&#39;]</span>
 
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
 <span class="sd">    :param str resource_key: the resources key identifier whose unique values</span>
 <span class="sd">        will be iterated</span>
 <span class="sd">    :returns: iterable stream of unique resource key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_unique_values_generator</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">,</span> <span class="n">all_resources_of</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_unique_values_generator</span><span class="p">(</span><span class="n">resource_key</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_resources</span><span class="p">()):</span>
         <span class="k">yield</span> <span class="n">value</span></div>
 
 
-<div class="viewcode-block" id="all_key_values_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_key_values_of">[docs]</a><span class="k">def</span> <span class="nf">all_key_values_of</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">resource_key</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator of all (not essentially unique) key values in resource, w.r.t</span>
+
+<div class="viewcode-block" id="all_key_values_of">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_key_values_of">[docs]</a>
+<span class="k">def</span> <span class="nf">all_key_values_of</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">resource_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator of all (not essentially unique) key values in resource, w.r.t</span>
 <span class="sd">    :pkey:`resources` specification of resources.</span>
 
 <span class="sd">    Iterates through all of the values of given ``resource_key`` and yields</span>
@@ -317,10 +281,10 @@
 
     <span class="c1"># Iterate the hierarchy</span>
     <span class="k">for</span> <span class="n">level_idx</span><span class="p">,</span> <span class="n">key_level</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">key_hierarchy</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">key_level</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">key_level</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="c1"># The level is list, iterate all the members recursively</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resource</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">all_key_values_of</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key_hierarchy</span><span class="p">[</span><span class="n">level_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])):</span>
+                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">all_key_values_of</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key_hierarchy</span><span class="p">[</span><span class="n">level_idx</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:])):</span>
                     <span class="k">yield</span> <span class="n">result</span>
             <span class="k">return</span>
         <span class="k">elif</span> <span class="n">key_level</span> <span class="ow">in</span> <span class="n">resource</span><span class="p">:</span>
@@ -332,50 +296,11 @@
     <span class="k">yield</span> <span class="n">resource</span></div>
 
 
-<div class="viewcode-block" id="all_models_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.all_models_of">[docs]</a><span class="k">def</span> <span class="nf">all_models_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator of all &#39;models&#39; records from the performance profile w.r.t.</span>
-<span class="sd">    :ref:`profile-spec`.</span>
 
-<span class="sd">    Takes a profile, postprocessed by :ref:`postprocessors-regression-analysis`</span>
-<span class="sd">    and iterates through all of its models (for more details about models refer</span>
-<span class="sd">    to :pkey:`models` or :ref:`postprocessors-regression-analysis`).</span>
-
-<span class="sd">    E.g. given some trace profile ``complexity_prof``, we can iterate its</span>
-<span class="sd">    models as follows:</span>
-
-<span class="sd">        &gt;&gt;&gt; gen = query.all_models_of(complexity_prof)</span>
-<span class="sd">        &gt;&gt;&gt; gen.__next__()</span>
-<span class="sd">        (0, {&#39;x_interval_start&#39;: 0, &#39;model&#39;: &#39;constant&#39;, &#39;method&#39;: &#39;full&#39;,</span>
-<span class="sd">        &#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.5644496762801648}, {&#39;name&#39;: &#39;b1&#39;,</span>
-<span class="sd">        &#39;value&#39;: 0.0}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;, &#39;r_square&#39;: 0.0,</span>
-<span class="sd">        &#39;x_interval_end&#39;: 11892})</span>
-<span class="sd">        &gt;&gt;&gt; gen.__next__()</span>
-<span class="sd">        (1, {&#39;x_interval_start&#39;: 0, &#39;model&#39;: &#39;exponential&#39;, &#39;method&#39;: &#39;full&#39;,</span>
-<span class="sd">        &#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.9909792049684152}, {&#39;name&#39;: &#39;b1&#39;,</span>
-<span class="sd">        &#39;value&#39;: 1.000004056250301}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;,</span>
-<span class="sd">        &#39;r_square&#39;: 0.007076437903106431, &#39;x_interval_end&#39;: 11892})</span>
-
-
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :returns: iterable stream of ``(int, dict)`` pairs, where first yields the</span>
-<span class="sd">        positional number of model and latter correponds to one &#39;models&#39;</span>
-<span class="sd">        record (for more details about models refer to :pkey:`models` or</span>
-<span class="sd">        :ref:`postprocessors-regression-analysis`)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Get models if any</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">models</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;global&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="p">[])</span>
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="c1"># global is not dict-like type with get method</span>
-        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">IncorrectProfileFormatException</span><span class="p">(</span>
-            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;&#39;global&#39; is not a dictionary&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">None</span>
-
-    <span class="k">for</span> <span class="n">model_idx</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="n">model_idx</span><span class="p">,</span> <span class="n">model</span></div>
-
-
-<div class="viewcode-block" id="unique_model_values_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.query.unique_model_values_of">[docs]</a><span class="k">def</span> <span class="nf">unique_model_values_of</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">model_key</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator of all unique key values occurring in the models in the</span>
+<div class="viewcode-block" id="unique_model_values_of">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.query.unique_model_values_of">[docs]</a>
+<span class="k">def</span> <span class="nf">unique_model_values_of</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span> <span class="n">model_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator of all unique key values occurring in the models in the</span>
 <span class="sd">    resources of given performance profile w.r.t. :ref:`profile-spec`.</span>
 
 <span class="sd">    Iterates through all of the values of given ``resource_keys`` and yields</span>
@@ -388,35 +313,34 @@
 <span class="sd">    E.g. given some trace profile ``complexity_prof``, we can obtain</span>
 <span class="sd">    unique values of keys from `models` as follows:</span>
 
-<span class="sd">        &gt;&gt;&gt; list(query.unique_model_values_of(complexity_prof, &#39;model&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; list(query.unique_model_values_of(&#39;model&#39;)</span>
 <span class="sd">        [&#39;constant&#39;, &#39;exponential&#39;, &#39;linear&#39;, &#39;logarithmic&#39;, &#39;quadratic&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; list(query.unique_model_values_of(cprof, &#39;r_square&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; list(query.unique_model_values_of(&#39;r_square&#39;))</span>
 <span class="sd">        [0.0, 0.007076437903106431, 0.0017560012128507133,</span>
 <span class="sd">         0.0008704119815403224, 0.003480627284909902, 0.001977866710139782,</span>
 <span class="sd">         0.8391363620083871, 0.9840099999298596, 0.7283427343995424,</span>
 <span class="sd">         0.9709120064750161, 0.9305786182556899]</span>
 
-<span class="sd">    :param dict profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
 <span class="sd">    :param str model_key: key identifier from `models` for which we query</span>
 <span class="sd">        its unique values</span>
 <span class="sd">    :returns: iterable stream of unique model key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_unique_values_generator</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">model_key</span><span class="p">,</span> <span class="n">all_models_of</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_unique_values_generator</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">()):</span>
         <span class="k">yield</span> <span class="n">value</span></div>
 
 
-<span class="k">def</span> <span class="nf">_unique_values_generator</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">blocks_gen</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generator of all unique values of &#39;key&#39; occurring in the profile blocks generated by</span>
-<span class="sd">    &#39;blocks_gen&#39;.</span>
 
-<span class="sd">    :param dict profile: valid profile with models</span>
+<span class="k">def</span> <span class="nf">_unique_values_generator</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">blocks_gen</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator of all unique values of &#39;key&#39; occurring in the profile blocks generated by &#39;blocks_gen&#39;.</span>
+
 <span class="sd">    :param str key: the key identifier whose unique values are returned</span>
-<span class="sd">    :param iterable blocks_gen: the data blocks generator (e.g. all_resources_of)</span>
+<span class="sd">    :param iterable blocks_gen: the data blocks generator (e.g. all_resources of Profile)</span>
 <span class="sd">    :returns iterable: stream of unique key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># value can be dict, list, set etc and not only simple type, thus the list</span>
     <span class="n">unique_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blocks_gen</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">blocks_gen</span><span class="p">:</span>
         <span class="c1"># Get all values the key contains</span>
         <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">all_key_values_of</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
             <span class="c1"># Return only the unique ones</span>
@@ -444,15 +368,15 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -461,8 +385,8 @@
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 

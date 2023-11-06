@@ -1,27 +1,16 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Visualizations Overview &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Visualizations Overview &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Automating Runs" href="jobs.html" />
@@ -32,8 +21,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -43,32 +31,32 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-perun.view">
-<span id="visualizations-overview"></span><span id="views-overview"></span><h1>Visualizations Overview<a class="headerlink" href="#module-perun.view" title="Permalink to this headline">¶</a></h1>
+  <section id="module-perun.view">
+<span id="visualizations-overview"></span><span id="views-overview"></span><h1>Visualizations Overview<a class="headerlink" href="#module-perun.view" title="Link to this heading">¶</a></h1>
 <p>Performance profiles originate either from the user’s own means (i.e. by
 building their own collectors and generating the profiles w.r.t
 <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>) or using one of the collectors from Perun’s tool suite.</p>
 <p>Perun can can interpret the profiling data in several ways:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>By <strong>directly running interpretation modules</strong> through <code class="docutils literal"><span class="pre">perun</span> <span class="pre">show</span></code>
+<li><p>By <strong>directly running interpretation modules</strong> through <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span></code>
 command, that takes the profile w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> and uses
 various output backends (e.g. <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a>, <a class="reference external" href="https://www.gnu.org/software/ncurses/ncurses.html">ncurses</a> or plain terminal). The
-output method and format is up to the authors.</li>
-<li>By <strong>using python interpreter</strong> together with internal modules for
+output method and format is up to the authors.</p></li>
+<li><p>By <strong>using python interpreter</strong> together with internal modules for
 manipulation, conversion and querying the profiles (refer to
 <a class="reference internal" href="profile.html#profile-api"><span class="std std-ref">Profile API</span></a>, <a class="reference internal" href="profile.html#profile-query-api"><span class="std std-ref">Profile Query API</span></a>, and
 <a class="reference internal" href="profile.html#profile-conversion-api"><span class="std std-ref">Profile Conversions API</span></a>) and external statistical libraries, like
-e.g. using <a class="reference external" href="https://pandas.pydata.org/">pandas</a>.</li>
+e.g. using <a class="reference external" href="https://pandas.pydata.org/">pandas</a>.</p></li>
 </ol>
 </div></blockquote>
 <p>The format of input profiles has to be w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>, in
 particular the intepreted profiles should contain the <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> region
 with data.</p>
-<p>Automatically generated profiles are stored in the <code class="docutils literal"><span class="pre">.perun/jobs/</span></code>
-directory as a file with the <code class="docutils literal"><span class="pre">.perf</span></code> extension. The filename is by default
+<p>Automatically generated profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code>
+directory as a file with the <code class="docutils literal notranslate"><span class="pre">.perf</span></code> extension. The filename is by default
 automatically generated according to the following template:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
 </pre></div>
 </div>
 <p>Refer to <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a>, <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a>, <a class="reference internal" href="collectors.html"><span class="doc">Collectors Overview</span></a> and <a class="reference internal" href="postprocessors.html"><span class="doc">Postprocessors Overview</span></a>
@@ -76,32 +64,32 @@ for more details about running command line commands, generating batch of jobs,
 capabilities of collectors and postprocessors techniques respectively.
 Internals of perun storage is described in <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a>.</p>
 <p>Note that interface of show allows one to use <cite>index</cite> and <cite>pending</cite> tags of
-form <code class="docutils literal"><span class="pre">i&#64;i</span></code> and <code class="docutils literal"><span class="pre">i&#64;p</span></code> respectively, which serve as a quality-of-life feature
+form <code class="docutils literal notranslate"><span class="pre">i&#64;i</span></code> and <code class="docutils literal notranslate"><span class="pre">i&#64;p</span></code> respectively, which serve as a quality-of-life feature
 for easy specification of visualized profiles.</p>
-<a class="reference internal image-reference" href="_images/architecture-views.svg"><div align="center" class="align-center"><img alt="_images/architecture-views.svg" src="_images/architecture-views.svg" width="100%" /></div>
-</a>
-<div class="section" id="supported-visualizations">
-<span id="views-list"></span><h2>Supported Visualizations<a class="headerlink" href="#supported-visualizations" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/architecture-views.svg"><img alt="_images/architecture-views.svg" class="align-center" src="_images/architecture-views.svg" width="100%" /></a>
+<section id="supported-visualizations">
+<span id="views-list"></span><h2>Supported Visualizations<a class="headerlink" href="#supported-visualizations" title="Link to this heading">¶</a></h2>
 <p>Perun’s tool suite currently contains the following visualizations:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><a class="reference internal" href="#views-bars"><span class="std std-ref">Bars Plot</span></a> visualizes the data as bars, with moderate customization possibilities.
+<li><p><a class="reference internal" href="#views-bars"><span class="std std-ref">Bars Plot</span></a> visualizes the data as bars, with moderate customization possibilities.
 The output is generated as an interactive HTML file using the <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library, where one can
-e.g. move or resize the graph. <cite>Bars</cite> supports high number of profile types.</li>
-<li><a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> visualizes the data as flow (i.e. classical continuous graph), with
+e.g. move or resize the graph. <cite>Bars</cite> supports high number of profile types.</p></li>
+<li><p><a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> visualizes the data as flow (i.e. classical continuous graph), with
 moderate customization possiblities. The output is generated as an interactive HTML file
 using the <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library, where one can move and resize the graph. <cite>Flow</cite> supports high
-number of profile types.</li>
-<li><a class="reference internal" href="#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> is an interface for Perl script of Brendan Gregg, that converts the
+number of profile types.</p></li>
+<li><p><a class="reference internal" href="#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> is an interface for Perl script of Brendan Gregg, that converts the
 (currently limited to memory profiles) profile to an internal format and visualize the
 resources as stacks of portional resource consumption depending on the trace of the
-resources.</li>
-<li><a class="reference internal" href="#views-scatter"><span class="std std-ref">Scatter Plot</span></a> visualizes the data as points on two dimensional grid, with moderate
+resources.</p></li>
+<li><p><a class="reference internal" href="#views-scatter"><span class="std std-ref">Scatter Plot</span></a> visualizes the data as points on two dimensional grid, with moderate
 customization possibilities. This visualization also display regression models, if the input
-profile was postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</li>
-<li><a class="reference internal" href="#views-heapmap"><span class="std std-ref">Heap Map</span></a> visualizes the <cite>memory</cite> consumption as a heap map of allocation
-resources to target memory addresses. Note that the output is dependent on <a class="reference external" href="https://www.gnu.org/software/ncurses/ncurses.html">ncurses</a> library and hence
-can currently be used only from UNIX terminals.</li>
+profile was postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p></li>
+<li><p><a class="reference internal" href="#views-tableof"><span class="std std-ref">Table Of</span></a> transforms either the resources or models of the profile into a tabular
+representation. The table can be further modified by (1) changing the format (see <a class="reference external" href="https://pypi.org/project/tabulate/">tabulate</a>
+for table formats), (2) limiting rows or columns displayed, or (3) sorting w.r.t specified
+keys.</p></li>
 </ol>
 </div></blockquote>
 <p>All of the listed visualizations can be run from command line. For more information about command
@@ -111,37 +99,33 @@ corresponding subsection of this chapter.</p>
 further usage refer to <a class="reference internal" href="#views-custom"><span class="std std-ref">Creating your own Visualization</span></a>. The format and the output is of your choice, it only
 has to be built over the format as described in <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> (or can be based over one of
 the conversions, see <a class="reference internal" href="profile.html#profile-conversion-api"><span class="std std-ref">Profile Conversions API</span></a>).</p>
-<div class="section" id="module-perun.view.bars">
-<span id="bars-plot"></span><span id="views-bars"></span><h3>Bars Plot<a class="headerlink" href="#module-perun.view.bars" title="Permalink to this headline">¶</a></h3>
+<section id="module-perun.view.bars">
+<span id="bars-plot"></span><span id="views-bars"></span><h3>Bars Plot<a class="headerlink" href="#module-perun.view.bars" title="Link to this heading">¶</a></h3>
 <p><cite>Bar graphs</cite> displays resources as bars, with moderate customization
 possibilities (regarding the sources for axes, or grouping keys). The output
 backend of <cite>Bars</cite> is both <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> and <a class="reference external" href="https://www.gnu.org/software/ncurses/ncurses.html">ncurses</a> (with limited possibilities
 though). <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> graphs support either the stacked format (bars of different
 groups will be stacked on top of each other) or grouped format (bars of
 different groups will be displayed next to each other).</p>
-<div class="section" id="overview-and-command-line-interface">
-<h4>Overview and Command Line Interface<a class="headerlink" href="#overview-and-command-line-interface" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="perun-show-bars">
-<h5>perun show bars<a class="headerlink" href="#perun-show-bars" title="Permalink to this headline">¶</a></h5>
+<section id="overview-and-command-line-interface">
+<h4>Overview and Command Line Interface<a class="headerlink" href="#overview-and-command-line-interface" title="Link to this heading">¶</a></h4>
+<section id="perun-show-bars">
+<h5>perun show bars<a class="headerlink" href="#perun-show-bars" title="Link to this heading">¶</a></h5>
 <p>Customizable interpretation of resources using the bar format.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>none</cite>.</li>
-<li><strong>Interpretation style</strong>: graphical</li>
-<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></li>
-</ul>
-</dd>
-</dl>
+<div class="line-block">
+<div class="line">* <strong>Limitations</strong>: <cite>none</cite>.</div>
+<div class="line">* <strong>Interpretation style</strong>: graphical</div>
+<div class="line">* <strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></div>
+</div>
 <p><cite>Bars</cite> graph shows the aggregation (e.g. sum, count, etc.) of resources of
-given types (or keys). Each bar shows <code class="docutils literal"><span class="pre">&lt;func&gt;</span></code> of resources from <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code>
+given types (or keys). Each bar shows <code class="docutils literal notranslate"><span class="pre">&lt;func&gt;</span></code> of resources from <code class="docutils literal notranslate"><span class="pre">&lt;of&gt;</span></code>
 key (e.g. sum of amounts, average of amounts, count of types, etc.) per
-each <code class="docutils literal"><span class="pre">&lt;per&gt;</span></code> key (e.g. per each snapshot, or per each type).  Moreover,
+each <code class="docutils literal notranslate"><span class="pre">&lt;per&gt;</span></code> key (e.g. per each snapshot, or per each type).  Moreover,
 the graphs can either be (i) stacked, where the different values of
-<code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key are shown above each other, or (ii) grouped, where the
-different values of <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key are shown next to each other. Refer to
-<a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> for examples of keys that can be used as <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code>,
-<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code>, <code class="docutils literal"><span class="pre">&lt;per&gt;</span></code> or <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code> key are shown above each other, or (ii) grouped, where the
+different values of <code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code> key are shown next to each other. Refer to
+<a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> for examples of keys that can be used as <code class="docutils literal notranslate"><span class="pre">&lt;of&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;per&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code>.</p>
 <p><a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library is the current interpretation backend, which generates HTML
 files, that can be opened directly in the browser. Resulting graphs can be
 further customized by adding custom labels for axes, custom graph title or
@@ -149,12 +133,11 @@ different graph width.</p>
 <p>Example 1. The following will display the sum of sum of amounts of all
 resources of given for each subtype, stacked by uid (e.g. the locations in
 the program):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>
-<pre class="literal-block">
-                                &lt;graph_title&gt;
+<pre class="literal-block">                                &lt;graph_title&gt;
                         `
                         -         .::.                ````````
                         `         :&amp;&amp;:                ` # \  `
@@ -166,125 +149,122 @@ the program):</p>
                         `   :&#64;&#64;:  :&#64;&#64;:  :##:  :##:
                         +````||````||````||````||````
 
-                                    &lt;per&gt;
-</pre>
+                                    &lt;per&gt;</pre>
 <p>Refer to <a class="reference internal" href="#views-bars"><span class="std std-ref">Bars Plot</span></a> for more thorough description and example of
 <cite>bars</cite> interpretation possibilities.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show bars <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;aggregation_function&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>bars<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;aggregation_function&gt;
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.  [required]</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-o">
+<span id="cmdoption-perun-show-bars-of"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--of</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;of_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-o" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-p">
-<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-p" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-p">
+<span id="cmdoption-perun-show-bars-per"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--per</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;per_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-p" title="Link to this definition">¶</a></dt>
 <dd><p>Sets key that is source of values displayed on X axis of the bar graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-b">
-<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--by</code><code class="descclassname"> &lt;by_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-b" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-b">
+<span id="cmdoption-perun-show-bars-by"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;by_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-b" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the key that will be used either for stacking or grouping of values</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-s">
-<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stacked</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-s" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-s">
+<span id="cmdoption-perun-show-bars-stacked"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--stacked</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-bars-s" title="Link to this definition">¶</a></dt>
 <dd><p>Will stack the values by &lt;resource_key&gt; specified by option –by.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-g">
-<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--grouped</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-g" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-g">
+<span id="cmdoption-perun-show-bars-grouped"></span><span class="sig-name descname"><span class="pre">-g</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--grouped</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-bars-g" title="Link to this definition">¶</a></dt>
 <dd><p>Will stack the values by &lt;resource_key&gt; specified by option –by.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-f" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-f">
+<span id="cmdoption-perun-show-bars-filename"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;html&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-f" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the outputs for the graph to the file.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-xl">
-<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-xl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-xl">
+<span id="cmdoption-perun-show-bars-x-axis-label"></span><span class="sig-name descname"><span class="pre">-xl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--x-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-xl" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom label on the X axis of the bar graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-yl">
-<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-yl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-yl">
+<span id="cmdoption-perun-show-bars-y-axis-label"></span><span class="sig-name descname"><span class="pre">-yl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--y-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-yl" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom label on the Y axis of the bar graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-gt">
-<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-gt" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-gt">
+<span id="cmdoption-perun-show-bars-graph-title"></span><span class="sig-name descname"><span class="pre">-gt</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--graph-title</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-bars-gt" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom title of the bars graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-v">
-<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-v" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-v">
+<span id="cmdoption-perun-show-bars-view-in-browser"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--view-in-browser</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-bars-v" title="Link to this definition">¶</a></dt>
 <dd><p>The generated graph will be immediately opened in the browser (firefox will be used).</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-bars-arg-aggregation-function">
-<code class="descname">&lt;aggregation_function&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-arg-aggregation-function" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-bars-arg-aggregation_function">
+<span class="sig-name descname"><span class="pre">&lt;aggregation_function&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-bars-arg-aggregation_function" title="Link to this definition">¶</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="examples-of-output">
-<span id="views-bars-examples"></span><h4>Examples of Output<a class="headerlink" href="#examples-of-output" title="Permalink to this headline">¶</a></h4>
+</section>
+</section>
+<section id="examples-of-output">
+<span id="views-bars-examples"></span><h4>Examples of Output<a class="headerlink" href="#examples-of-output" title="Link to this heading">¶</a></h4>
 <img alt="_images/complexity-bars.png" src="_images/complexity-bars.png" />
 <p>The <a class="reference internal" href="#views-bars"><span class="std std-ref">Bars Plot</span></a> above shows the overall sum of the running times for each
-<code class="docutils literal"><span class="pre">structure-unit-size</span></code> for the <code class="docutils literal"><span class="pre">SLList_search</span></code> function collected by
+<code class="docutils literal notranslate"><span class="pre">structure-unit-size</span></code> for the <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code> function collected by
 <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>. The interpretation highlights that the most of the consumed running
 time were over the single linked lists with 41 elements.</p>
 <img alt="_images/memory-bars-stacked.png" src="_images/memory-bars-stacked.png" />
 <p>The <cite>bars</cite> above shows the <cite>stacked</cite> view of number of memory allocations made per each snapshot
-(with sampling of <code class="docutils literal"><span class="pre">1</span></code> second). Each bar shows overall number of memory operations, as well as
+(with sampling of <code class="docutils literal notranslate"><span class="pre">1</span></code> second). Each bar shows overall number of memory operations, as well as
 proportional representation of different types of memory (de)allocation. It can also be seen that
-<code class="docutils literal"><span class="pre">free</span></code> is called approximately the same time as allocations, which signifies that everything was
+<code class="docutils literal notranslate"><span class="pre">free</span></code> is called approximately the same time as allocations, which signifies that everything was
 probably freed.</p>
 <img alt="_images/memory-bars-sum-grouped.png" src="_images/memory-bars-sum-grouped.png" />
 <p>The <cite>bars</cite> above shows the <cite>grouped</cite> view of sum of memory allocation of the same type per each
-snapshot (with sampling of <code class="docutils literal"><span class="pre">0.5</span></code> seconds). Grouped pars allows fast comparison of total amounts
-between different types. E.g. <code class="docutils literal"><span class="pre">malloc</span></code> seems to allocated the most memory per each snapshot.</p>
-</div>
-</div>
-<div class="section" id="module-perun.view.flamegraph">
-<span id="flame-graph"></span><span id="views-flame-graph"></span><h3>Flame Graph<a class="headerlink" href="#module-perun.view.flamegraph" title="Permalink to this headline">¶</a></h3>
+snapshot (with sampling of <code class="docutils literal notranslate"><span class="pre">0.5</span></code> seconds). Grouped pars allows fast comparison of total amounts
+between different types. E.g. <code class="docutils literal notranslate"><span class="pre">malloc</span></code> seems to allocated the most memory per each snapshot.</p>
+</section>
+</section>
+<section id="module-perun.view.flamegraph">
+<span id="flame-graph"></span><span id="views-flame-graph"></span><h3>Flame Graph<a class="headerlink" href="#module-perun.view.flamegraph" title="Link to this heading">¶</a></h3>
 <p><cite>Flame graph</cite> shows the relative consumption of resources w.r.t. to the
 trace of the resource origin. Currently it is limited to <cite>memory</cite> profiles
 (however, the generalization of the module is in plan). The usage of flame
 graphs is for faster localization of resource consumption hot spots and
 bottlenecks.</p>
-<div class="section" id="id6">
-<h4>Overview and Command Line Interface<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="perun-show-flamegraph">
-<h5>perun show flamegraph<a class="headerlink" href="#perun-show-flamegraph" title="Permalink to this headline">¶</a></h5>
+<section id="id6">
+<h4>Overview and Command Line Interface<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<section id="perun-show-flamegraph">
+<h5>perun show flamegraph<a class="headerlink" href="#perun-show-flamegraph" title="Link to this heading">¶</a></h5>
 <p>Flame graph interprets the relative and inclusive presence of the
 resources according to the stack depth of the origin of resources.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
-<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
-<li><strong>Interpretation style</strong>: graphical</li>
-<li><strong>Visualization backend</strong>: HTML</li>
-</ul>
-</dd>
-</dl>
+<div class="line-block">
+<div class="line">* <strong>Limitations</strong>: <cite>memory</cite> profiles generated by</div>
+<div class="line-block">
+<div class="line"><a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</div>
+</div>
+<div class="line">* <strong>Interpretation style</strong>: graphical</div>
+<div class="line">* <strong>Visualization backend</strong>: HTML</div>
+</div>
 <p>Flame graph intends to quickly identify hotspots, that are the source of
 the resource consumption complexity. On X axis, a relative consumption of
 the data is depicted, while on Y axis a stack depth is displayed. The wider
@@ -296,8 +276,7 @@ visualization technique, please check out this guy’s site
 (<a class="reference external" href="http://brendangregg.com">http://brendangregg.com</a>) for more information about performance, profiling
 and useful talks and visualization techniques!</p>
 <p>The example output of the flamegraph is more or less as follows:</p>
-<pre class="literal-block">
-                    `
+<pre class="literal-block">                    `
                     -                         .
                     `                         |
                     -              ..         |     .
@@ -306,63 +285,58 @@ and useful talks and visualization techniques!</p>
                     `            |%%|       |--|  |!|
                     -     |## g() ##|     |#g()#|***|
                     ` |&amp;&amp;&amp;&amp; f() &amp;&amp;&amp;&amp;|===== h() =====|
-                    +````||````||````||````||````||````
-</pre>
+                    +````||````||````||````||````||````</pre>
 <p>Refer to <a class="reference internal" href="#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> for more thorough description and
 examples of the interpretation technique. Refer to
-<a class="reference internal" href="profile.html#perun.profile.convert.to_flame_graph_format" title="perun.profile.convert.to_flame_graph_format"><code class="xref py py-func docutils literal"><span class="pre">perun.profile.convert.to_flame_graph_format()</span></code></a> for more details how
+<a class="reference internal" href="profile.html#perun.profile.convert.to_flame_graph_format" title="perun.profile.convert.to_flame_graph_format"><code class="xref py py-func docutils literal notranslate"><span class="pre">perun.profile.convert.to_flame_graph_format()</span></code></a> for more details how
 the profiles are converted to the flame graph format.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show flamegraph <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>flamegraph<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-flamegraph-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flamegraph-f" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-f">
+<span id="cmdoption-perun-show-flamegraph-filename"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-f" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the output file of the resulting flame graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flamegraph-h">
-<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-height</code><code class="descclassname"> &lt;graph_height&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flamegraph-h" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-h">
+<span id="cmdoption-perun-show-flamegraph-graph-height"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--graph-height</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;graph_height&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-h" title="Link to this definition">¶</a></dt>
 <dd><p>Increases the width of the resulting flame graph.</p>
 </dd></dl>
 
-</div>
+</section>
 <img alt="_images/memory-flamegraph.png" id="views-flamegraph-examples" src="_images/memory-flamegraph.png" />
 <p>The <a class="reference internal" href="#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> is an efficient visualization of inclusive consumption of resources.
 The width of the base of one flame shows the bottleneck and hotspots of profiled binaries.</p>
-</div>
-<div class="section" id="id7">
-<h4>Examples of Output<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
-</div>
-</div>
-<div class="section" id="module-perun.view.flow">
-<span id="flow-plot"></span><span id="views-flow"></span><h3>Flow Plot<a class="headerlink" href="#module-perun.view.flow" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="id7">
+<h4>Examples of Output<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+</section>
+</section>
+<section id="module-perun.view.flow">
+<span id="flow-plot"></span><span id="views-flow"></span><h3>Flow Plot<a class="headerlink" href="#module-perun.view.flow" title="Link to this heading">¶</a></h3>
 <p><cite>Flow graphs</cite> displays resources as classic plots, with moderate
 customization possibilities (regarding the sources for axes, or grouping keys).
 The output backend of <cite>Flow</cite> is both <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> and <a class="reference external" href="https://www.gnu.org/software/ncurses/ncurses.html">ncurses</a> (with limited
 possibilities though). <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> graphs support either the classic display of
 resources (graphs will overlap) or in stacked format (graphs of different
 groups will be stacked on top of each other).</p>
-<div class="section" id="id10">
-<h4>Overview and Command Line Interface<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="perun-show-flow">
-<h5>perun show flow<a class="headerlink" href="#perun-show-flow" title="Permalink to this headline">¶</a></h5>
+<section id="id10">
+<h4>Overview and Command Line Interface<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<section id="perun-show-flow">
+<h5>perun show flow<a class="headerlink" href="#perun-show-flow" title="Link to this heading">¶</a></h5>
 <p>Customizable interpretation of resources using the flow format.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>none</cite>.</li>
-<li><strong>Interpretation style</strong>: graphical, textual</li>
-<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a>, ncurses</li>
-</ul>
-</dd>
-</dl>
+<div class="line-block">
+<div class="line">* <strong>Limitations</strong>: <cite>none</cite>.</div>
+<div class="line">* <strong>Interpretation style</strong>: graphical, textual</div>
+<div class="line">* <strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a>, ncurses</div>
+</div>
 <p><cite>Flow</cite> graph shows the values resources depending on the independent
 variable as basic graph. For each group of resources identified by unique
-value of <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key, one graph shows the dependency of <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code> values
-aggregated by <code class="docutils literal"><span class="pre">&lt;func&gt;</span></code> depending on the <code class="docutils literal"><span class="pre">&lt;through&gt;</span></code> key. Moreover, the
+value of <code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code> key, one graph shows the dependency of <code class="docutils literal notranslate"><span class="pre">&lt;of&gt;</span></code> values
+aggregated by <code class="docutils literal notranslate"><span class="pre">&lt;func&gt;</span></code> depending on the <code class="docutils literal notranslate"><span class="pre">&lt;through&gt;</span></code> key. Moreover, the
 values can either be accumulated (this way when displaying the value of ‘n’
 on x axis, we accumulate the sum of all values for all m &lt; n) or stacked,
 where the graphs are output on each other and then one can see the overall
@@ -374,13 +348,12 @@ different graph width.</p>
 <p>Example 1. The following will show the average amount (in this case
 the function running time) of each function depending on the size of the
 structure over which the given function operated:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
     <span class="o">--</span><span class="n">acumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>
-<pre class="literal-block">
-                                &lt;graph_title&gt;
+<pre class="literal-block">                                &lt;graph_title&gt;
                         `
                         -                      ______    ````````
                         `                _____/          ` # \  `
@@ -392,190 +365,126 @@ structure over which the given function operated:</p>
                         `__/______________/
                         +````||````||````||````||````
 
-                                  &lt;through&gt;
-</pre>
+                                  &lt;through&gt;</pre>
 <p>Refer to <a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> for more thorough description and example of
 <cite>flow</cite> interpretation possibilities.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show flow <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;aggregation_function&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>flow<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;aggregation_function&gt;
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key that is source of the data for the flow, i.e. what will be displayed on Y axis, e.g. the amount of resources.  [required]</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-o">
+<span id="cmdoption-perun-show-flow-of"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--of</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;of_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-o" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Sets key that is source of the data for the flow, i.e. what will be displayed on Y axis, e.g. the amount of resources.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-t">
-<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--through</code><code class="descclassname"> &lt;through_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-t" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-t">
+<span id="cmdoption-perun-show-flow-through"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--through</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;through_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-t" title="Link to this definition">¶</a></dt>
 <dd><p>Sets key that is source of the data value, i.e. the independent variable, like e.g. snapshots or size of the structure.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-b">
-<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--by</code><code class="descclassname"> &lt;by_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-b" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each &lt;by_resource_key&gt; one graph will be output, e.g. for each subtype or for each location of resource.  [required]</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-b">
+<span id="cmdoption-perun-show-flow-by"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;by_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-b" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> For each &lt;by_resource_key&gt; one graph will be output, e.g. for each subtype or for each location of resource.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-s">
-<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stacked</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-s" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-s">
+<span id="cmdoption-perun-show-flow-stacked"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--stacked</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-s" title="Link to this definition">¶</a></dt>
 <dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionaly shows the sum of the values.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-accumulate">
-<code class="descname">--accumulate</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-accumulate</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-accumulate" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-accumulate">
+<span id="cmdoption-perun-show-flow-no-accumulate"></span><span class="sig-name descname"><span class="pre">--accumulate</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-accumulate</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-accumulate" title="Link to this definition">¶</a></dt>
 <dd><p>Will accumulate the values for all previous values of X axis.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-ut">
-<code class="descname">-ut</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--use-terminal</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-ut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows flow graph in the terminal using ncurses library.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-f" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-f">
+<span id="cmdoption-perun-show-flow-filename"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;html&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-f" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the outputs for the graph to the file.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-xl">
-<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-xl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-xl">
+<span id="cmdoption-perun-show-flow-x-axis-label"></span><span class="sig-name descname"><span class="pre">-xl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--x-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-xl" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom label on the X axis of the flow graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-yl">
-<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-yl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-yl">
+<span id="cmdoption-perun-show-flow-y-axis-label"></span><span class="sig-name descname"><span class="pre">-yl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--y-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-yl" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom label on the Y axis of the flow graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-gt">
-<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-gt" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-gt">
+<span id="cmdoption-perun-show-flow-graph-title"></span><span class="sig-name descname"><span class="pre">-gt</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--graph-title</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flow-gt" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the custom title of the flow graph.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-v">
-<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-v" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-v">
+<span id="cmdoption-perun-show-flow-view-in-browser"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--view-in-browser</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-v" title="Link to this definition">¶</a></dt>
 <dd><p>The generated graph will be immediately opened in the browser (firefox will be used).</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-flow-arg-aggregation-function">
-<code class="descname">&lt;aggregation_function&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-arg-aggregation-function" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flow-arg-aggregation_function">
+<span class="sig-name descname"><span class="pre">&lt;aggregation_function&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-arg-aggregation_function" title="Link to this definition">¶</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="views-flow-examples">
-<span id="id12"></span><h4>Examples of Output<a class="headerlink" href="#views-flow-examples" title="Permalink to this headline">¶</a></h4>
+</section>
+</section>
+<section id="views-flow-examples">
+<span id="id12"></span><h4>Examples of Output<a class="headerlink" href="#views-flow-examples" title="Link to this heading">¶</a></h4>
 <img alt="_images/memory-flow.png" src="_images/memory-flow.png" />
 <p>The <a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> above shows the mean of allocated amounts per each allocation site (i.e.
-<code class="docutils literal"><span class="pre">uid</span></code>) in stacked mode. The stacking of the means clearly shows, where the biggest allocations
+<code class="docutils literal notranslate"><span class="pre">uid</span></code>) in stacked mode. The stacking of the means clearly shows, where the biggest allocations
 where made during the program run.</p>
 <img alt="_images/complexity-flow.png" src="_images/complexity-flow.png" />
-<p>The <a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> above shows the trend of the average running time of the <code class="docutils literal"><span class="pre">SLList_search</span></code>
+<p>The <a class="reference internal" href="#views-flow"><span class="std std-ref">Flow Plot</span></a> above shows the trend of the average running time of the <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code>
 function depending on the size of the structure we execute the search on.</p>
-</div>
-</div>
-<div class="section" id="module-perun.view.heapmap">
-<span id="heap-map"></span><span id="views-heapmap"></span><h3>Heap Map<a class="headerlink" href="#module-perun.view.heapmap" title="Permalink to this headline">¶</a></h3>
-<p><cite>Heap map</cite> is a visualization of underlying memory address map that links
-chunks of allocated memory to corresponding allocation sources.  This is mostly
-for showing utilization of memory, where objects were allocated, how often, and
-how the objects are fragmented in the memory. Heap map visualization is
-interactive and is implemented using ncurses library.</p>
-<div class="section" id="id13">
-<h4>Overview and Command Line Interface<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="perun-show-heapmap">
-<h5>perun show heapmap<a class="headerlink" href="#perun-show-heapmap" title="Permalink to this headline">¶</a></h5>
-<p>Shows interactive map of memory allocations to concrete memories for
-each function.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
-<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
-<li><strong>Interpretation style</strong>: textual</li>
-<li><strong>Visualization backend</strong>: ncurses</li>
-</ul>
-</dd>
-</dl>
-<p>Heap map shows the underlying memory map, and links the concrete
-allocations to allocated addresses for each snapshot. The map is
-interactive, one can either play the full animation of the allocations
-through snapshots or move and explore the details of the map.</p>
-<p>Moreover, the heap map contains <cite>heat map</cite> mode, which accumulates the
-allocations into the heat representation—the hotter the colour displayed
-at given memory cell, the more time it was allocated there.</p>
-<p>The heap map aims at showing the fragmentation of the memory and possible
-differences between different allocation strategies. On the other hand, the
-heat mode aims at showing the bottlenecks of allocations.</p>
-<p>Refer to <a class="reference internal" href="#views-heapmap"><span class="std std-ref">Heap Map</span></a> for more thorough description and example of
-<cite>heapmap</cite> interpretation possibilities.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show heapmap <span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="views-heapmap-examples">
-<span id="id14"></span><h4>Examples of Output<a class="headerlink" href="#views-heapmap-examples" title="Permalink to this headline">¶</a></h4>
-<img alt="_images/memory-heapmap.png" src="_images/memory-heapmap.png" />
-<p>The <a class="reference internal" href="#views-heapmap"><span class="std std-ref">Heap Map</span></a> shows the address space through the time (snapshots) and visualize the
-fragmentation of memory allocation per each allocation site. The <cite>heap map</cite> aboe shows the
-difference between allocations using lists (purple), skiplists (pinkish) and standard vectors
-(blue). The map itself is interactive and displays details about individual address cells.</p>
-<img alt="_images/memory-heatmap.png" src="_images/memory-heatmap.png" />
-<p><cite>Heat map</cite> is a mode of heap map, which aggregates the allocations over all of the snapshots and
-uses warmer colours for address cells, where more allocations were performed.</p>
-</div>
-</div>
-<div class="section" id="module-perun.view.scatter">
-<span id="scatter-plot"></span><span id="views-scatter"></span><h3>Scatter Plot<a class="headerlink" href="#module-perun.view.scatter" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="module-perun.view.scatter">
+<span id="scatter-plot"></span><span id="views-scatter"></span><h3>Scatter Plot<a class="headerlink" href="#module-perun.view.scatter" title="Link to this heading">¶</a></h3>
 <p><cite>Scatter plot</cite> visualizes the data as points on two dimensional grid, with
 moderate customization possibilities. This visualization also display
 regression models, if the input profile was postprocessed by
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. The output backend of <cite>Scatter plot</cite>
 is <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library.</p>
-<div class="section" id="id16">
-<h4>Overview and Command Line Interface<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="perun-show-scatter">
-<h5>perun show scatter<a class="headerlink" href="#perun-show-scatter" title="Permalink to this headline">¶</a></h5>
+<section id="id14">
+<h4>Overview and Command Line Interface<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
+<section id="perun-show-scatter">
+<h5>perun show scatter<a class="headerlink" href="#perun-show-scatter" title="Link to this heading">¶</a></h5>
 <p>Interactive visualization of resources and models in scatter plot format.</p>
 <p>Scatter plot shows resources as points according to the given parameters.
 The plot interprets &lt;per&gt; and &lt;of&gt; as x, y coordinates for the points. The
 scatter plot also displays models located in the profile as a curves/lines.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>none</cite>.</li>
-<li><strong>Interpretation style</strong>: graphical</li>
-<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></li>
-</ul>
-</dd>
-</dl>
+<div class="line-block">
+<div class="line">* <strong>Limitations</strong>: <cite>none</cite>.</div>
+<div class="line">* <strong>Interpretation style</strong>: graphical</div>
+<div class="line">* <strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></div>
+</div>
 <p>Features in progress:</p>
 <blockquote>
 <div><ul class="simple">
-<li>uid filters</li>
-<li>models filters</li>
-<li>multiple graphs interpretation</li>
+<li><p>uid filters</p></li>
+<li><p>models filters</p></li>
+<li><p>multiple graphs interpretation</p></li>
 </ul>
 </div></blockquote>
 <p>Graphs are displayed using the <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library and can be further customized
 by adding custom labels for axis, custom graph title and different graph
 width.</p>
 <p>The example output of the scatter is as follows:</p>
-<pre class="literal-block">
-                          &lt;graph_title&gt;
+<pre class="literal-block">                          &lt;graph_title&gt;
                   `                         o
                   -                        /
                   `                       /o       ```````````````````
@@ -587,62 +496,71 @@ width.</p>
                   `
                   +````||````||````||````||````
 
-                              &lt;per&gt;
-</pre>
+                              &lt;per&gt;</pre>
 <p>Refer to <a class="reference internal" href="#views-scatter"><span class="std std-ref">Scatter Plot</span></a> for more thorough description and example of
 <cite>scatter</cite> interpretation possibilities. For more thorough explanation of
 regression analysis and models refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show scatter <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>scatter<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.  [default: amount]</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-o">
+<span id="cmdoption-perun-show-scatter-of"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--of</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;of_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-o" title="Link to this definition">¶</a></dt>
+<dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">amount</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-p">
-<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-p" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keys that will be displayed on X axis of the scatter plot.  [default: structure-unit-size]</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-p">
+<span id="cmdoption-perun-show-scatter-per"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--per</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;per_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-p" title="Link to this definition">¶</a></dt>
+<dd><p>Keys that will be displayed on X axis of the scatter plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">structure-unit-size</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-f" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-f">
+<span id="cmdoption-perun-show-scatter-filename"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;html&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-f" title="Link to this definition">¶</a></dt>
 <dd><p>Outputs the graph to the file specified by filename.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-xl">
-<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-xl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-xl">
+<span id="cmdoption-perun-show-scatter-x-axis-label"></span><span class="sig-name descname"><span class="pre">-xl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--x-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-xl" title="Link to this definition">¶</a></dt>
 <dd><p>Label on the X axis of the scatter plot.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-yl">
-<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-yl" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-yl">
+<span id="cmdoption-perun-show-scatter-y-axis-label"></span><span class="sig-name descname"><span class="pre">-yl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--y-axis-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-yl" title="Link to this definition">¶</a></dt>
 <dd><p>Label on the Y axis of the scatter plot.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-gt">
-<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-gt" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-gt">
+<span id="cmdoption-perun-show-scatter-graph-title"></span><span class="sig-name descname"><span class="pre">-gt</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--graph-title</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;text&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-scatter-gt" title="Link to this definition">¶</a></dt>
 <dd><p>Title of the scatter plot.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-show-scatter-v">
-<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-scatter-v" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-scatter-v">
+<span id="cmdoption-perun-show-scatter-view-in-browser"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--view-in-browser</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-scatter-v" title="Link to this definition">¶</a></dt>
 <dd><p>Will show the graph in browser.</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="views-scatter-examples">
-<span id="id18"></span><h4>Examples of Output<a class="headerlink" href="#views-scatter-examples" title="Permalink to this headline">¶</a></h4>
+</section>
+</section>
+<section id="views-scatter-examples">
+<span id="id16"></span><h4>Examples of Output<a class="headerlink" href="#views-scatter-examples" title="Link to this heading">¶</a></h4>
 <img alt="_images/complexity-scatter-with-models-full.png" src="_images/complexity-scatter-with-models-full.png" />
 <p>The <a class="reference internal" href="#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted models of different complexity example,
 computed using the <strong>full computation</strong> method. In the picture, one can see that the depedency of
@@ -654,23 +572,229 @@ computation yields initial estimate of fitness of models (the initial sample is 
 random). The best fitted model is then chosen and fully computed on the rest of the data points.</p>
 <p>The picture shows only one model, namely <cite>linear</cite> which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.</p>
+</section>
+</section>
+<section id="module-perun.view.tableof">
+<span id="table-of"></span><span id="views-tableof"></span><h3>Table Of<a class="headerlink" href="#module-perun.view.tableof" title="Link to this heading">¶</a></h3>
+<p><cite>Table</cite> interprets the data as a two dimensional array. The cells in the table can be limited to
+certain columns only and allow output to the file.</p>
+<section id="id17">
+<h4>Overview and Command Line Interface<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<section id="perun-show-tableof">
+<h5>perun show tableof<a class="headerlink" href="#perun-show-tableof" title="Link to this heading">¶</a></h5>
+<p>Textual representation of the profile as a table.</p>
+<div class="line-block">
+<div class="line">* <strong>Limitations</strong>: <cite>none</cite>.</div>
+<div class="line">* <strong>Interpretation style</strong>: textual</div>
+<div class="line">* <strong>Visualization backend</strong>: <a class="reference external" href="https://pypi.org/project/tabulate/">tabulate</a></div>
 </div>
+<p>The table is formatted using the <a class="reference external" href="https://pypi.org/project/tabulate/">tabulate</a> library. Currently, we support only the simplest
+form, and allow output to file.</p>
+<p>The example output of the tableof is as follows:</p>
+<pre class="literal-block">
+    uid                          model           r_square
+    ---------------------------  -----------  -----------
+    SLlist_insert(SLlist*, int)  logarithmic  0.000870412
+    SLlist_insert(SLlist*, int)  linear       0.001756
+    SLlist_insert(SLlist*, int)  quadratic    0.00199925
+    SLlist_insert(SLlist*, int)  power        0.00348063
+    SLlist_insert(SLlist*, int)  exponential  0.00707644
+    SLlist_search(SLlist*, int)  constant     0.0114714
+    SLlist_search(SLlist*, int)  logarithmic  0.728343
+    SLlist_search(SLlist*, int)  exponential  0.839136
+    SLlist_search(SLlist*, int)  power        0.970912
+    SLlist_search(SLlist*, int)  linear       0.98401
+    SLlist_search(SLlist*, int)  quadratic    0.984263
+    SLlist_insert(SLlist*, int)  constant     1</pre>
+<p>Refer to <a class="reference internal" href="#views-tableof"><span class="std std-ref">Table Of</span></a> for more thorough description and example of
+<cite>table</cite> interpretation possibilities.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>tableof<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
 </div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-tf">
+<span id="cmdoption-perun-show-tableof-to-file"></span><span class="sig-name descname"><span class="pre">-tf</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--to-file</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-tableof-tf" title="Link to this definition">¶</a></dt>
+<dd><p>The table will be saved into a file. By default, the name of the output file is automatically generated, unless <cite>–output-file</cite> option does not specify the name of the output file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-ts">
+<span id="cmdoption-perun-show-tableof-to-stdout"></span><span class="sig-name descname"><span class="pre">-ts</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--to-stdout</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-tableof-ts" title="Link to this definition">¶</a></dt>
+<dd><p>The table will be output to standard output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-of">
+<span id="cmdoption-perun-show-tableof-output-file"></span><span class="sig-name descname"><span class="pre">-of</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_file&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-of" title="Link to this definition">¶</a></dt>
+<dd><p>Target output file, where the transformed table will be saved.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-f">
+<span id="cmdoption-perun-show-tableof-format"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;tablefmt&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-f" title="Link to this definition">¶</a></dt>
+<dd><p>Format of the outputted table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>asciidoc | double_grid | double_outline | fancy_grid | fancy_outline | github | grid | heavy_grid | heavy_outline | html | jira | latex | latex_booktabs | latex_longtable | latex_raw | mediawiki | mixed_grid | mixed_outline | moinmoin | orgtbl | outline | pipe | plain | presto | pretty | psql | rounded_grid | rounded_outline | rst | simple | simple_grid | simple_outline | textile | tsv | unsafehtml | youtrack</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">models</span></span></dt>
+<dd><p>Outputs the models of the profile as a table</p>
+</dd></dl>
+
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">resources</span></span></dt>
+<dd><p>Outputs the resources of the profile as a…</p>
+</dd></dl>
+
+</section>
+<section id="perun-show-tableof-resources">
+<h5>perun show tableof resources<a class="headerlink" href="#perun-show-tableof-resources" title="Link to this heading">¶</a></h5>
+<p>Outputs the resources of the profile as a table</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>tableof<span class="w"> </span>resources<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
 </div>
-<div class="section" id="creating-your-own-visualization">
-<span id="views-custom"></span><h2>Creating your own Visualization<a class="headerlink" href="#creating-your-own-visualization" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-resources-h">
+<span id="cmdoption-perun-show-tableof-resources-headers"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--headers</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-resources-h" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be outputed</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-resources-s">
+<span id="cmdoption-perun-show-tableof-resources-sort-by"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--sort-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-resources-s" title="Link to this definition">¶</a></dt>
+<dd><p>Sorts the table by &lt;key&gt;.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-resources-f">
+<span id="cmdoption-perun-show-tableof-resources-filter-by"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filter-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span> <span class="pre">&lt;value&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-resources-f" title="Link to this definition">¶</a></dt>
+<dd><p>Filters the table to rows, where &lt;key&gt; == &lt;value&gt;. If the <cite>–filter</cite> is set several times, then rows satisfying all rules will be selected for different keys; and the rows satisfying some rule will be selected for same key.</p>
+</dd></dl>
+
+</section>
+<section id="perun-show-tableof-models">
+<h5>perun show tableof models<a class="headerlink" href="#perun-show-tableof-models" title="Link to this heading">¶</a></h5>
+<p>Outputs the models of the profile as a table</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>tableof<span class="w"> </span>models<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-models-h">
+<span id="cmdoption-perun-show-tableof-models-headers"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--headers</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-models-h" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be outputed</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-models-s">
+<span id="cmdoption-perun-show-tableof-models-sort-by"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--sort-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-models-s" title="Link to this definition">¶</a></dt>
+<dd><p>Sorts the table by &lt;key&gt;.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-tableof-models-f">
+<span id="cmdoption-perun-show-tableof-models-filter-by"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filter-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span> <span class="pre">&lt;value&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-models-f" title="Link to this definition">¶</a></dt>
+<dd><p>Filters the table to rows, where &lt;key&gt; == &lt;value&gt;. If the <cite>–filter</cite> is set several times, then rows satisfying all rules will be selected for different keys; and the rows satisfying some rule will be sellected for same key.</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="views-tableof-examples">
+<span id="id19"></span><h4>Examples of Output<a class="headerlink" href="#views-tableof-examples" title="Link to this heading">¶</a></h4>
+<p>In the following, we show several outputs of the <a class="reference internal" href="#views-tableof"><span class="std std-ref">Table Of</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">uid</span>            <span class="n">model</span>           <span class="n">coeffs</span><span class="p">:</span><span class="n">b1</span>    <span class="n">coeffs</span><span class="p">:</span><span class="n">b0</span>     <span class="n">r_square</span>
+<span class="linenos"> 2</span><span class="o">-------------</span>  <span class="o">-----------</span>  <span class="o">------------</span>  <span class="o">-----------</span>  <span class="o">-----------</span>
+<span class="linenos"> 3</span><span class="n">SLList_insert</span>  <span class="n">logarithmic</span>   <span class="mf">0.0240681</span>      <span class="mf">0.362624</span>   <span class="mf">0.000870412</span>
+<span class="linenos"> 4</span><span class="n">SLList_insert</span>  <span class="n">linear</span>        <span class="mf">9.93516e-06</span>    <span class="mf">0.505375</span>   <span class="mf">0.001756</span>
+<span class="linenos"> 5</span><span class="n">SLList_insert</span>  <span class="n">power</span>         <span class="mf">0.00978141</span>     <span class="mf">0.93533</span>    <span class="mf">0.00348063</span>
+<span class="linenos"> 6</span><span class="n">SLList_insert</span>  <span class="n">exponential</span>   <span class="mi">1</span>              <span class="mf">0.990979</span>   <span class="mf">0.00707644</span>
+<span class="linenos"> 7</span><span class="n">SLList_search</span>  <span class="n">constant</span>      <span class="mi">0</span>             <span class="mf">23.7107</span>     <span class="mf">0.0114714</span>
+<span class="linenos"> 8</span><span class="n">SLList_search</span>  <span class="n">logarithmic</span>  <span class="mf">11.6352</span>       <span class="o">-</span><span class="mf">73.8534</span>     <span class="mf">0.728343</span>
+<span class="linenos"> 9</span><span class="n">SLList_search</span>  <span class="n">exponential</span>   <span class="mf">1.00023</span>        <span class="mf">4.6684</span>     <span class="mf">0.839136</span>
+<span class="linenos">10</span><span class="n">SLList_search</span>  <span class="n">power</span>         <span class="mf">0.882763</span>       <span class="mf">0.0110015</span>  <span class="mf">0.970912</span>
+<span class="linenos">11</span><span class="n">SLList_search</span>  <span class="n">linear</span>        <span class="mf">0.00393897</span>     <span class="mf">0.262121</span>   <span class="mf">0.98401</span>
+<span class="linenos">12</span><span class="n">SLList_insert</span>  <span class="n">constant</span>      <span class="mi">0</span>              <span class="mf">0.56445</span>    <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The table above shows list of models for <cite>SLList_insert</cite> and <cite>SLList_search</cite> functions for
+Singly-linked List implementation of test complexity repository sorted by the value of coefficient
+of determination <cite>r_square</cite> (see <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> for more details about
+models and coefficient of determination). For each type of model (e.g. linear) we list the value of
+its coefficients (e.g. for linear function <cite>b1</cite> corresponds to the slope of the function
+and <cite>b0</cite> to interception of the function).</p>
+<p>From the measured data the insert is estimated to be constant and search to be linear.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>uid:function          class
+<span class="linenos"> 2</span>--------------------  -------
+<span class="linenos"> 3</span>dwtint_decode_strip   O(n^2)
+<span class="linenos"> 4</span>dwtint_decode_band    O(n^2)
+<span class="linenos"> 5</span>dwtint_decode_block   O(n^2)
+<span class="linenos"> 6</span>dwtint_encode_band    O(n^2)
+<span class="linenos"> 7</span>dwtint_encode_block   O(n^2)
+<span class="linenos"> 8</span>dwtint_weight_band    O(n^2)
+<span class="linenos"> 9</span>dwtint_encode_strip   O(n^2)
+<span class="linenos">10</span>dwtint_unweight_band  O(n^2)
+</pre></div>
+</div>
+<p>The second table shows list of function with quadratic complexities inferred by
+<a class="reference internal" href="collectors.html#collectors-bounds"><span class="std std-ref">Bounds Collector</span></a> for <cite>dwtint.c</cite> module of the CCSDS codec (will be publically available in
+near future). The rest of the function either could not be inferred (e.g. due to unsupported
+construction, or requiring more elaborate static resource bounds analysis—e.g. due to the missing
+heap analysis) or were linear or constant.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>\<span class="n">begin</span><span class="p">{</span><span class="n">tabular</span><span class="p">}{</span><span class="n">llrr</span><span class="p">}</span>
+<span class="linenos"> 2</span>\<span class="n">hline</span>
+<span class="linenos"> 3</span> <span class="n">uid</span>              <span class="o">&amp;</span> <span class="n">model</span>   <span class="o">&amp;</span>    <span class="n">coeffs</span><span class="p">:</span><span class="n">b1</span> <span class="o">&amp;</span>    <span class="n">r</span>\<span class="n">_square</span> \\
+<span class="linenos"> 4</span>\<span class="n">hline</span>
+<span class="linenos"> 5</span> <span class="n">test</span>\<span class="n">_for</span>\<span class="n">_static</span>  <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">3.36163e-08</span> <span class="o">&amp;</span> <span class="mf">4.46927e-07</span> \\
+<span class="linenos"> 6</span> <span class="n">expand</span>\<span class="n">_tag</span>\<span class="n">_fname</span> <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">7.3574e-08</span>  <span class="o">&amp;</span> <span class="mf">2.32882e-06</span> \\
+<span class="linenos"> 7</span> <span class="n">vim</span>\<span class="n">_strncpy</span>      <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">1.23499e-08</span> <span class="o">&amp;</span> <span class="mf">9.71476e-06</span> \\
+<span class="linenos"> 8</span> <span class="n">vim</span>\<span class="n">_strsave</span>      <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">2.10692e-08</span> <span class="o">&amp;</span> <span class="mf">1.10401e-05</span> \\
+<span class="linenos"> 9</span> <span class="n">vim</span>\<span class="n">_free</span>         <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">1.15839e-08</span> <span class="o">&amp;</span> <span class="mf">0.000216828</span> \\
+<span class="linenos">10</span> <span class="n">parse</span>\<span class="n">_tag</span>\<span class="n">_line</span>   <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">1.04969e-06</span> <span class="o">&amp;</span> <span class="mf">0.004604</span>    \\
+<span class="linenos">11</span> <span class="n">vim</span>\<span class="n">_strchr</span>       <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">8.84782e-08</span> <span class="o">&amp;</span> <span class="mf">0.00629398</span>  \\
+<span class="linenos">12</span> <span class="n">skiptowhite</span>      <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">0.00058116</span>  <span class="o">&amp;</span> <span class="mf">0.00714483</span>  \\
+<span class="linenos">13</span> <span class="n">lalloc</span>           <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">1.19402e-07</span> <span class="o">&amp;</span> <span class="mf">0.0101609</span>   \\
+<span class="linenos">14</span> <span class="n">alloc</span>            <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">1.83755e-07</span> <span class="o">&amp;</span> <span class="mf">0.0136817</span>   \\
+<span class="linenos">15</span> <span class="n">ga</span>\<span class="n">_grow</span>          <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">3.86559e-06</span> <span class="o">&amp;</span> <span class="mf">0.0160297</span>   \\
+<span class="linenos">16</span> <span class="n">vim</span>\<span class="n">_regexec</span>      <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">2.398e-06</span>   <span class="o">&amp;</span> <span class="mf">0.0161956</span>   \\
+<span class="linenos">17</span> <span class="n">ga</span>\<span class="n">_clear</span>         <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">0.535088</span>    <span class="o">&amp;</span> <span class="mf">0.0187932</span>   \\
+<span class="linenos">18</span> <span class="n">vim</span>\<span class="n">_strnsave</span>     <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span> <span class="o">-</span><span class="mf">0.000529842</span> <span class="o">&amp;</span> <span class="mf">0.0210357</span>   \\
+<span class="linenos">19</span> <span class="n">ga</span>\<span class="n">_init2</span>         <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">0.00913043</span>  <span class="o">&amp;</span> <span class="mf">0.0365217</span>   \\
+<span class="linenos">20</span> <span class="n">test</span>\<span class="n">_for</span>\<span class="n">_current</span> <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">1.00515e-05</span> <span class="o">&amp;</span> <span class="mf">0.126627</span>    \\
+<span class="linenos">21</span> <span class="n">skipwhite</span>        <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">4.98823e-06</span> <span class="o">&amp;</span> <span class="mf">0.192099</span>    \\
+<span class="linenos">22</span> <span class="n">vim</span>\<span class="n">_isblankline</span>  <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mf">8.68793e-06</span> <span class="o">&amp;</span> <span class="mf">0.195017</span>    \\
+<span class="linenos">23</span> <span class="n">vim</span>\<span class="n">_regfree</span>      <span class="o">&amp;</span> <span class="n">linear</span>  <span class="o">&amp;</span>  <span class="mi">5</span>           <span class="o">&amp;</span> <span class="mf">0.75</span>        \\
+<span class="linenos">24</span>\<span class="n">hline</span>
+<span class="linenos">25</span>\<span class="n">end</span><span class="p">{</span><span class="n">tabular</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The last example, shows list of estimated linear functions for <cite>vim</cite> <em>v7.4.2293</em> sorted by
+coefficient of determination <cite>r_square</cite>. The output uses different format (<cite>latex</cite>).</p>
+</section>
+</section>
+</section>
+<section id="creating-your-own-visualization">
+<span id="views-custom"></span><h2>Creating your own Visualization<a class="headerlink" href="#creating-your-own-visualization" title="Link to this heading">¶</a></h2>
 <p>New interpretation modules can be registered within Perun in several steps. The visualization
 methods has the least requirements and only needs to work over the profiles w.r.t.
 <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> and implement method for <a class="reference external" href="http://click.pocoo.org/5/">Click</a> api in order to be used from command line.</p>
 <p>You can register your new visualization as follows:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">view</span> <span class="pre">myview</span></code> to generate a new modules in
-<code class="docutils literal"><span class="pre">perun/view</span></code> directory with the following structure. The command takes a predefined
-templates for new visualization techniques and creates <code class="docutils literal"><span class="pre">__init__.py</span></code> and <code class="docutils literal"><span class="pre">run.py</span></code>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">view</span> <span class="pre">myview</span></code> to generate a new modules in
+<code class="docutils literal notranslate"><span class="pre">perun/view</span></code> directory with the following structure. The command takes a predefined
+templates for new visualization techniques and creates <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> and <code class="docutils literal notranslate"><span class="pre">run.py</span></code>
 according to the supplied command line arguments (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more
-information about interface of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
+information about interface of <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
 <span class="o">|--</span> <span class="o">/</span><span class="n">view</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">myview</span>
         <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
@@ -678,71 +802,51 @@ information about interface of <code class="docutils literal"><span class="pre">
     <span class="o">|--</span> <span class="o">/</span><span class="n">bars</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">flamegraph</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">flow</span>
-    <span class="o">|--</span> <span class="o">/</span><span class="n">heapmap</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">scatter</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">First, implement the <code class="docutils literal"><span class="pre">__init__.py</span></code> file, including the module docstring with brief
+<li><p>First, implement the <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file, including the module docstring with brief
 description of the visualization technique and definition of constants which has the
-following structure:</p>
-</li>
+following structure:</p></li>
 </ol>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
-
-<span class="n">SUPPORTED_PROFILES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mixed|memory|mixed&#39;</span><span class="p">]</span>
-
-<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;You!&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">SUPPORTED_PROFILES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mixed|memory|mixed&quot;</span><span class="p">]</span>
 </pre></div>
-</td></tr></table></div>
+</div>
 <ol class="arabic simple" start="3">
-<li>Next, in the <code class="docutils literal"><span class="pre">run.py</span></code> implement module with the command line interface function, named the
+<li><p>Next, in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> implement module with the command line interface function, named the
 same as your visualization technique. This function is called from the command line as
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">``perun</span> <span class="pre">show</span> <span class="pre">myview</span></code> and is based on <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library.</li>
-<li>Finally register your newly created module in <code class="xref py py-func docutils literal"><span class="pre">get_supported_module_names()</span></code> located in
-<code class="docutils literal"><span class="pre">perun.utils.__init__.py</span></code>:</li>
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">``perun</span> <span class="pre">show</span> <span class="pre">myview</span></code> and is based on <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library.</p></li>
+<li><p>Finally register your newly created module in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code> located in
+<code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
 </ol>
-<div class="highlight-udiff"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names_views.py</span>
-<span class="gu">@@ -8,5 +8,6 @@</span>
-         &#39;vcs&#39;: [&#39;git&#39;],
-         &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],
-         &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression-analysis&#39;],
-<span class="gd">-        &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]</span>
-<span class="gi">+        &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;,</span>
-<span class="gi">+                 &#39;myview&#39;]</span>
-     }[package]
+<div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
+<span class="linenos">2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_views.py</span>
+<span class="linenos">3</span><span class="gu">@@ -16,5 +16,6 @@</span>
+<span class="linenos">4</span><span class="w"> </span>            &quot;heapmap&quot;,
+<span class="linenos">5</span><span class="w"> </span>            &quot;raw&quot;,
+<span class="linenos">6</span><span class="w"> </span>            &quot;scatter&quot;,
+<span class="linenos">7</span><span class="gi">+            &quot;myview&quot;,</span>
+<span class="linenos">8</span><span class="w"> </span>        ],
+<span class="linenos">9</span><span class="w"> </span>    }[package]
 </pre></div>
-</td></tr></table></div>
+</div>
 <ol class="arabic" start="5">
-<li><p class="first">Preferably, verify that registering did not break anything in the Perun and if you are not
+<li><p>Preferably, verify that registering did not break anything in the Perun and if you are not
 using the developer installation, then reinstall Perun:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 <span class="n">make</span> <span class="n">install</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">At this point you can start using your visualization either using <code class="docutils literal"><span class="pre">perun</span> <span class="pre">show</span></code>.</p>
-</li>
-<li><p class="first">If you think your collector could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p>
-</li>
+<li><p>At this point you can start using your visualization either using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span></code>.</p></li>
+<li><p>If you think your collector could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p></li>
 </ol>
 </div></blockquote>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -755,8 +859,9 @@ using the developer installation, then reinstall Perun:</p>
     <h3>Perun</h3>
   </a>
 </p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Visualizations Overview</a><ul>
 <li><a class="reference internal" href="#supported-visualizations">Supported Visualizations</a><ul>
 <li><a class="reference internal" href="#module-perun.view.bars">Bars Plot</a><ul>
@@ -783,20 +888,22 @@ using the developer installation, then reinstall Perun:</p>
 <li><a class="reference internal" href="#views-flow-examples">Examples of Output</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.view.heapmap">Heap Map</a><ul>
-<li><a class="reference internal" href="#id13">Overview and Command Line Interface</a><ul>
-<li><a class="reference internal" href="#perun-show-heapmap">perun show heapmap</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#views-heapmap-examples">Examples of Output</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#module-perun.view.scatter">Scatter Plot</a><ul>
-<li><a class="reference internal" href="#id16">Overview and Command Line Interface</a><ul>
+<li><a class="reference internal" href="#id14">Overview and Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-show-scatter">perun show scatter</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#views-scatter-examples">Examples of Output</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-perun.view.tableof">Table Of</a><ul>
+<li><a class="reference internal" href="#id17">Overview and Command Line Interface</a><ul>
+<li><a class="reference internal" href="#perun-show-tableof">perun show tableof</a></li>
+<li><a class="reference internal" href="#perun-show-tableof-resources">perun show tableof resources</a></li>
+<li><a class="reference internal" href="#perun-show-tableof-models">perun show tableof models</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#views-tableof-examples">Examples of Output</a></li>
 </ul>
 </li>
 </ul>
@@ -805,7 +912,8 @@ using the developer installation, then reinstall Perun:</p>
 </ul>
 </li>
 </ul>
-<div class="relations">
+
+  </div><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -822,15 +930,15 @@ using the developer installation, then reinstall Perun:</p>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -839,8 +947,8 @@ using the developer installation, then reinstall Perun:</p>
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/views.rst.txt"

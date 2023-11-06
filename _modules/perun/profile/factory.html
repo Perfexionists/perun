@@ -1,27 +1,15 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="../../../">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.profile.factory &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profile.factory &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../_static/documentation_options.js?v=6081af2d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -30,8 +18,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -42,515 +29,461 @@
           <div class="body" role="main">
             
   <h1>Source code for perun.profile.factory</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;``perun.profile.factory`` specifies collective interface for basic</span>
-<span class="sd">manipulation with profiles.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Profile factory optimizes the previous profile format</span>
 
-<span class="sd">The format of profiles is w.r.t. :ref:`profile-spec`. This module contains</span>
-<span class="sd">helper functions for loading and storing of the profiles either in the</span>
-<span class="sd">persistent memory or in filesystem (in this case, the profile is in</span>
-<span class="sd">uncompressed format).</span>
-
-<span class="sd">.. _Python JSON library: https://docs.python.org/3.7/library/json.html</span>
-
-<span class="sd">For further manipulations refer either to :ref:`profile-conversion-api`</span>
-<span class="sd">(implemented in ``perun.profile.convert`` module) or :ref:`profile-query-api`</span>
-<span class="sd">(implemented in ``perun.profile.query module``). For full specification how to</span>
-<span class="sd">handle the JSON objects in Python refer to `Python JSON library`_.</span>
+<span class="sd">In particular, in the new format we propose to merge some regions into</span>
+<span class="sd">so called resource types, which are dictionaries of persistent less</span>
+<span class="sd">frequently changed aspects of resources. Moreover, we optimize other</span>
+<span class="sd">regions and flatten the format.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
 <span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">click</span>
 
-<span class="kn">import</span> <span class="nn">perun.logic.pcs</span> <span class="k">as</span> <span class="nn">pcs</span>
-<span class="kn">import</span> <span class="nn">perun.logic.config</span> <span class="k">as</span> <span class="nn">config</span>
-<span class="kn">import</span> <span class="nn">perun.logic.store</span> <span class="k">as</span> <span class="nn">store</span>
-<span class="kn">import</span> <span class="nn">perun.logic.index</span> <span class="k">as</span> <span class="nn">index</span>
-<span class="kn">import</span> <span class="nn">perun.vcs</span> <span class="k">as</span> <span class="nn">vcs</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">perun.utils.structs</span> <span class="kn">import</span> <span class="n">ModelRecord</span>
+
+<span class="kn">import</span> <span class="nn">perun.profile.convert</span> <span class="k">as</span> <span class="nn">convert</span>
 <span class="kn">import</span> <span class="nn">perun.profile.query</span> <span class="k">as</span> <span class="nn">query</span>
-<span class="kn">import</span> <span class="nn">perun.utils.log</span> <span class="k">as</span> <span class="nn">perun_log</span>
+<span class="kn">import</span> <span class="nn">perun.logic.config</span> <span class="k">as</span> <span class="nn">config</span>
+<span class="kn">import</span> <span class="nn">perun.utils.log</span> <span class="k">as</span> <span class="nn">log</span>
 
-<span class="kn">from</span> <span class="nn">perun.utils</span> <span class="k">import</span> <span class="n">get_module</span>
-<span class="kn">from</span> <span class="nn">perun.utils.exceptions</span> <span class="k">import</span> <span class="n">InvalidParameterException</span><span class="p">,</span> <span class="n">MissingConfigSectionException</span><span class="p">,</span> \
-                                   <span class="n">TagOutOfRangeException</span>
-<span class="kn">from</span> <span class="nn">perun.utils.helpers</span> <span class="k">import</span> <span class="n">Job</span>
-<span class="kn">from</span> <span class="nn">perun.utils.structs</span> <span class="k">import</span> <span class="n">Unit</span>
-
-<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
+<span class="kn">from</span> <span class="nn">perun.check.general_detection</span> <span class="kn">import</span> <span class="n">get_filtered_best_models_of</span>
+<span class="kn">from</span> <span class="nn">perun.postprocess.regression_analysis.regression_models</span> <span class="kn">import</span> <span class="n">get_supported_models</span>
+<span class="kn">from</span> <span class="nn">perun.postprocess.regressogram.methods</span> <span class="kn">import</span> <span class="n">get_supported_nparam_methods</span>
 
 
-<span class="n">PROFILE_COUNTER</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">DEFAULT_SORT_KEY</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span>
-
-
-<span class="k">def</span> <span class="nf">lookup_value</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">missing</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Helper function for getting the key from the container. If it is not present in the container</span>
-<span class="sd">    or it is empty string or empty object, the function should return the missing constant.</span>
-
-<span class="sd">    :param dict container: dictionary container</span>
-<span class="sd">    :param str key: string representation of the key</span>
-<span class="sd">    :param str missing: string constant that is returned if key is not present in container,</span>
-<span class="sd">        or is set to empty string or None.</span>
-<span class="sd">    :return:</span>
+<div class="viewcode-block" id="Profile">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile">[docs]</a>
+<span class="k">class</span> <span class="nc">Profile</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :ivar dict _storage: internal storage of the profile</span>
+<span class="sd">    :ivar dict _tuple_to_resource_type_map: map of tuple of persistent records of resources to</span>
+<span class="sd">        unique identifier of those resources</span>
+<span class="sd">    :ivar Counter _uid_counter: counter of how many resources type uid has</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">missing</span><span class="p">))</span> <span class="ow">or</span> <span class="n">missing</span>
 
-
-<span class="k">def</span> <span class="nf">sanitize_filepart</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Helper function for sanitization of part of the filenames</span>
-
-<span class="sd">    :param part: part of the filename, that needs to be sanitized, i.e. we are removing invalid</span>
-<span class="sd">        characters</span>
-<span class="sd">    :return: sanitized string representation of the part</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">invalid_characters</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;# %&amp;</span><span class="si">{}</span><span class="s2">\&lt;&gt;*?/ $!&#39;</span><span class="se">\&quot;</span><span class="s2">:@&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;_&#39;</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">invalid_characters</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">))</span>
-
-
-<span class="k">def</span> <span class="nf">lookup_param</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Helper function for looking up the unit in the profile (can be either collector or</span>
-<span class="sd">    postprocessor and finds the value of the param in it</span>
-
-<span class="sd">    :param dict profile: dictionary with profile information w.r.t profile specification</span>
-<span class="sd">    :param str unit: unit in which the parameter is located</span>
-<span class="sd">    :param str param: parameter we will use in the resulting profile</span>
-<span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">unit_param_map</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">post</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="n">post</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">post</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">collectable</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;amount&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call-order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;address&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;timestamp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;exclusive&quot;</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">used_collector</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;collector_info&#39;</span><span class="p">]</span>
-    <span class="n">unit_param_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-        <span class="n">used_collector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">):</span> <span class="n">used_collector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;params&#39;</span><span class="p">,</span> <span class="p">{})</span>
-    <span class="p">})</span>
+    <span class="n">persistent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;subtype&quot;</span><span class="p">,</span> <span class="s2">&quot;uid&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">}</span>
 
-    <span class="c1"># Lookup the unit params</span>
-    <span class="n">unit_params</span> <span class="o">=</span> <span class="n">unit_param_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">unit_params</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">sanitize_filepart</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_key_values_of</span><span class="p">(</span><span class="n">unit_params</span><span class="p">,</span> <span class="n">param</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="s2">&quot;_&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;_&quot;</span>
+    <span class="n">independent</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;snapshot&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call-order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;address&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;timestamp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;exclusive&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">dependent</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]</span>
 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the internal storage</span>
 
-<span class="k">def</span> <span class="nf">generate_profile_name</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Constructs the profile name with the extension .perf from the job.</span>
-
-<span class="sd">    The profile is identified by its binary, collector, workload and the time</span>
-<span class="sd">    it was run.</span>
-
-<span class="sd">    Valid tags:</span>
-<span class="sd">        `%collector%`:</span>
-<span class="sd">            Name of the collector</span>
-<span class="sd">        `%postprocessors%`:</span>
-<span class="sd">            Joined list of postprocessing phases</span>
-<span class="sd">        `%&lt;unit&gt;.&lt;param&gt;%`:</span>
-<span class="sd">            Parameter of the collector given by concrete name</span>
-<span class="sd">        `%cmd%`:</span>
-<span class="sd">            Command of the job</span>
-<span class="sd">        `%args%`:</span>
-<span class="sd">            Arguments of the job</span>
-<span class="sd">        `%workload%`:</span>
-<span class="sd">            Workload of the job</span>
-<span class="sd">        `%type%`:</span>
-<span class="sd">            Type of the generated profile</span>
-<span class="sd">        `%date%`:</span>
-<span class="sd">            Current date</span>
-<span class="sd">        `%origin%`:</span>
-<span class="sd">            Origin of the profile</span>
-<span class="sd">        `%counter%`:</span>
-<span class="sd">            Increasing argument</span>
-
-<span class="sd">    :param dict profile: generate the corresponding profile for given name</span>
-<span class="sd">    :returns str: string for the given profile that will be stored</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">PROFILE_COUNTER</span>
-    <span class="n">fmt_parser</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">Scanner</span><span class="p">([</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;collector_info&#39;</span><span class="p">],</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;%postprocessors%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="p">(</span><span class="s2">&quot;after-&quot;</span> <span class="o">+</span> <span class="s2">&quot;-and-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">])))</span>
-                <span class="k">if</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;_&#39;</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;%[^.]+\.[^%]+%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="n">lookup_param</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">*</span><span class="n">token</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">md%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">],</span> <span class="s1">&#39;cmd&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%a</span><span class="s2">rgs%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="n">sanitize_filepart</span><span class="p">(</span><span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">],</span> <span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;%workload%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span>
-            <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="n">sanitize_filepart</span><span class="p">(</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">],</span> <span class="s1">&#39;workload&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
-        <span class="p">),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;%type%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">],</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">ate%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">())),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%o</span><span class="s2">rigin%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">lookup_value</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ounter%&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">PROFILE_COUNTER</span><span class="p">)),</span>
-        <span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">token</span><span class="p">),</span>
-        <span class="p">(</span><span class="s1">&#39;[^%]+&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">scanner</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">token</span><span class="p">)</span>
-    <span class="p">])</span>
-    <span class="n">PROFILE_COUNTER</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="c1"># Obtain the formatting template from the configuration</span>
-    <span class="n">template</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">lookup_key_recursively</span><span class="p">(</span><span class="s1">&#39;format.output_profile_template&#39;</span><span class="p">)</span>
-    <span class="n">tokens</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">fmt_parser</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rest</span><span class="p">:</span>
-        <span class="n">perun_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;formatting string &#39;</span><span class="si">{}</span><span class="s2">&#39; could not be parsed</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">template</span><span class="p">)</span> <span class="o">+</span>
-                        <span class="s2">&quot;Run perun config to modify the formatting pattern. &quot;</span>
-                        <span class="s2">&quot;Refer to documentation for more information about formatting patterns&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.perf&quot;</span>
-
-
-<span class="k">def</span> <span class="nf">load_list_for_minor_version</span><span class="p">(</span><span class="n">minor_version</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns profiles assigned to the given minor version.</span>
-
-<span class="sd">    :param str minor_version: identification of the commit (preferably sha1)</span>
-<span class="sd">    :returns list: list of ProfileInfo parsed from index of the given minor_version</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Compute the</span>
-    <span class="n">profiles</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get_profile_list_for_minor</span><span class="p">(</span><span class="n">pcs</span><span class="o">.</span><span class="n">get_object_directory</span><span class="p">(),</span> <span class="n">minor_version</span><span class="p">)</span>
-    <span class="n">profile_info_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">index_entry</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">:</span>
-        <span class="n">inside_info</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                <span class="s1">&#39;cmd&#39;</span><span class="p">:</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span>
-                <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
-                <span class="s1">&#39;workload&#39;</span><span class="p">:</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">workload</span>
-            <span class="p">},</span>
-            <span class="s1">&#39;collector_info&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">collector</span><span class="p">},</span>
-            <span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="p">}</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">postprocessors</span>
-            <span class="p">]</span>
+<span class="sd">        :param list args: positional arguments for dictionary</span>
+<span class="sd">        :param kwargs kwargs: keyword arguments for dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">initialization_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">global_data</span> <span class="o">=</span> <span class="n">initialization_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;global&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;models&quot;</span><span class="p">:</span> <span class="p">[]})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;resources&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;resource_type_map&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;models&quot;</span><span class="p">:</span> <span class="n">global_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;models&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">global_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
         <span class="p">}</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">profile_name</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">split_object_name</span><span class="p">(</span><span class="n">pcs</span><span class="o">.</span><span class="n">get_object_directory</span><span class="p">(),</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">checksum</span><span class="p">)</span>
-        <span class="n">profile_info</span> \
-            <span class="o">=</span> <span class="n">ProfileInfo</span><span class="p">(</span><span class="n">index_entry</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">profile_name</span><span class="p">,</span> <span class="n">index_entry</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">inside_info</span><span class="p">)</span>
-        <span class="n">profile_info_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">profile_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tuple_to_resource_type_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type_to_flattened_resources_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uid_counter</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">profile_info_list</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">initialization_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;resources&quot;</span><span class="p">,</span> <span class="s2">&quot;snapshots&quot;</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_resources</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">runtime</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;context.profiles&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">update_resources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">resource_list</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+        <span class="n">clear_existing_resources</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Given by @p resource_type updates the storage with new flattened resources</span>
 
-<span class="nd">@vcs</span><span class="o">.</span><span class="n">lookup_minor_version</span>
-<span class="k">def</span> <span class="nf">get_nth_profile_of</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">minor_version</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the profile at nth position in the index</span>
+<span class="sd">        This calls appropriate functions to translate older formats of resources to the</span>
+<span class="sd">        new more efficient representation.</span>
 
-<span class="sd">    :param int position: position of the profile we are obtaining</span>
-<span class="sd">    :param str minor_version: looked up minor version for the wrapped vcs</span>
-
-<span class="sd">    :return str: path of the profile at nth position in the index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">registered_profiles</span> <span class="o">=</span> <span class="n">load_list_for_minor_version</span><span class="p">(</span><span class="n">minor_version</span><span class="p">)</span>
-    <span class="n">sort_profiles</span><span class="p">(</span><span class="n">registered_profiles</span><span class="p">)</span>
-    <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">registered_profiles</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">registered_profiles</span><span class="p">[</span><span class="n">position</span><span class="p">]</span><span class="o">.</span><span class="n">realpath</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">TagOutOfRangeException</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">registered_profiles</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-
-
-<span class="nd">@vcs</span><span class="o">.</span><span class="n">lookup_minor_version</span>
-<span class="k">def</span> <span class="nf">find_profile_entry</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">minor_version</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Finds the profile entry within the index file of the minor version.</span>
-
-<span class="sd">    :param str profile: the profile identification, can be given as tag, sha value,</span>
-<span class="sd">                        sha-path (path to tracked profile in obj) or source-name</span>
-<span class="sd">    :param str minor_version: the minor version representation or None for HEAD</span>
-
-<span class="sd">    :return IndexEntry: the profile entry from the index file</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">minor_index</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">find_minor_index</span><span class="p">(</span><span class="n">minor_version</span><span class="p">)</span>
-
-    <span class="c1"># If profile is given as tag, obtain the sha-path of the file</span>
-    <span class="n">tag_match</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">INDEX_TAG_REGEX</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">tag_match</span><span class="p">:</span>
-        <span class="n">profile</span> <span class="o">=</span> <span class="n">get_nth_profile_of</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">tag_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="n">minor_version</span><span class="p">)</span>
-    <span class="c1"># Transform the sha-path (obtained or given) to the sha value</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">store</span><span class="o">.</span><span class="n">is_sha1</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">profile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.perf&#39;</span><span class="p">):</span>
-        <span class="n">profile</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">version_path_to_sha</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
-
-    <span class="c1"># Search the minor index for the requested profile</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">minor_index</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_handle</span><span class="p">:</span>
-        <span class="c1"># The profile can be only sha value or source path now</span>
-        <span class="k">if</span> <span class="n">store</span><span class="o">.</span><span class="n">is_sha1</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">lookup_entry_within_index</span><span class="p">(</span><span class="n">index_handle</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">checksum</span> <span class="o">==</span> <span class="n">profile</span><span class="p">,</span>
-                                                   <span class="n">profile</span><span class="p">)</span>
+<span class="sd">        :param list resource_list: either list or dict</span>
+<span class="sd">        :param str resource_type: type of the resources in the resources list,</span>
+<span class="sd">            can either be snapshots (then it is list of different snapshots), global</span>
+<span class="sd">            then it is old type of profile) or it can be resource l</span>
+<span class="sd">        :param bool clear_existing_resources: if set to true then the actual storage will be cleared</span>
+<span class="sd">            before updating the resources</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">clear_existing_resources</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource_list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">resource_list</span><span class="p">:</span>
+            <span class="c1"># Resources are in type of {&#39;time&#39;: _, &#39;resources&#39;: []}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_translate_resources</span><span class="p">(</span>
+                <span class="n">resource_list</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">resource_list</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">)}</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">resource_type</span> <span class="o">==</span> <span class="s2">&quot;snapshots&quot;</span><span class="p">:</span>
+            <span class="c1"># Resources are in type of [{&#39;time&#39;: _, &#39;resources&#39;: []}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">resource_list</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_translate_resources</span><span class="p">(</span>
+                    <span class="n">snapshot</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">],</span>
+                    <span class="p">{</span><span class="s2">&quot;snapshot&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">)},</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource_list</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Profile</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resource_list</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">lookup_entry_within_index</span><span class="p">(</span><span class="n">index_handle</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="n">profile</span><span class="p">,</span>
-                                                   <span class="n">profile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_translate_resources</span><span class="p">(</span><span class="n">resource_list</span><span class="p">,</span> <span class="p">{})</span>
 
+    <span class="k">def</span> <span class="nf">_translate_resources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">resource_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">additional_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Translate the list of resources to efficient format</span>
 
-<span class="k">def</span> <span class="nf">generate_units</span><span class="p">(</span><span class="n">collector</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generate information about units used by the collector.</span>
+<span class="sd">        Given a list of resources, this is all flattened into a new format: a dictionary that</span>
+<span class="sd">        maps unique resource identifiers (set of persistent properties) to list of collectable</span>
+<span class="sd">        properties (such as amounts, addresses, etc.)</span>
 
-<span class="sd">    Note that this is mostly placeholder for future extension, how the units will be handled.</span>
-
-<span class="sd">    :param module collector: collector module that collected the data</span>
-<span class="sd">    :returns dict: dictionary with map of resources to units</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">collector</span><span class="o">.</span><span class="n">COLLECTOR_DEFAULT_UNITS</span>
-
-
-<span class="k">def</span> <span class="nf">generate_header_for_profile</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param Job job: job with information about the computed profile</span>
-<span class="sd">    :returns dict: dictionary in form of {&#39;header&#39;: {}} corresponding to the perun specification</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">collector</span> <span class="o">=</span> <span class="n">get_module</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;perun.collect&#39;</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">name</span><span class="p">]))</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="n">perun_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;could not find the package for collector </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">collector</span><span class="o">.</span><span class="n">COLLECTOR_TYPE</span><span class="p">,</span>
-        <span class="s1">&#39;cmd&#39;</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span>
-        <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
-        <span class="s1">&#39;workload&#39;</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">workload</span><span class="p">,</span>
-        <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">generate_units</span><span class="p">(</span><span class="n">collector</span><span class="p">)</span>
-    <span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">generate_collector_info</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param Job job: job with information about the computed profile</span>
-<span class="sd">    :returns dict: dictionary in form of {&#39;collector_info&#39;: {}} corresponding to the perun</span>
-<span class="sd">        specification</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">params</span>
-    <span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">generate_postprocessor_info</span><span class="p">(</span><span class="n">job</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param Job job: job with information about the computed profile</span>
-<span class="sd">    :returns dict: dictionary in form of {&#39;postprocess_info&#39;: []} corresponding to the perun spec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">params</span>
-        <span class="p">}</span> <span class="k">for</span> <span class="n">postprocessor</span> <span class="ow">in</span> <span class="n">job</span><span class="o">.</span><span class="n">postprocessors</span>
-    <span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">finalize_profile_for_job</span><span class="p">(</span><span class="n">collected_data</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param dict collected_data: collected profile through some collector</span>
-<span class="sd">    :param Job job: job with informations about the computed profile</span>
-<span class="sd">    :returns dict: valid profile JSON file</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">profile</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="n">vcs</span><span class="o">.</span><span class="n">get_minor_head</span><span class="p">()}</span>
-    <span class="n">profile</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">collected_data</span><span class="p">)</span>
-    <span class="n">profile</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="n">generate_header_for_profile</span><span class="p">(</span><span class="n">job</span><span class="p">)})</span>
-    <span class="n">profile</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;collector_info&#39;</span><span class="p">:</span> <span class="n">generate_collector_info</span><span class="p">(</span><span class="n">job</span><span class="p">)})</span>
-    <span class="n">profile</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">:</span> <span class="n">generate_postprocessor_info</span><span class="p">(</span><span class="n">job</span><span class="p">)})</span>
-    <span class="k">return</span> <span class="n">profile</span>
-
-
-<div class="viewcode-block" id="store_profile_at"><a class="viewcode-back" href="../../../profile.html#perun.profile.factory.store_profile_at">[docs]</a><span class="k">def</span> <span class="nf">store_profile_at</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Stores profile w.r.t. :ref:`profile-spec` to output file.</span>
-
-<span class="sd">    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
-<span class="sd">    :param str file_path: output path, where the `profile` will be stored</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">profile_handle</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">profile_handle</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
-
-
-<span class="k">def</span> <span class="nf">to_string</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts profile from dictionary to string</span>
-
-<span class="sd">    :param dict profile: profile we are converting to string</span>
-<span class="sd">    :returns str: string representation of profile</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">to_config_tuple</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts the profile to the tuple representing its configuration</span>
-
-<span class="sd">    :param dict profile: profile we are converting to configuration tuple</span>
-<span class="sd">    :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">profile_header</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">]</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;collector_info&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
-        <span class="n">profile_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cmd&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-        <span class="n">profile_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-        <span class="n">profile_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workload&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-        <span class="p">[</span><span class="n">postprocessor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">postprocessor</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">]]</span>
-    <span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">config_tuple_to_cmdstr</span><span class="p">(</span><span class="n">config_tuple</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts tuple to command string</span>
-
-<span class="sd">    :param tuple config_tuple: tuple of (collector, cmd, args, workload, postprocessors)</span>
-<span class="sd">    :return: string representing the executed command</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">config_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]))</span>
-
-
-<span class="k">def</span> <span class="nf">extract_job_from_profile</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Extracts information from profile about job, that was done to generate the profile.</span>
-
-<span class="sd">    Fixme: Add assert that profile is profile</span>
-
-<span class="sd">    :param dict profile: dictionary with valid profile</span>
-<span class="sd">    :returns Job: job according to the profile informations</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">collector_record</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;collector_info&#39;</span><span class="p">]</span>
-    <span class="n">collector</span> <span class="o">=</span> <span class="n">Unit</span><span class="p">(</span><span class="n">collector_record</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">collector_record</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
-
-    <span class="n">posts</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">postprocessor</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">]:</span>
-        <span class="n">posts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Unit</span><span class="p">(</span><span class="n">postprocessor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">postprocessor</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]))</span>
-
-    <span class="n">cmd</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;cmd&#39;</span><span class="p">]</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
-    <span class="n">workload</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;workload&#39;</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">Job</span><span class="p">(</span><span class="n">collector</span><span class="p">,</span> <span class="n">posts</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">workload</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">is_key_aggregatable_by</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">keyname</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Check if the key can be aggregated by the function.</span>
-
-<span class="sd">    Everything is countable and hence &#39;count&#39; and &#39;nunique&#39; (number of unique values) are</span>
-<span class="sd">    valid aggregation functions for everything. Otherwise (e.g. sum, mean), we need numerical</span>
-<span class="sd">    values.</span>
-
-<span class="sd">    :param dict profile: profile that will be used against in the validation</span>
-<span class="sd">    :param function func: function used for aggregation of the data</span>
-<span class="sd">    :param str key: key that will be aggregated in the graph</span>
-<span class="sd">    :param str keyname: name of the validated key</span>
-<span class="sd">    :returns bool: true if the key is aggregatable by the function</span>
-<span class="sd">    :raises InvalidParameterException: if the of_key does not support the given function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Everything is countable ;)</span>
-    <span class="k">if</span> <span class="n">func</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;nunique&#39;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="c1"># Get all valid numeric keys and validate</span>
-    <span class="n">valid_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_numerical_resource_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_keys</span><span class="p">:</span>
-        <span class="n">choices</span> <span class="o">=</span> <span class="s2">&quot;(choose either count/nunique as aggregation function;&quot;</span>
-        <span class="n">choices</span> <span class="o">+=</span> <span class="s2">&quot; or from the following keys: </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">valid_keys</span><span class="p">))</span>
-        <span class="p">)</span>
-        <span class="k">raise</span> <span class="n">InvalidParameterException</span><span class="p">(</span><span class="n">keyname</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">choices</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kc">True</span>
-
-
-<span class="k">def</span> <span class="nf">sort_profiles</span><span class="p">(</span><span class="n">profile_list</span><span class="p">,</span> <span class="n">reverse_profiles</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Sorts the profiles according to the key set in either configuration.</span>
-
-<span class="sd">    The key can either be specified in temporary configuration, or in any of the local or global</span>
-<span class="sd">    configs as the key :ckey:`format.sort_profiles_by` attributes. Be default, profiles are sorted</span>
-<span class="sd">    by time. In case of any errors (invalid sort key or missing key) the profiles will be sorted by</span>
-<span class="sd">    default key as well.</span>
-
-<span class="sd">    :param list profile_list: list of ProfileInfo object</span>
-<span class="sd">    :param true reverse_profiles: true if the order of the sorting should be reversed</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">sort_order</span> <span class="o">=</span> <span class="n">DEFAULT_SORT_KEY</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">sort_order</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">lookup_key_recursively</span><span class="p">(</span><span class="s1">&#39;format.sort_profiles_by&#39;</span><span class="p">)</span>
-        <span class="c1"># If the stored key is invalid, we use the default time as well</span>
-        <span class="k">if</span> <span class="n">sort_order</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ProfileInfo</span><span class="o">.</span><span class="n">valid_attributes</span><span class="p">:</span>
-            <span class="n">perun_log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;invalid sort key &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sort_order</span><span class="p">)</span> <span class="o">+</span>
-                           <span class="s2">&quot; Profiles will be sorted by &#39;</span><span class="si">{}</span><span class="s2">&#39;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sort_order</span><span class="p">)</span> <span class="o">+</span>
-                           <span class="s2">&quot;Please set sort key in config or cli to one&quot;</span>
-                           <span class="s2">&quot; of (</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ProfileInfo</span><span class="o">.</span><span class="n">valid_attributes</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
-            <span class="n">sort_order</span> <span class="o">=</span> <span class="n">DEFAULT_SORT_KEY</span>
-    <span class="k">except</span> <span class="n">MissingConfigSectionException</span><span class="p">:</span>
-        <span class="n">perun_log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;missing set option &#39;format.sort_profiles_by&#39;!&quot;</span>
-                       <span class="s2">&quot; Profiles will be sorted by &#39;</span><span class="si">{}</span><span class="s2">&#39;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sort_order</span><span class="p">)</span> <span class="o">+</span>
-                       <span class="s2">&quot;Please run &#39;perun config edit&#39; and set &#39;format.sort_profiles_by&#39; to one&quot;</span>
-                       <span class="s2">&quot; of (</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ProfileInfo</span><span class="o">.</span><span class="n">valid_attributes</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
-
-    <span class="n">profile_list</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">attrgetter</span><span class="p">(</span><span class="n">sort_order</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse_profiles</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">merge_resources_of</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Merges the resources of lhs and rhs profiles</span>
-
-<span class="sd">    :param dict lhs: left operator of the profile merge</span>
-<span class="sd">    :param dict rhs: right operator of the profile merge</span>
-<span class="sd">    :return: profile with merged resources</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Return lhs/rhs if rhs/lhs is empty</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">rhs</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">lhs</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">lhs</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">rhs</span>
-
-    <span class="c1"># Note that we assume  that lhs and rhs are the same type ;)</span>
-    <span class="k">if</span> <span class="s1">&#39;global&#39;</span> <span class="ow">in</span> <span class="n">lhs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">lhs</span><span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">]:</span>
-        <span class="n">lhs</span><span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">][</span><span class="s1">&#39;resources&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">][</span><span class="s1">&#39;resources&#39;</span><span class="p">])</span>
-        <span class="n">lhs</span><span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">][</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;global&#39;</span><span class="p">][</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="s1">&#39;snapshots&#39;</span> <span class="ow">in</span> <span class="n">lhs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="n">lhs</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">lhs</span>
-
-
-<span class="k">class</span> <span class="nc">ProfileInfo</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Structure for storing information about profiles.</span>
-
-<span class="sd">    This is mainly used for formatted output of the profile list using</span>
-<span class="sd">    the command line interface</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">real_path</span><span class="p">,</span> <span class="n">mtime</span><span class="p">,</span> <span class="n">profile_info</span><span class="p">,</span> <span class="n">is_raw_profile</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str path: contains the name of the file, which identifies it in the index</span>
-<span class="sd">        :param str real_path: real path to the profile, i.e. how can it really be accessed</span>
-<span class="sd">            this is either in jobs, in objects or somewhere else</span>
-<span class="sd">        :param str mtime: time of the modification of the profile</span>
-<span class="sd">        :param bool is_raw_profile: true if the stored profile is raw, i.e. in json and not</span>
-<span class="sd">            compressed</span>
+<span class="sd">        :param resource_list: list of dictionaries, i.e. actual resources</span>
+<span class="sd">        :param additional_params: additional information that are added to resources in the list</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_raw_profile</span> <span class="o">=</span> <span class="n">is_raw_profile</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">realpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">mtime</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span> <span class="o">=</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;cmd&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="o">=</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;workload&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">collector</span> <span class="o">=</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;collector_info&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">postprocessors</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">postprocessor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">postprocessor</span> <span class="ow">in</span> <span class="n">profile_info</span><span class="p">[</span><span class="s1">&#39;postprocessors&#39;</span><span class="p">]</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">runtime</span><span class="p">()</span><span class="o">.</span><span class="n">safe_get</span><span class="p">(</span><span class="s2">&quot;context.workload&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">ctx_persistent_properties</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_tuple</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span><span class="p">,</span>
-            <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">postprocessors</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">ctx_collectable_properties</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Loads the profile from given file</span>
+        <span class="c1"># Update collectable and persistent keys (needed for merge)</span>
+        <span class="n">Profile</span><span class="o">.</span><span class="n">persistent</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)})</span>
+        <span class="n">Profile</span><span class="o">.</span><span class="n">collectable</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)})</span>
 
-<span class="sd">        This is basically a wrapper that loads the profile, whether it is raw (i.e. in pending)</span>
-<span class="sd">        or not raw and stored in index</span>
+        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resource_list</span><span class="p">:</span>
+            <span class="n">persistent_properties</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">resource</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Profile</span><span class="o">.</span><span class="n">collectable</span>
+            <span class="p">]</span> <span class="o">+</span> <span class="n">ctx_persistent_properties</span>
+            <span class="n">persistent_properties</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">additional_params</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+            <span class="n">persistent_properties</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">collectable_properties</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">resource</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Profile</span><span class="o">.</span><span class="n">collectable</span>
+            <span class="p">]</span> <span class="o">+</span> <span class="n">ctx_collectable_properties</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_resource_type</span><span class="p">(</span>
+                <span class="n">resource</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">persistent_properties</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">collectable_properties</span>
+                <span class="p">}</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">collectable_properties</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-<span class="sd">        :return: loaded profile in dictionary format, w.r.t :ref:`profile-spec`</span>
+    <span class="k">def</span> <span class="nf">register_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">persistent_properties</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers tuple of persistent properties under new key or return existing one</span>
+
+<span class="sd">        :param str uid: uid of the resource that will be used to describe the resource type</span>
+<span class="sd">        :param tuple persistent_properties: tuple of persistent properties</span>
+<span class="sd">        :return: uid corresponding to the tuple of persistent properties</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">store</span><span class="o">.</span><span class="n">load_profile_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">realpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_raw_profile</span><span class="p">)</span>
+        <span class="n">property_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">persistent_properties</span><span class="p">))</span>
+        <span class="n">uid_key</span> <span class="o">=</span> <span class="n">convert</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tuple_to_resource_type_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">new_type</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">#</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uid_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid_counter</span><span class="p">[</span><span class="n">uid_key</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tuple_to_resource_type_map</span><span class="p">[</span><span class="n">property_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_type</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uid_counter</span><span class="p">[</span><span class="n">uid_key</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resource_type_map&quot;</span><span class="p">][</span><span class="n">new_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">persistent_properties</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tuple_to_resource_type_map</span><span class="p">[</span><span class="n">property_key</span><span class="p">]</span>
 
-    <span class="n">valid_attributes</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;realpath&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;cmd&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">,</span> <span class="s2">&quot;workload&quot;</span><span class="p">,</span> <span class="s2">&quot;collector&quot;</span><span class="p">,</span> <span class="s2">&quot;checksum&quot;</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span>
-    <span class="p">]</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the item stored in profile</span>
+
+<span class="sd">        Note: No translation of resources is performed! Use all_resources instead!</span>
+
+<span class="sd">        :param str item: key of the item we are getting</span>
+<span class="sd">        :return: item stored in the profile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the value into the storage under the key.</span>
+
+<span class="sd">        Internally this finds a similar regions and registers them in either</span>
+<span class="sd">        resource or config map.</span>
+
+<span class="sd">        Note: No translation of resources is performed! Use update_resources instead!</span>
+
+<span class="sd">        :param str key: key of the value</span>
+<span class="sd">        :param object value:  object we are setting in the profile</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the item in the storage</span>
+
+<span class="sd">        :param str key: key to be deleted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all of the stuff in storage.</span>
+
+<span class="sd">        :return: storage iterator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the size of the internal storage</span>
+
+<span class="sd">        :return: size of the internal storage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns serializable representation of the profile</span>
+
+<span class="sd">        :return: serializable representation (i.e. the actual storage)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span>
+
+    <span class="k">def</span> <span class="nf">_get_flattened_persistent_values_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flattens the nested values of the resources to single level</span>
+
+<span class="sd">        E.g. the following resource:</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;type&quot;: &quot;memory&quot;,</span>
+<span class="sd">                &quot;amount&quot;: 4,</span>
+<span class="sd">                &quot;uid&quot;: {</span>
+<span class="sd">                    &quot;source&quot;: &quot;../memory_collect_test.c&quot;,</span>
+<span class="sd">                    &quot;function&quot;: &quot;main&quot;,</span>
+<span class="sd">                    &quot;line&quot;: 22</span>
+<span class="sd">                }</span>
+<span class="sd">            }</span>
+
+<span class="sd">        is flattened as follows::</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;type&quot;: &quot;memory&quot;,</span>
+<span class="sd">                &quot;amount&quot;: 4,</span>
+<span class="sd">                &quot;uid&quot;: &quot;../memory_collect_test.c:main:22&quot;,</span>
+<span class="sd">                &quot;uid:source&quot;: &quot;../memory_collect_test.c&quot;,</span>
+<span class="sd">                &quot;uid:function&quot;: &quot;main&quot;,</span>
+<span class="sd">                &quot;uid:line&quot;: 22</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :param str resource_type: type of the resource</span>
+<span class="sd">        :return: flattened resource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type_to_flattened_resources_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">persistent_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resource_type_map&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">]</span>
+            <span class="n">flattened_resources</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span><span class="n">persistent_properties</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type_to_flattened_resources_map</span><span class="p">[</span><span class="n">resource_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">flattened_resources</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type_to_flattened_resources_map</span><span class="p">[</span><span class="n">resource_type</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Profile.all_resources">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">all_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flatten_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the resources contained in the</span>
+<span class="sd">        performance profile.</span>
+
+<span class="sd">        Generator iterates through all the snapshots, and subsequently yields</span>
+<span class="sd">        collected resources. For more thorough description of format of resources</span>
+<span class="sd">        refer to :pkey:`resources`. Resources are not flattened and, thus, can</span>
+<span class="sd">        contain nested dictionaries (e.g. for `traces` or `uids`).</span>
+
+<span class="sd">        :param bool flatten_values: if set to true, then the persistent values will</span>
+<span class="sd">            be flattened to one level.</span>
+<span class="sd">        :returns: iterable stream of resources represented as pair ``(int, dict)``</span>
+<span class="sd">            of snapshot number and the resources w.r.t. the specification of the</span>
+<span class="sd">            :pkey:`resources`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resources</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># uid: {...}</span>
+            <span class="k">if</span> <span class="n">flatten_values</span><span class="p">:</span>
+                <span class="n">persistent_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flattened_persistent_values_for</span><span class="p">(</span><span class="n">resource_type</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">persistent_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resource_type_map&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">resources</span><span class="p">:</span>
+                <span class="n">resource_keys</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">resource_values</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">resources</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                    <span class="c1"># collectable values should be flat</span>
+                    <span class="n">collectable_properties</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">resource_keys</span><span class="p">,</span> <span class="n">resource_values</span><span class="p">))</span>
+                    <span class="n">collectable_properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">persistent_properties</span><span class="p">)</span>
+                    <span class="n">snapshot_number</span> <span class="o">=</span> <span class="n">collectable_properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="k">yield</span> <span class="n">snapshot_number</span><span class="p">,</span> <span class="n">collectable_properties</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># In case we have only persistent properties</span>
+                <span class="k">yield</span> <span class="n">persistent_properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">persistent_properties</span></div>
+
+
+    <span class="k">def</span> <span class="nf">all_resource_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the fields (both flattened and</span>
+<span class="sd">        original) that are occurring in the resources.</span>
+
+<span class="sd">        E.g. considering the example profiles from :pkey:`resources`, the function</span>
+<span class="sd">        yields the following for `memory`, `time` and `trace` profiles</span>
+<span class="sd">        respectively (considering we convert the stream to list)::</span>
+
+<span class="sd">            memory_resource_fields = [</span>
+<span class="sd">                &#39;type&#39;, &#39;address&#39;, &#39;amount&#39;, &#39;uid:function&#39;, &#39;uid:source&#39;,</span>
+<span class="sd">                &#39;uid:line&#39;, &#39;uid&#39;, &#39;trace&#39;, &#39;subtype&#39;</span>
+<span class="sd">            ]</span>
+<span class="sd">            time_resource_fields = [</span>
+<span class="sd">                &#39;type&#39;, &#39;amount&#39;, &#39;uid&#39;</span>
+<span class="sd">            ]</span>
+<span class="sd">            complexity_resource_fields = [</span>
+<span class="sd">                &#39;type&#39;, &#39;amount&#39;, &#39;structure-unit-size&#39;, &#39;subtype&#39;, &#39;uid&#39;</span>
+<span class="sd">            ]</span>
+
+<span class="sd">        :returns: iterable stream of resource field keys represented as `str`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">resources</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># uid: {...}</span>
+            <span class="n">persistent_properties</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resource_type_map&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">resources</span><span class="p">:</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">keys</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">persistent_properties</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">keys</span>
+
+<div class="viewcode-block" id="Profile.all_filtered_models">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_filtered_models">[docs]</a>
+    <span class="k">def</span> <span class="nf">all_filtered_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models_strategy</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModelRecord</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function obtains models according to the given strategy.</span>
+
+<span class="sd">        This function according to the given strategy and group derived from it</span>
+<span class="sd">        obtains the models from the current profile. The function creates the</span>
+<span class="sd">        relevant dictionary with required models or calls the responded functions,</span>
+<span class="sd">        that returns the models according to the specifications.</span>
+
+<span class="sd">        :param str models_strategy: name of detection models strategy to obtains relevant models</span>
+<span class="sd">        :return ModelRecord: required models</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">models_strategy</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">models_strategy</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all-param&quot;</span><span class="p">,</span> <span class="s2">&quot;all-nonparam&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">get_filtered_best_models_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">model_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">models_strategy</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;best-nonparam&quot;</span><span class="p">,</span> <span class="s2">&quot;best-model&quot;</span><span class="p">,</span> <span class="s2">&quot;best-param&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">get_filtered_best_models_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="Profile.all_models">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_models">[docs]</a>
+    <span class="k">def</span> <span class="nf">all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator of all &#39;models&#39; records from the performance profile w.r.t.</span>
+<span class="sd">        :ref:`profile-spec`.</span>
+
+<span class="sd">        Form a profile, postprocessed by e.g. :ref:`postprocessors-regression-analysis`</span>
+<span class="sd">        and iterates through all of its models (for more details about models refer</span>
+<span class="sd">        to :pkey:`models` or :ref:`postprocessors-regression-analysis`).</span>
+
+<span class="sd">        E.g. given some trace profile ``complexity_prof``, we can iterate its</span>
+<span class="sd">        models as follows:</span>
+
+<span class="sd">            &gt;&gt;&gt; gen = complexity_prof.all_models()</span>
+<span class="sd">            &gt;&gt;&gt; gen.__next__()</span>
+<span class="sd">            (0, {&#39;x_start&#39;: 0, &#39;model&#39;: &#39;constant&#39;, &#39;method&#39;: &#39;full&#39;,</span>
+<span class="sd">            &#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.5644496762801648}, {&#39;name&#39;: &#39;b1&#39;,</span>
+<span class="sd">            &#39;value&#39;: 0.0}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;, &#39;r_square&#39;: 0.0,</span>
+<span class="sd">            &#39;x_end&#39;: 11892})</span>
+<span class="sd">            &gt;&gt;&gt; gen.__next__()</span>
+<span class="sd">            (1, {&#39;x_start&#39;: 0, &#39;model&#39;: &#39;exponential&#39;, &#39;method&#39;: &#39;full&#39;,</span>
+<span class="sd">            &#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.9909792049684152}, {&#39;name&#39;: &#39;b1&#39;,</span>
+<span class="sd">            &#39;value&#39;: 1.000004056250301}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;,</span>
+<span class="sd">            &#39;r_square&#39;: 0.007076437903106431, &#39;x_end&#39;: 11892})</span>
+
+
+<span class="sd">        :param str group: the kind of requested models to return</span>
+<span class="sd">        :returns: iterable stream of ``(int, dict)`` pairs, where first yields the</span>
+<span class="sd">            positional number of model and latter correponds to one &#39;models&#39;</span>
+<span class="sd">            record (for more details about models refer to :pkey:`models` or</span>
+<span class="sd">            :ref:`postprocessors-regression-analysis`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">model_idx</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">group</span> <span class="o">==</span> <span class="s2">&quot;model&quot;</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="s2">&quot;param&quot;</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">get_supported_models</span><span class="p">())</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="s2">&quot;nonparam&quot;</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">get_supported_nparam_methods</span><span class="p">())</span>
+            <span class="p">):</span>
+                <span class="k">yield</span> <span class="n">model_idx</span><span class="p">,</span> <span class="n">model</span></div>
+
+
+    <span class="k">def</span> <span class="nf">get_model_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds specific model from profile according to the</span>
+<span class="sd">        given kind of model and specific unique identification.</span>
+
+<span class="sd">        :param str model_type: specific kind of required model (e.g. regressogram, constant, etc.)</span>
+<span class="sd">        :param str uid: specific unique identification of required model</span>
+<span class="sd">        :return dict: model with all its relevant items</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">model</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;missing </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2"> model for uid &#39;</span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>  <span class="c1"># this is only for type checking, in reality it is dead code</span>
+
+<div class="viewcode-block" id="Profile.all_snapshots">
+<a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_snapshots">[docs]</a>
+    <span class="k">def</span> <span class="nf">all_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the snapshots in resources</span>
+
+<span class="sd">        Note this is required e.g. for heap map, which needs to group the resources by</span>
+<span class="sd">        snapshots.</span>
+
+<span class="sd">        :return: iterable of snapshot numbers and snapshot resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_resources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_resources</span><span class="p">())</span>
+        <span class="n">all_resources</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">snapshot_map</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">number_of</span><span class="p">,</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">all_resources</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+            <span class="n">snapshot_map</span><span class="p">[</span><span class="n">number_of</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">res</span><span class="p">))</span>
+        <span class="n">maximal_snapshot</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">snapshot_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximal_snapshot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">snapshot_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
+
+    <span class="c1"># TODO: discuss the intent of __len__ and possibly merge?</span>
+    <span class="k">def</span> <span class="nf">resources_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the number of resources stored in the internal storage.</span>
+
+<span class="sd">        :return int: the number of stored resources</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">])</span></div>
+
+
+
+<span class="c1"># Click helper</span>
+<span class="n">pass_profile</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">make_pass_decorator</span><span class="p">(</span><span class="n">Profile</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -572,15 +505,15 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -589,8 +522,8 @@
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 

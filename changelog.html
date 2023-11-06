@@ -1,27 +1,16 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Changelog &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Changelog &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Perun Internals" href="internals.html" />
@@ -31,8 +20,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -42,789 +30,1051 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="changelog">
-<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="head">
-<h2>HEAD<a class="headerlink" href="#head" title="Permalink to this headline">¶</a></h2>
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
+<section id="head">
+<h2>HEAD<a class="headerlink" href="#head" title="Link to this heading">¶</a></h2>
 <p><strong>To be included in next release</strong></p>
-</div>
-<div class="section" id="hotfix-2019-06-18">
-<h2>0.16.9-hotfix (2019-06-18)<a class="headerlink" href="#hotfix-2019-06-18" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id1">
+<h2>0.20.4 (2022-06-28)<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 862f02acefbeae7e68c1f9271abfbca2c0026697</cite></p>
+<dl class="simple">
+<dt><strong>Add exclusive time outliers check</strong></dt><dd><ul class="simple">
+<li><p>Add new degradation detection method “Exclusive Time Outliers” (ETO).</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>0.20.3 (2022-06-28)<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 1e7fb33f3b38b3a9d915d6cf52cdddb50b7eff35</cite></p>
+<p><strong>Fix issues in Tracer</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Fix some issues in Tracer raw data parsing.</p></li>
+<li><p>Add location information (binary file path) of profiled functions to the profile.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="hotfix2-2022-06-28">
+<h2>0.20.2-hotfix2 (2022-06-28)<a class="headerlink" href="#hotfix2-2022-06-28" title="Link to this heading">¶</a></h2>
+<p><cite>commit: b16b5cd65b8746368f55247d2dab53abc105d846</cite></p>
+<p><strong>Hotfix failing nondeterministic test</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Fix test_regression_detections_methods having too specific mock results</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="hotfix-2022-06-21">
+<h2>0.20.2-hotfix (2022-06-21)<a class="headerlink" href="#hotfix-2022-06-21" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 0a19a8a63816a2a7bb1481fe3a89ea092af606e6</cite></p>
+<p><strong>Enhance the Performance and Code Culture</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Fix an issue with uncompilable documentation</p></li>
+<li><p>Fix an issue with traversing wrongly configured sections</p></li>
+<li><p>Fix an uncaught exception</p></li>
+<li><p>Fix issue in depedencies</p></li>
+<li><p>Fix an issue with dev mode</p></li>
+<li><p>Add continuous integration</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id3">
+<h2>0.20.2 (2021-05-12)<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 677a0ea2d997c285bc45bd47858b469b7997066d</cite></p>
+<p><strong>Enhance the Performance and Code Culture</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Add performance tests to Perun</p></li>
+<li><p>Optimize perun at various places</p></li>
+<li><p>Extract selected profile queries directly to Profile</p></li>
+<li><p>Refactor minor issues</p></li>
+<li><p>Refactor complex code and simplified control flows</p></li>
+<li><p>Extract profile list configuration to isolate file</p></li>
+<li><p>Refactor and redocument log and status functions</p></li>
+<li><p>Remove unused cases and exceptions</p></li>
+<li><p>Add more tests</p></li>
+<li><p>Fix security issue with PyYAML</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id4">
+<h2>0.20.1 (2021-05-12)<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 677a0ea2d997c285bc45bd47858b469b7997066d</cite></p>
+<p><strong>Update install instructions in readme</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Update README with additional install instructions</p></li>
+<li><p>SystemTap and BCC instructions for Ubuntu and Fedora</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id5">
+<h2>0.20 (2021-03-05)<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 12c181f1a3c94699ee2818f996ee2651a7e30578</cite></p>
+<p><strong>Add optimizations of collect process</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add engines to the Tracer architecture</p></li>
+<li><p>add eBPF instrumentation support to Tracer (using BCC)</p></li>
+<li><p>add Optimization module to the collection process</p></li>
+<li><p>add several optimization methods to the Optimization module</p></li>
+<li><p>update Tracer for Python 3.8</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id6">
+<h2>0.19 (2021-02-08)<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 07a6c7a54392ae245964956ed69a56f050f89fca</cite></p>
+<p><strong>Update Perun to Python 3.8+</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add timeout to running external programs</p></li>
+<li><p>optimize getting of gcov version</p></li>
+<li><p>fix issues in fuzzing tests</p></li>
+<li><p>remove dependencies of clang</p></li>
+<li><p>update Perun to higher versions of gcc (4.9+) and Python (3.8+)</p></li>
+<li><p>fix minor issues and incompatibilities</p></li>
+<li><p>add lazy initialization of mathplotlib</p></li>
+<li><p>remove usage of re.Scanner which seems to segfault on newer versions</p></li>
+<li><p>remove heat map and ncurses (will be reimplemented in near future)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="hotfix2-2020-08-31">
+<h2>0.18.3-hotfix2 (2020-08-31)<a class="headerlink" href="#hotfix2-2020-08-31" title="Link to this heading">¶</a></h2>
+<p><cite>commit: ac5e719b483f62b56e5273afc165335c46a68f76</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>update the acknowledgements in README</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="hotfix-2020-05-11">
+<h2>0.18.3-hotfix (2020-05-11)<a class="headerlink" href="#hotfix-2020-05-11" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 3998d715041f624b836bef46b123d2139a8528fe</cite></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>fix two minor issues in average amount threshold check (fix for profiles without amounts and to soften the dependency on numpy.float64)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id7">
+<h2>0.18.3 (2020-03-20)<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 7b19f07eb2612899be96dfaa24b5912705c6ae42</cite></p>
+<p><strong>Extend the Perun and fix selected issues</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add helper assertions for tests available in <cite>asserts.py</cite> file</p></li>
+<li><p>remove useless fixtures (Helpers), move the helpers functions to isolate package</p></li>
+<li><p>categorize test data to several directories</p></li>
+<li><p>add automatical lookup of (in)dependent variable as default for selected commands (postprocess, etc.)</p></li>
+<li><p>add crash dump in case of unexpected error (can be suppressed by <cite>–dev-mode</cite> option)</p></li>
+<li><p>update the documentation with latest features and fix missing stuff</p></li>
+<li><p>add external generator of the</p></li>
+<li><p>fix the issue with backward incompatible repositories which contained profiles with ‘params’ instead of ‘args’</p></li>
+<li><p>fix the issue with loading certain parts of degradation changes as strings (instead of doubles)</p></li>
+<li><p>fix the issue with loading degradation changes which contained less information than in the new versions (missing the <cite>drate</cite>)</p></li>
+<li><p>fix other minor issues</p></li>
+<li><p>fix minor issues in fuzzing</p></li>
+<li><p>fix issue with clang-3.5 binary missing in systems (add the binary)</p></li>
+<li><p>fix the incorrectly printed trace</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id8">
+<h2>0.18.2 (2020-02-13)<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<p><cite>commit: c68ba580d53b6e40df48bcef4e2bd6af3c9754e6</cite></p>
+<p><strong>Fix errors in novel check methods</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>fix selected errors in novel check methods</p></li>
+<li><p>automatically remove testing files</p></li>
+<li><p>extend the collection process with specifying custom name</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id9">
+<h2>0.18.1 (2020-02-13)<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 5166ec167bddc5e72877029dc19f1302aaa8cb8b</cite></p>
+<p><strong>Refactor trace collector</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>refactor trace collector</p></li>
+<li><p>extend trace collector with watchdog module</p></li>
+<li><p>selected temporary files moved to .perun directory structure</p></li>
+<li><p>add diagnostic mode for trace collector</p></li>
+<li><p>add locking module to perun logic</p></li>
+<li><p>add diagnostic mode to tracer</p></li>
+<li><p>ignore tracer tests in codecoverage</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id10">
+<h2>0.18 (2020-02-11)<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<p><cite>commit: 252078825559d67b6c915ab01827a9433af92dfa</cite></p>
+<p><strong>Add performance fuzz-testing</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">fuzz</span></code> mode implementing mutation based fuzzer. See <a class="reference internal" href="fuzzing.html#fuzzing-overview"><span class="std std-ref">Performance Fuzz-testing</span></a> for more details.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id11">
+<h2>0.17.4 (2020-01-28)<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<p><cite>commit: cfb264ed53155a4aabf3874729c2c573533b0d1d</cite></p>
+<p><strong>Add tabular view</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add tableof view module</p></li>
+<li><p>add conversion functions of models to dataframe</p></li>
+<li><p>add headers to tableof view</p></li>
+<li><p>add formats to tableof view</p></li>
+<li><p>add sorting to tableof view</p></li>
+<li><p>add filtering to tableof view</p></li>
+<li><p>add two modes of tableof (resources and models)</p></li>
+<li><p>fix minor bug in bounds collector (unknown collector type)</p></li>
+<li><p>fix templates for generating units</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id12">
+<h2>0.17.3 (2020-01-09)<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<p><cite>commit: f3819834803b1eed878feeee51b697b260988c65</cite></p>
+<p><strong>Add Loopus collector in Perun</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>fix an issue in profiles which contained only persistent properties</p></li>
+<li><p>add bounds collector, wrapper over Loopus tool</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id13">
+<h2>0.17.2 (2019-08-16)<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<p><cite>commit: d82d15ec5635dacf8027311e44aa65b4776dc8fb</cite></p>
+<p><strong>Improve the runner logic</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>extract cmd, args and workload to Executable class</p></li>
+<li><p>remove <code class="docutils literal notranslate"><span class="pre">--remove-all</span></code> argument in <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">rm</span></code></p></li>
+<li><p>add support for removing profiles from pending jobs through perun</p></li>
+<li><p>improve the output of <cite>perun rm</cite> command</p></li>
+<li><p>extract CLI groups to isolate modules</p></li>
+<li><p>add caching to selected vcs commands</p></li>
+<li><p>fix untested bug in degradation check</p></li>
+<li><p>rename warmup parameter in <cite>time</cite> to <code class="docutils literal notranslate"><span class="pre">--warmup</span></code></p></li>
+<li><p>lower the number of warmup and repetitions for time collector during tests</p></li>
+<li><p>remove filter postprocessor (did nothing)</p></li>
+<li><p>add signal handling to runner (authored by Jirka Pavela)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id14">
+<h2>0.17.1 (2019-07-24)<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<p><cite>commit: e2fad3cd2ac22f17aa7abfe4375d9940eb9f2847</cite></p>
+<p><strong>Add new degradation detection methods</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add new detection methods for parametric and non-parametric models</p></li>
+<li><p>add <strong>Integral Comparison</strong> detection method, which computes the integrals under models</p></li>
+<li><p>add <strong>Local Statistics</strong> detection method, which analyses the various statistics in intervals of models</p></li>
+<li><p>refactor various minor issues in postprocessing logic</p></li>
+<li><p>add new strategies for detecting performance changes</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id15">
+<h2>0.17 (2019-07-09)<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
+<p><cite>commit: e6b1e88d766d93cdab4f114464df51114d6415a8</cite></p>
+<p><strong>Optimize profile format</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>make profile format more compact</p></li>
+<li><p>fix minor issue in fast check</p></li>
+<li><p>extract selected functions from query to profile object</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="hotfix-2019-06-18">
+<h2>0.16.9-hotfix (2019-06-18)<a class="headerlink" href="#hotfix-2019-06-18" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 126473caba3685878bf79f687115023918d5048a</cite></p>
 <p><strong>Hotfix issue in Makefile</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>hotfix issue in Makefile</li>
+<li><p>hotfix issue in Makefile</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id1">
-<h2>0.16.9 (2019-06-18)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id16">
+<h2>0.16.9 (2019-06-18)<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 8e7228deb81cdfacfea7e7273fd25e70503cbe2b</cite></p>
 <p><strong>Add CLI for stats manipulation</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>refactor the perun stats module</li>
-<li>extend the stats module with a CLI</li>
-<li>add new operations (list, delete, …) to the stats module</li>
+<li><p>refactor the perun stats module</p></li>
+<li><p>extend the stats module with a CLI</p></li>
+<li><p>add new operations (list, delete, …) to the stats module</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id2">
-<h2>0.16.8 (2019-05-18)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id17">
+<h2>0.16.8 (2019-05-18)<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 05d7275cb5f00183a72f8428bc4aaba0420bb73b</cite></p>
 <p><strong>Extend perun instances with temporaries</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add new logic module that allows to store temporary files in separate directory (.perun/tmp)</li>
+<li><p>add new logic module that allows to store temporary files in separate directory (.perun/tmp)</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="hotfix-2019-04-15">
-<h2>0.16.7-hotfix (2019-04-15)<a class="headerlink" href="#hotfix-2019-04-15" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hotfix-2019-04-15">
+<h2>0.16.7-hotfix (2019-04-15)<a class="headerlink" href="#hotfix-2019-04-15" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 686ea87a64d845b215474193f879db0240c05732</cite></p>
 <p><strong>Hotfix Jinja potential vulnerability</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>hotfix Jinja potential vulnerability</li>
+<li><p>hotfix Jinja potential vulnerability</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id3">
-<h2>0.16.7 (2019-04-15)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id18">
+<h2>0.16.7 (2019-04-15)<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 4152091bc4c2e5d1553ebccfef059d8153255aba</cite></p>
 <p><strong>Extend perun instances with stats</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add new logic module that allows to store stats for profiles in separate directory (.perun/stats)</li>
+<li><p>add new logic module that allows to store stats for profiles in separate directory (.perun/stats)</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id4">
-<h2>0.16.6 (2019-03-25)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id19">
+<h2>0.16.6 (2019-03-25)<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 18870d9d5853726d5cc966962d275111e451ab06</cite></p>
 <p><strong>Improve the quality of life of Perun</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix minor bug in storing changes</li>
-<li>extracted index entry specific functions to isolate class (in order to create new versions)</li>
-<li>implement index v2.0, codename FastSloth</li>
-<li>switch to working with index v2.0 (index v1.0 is still supported, however, everything is saved as 2.0)</li>
-<li>minor refactors</li>
-<li>optimize loading of the profile info for both registered and pending profiles (yields huge performance boost)</li>
-<li>add <cite>–force</cite> option to <cite>perun add</cite> which will force the add (d’oh)</li>
-<li>add printing of trace if <cite>perun -vv</cite> is set in cli (i.e. the verbosity is of level 2+)</li>
-<li>rename ‘params’ in profile to ‘args’ since it complies to other parts of code</li>
-<li>refactor minor issues, enhance error messages and exception handling</li>
+<li><p>fix minor bug in storing changes</p></li>
+<li><p>extracted index entry specific functions to isolate class (in order to create new versions)</p></li>
+<li><p>implement index v2.0, codename FastSloth</p></li>
+<li><p>switch to working with index v2.0 (index v1.0 is still supported, however, everything is saved as 2.0)</p></li>
+<li><p>minor refactors</p></li>
+<li><p>optimize loading of the profile info for both registered and pending profiles (yields huge performance boost)</p></li>
+<li><p>add <cite>–force</cite> option to <cite>perun add</cite> which will force the add (d’oh)</p></li>
+<li><p>add printing of trace if <cite>perun -vv</cite> is set in cli (i.e. the verbosity is of level 2+)</p></li>
+<li><p>rename ‘params’ in profile to ‘args’ since it complies to other parts of code</p></li>
+<li><p>refactor minor issues, enhance error messages and exception handling</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id5">
-<h2>0.16.5 (2019-03-22)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id20">
+<h2>0.16.5 (2019-03-22)<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
 <p><cite>commit: a2bd359479920178cfed1a0de779ef6fa5f4d4ac</cite></p>
 <p><strong>Revive complexity collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>revive the complexity collector</li>
-<li>increase the test coverage of complexity collector</li>
-<li>update the complexity collector to comply with latest version of Perun</li>
+<li><p>revive the complexity collector</p></li>
+<li><p>increase the test coverage of complexity collector</p></li>
+<li><p>update the complexity collector to comply with latest version of Perun</p></li>
 </ul>
 </div></blockquote>
 <p><cite>commit: 983b02ca54faa66941dcea06f990c8033eaf98f6</cite></p>
 <p><strong>Add kernel non-parametric regression</strong></p>
-</div>
-<div class="section" id="id6">
-<h2>0.16.4 (2019-03-14)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id21">
+<h2>0.16.4 (2019-03-14)<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 983b02ca54faa66941dcea06f990c8033eaf98f6</cite></p>
 <p><strong>Add kernel non-parametric regression</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+</li>
-<li>add three kernel non-parametrikjc regression models (see <span class="xref std std-ref">_postprocessors-kernel-regression</span>)</li>
-<li>fix minor issues in moving average and regressogram</li>
+<li><p>fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+</p></li>
+<li><p>add three kernel non-parametrik regression models (see <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression"><span class="std std-ref">Kernel Regression Methods</span></a>)</p></li>
+<li><p>fix minor issues in moving average and regressogram</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id7">
-<h2>0.16.3 (2019-03-02)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id22">
+<h2>0.16.3 (2019-03-02)<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
 <p><cite>commit: de699ab66d8438166d0ad2d55c74bf43a59d1fc4</cite></p>
 <p><strong>Overhaul the trace collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>update to Click version 7.0 (because underscores are replaced by dashes)</li>
-<li>add automatic pairing of the static probes in trace collector</li>
-<li>add fault-tolerant system to trace collector (now it does collect some profile even if it contains some corruption)</li>
-<li>rework the internal format of traces</li>
+<li><p>update to Click version 7.0 (because underscores are replaced by dashes)</p></li>
+<li><p>add automatic pairing of the static probes in trace collector</p></li>
+<li><p>add fault-tolerant system to trace collector (now it does collect some profile even if it contains some corruption)</p></li>
+<li><p>rework the internal format of traces</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id8">
-<h2>0.16.2 (2019-03-02)<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id23">
+<h2>0.16.2 (2019-03-02)<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 77bed5eb7654274687fc0fa7130f28a6ff282fba</cite></p>
 <p><strong>Fix and refactor the memory collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix minor issue in average amount threshold checker, when average is 0</li>
-<li>refactor memory collector</li>
-<li>add proper documentation to memory collector</li>
-<li>fix an ubuntu 18.04 issue, when dlsym() needed some bytes before libmalloc.so is properly loaded resulting into crash</li>
-<li>add proper locking to memory collector</li>
+<li><p>fix minor issue in average amount threshold checker, when average is 0</p></li>
+<li><p>refactor memory collector</p></li>
+<li><p>add proper documentation to memory collector</p></li>
+<li><p>fix an ubuntu 18.04 issue, when dlsym() needed some bytes before libmalloc.so is properly loaded resulting into crash</p></li>
+<li><p>add proper locking to memory collector</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id9">
-<h2>0.16.1 (2019-03-01)<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id24">
+<h2>0.16.1 (2019-03-01)<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd</cite></p>
 <p><strong>Add moving average postprocessor</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add moving average postprocessor, other of the non-parametric analysis</li>
-<li>minor fixes in regressogram (refactor and documentation)</li>
-<li>add <cite>perun fuzz</cite> command which does a performance fuzzing</li>
-<li>remodel runner functions to generators</li>
+<li><p>add moving average postprocessor, other of the non-parametric analysis</p></li>
+<li><p>minor fixes in regressogram (refactor and documentation)</p></li>
+<li><p>add <cite>perun fuzz</cite> command which does a performance fuzzing</p></li>
+<li><p>remodel runner functions to generators</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id10">
-<h2>0.16 (2019-02-16)<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id25">
+<h2>0.16 (2019-02-16)<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd</cite></p>
 <p><strong>Add regressogram postprocessor</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add –version option to perun cli, so it shows version of perun (d’oh!)</li>
-<li>extend scatterplot to support step function rendering (for regressogram)</li>
-<li>add regressogram postprocessor, one of the non-parametric analysis</li>
+<li><p>add –version option to perun cli, so it shows version of perun (d’oh!)</p></li>
+<li><p>extend scatterplot to support step function rendering (for regressogram)</p></li>
+<li><p>add regressogram postprocessor, one of the non-parametric analysis</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id11">
-<h2>0.15.4 (2018-08-13)<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id26">
+<h2>0.15.4 (2018-08-13)<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h2>
 <p><cite>commit: b1e2e3bdcca839efcf7a59ebb8fdbd2b8fc38888</cite></p>
 <p><strong>Add cleanup procedures to Trace collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add cleanup procedures to trace collector (so it properly kills systemtap modules)</li>
-<li>fix setup.py versions</li>
-<li>make clusterizer less verbose</li>
-<li>fix wrong parameter name in trace collector</li>
+<li><p>add cleanup procedures to trace collector (so it properly kills systemtap modules)</p></li>
+<li><p>fix setup.py versions</p></li>
+<li><p>make clusterizer less verbose</p></li>
+<li><p>fix wrong parameter name in trace collector</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="hotfix-2018-08-02">
-<h2>0.15.3-hotfix (2018-08-02)<a class="headerlink" href="#hotfix-2018-08-02" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hotfix-2018-08-02">
+<h2>0.15.3-hotfix (2018-08-02)<a class="headerlink" href="#hotfix-2018-08-02" title="Link to this heading">¶</a></h2>
 <p><cite>commit: a9b46ed478258bbcd8292df0775a14e69b7db329</cite></p>
 <p><strong>Hotfix unused workload parameter in trace collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>hotfix missing workload parameter in trace collector</li>
+<li><p>hotfix missing workload parameter in trace collector</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id12">
-<h2>0.15.3 (2018-08-01)<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id27">
+<h2>0.15.3 (2018-08-01)<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h2>
 <p><cite>commit: a9b46ed478258bbcd8292df0775a14e69b7db329</cite></p>
 <p><strong>Extract trace configuration automatically</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>rename complexity collector to <strong>trace</strong></li>
-<li>fix minor issues with trace collector</li>
-<li>add basic support for parallel programs in trace collector</li>
-<li>add basic support for non-terminating programs (–timeout) in trace collector</li>
-<li>fix minor issues in incorrect piping (class with ||)</li>
-<li>add lookup of profiled functions in trace collector</li>
+<li><p>rename complexity collector to <strong>trace</strong></p></li>
+<li><p>fix minor issues with trace collector</p></li>
+<li><p>add basic support for parallel programs in trace collector</p></li>
+<li><p>add basic support for non-terminating programs (–timeout) in trace collector</p></li>
+<li><p>fix minor issues in incorrect piping (class with ||)</p></li>
+<li><p>add lookup of profiled functions in trace collector</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id13">
-<h2>0.15.2 (2018-07-20)<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id28">
+<h2>0.15.2 (2018-07-20)<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h2>
 <p><cite>commit: a9b46ed478258bbcd8292df0775a14e69b7db329</cite></p>
 <p><strong>Upgrade Trace collector architecture</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>update the cli of the <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> with new options</li>
-<li>add support for static and dynamic probing of the binaries (hence allow custom user probes)</li>
-<li>fix minor issues</li>
-<li>rework the architecture of system-tap collector to work as a daemon</li>
+<li><p>update the cli of the <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> with new options</p></li>
+<li><p>add support for static and dynamic probing of the binaries (hence allow custom user probes)</p></li>
+<li><p>fix minor issues</p></li>
+<li><p>rework the architecture of system-tap collector to work as a daemon</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id14">
-<h2>0.15.1 (2018-07-17)<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id29">
+<h2>0.15.1 (2018-07-17)<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h2>
 <p><cite>commit: f137abac6c428fc5e580dfa0fc9446c65ac30e4c</cite></p>
 <p><strong>Rehaul the notion of workloads</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>refactor check modules</li>
-<li>add <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span> <span class="pre">range</span></code> to <code class="docutils literal"><span class="pre">perun</span> <span class="pre">add</span></code> command to add more profiles at once</li>
-<li>add <code class="docutils literal"><span class="pre">index</span> <span class="pre">tag</span> <span class="pre">rage</span></code> to <code class="docutils literal"><span class="pre">perun</span> <span class="pre">rm</span></code> command to remove more profiles at once</li>
-<li>fix the issue with wrong sort order and tags (now <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a> sets the option in local)</li>
-<li>add support for workload generators</li>
-<li>implement integer workload generator that generates workload from the integer interval</li>
-<li>implement singleton workload generator that generates single workload</li>
-<li>implement string workload generator that generates random strings</li>
-<li>implement file workload generator that generates random text files</li>
-<li>add <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal"><span class="pre">generators.workload</span></code></a> for specification of workload generators in config</li>
-<li>remodel the notion of workloads to accept the workload generators to allow other style of workloads</li>
-<li>add two modes of workload generation (one that merges the profiles into one; and one which gradually generates profiles)</li>
-<li>add default workload generators to shared configuration</li>
+<li><p>refactor check modules</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">pending</span> <span class="pre">tag</span> <span class="pre">range</span></code> to <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">add</span></code> command to add more profiles at once</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">index</span> <span class="pre">tag</span> <span class="pre">rage</span></code> to <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">rm</span></code> command to remove more profiles at once</p></li>
+<li><p>fix the issue with wrong sort order and tags (now <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> sets the option in local)</p></li>
+<li><p>add support for workload generators</p></li>
+<li><p>implement integer workload generator that generates workload from the integer interval</p></li>
+<li><p>implement singleton workload generator that generates single workload</p></li>
+<li><p>implement string workload generator that generates random strings</p></li>
+<li><p>implement file workload generator that generates random text files</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">generators.workload</span></code></a> for specification of workload generators in config</p></li>
+<li><p>remodel the notion of workloads to accept the workload generators to allow other style of workloads</p></li>
+<li><p>add two modes of workload generation (one that merges the profiles into one; and one which gradually generates profiles)</p></li>
+<li><p>add default workload generators to shared configuration</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id15">
-<h2>0.15 (2018-06-20)<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id30">
+<h2>0.15 (2018-06-20)<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 6bb792fd8e172ab6c97a3cd1ac517bfe416b6c85</cite></p>
 <p><strong>Extend the suite of change detection methods</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add fast check degradation check method (<a class="reference internal" href="degradation.html#degradation-fast-check"><span class="std std-ref">Fast Check</span></a>)</li>
-<li>add linear regression based degradation check method (<a class="reference internal" href="degradation.html#degradation-lreg"><span class="std std-ref">Linear Regression</span></a>)</li>
-<li>add polynomial regression based degradation check method (<a class="reference internal" href="degradation.html#degradation-preg"><span class="std std-ref">Polynomial Regression</span></a>)</li>
-<li>rename regression models to full names</li>
-<li>fix divisions by zero in several places in regression analysis</li>
-<li>rename the api of several regression functions</li>
+<li><p>add fast check degradation check method (<a class="reference internal" href="degradation.html#degradation-fast-check"><span class="std std-ref">Fast Check</span></a>)</p></li>
+<li><p>add linear regression based degradation check method (<a class="reference internal" href="degradation.html#degradation-lreg"><span class="std std-ref">Linear Regression</span></a>)</p></li>
+<li><p>add polynomial regression based degradation check method (<a class="reference internal" href="degradation.html#degradation-preg"><span class="std std-ref">Polynomial Regression</span></a>)</p></li>
+<li><p>rename regression models to full names</p></li>
+<li><p>fix divisions by zero in several places in regression analysis</p></li>
+<li><p>rename the api of several regression functions</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id16">
-<h2>0.14.4 (2018-06-17)<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id31">
+<h2>0.14.4 (2018-06-17)<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 4e36142252e123f3e8e6422583c71383adc9fc30</cite></p>
 <p><strong>Refactor the code</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix various linting issues (e.g. too long lines)</li>
-<li>remove unused code and function (e.g. in memory)</li>
-<li>fix minor issues</li>
-<li>extend the test suite with several more tests</li>
-<li>flatten the test hierarchy</li>
-<li>remove alloclist view (query+convert imported in python is more powerful)</li>
-<li>renew the rest of the old documentation format</li>
-<li>extract path and type function parameters from vcs api</li>
-<li>refactor pcs module and remove pcs as argument from all of the functions</li>
-<li>fix various codacy issues</li>
-<li>refactor cli module by moving callbacks, renaming functions and removing redundant functions</li>
+<li><p>fix various linting issues (e.g. too long lines)</p></li>
+<li><p>remove unused code and function (e.g. in memory)</p></li>
+<li><p>fix minor issues</p></li>
+<li><p>extend the test suite with several more tests</p></li>
+<li><p>flatten the test hierarchy</p></li>
+<li><p>remove alloclist view (query+convert imported in python is more powerful)</p></li>
+<li><p>renew the rest of the old documentation format</p></li>
+<li><p>extract path and type function parameters from vcs api</p></li>
+<li><p>refactor pcs module and remove pcs as argument from all of the functions</p></li>
+<li><p>fix various codacy issues</p></li>
+<li><p>refactor cli module by moving callbacks, renaming functions and removing redundant functions</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id17">
-<h2>0.14.3 (2018-06-12)<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id32">
+<h2>0.14.3 (2018-06-12)<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h2>
 <p><cite>commit: a2820c0cb50cff5b758a3d01ca7b8e356af5d2cf</cite></p>
 <p><strong>Extend utils module</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>print timing of various collection phases</li>
-<li>add <a class="reference internal" href="config.html#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a> to store the output of precollect phase in isolated logs</li>
-<li>add working <code class="docutils literal"><span class="pre">--compute-missing</span></code> parameter to check group, which temporarily sets the precollection</li>
-<li>add repetition of the time collector</li>
-<li>add predefined configuration templates</li>
-<li>add automatic lookup of candidate executable and workloads for user configuration (see <a class="reference internal" href="config.html#config-templates"><span class="std std-ref">Predefined Configuration Templates</span></a>)</li>
-<li>add <code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">reset</span></code> command to allow resetting of configuration to different states</li>
-<li>extend the utils module with ELF helper functions</li>
-<li>extend the utils with non-blocking subprocess calls</li>
-<li>extend the utils with binary files lookup</li>
+<li><p>print timing of various collection phases</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a> to store the output of precollect phase in isolated logs</p></li>
+<li><p>add working <code class="docutils literal notranslate"><span class="pre">--compute-missing</span></code> parameter to check group, which temporarily sets the precollection</p></li>
+<li><p>add repetition of the time collector</p></li>
+<li><p>add predefined configuration templates</p></li>
+<li><p>add automatic lookup of candidate executable and workloads for user configuration (see <a class="reference internal" href="config.html#config-templates"><span class="std std-ref">Predefined Configuration Templates</span></a>)</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">reset</span></code> command to allow resetting of configuration to different states</p></li>
+<li><p>extend the utils module with ELF helper functions</p></li>
+<li><p>extend the utils with non-blocking subprocess calls</p></li>
+<li><p>extend the utils with binary files lookup</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id18">
-<h2>0.14.2 (2018-05-15)<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id33">
+<h2>0.14.2 (2018-05-15)<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 0faaa74097a159c4b441d65415dba504265c2059</cite></p>
 <p><strong>Rehaul the command line output</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix issue with pending tags not being sorted ;)</li>
-<li>fix the issue with incorrectly flattened values in query</li>
-<li>extend the memory collector to include the allocation order as resource</li>
-<li>add loading and storing of performance change records</li>
-<li>add short printed results for found degradations</li>
-<li>update the default generated config</li>
-<li>remake the output of time collector</li>
-<li>fix issue with integer workloads</li>
-<li>fix issue with non-sorted index profiles</li>
-<li>fix issue with memory collector not removing the unreachable allocations</li>
-<li>add vcs history tree to log (prints the context of the vcs tree)</li>
-<li>remodel the output of the degradation checks</li>
-<li>switch the colour of optimizations to green (instead of blue)</li>
-<li>colour tainted (containing degradation) and fixed (containing optimization) branches in vcs history</li>
-<li>add short summary of degradations to each minor version in graph</li>
-<li>add semantic ordering of uids (used in outputs)</li>
-<li>add vcs history to output of perun run matrix</li>
-<li>make perun check precollect phase silent (until we figure out the better way?)</li>
-<li>add streaming to the history (so it is not output when everything is done)</li>
-<li>make two versions of run_jobs (one with history and one without)</li>
-<li>refactor some modules to remove unnecessary dependencies</li>
-<li>add information about degradations to perun status and log</li>
+<li><p>fix issue with pending tags not being sorted ;)</p></li>
+<li><p>fix the issue with incorrectly flattened values in query</p></li>
+<li><p>extend the memory collector to include the allocation order as resource</p></li>
+<li><p>add loading and storing of performance change records</p></li>
+<li><p>add short printed results for found degradations</p></li>
+<li><p>update the default generated config</p></li>
+<li><p>remake the output of time collector</p></li>
+<li><p>fix issue with integer workloads</p></li>
+<li><p>fix issue with non-sorted index profiles</p></li>
+<li><p>fix issue with memory collector not removing the unreachable allocations</p></li>
+<li><p>add vcs history tree to log (prints the context of the vcs tree)</p></li>
+<li><p>remodel the output of the degradation checks</p></li>
+<li><p>switch the colour of optimizations to green (instead of blue)</p></li>
+<li><p>colour tainted (containing degradation) and fixed (containing optimization) branches in vcs history</p></li>
+<li><p>add short summary of degradations to each minor version in graph</p></li>
+<li><p>add semantic ordering of uids (used in outputs)</p></li>
+<li><p>add vcs history to output of perun run matrix</p></li>
+<li><p>make perun check precollect phase silent (until we figure out the better way?)</p></li>
+<li><p>add streaming to the history (so it is not output when everything is done)</p></li>
+<li><p>make two versions of run_jobs (one with history and one without)</p></li>
+<li><p>refactor some modules to remove unnecessary dependencies</p></li>
+<li><p>add information about degradations to perun status and log</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id19">
-<h2>0.14.1 (2018-04-19)<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id34">
+<h2>0.14.1 (2018-04-19)<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h2>
 <p><cite>commit: b7922d7c1bbe7ea89fe735c93cf1e6c8a7604765</cite></p>
 <p><strong>Extend the automation</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add two new options to regression analysis module (see <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> for more details)</li>
-<li>fix minor issues in regression analysis and scatter plot module</li>
-<li>fix issue with non-deterministic ordering in flattening the values by convert</li>
-<li>add different ordering to perun status profiles (now they are ordered by time)</li>
-<li>add more boxes to the output of the perun status profiles (bundled per five profiles)</li>
-<li>add <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a> configuration key to allow sorting of profiles in <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> by different keys</li>
-<li>add <code class="docutils literal"><span class="pre">--sort-by</span></code> option to <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> to allow sorting of profiles in <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code></li>
-<li>fix minor things in documentation</li>
-<li>add few helper function for CLI and profiles</li>
-<li>rename origin in ProfileInfo to source (class of names)</li>
-<li>fix typos in documentation</li>
-<li>remake walk major version to return MajorVersion object, with head and major version name</li>
-<li>add helper function for loading the profile out of profile info</li>
-<li>extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)</li>
-<li>add <a class="reference internal" href="config.html#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal"><span class="pre">profiles.register_after_run</span></code></a> configuration key to automatically register profiles after collection</li>
-<li>add <a class="reference internal" href="config.html#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal"><span class="pre">execute.pre_run</span></code></a> config key for running commands before execution of matrix</li>
-<li>add helper function for safely getting config key</li>
-<li>add <code class="docutils literal"><span class="pre">--minor-version</span></code> parameter to <code class="docutils literal"><span class="pre">perun</span> <span class="pre">collect</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span></code> to run the collection over different minor version</li>
-<li>add <code class="docutils literal"><span class="pre">--crawl-parents</span></code> parameter to allow <code class="docutils literal"><span class="pre">perun</span> <span class="pre">collect</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span></code> to collect the data for both minor version and its predecessors</li>
-<li>add checking out of the minor version, and saving the state, to collection of profiles</li>
-<li>add <a class="reference internal" href="config.html#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.collect_before_check</span></code></a> configuration key for automatically collect profiles before running degradation check</li>
+<li><p>add two new options to regression analysis module (see <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> for more details)</p></li>
+<li><p>fix minor issues in regression analysis and scatter plot module</p></li>
+<li><p>fix issue with non-deterministic ordering in flattening the values by convert</p></li>
+<li><p>add different ordering to perun status profiles (now they are ordered by time)</p></li>
+<li><p>add more boxes to the output of the perun status profiles (bundled per five profiles)</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> configuration key to allow sorting of profiles in <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> by different keys</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">--sort-by</span></code> option to <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> to allow sorting of profiles in <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code></p></li>
+<li><p>fix minor things in documentation</p></li>
+<li><p>add few helper function for CLI and profiles</p></li>
+<li><p>rename origin in ProfileInfo to source (class of names)</p></li>
+<li><p>fix typos in documentation</p></li>
+<li><p>remake walk major version to return MajorVersion object, with head and major version name</p></li>
+<li><p>add helper function for loading the profile out of profile info</p></li>
+<li><p>extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.register_after_run</span></code></a> configuration key to automatically register profiles after collection</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">execute.pre_run</span></code></a> config key for running commands before execution of matrix</p></li>
+<li><p>add helper function for safely getting config key</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">--minor-version</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span></code> to run the collection over different minor version</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">--crawl-parents</span></code> parameter to allow <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span></code> to collect the data for both minor version and its predecessors</p></li>
+<li><p>add checking out of the minor version, and saving the state, to collection of profiles</p></li>
+<li><p>add <a class="reference internal" href="config.html#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.collect_before_check</span></code></a> configuration key for automatically collect profiles before running degradation check</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id20">
-<h2>0.14 (2018-03-27)<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id35">
+<h2>0.14 (2018-03-27)<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 3e56911baad6a7cd0ab0b90b23c6edbc57abeb43</cite></p>
 <p><strong>Add clusterization postprocessor</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add clusterizer postprocessor (see <a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a>)</li>
-<li>add helper function for flattening single resources</li>
-<li>fixed profiles generated by time in tests</li>
+<li><p>add clusterizer postprocessor (see <a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a>)</p></li>
+<li><p>add helper function for flattening single resources</p></li>
+<li><p>fixed profiles generated by time in tests</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id21">
-<h2>0.13 (2018-03-27)<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id36">
+<h2>0.13 (2018-03-27)<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 9642c1dcd7ba39b91ef791039690f5be79312dd2</cite></p>
 <p><strong>Add SystemTap based complexity collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add SystemTap based complexity collector (see <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> for more details)</li>
-<li>add <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more details) for creating new modules according to stored templates</li>
-<li>fix issue with getting config hierarchy, when outside of any perun scope</li>
+<li><p>add SystemTap based complexity collector (see <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> for more details)</p></li>
+<li><p>add <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more details) for creating new modules according to stored templates</p></li>
+<li><p>fix issue with getting config hierarchy, when outside of any perun scope</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id22">
-<h2>0.12.1 (2018-03-08)<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id37">
+<h2>0.12.1 (2018-03-08)<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 96ef4443244568260e5dd25fa4cde5230eba8a36</cite></p>
 <p><strong>Update project readme</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>update the project readme</li>
-<li>add compiled documentation</li>
+<li><p>update the project readme</p></li>
+<li><p>add compiled documentation</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id23">
-<h2>0.12 (2018-03-05)<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id38">
+<h2>0.12 (2018-03-05)<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 7ac008e0a7be32d5ddfceb3cbe7042036323f82d</cite></p>
 <p><strong>Add basic testing of performance changes between profiles</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add command for checking performance changes between two isolate profiles</li>
-<li>add command for checking performance changes in given minor version</li>
-<li>add command for checking performance changes within the project history</li>
-<li>add two basic methods of checking performance changes</li>
-<li>add two options to config (see <a class="reference internal" href="config.html#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a> and <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.apply</span></code></a>)
-to customize performance checking</li>
-<li>add caching to recursive config lookup</li>
-<li>add recursive gathering of options from config</li>
-<li>fix nondeterministic tests</li>
-<li>define structure for representing the result of performance change</li>
-<li>add basic implementation of performance change detectors</li>
+<li><p>add command for checking performance changes between two isolate profiles</p></li>
+<li><p>add command for checking performance changes in given minor version</p></li>
+<li><p>add command for checking performance changes within the project history</p></li>
+<li><p>add two basic methods of checking performance changes</p></li>
+<li><p>add two options to config (see <a class="reference internal" href="config.html#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a> and <a class="reference internal" href="config.html#confkey-degradation.apply"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.apply</span></code></a>)
+to customize performance checking</p></li>
+<li><p>add caching to recursive config lookup</p></li>
+<li><p>add recursive gathering of options from config</p></li>
+<li><p>fix nondeterministic tests</p></li>
+<li><p>define structure for representing the result of performance change</p></li>
+<li><p>add basic implementation of performance change detectors</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id24">
-<h2>0.11.1 (2018-02-28)<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id39">
+<h2>0.11.1 (2018-02-28)<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h2>
 <p><cite>commit: 8a6b1ac90c4cfca6f11546d0d3c4aa4fbe2000c3</cite></p>
 <p><strong>Enhance the regression model suite</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix issues when reading configuration with error</li>
-<li>enhance the regression model suite by improving quadratic and constant models</li>
-<li>rename the tags to different format (%tag%)</li>
-<li>add support for shortlog formatting string</li>
-<li>fix issue with postprocessing information being lost</li>
-<li>add options for changing filename template</li>
-<li>remodel automatic generation of profile names (now templatable; see <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a>)</li>
-<li>add runtime config</li>
-<li>break config command to three (get, set, edit)</li>
-<li>rename some configuration options</li>
-<li>fix issue with missing header parts in profiles</li>
-<li>fix issue with incorrect parameter</li>
-<li>add global.paging option (see <a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal"><span class="pre">general.paging</span></code></a>)</li>
-<li>improve bokeh outputs (with click policy, and better lines)</li>
-<li>other various fixes</li>
+<li><p>fix issues when reading configuration with error</p></li>
+<li><p>enhance the regression model suite by improving quadratic and constant models</p></li>
+<li><p>rename the tags to different format (%tag%)</p></li>
+<li><p>add support for shortlog formatting string</p></li>
+<li><p>fix issue with postprocessing information being lost</p></li>
+<li><p>add options for changing filename template</p></li>
+<li><p>remodel automatic generation of profile names (now templatable; see <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a>)</p></li>
+<li><p>add runtime config</p></li>
+<li><p>break config command to three (get, set, edit)</p></li>
+<li><p>rename some configuration options</p></li>
+<li><p>fix issue with missing header parts in profiles</p></li>
+<li><p>fix issue with incorrect parameter</p></li>
+<li><p>add global.paging option (see <a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.paging</span></code></a>)</p></li>
+<li><p>improve bokeh outputs (with click policy, and better lines)</p></li>
+<li><p>other various fixes</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id25">
-<h2>0.11 (2017-11-27)<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id40">
+<h2>0.11 (2017-11-27)<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h2>
 <p><strong>Adding proper documentation</strong></p>
 <p><cite>commit: a2ad710aafa171dfc6974c7121b572ee3ea2033b</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add HTML and latex documentation</li>
-<li>refactor the documentation of publicly visible modules</li>
-<li>add additional figures and examples of outputs and profiles</li>
-<li>switch order of initialization of Perun instances and vcs</li>
-<li>break vcs-params to vcs-flags and vcs-param</li>
-<li>fix the issue with missing index</li>
-<li>enhance the performance of Perun (guarding, rewriting to table lookup, or lazy inits)</li>
-<li>add loading of yaml parameters from CLI</li>
+<li><p>add HTML and latex documentation</p></li>
+<li><p>refactor the documentation of publicly visible modules</p></li>
+<li><p>add additional figures and examples of outputs and profiles</p></li>
+<li><p>switch order of initialization of Perun instances and vcs</p></li>
+<li><p>break vcs-params to vcs-flags and vcs-param</p></li>
+<li><p>fix the issue with missing index</p></li>
+<li><p>enhance the performance of Perun (guarding, rewriting to table lookup, or lazy inits)</p></li>
+<li><p>add loading of yaml parameters from CLI</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id26">
-<h2>0.10.1 (2017-10-24)<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id41">
+<h2>0.10.1 (2017-10-24)<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h2>
 <p><strong>Remodeling of the  regression analysis interface</strong></p>
 <p><cite>commit: 14ce41c28d4d847ed2c74eac6a2dbfe7644cfd93</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>refactor the interface of regression analysis</li>
-<li>update the regression analysis error computation</li>
-<li>add new parameters for plotting models</li>
-<li>reduce number of specific computation functions</li>
-<li>update the architecture (namely the interface)</li>
-<li>update the documentation of regression analysis and parameters for cli</li>
-<li>update the regressions analysis error computation</li>
-<li>add constant model</li>
-<li>add paging for perun log and status</li>
-<li>rename converters and transformations modules</li>
+<li><p>refactor the interface of regression analysis</p></li>
+<li><p>update the regression analysis error computation</p></li>
+<li><p>add new parameters for plotting models</p></li>
+<li><p>reduce number of specific computation functions</p></li>
+<li><p>update the architecture (namely the interface)</p></li>
+<li><p>update the documentation of regression analysis and parameters for cli</p></li>
+<li><p>update the regressions analysis error computation</p></li>
+<li><p>add constant model</p></li>
+<li><p>add paging for perun log and status</p></li>
+<li><p>rename converters and transformations modules</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id27">
-<h2>0.10 (2017-10-10)<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id42">
+<h2>0.10 (2017-10-10)<a class="headerlink" href="#id42" title="Link to this heading">¶</a></h2>
 <p><strong>Add Scatter plot visualization module</strong></p>
 <p><cite>commit: f0d9785639e5c03a994eb439d54206722a455da3</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add scatter plot as new visualisation module (basic version with some temporary workarounds)</li>
-<li>fix bisection method not producing model for some intervals</li>
-<li>add examples of scatter plot graphs</li>
+<li><p>add scatter plot as new visualisation module (basic version with some temporary workarounds)</p></li>
+<li><p>fix bisection method not producing model for some intervals</p></li>
+<li><p>add examples of scatter plot graphs</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id28">
-<h2>0.9.2 (2017-09-28)<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id43">
+<h2>0.9.2 (2017-09-28)<a class="headerlink" href="#id43" title="Link to this heading">¶</a></h2>
 <p><strong>Extend the regression analysis module</strong></p>
 <p><cite>commit: 12c06251193701356685e8163a7ef8ce8b7d9f2a</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add transformation of models to plotable data points</li>
-<li>add helper functions for plotting models</li>
-<li>add support of regression analysis extensions</li>
+<li><p>add transformation of models to plotable data points</p></li>
+<li><p>add helper functions for plotting models</p></li>
+<li><p>add support of regression analysis extensions</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id29">
-<h2>0.9.1 (2017-09-24)<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id44">
+<h2>0.9.1 (2017-09-24)<a class="headerlink" href="#id44" title="Link to this heading">¶</a></h2>
 <p><strong>Extend the query module</strong></p>
 <p><cite>commit: bf8ff341cfa942b82093850c63655b79674ea615</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add proper testing to query module</li>
-<li>polish the messy conftest.py</li>
-<li>add support generators and fixtures for query profiles</li>
-<li>extend the profile query module with key values and models queries</li>
+<li><p>add proper testing to query module</p></li>
+<li><p>polish the messy conftest.py</p></li>
+<li><p>add support generators and fixtures for query profiles</p></li>
+<li><p>extend the profile query module with key values and models queries</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id30">
-<h2>0.9 (2017-08-31)<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id45">
+<h2>0.9 (2017-08-31)<a class="headerlink" href="#id45" title="Link to this heading">¶</a></h2>
 <p><strong>Add regression analysis postprocessing module</strong></p>
 <p><cite>commit: 2b3d0d637699ae35b36672df3ce4c14fa0fed701</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add regression analysis postprocessor module</li>
-<li>add example resulting profiles</li>
+<li><p>add regression analysis postprocessor module</p></li>
+<li><p>add example resulting profiles</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id31">
-<h2>0.8.3 (2017-08-31)<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id46">
+<h2>0.8.3 (2017-08-31)<a class="headerlink" href="#id46" title="Link to this heading">¶</a></h2>
 <p><cite>commit: e47f5588e834fd70042bb18ea53a7d76f75cc8b7</cite></p>
 <p><strong>Update and fix complexity collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix several minor issues with complexity collector</li>
-<li>polish the standard of the generated profile</li>
-<li>add proper testinr for cli</li>
-<li>refactor according to the pylint</li>
-<li>fix bug where vector would not be cleared after printing to file</li>
-<li>remove code duplication in loop specification</li>
-<li>fix different sampling data structure for job and complexity cli</li>
-<li>fix some minor details with cli usage and info output</li>
+<li><p>fix several minor issues with complexity collector</p></li>
+<li><p>polish the standard of the generated profile</p></li>
+<li><p>add proper testinr for cli</p></li>
+<li><p>refactor according to the pylint</p></li>
+<li><p>fix bug where vector would not be cleared after printing to file</p></li>
+<li><p>remove code duplication in loop specification</p></li>
+<li><p>fix different sampling data structure for job and complexity cli</p></li>
+<li><p>fix some minor details with cli usage and info output</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id32">
-<h2>0.8.2 (2017-07-31)<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id47">
+<h2>0.8.2 (2017-07-31)<a class="headerlink" href="#id47" title="Link to this heading">¶</a></h2>
 <p><strong>Update the command line interface of complexity collector</strong></p>
 <p><cite>commit: 1451ae054e77e81bf0aa4930639bf323c09c510e</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add new options to complexity collector interface</li>
-<li>add thorough documentation</li>
-<li>refactor the implementation</li>
+<li><p>add new options to complexity collector interface</p></li>
+<li><p>add thorough documentation</p></li>
+<li><p>refactor the implementation</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id33">
-<h2>0.8.1 (2017-07-30)<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id48">
+<h2>0.8.1 (2017-07-30)<a class="headerlink" href="#id48" title="Link to this heading">¶</a></h2>
 <p><strong>Update the performance of command line interface</strong></p>
 <p><cite>commit: 1fef373e8899b3ff0b0525ec99da91ba7a67fac0</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add on demand import of big libraries</li>
-<li>optimize the memory collector by minimizing subprocess calls</li>
-<li>fix issue with regex in memory collector</li>
-<li>add caching of memory collector syscalls</li>
-<li>extend cli of add and remove to support multiple args</li>
-<li>extend the massaging of parameters for cli</li>
-<li>remodel the config command</li>
-<li>add support for tags in command line</li>
-<li>enhance the status output of the profile list</li>
-<li>enhance the default formatting of config</li>
-<li>add thorough validity checking of bars/flow params</li>
+<li><p>add on demand import of big libraries</p></li>
+<li><p>optimize the memory collector by minimizing subprocess calls</p></li>
+<li><p>fix issue with regex in memory collector</p></li>
+<li><p>add caching of memory collector syscalls</p></li>
+<li><p>extend cli of add and remove to support multiple args</p></li>
+<li><p>extend the massaging of parameters for cli</p></li>
+<li><p>remodel the config command</p></li>
+<li><p>add support for tags in command line</p></li>
+<li><p>enhance the status output of the profile list</p></li>
+<li><p>enhance the default formatting of config</p></li>
+<li><p>add thorough validity checking of bars/flow params</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id34">
-<h2>0.8 (2017-07-03)<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id49">
+<h2>0.8 (2017-07-03)<a class="headerlink" href="#id49" title="Link to this heading">¶</a></h2>
 <p><strong>Add flame graph visualization</strong></p>
 <p><cite>commit: 56a29c807f2d7ad34b7af6002e5ebf90c717e8d7</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add flame graph visualization module</li>
+<li><p>add flame graph visualization module</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id35">
-<h2>0.7.2 (2017-07-03)<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id50">
+<h2>0.7.2 (2017-07-03)<a class="headerlink" href="#id50" title="Link to this heading">¶</a></h2>
 <p><strong>Refactor flow graph to a more generic form</strong></p>
 <p><cite>commit: eb33811236575599fc9aa82ce417c492be22d79b</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>refactor flow to more generic format</li>
-<li>work with flattened pandas.DataFrame format</li>
-<li>use set of generators and queries for manipulation with profiles</li>
-<li>make the cli API generic</li>
-<li>polish the visual apeal of flow graphs</li>
-<li>simplify output to bokeh.charts.Area</li>
-<li>add basic testing of bokeh flow graphs</li>
-<li>fix the issue with additional layer in memory profs</li>
+<li><p>refactor flow to more generic format</p></li>
+<li><p>work with flattened pandas.DataFrame format</p></li>
+<li><p>use set of generators and queries for manipulation with profiles</p></li>
+<li><p>make the cli API generic</p></li>
+<li><p>polish the visual apeal of flow graphs</p></li>
+<li><p>simplify output to bokeh.charts.Area</p></li>
+<li><p>add basic testing of bokeh flow graphs</p></li>
+<li><p>fix the issue with additional layer in memory profs</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id36">
-<h2>0.7.1 (2017-06-30)<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id51">
+<h2>0.7.1 (2017-06-30)<a class="headerlink" href="#id51" title="Link to this heading">¶</a></h2>
 <p><strong>Refactor bar graph to a more generic form</strong></p>
 <p><cite>commit: 5942e0b1aa8cc09ce0e22b030c3ec17dfdce0556</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>refactor bars to more generic format</li>
-<li>work with flattened pandas.DataFrame format</li>
-<li>make the cli API generic</li>
-<li>polish the visual apeal of bars graph</li>
-<li>add unique colour palette to bokeh graphs</li>
-<li>fix minor issue with matrix in config</li>
-<li>add massaging of params for show and postprocess</li>
+<li><p>refactor bars to more generic format</p></li>
+<li><p>work with flattened pandas.DataFrame format</p></li>
+<li><p>make the cli API generic</p></li>
+<li><p>polish the visual apeal of bars graph</p></li>
+<li><p>add unique colour palette to bokeh graphs</p></li>
+<li><p>fix minor issue with matrix in config</p></li>
+<li><p>add massaging of params for show and postprocess</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id37">
-<h2>0.7 (2017-06-26)<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id52">
+<h2>0.7 (2017-06-26)<a class="headerlink" href="#id52" title="Link to this heading">¶</a></h2>
 <p><strong>Add bar graph visualization</strong></p>
 <p><cite>commit: a0f1a4921ecf9ef8f5b7c14ba42442fc589581ed</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>integrate bar graph visualization</li>
+<li><p>integrate bar graph visualization</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id38">
-<h2>0.6 (2017-06-26)<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id53">
+<h2>0.6 (2017-06-26)<a class="headerlink" href="#id53" title="Link to this heading">¶</a></h2>
 <p><strong>Add Flow graph visualization</strong></p>
 <p><cite>commit: 5683141b2e622af871eabc1c7259654151177256</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>integrate flow graph visualization</li>
+<li><p>integrate flow graph visualization</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id39">
-<h2>0.5.1 (2016-06-22)<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id54">
+<h2>0.5.1 (2016-06-22)<a class="headerlink" href="#id54" title="Link to this heading">¶</a></h2>
 <p><strong>Fix issues in memory collector</strong></p>
 <p><cite>commit: 28560e8d47cb2b1e2087d7072c44584563f78870</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>extend the CLI for memory collect</li>
-<li>annotate phases of memory collect with basic informations</li>
-<li>add checks for presence of debugging symbols</li>
-<li>fix in various things in memory collector</li>
-<li>extend the testing of memory collector</li>
+<li><p>extend the CLI for memory collect</p></li>
+<li><p>annotate phases of memory collect with basic informations</p></li>
+<li><p>add checks for presence of debugging symbols</p></li>
+<li><p>fix in various things in memory collector</p></li>
+<li><p>extend the testing of memory collector</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id40">
-<h2>0.5 (2016-06-21)<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id55">
+<h2>0.5 (2016-06-21)<a class="headerlink" href="#id55" title="Link to this heading">¶</a></h2>
 <p><strong>Add Heap map visualization</strong></p>
 <p><cite>commit: 6ac6e43080f0a9b0c856636ed5ae12ee25a3d4df</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>integrate Heap map visualization</li>
-<li>add thorough testing of heap and heat map</li>
-<li>refactor profile converting</li>
-<li>refactor duplicate blobs of code</li>
-<li>add animation feature</li>
-<li>add origin to profile so it can be compared before adding profile</li>
-<li>add more smart lookup of the profile for add</li>
-<li>add choices for collector/vcs/postprocessor parameters in cli</li>
-<li>simplify adding parameters to collectors/postprocessors</li>
-<li>add support for formatting strings for profile list</li>
-<li>refactor log and status function</li>
-<li>add basic testing for the command line interface</li>
-<li>switch interactive configuration to using editor</li>
-<li>implement wrappers for collect and postprocessby</li>
-<li>rename ‘bin’ keyword to ‘cmd’ in stored profiles</li>
-<li>add basic testing of the collectors and commands</li>
+<li><p>integrate Heap map visualization</p></li>
+<li><p>add thorough testing of heap and heat map</p></li>
+<li><p>refactor profile converting</p></li>
+<li><p>refactor duplicate blobs of code</p></li>
+<li><p>add animation feature</p></li>
+<li><p>add origin to profile so it can be compared before adding profile</p></li>
+<li><p>add more smart lookup of the profile for add</p></li>
+<li><p>add choices for collector/vcs/postprocessor parameters in cli</p></li>
+<li><p>simplify adding parameters to collectors/postprocessors</p></li>
+<li><p>add support for formatting strings for profile list</p></li>
+<li><p>refactor log and status function</p></li>
+<li><p>add basic testing for the command line interface</p></li>
+<li><p>switch interactive configuration to using editor</p></li>
+<li><p>implement wrappers for collect and postprocessby</p></li>
+<li><p>rename ‘bin’ keyword to ‘cmd’ in stored profiles</p></li>
+<li><p>add basic testing of the collectors and commands</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id41">
-<h2>0.4.2 (2017-05-31)<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id56">
+<h2>0.4.2 (2017-05-31)<a class="headerlink" href="#id56" title="Link to this heading">¶</a></h2>
 <p><strong>Collective fixes mostly for Memory collector</strong></p>
 <p><cite>commit: 4d94299bc196292284995aabdce0c702e76b33ca</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>fix a collector issue with zero value addresses</li>
-<li>add checking validity of the looked up minor version</li>
-<li>fix issue with incorrect parameter of the NotPerunRepositoryException</li>
-<li>raise exception when the profile is in incorrect json syntax</li>
-<li>catch error when minor head could not be found</li>
-<li>add exception for errors in wrapped VCS</li>
-<li>add exception for incorrect profile format</li>
-<li>raise NotPerunRepository, when Perun is not located on path</li>
-<li>fix message when git was reinitialized</li>
-<li>catch exceptions for init</li>
+<li><p>fix a collector issue with zero value addresses</p></li>
+<li><p>add checking validity of the looked up minor version</p></li>
+<li><p>fix issue with incorrect parameter of the NotPerunRepositoryException</p></li>
+<li><p>raise exception when the profile is in incorrect json syntax</p></li>
+<li><p>catch error when minor head could not be found</p></li>
+<li><p>add exception for errors in wrapped VCS</p></li>
+<li><p>add exception for incorrect profile format</p></li>
+<li><p>raise NotPerunRepository, when Perun is not located on path</p></li>
+<li><p>fix message when git was reinitialized</p></li>
+<li><p>catch exceptions for init</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id42">
-<h2>0.4.1 (2017-05-15)<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id57">
+<h2>0.4.1 (2017-05-15)<a class="headerlink" href="#id57" title="Link to this heading">¶</a></h2>
 <p><strong>Collective fixes mosty for Complexity collector</strong></p>
 <p><cite>commit: 13bebd88613fce58458d50207aea01ee7f672f86</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>fixed size data container growth if functions were sampled</li>
-<li>enhance the perun status with info about untracked profiles</li>
-<li>add colours to printing of profile list (red for untracked)</li>
-<li>add output of untracked profiles to perun status</li>
-<li>fix issue with postprocessor parameter rewritten by local variable</li>
+<li><p>fixed size data container growth if functions were sampled</p></li>
+<li><p>enhance the perun status with info about untracked profiles</p></li>
+<li><p>add colours to printing of profile list (red for untracked)</p></li>
+<li><p>add output of untracked profiles to perun status</p></li>
+<li><p>fix issue with postprocessor parameter rewritten by local variable</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id43">
-<h2>0.4 (2017-03-17)<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id58">
+<h2>0.4 (2017-03-17)<a class="headerlink" href="#id58" title="Link to this heading">¶</a></h2>
 <p><strong>Add Complexity collector</strong></p>
 <p><cite>commit: 323228f95050e52041b47af899eaea6e90eb0605</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add complexity collector module</li>
+<li><p>add complexity collector module</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id44">
-<h2>0.3 (2017-03-14)<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id59">
+<h2>0.3 (2017-03-14)<a class="headerlink" href="#id59" title="Link to this heading">¶</a></h2>
 <p><strong>Adding Memory Collector</strong></p>
 <p><cite>commit: 558ae1eee3acd370c519ac39e774d7fe05d23e35</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add memory collector module</li>
-<li>fix the issue with detached head state and perun status</li>
-<li>add simple, but interactive, initialization of the local config</li>
+<li><p>add memory collector module</p></li>
+<li><p>fix the issue with detached head state and perun status</p></li>
+<li><p>add simple, but interactive, initialization of the local config</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id45">
-<h2>0.2 (2017-03-07)<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id60">
+<h2>0.2 (2017-03-07)<a class="headerlink" href="#id60" title="Link to this heading">¶</a></h2>
 <p><strong>Add basic job units</strong></p>
 <p><cite>commit: 7994b5618eb27684da57ce0941f4f58604ac29ea</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add the normalizer postprocessor</li>
-<li>add the time collector</li>
-<li>refactor the git module to use the python package</li>
-<li>add loadinng of config from local yml</li>
-<li>refactor construction of job matrix</li>
-<li>remove cmd from job tuple and rename params to args</li>
-<li>break perun run to run matrix (from config) and run job (from stdout)</li>
-<li>fix issue of assuming different structure of profile</li>
-<li>add functionality of creating and storing profiles</li>
-<li>add generation of the profile name for given job</li>
-<li>add storing of the profile at given path</li>
-<li>add generation of profile out of collected data</li>
-<li>update the params between the phases</li>
-<li>polish the perun –short header</li>
-<li>various minor tweaks for outputs</li>
-<li>change init-vcs-* options to just vcs-*</li>
-<li>fix an issue with incorrectly outputed comma if no profile type was present</li>
-<li>fix an issue with loading profile having two modes (compressed and uncompressed)</li>
-<li>implement base logic for calling collectors and postprocessors</li>
-<li>enhance output of profile numbers in perun log and status with colours and types</li>
-<li>add header for short info</li>
-<li>add colours to the header</li>
-<li>add base implementation of perun show</li>
-<li>fix loading of compressed file</li>
-<li>polish output of perun log and status by adding indent, colours and padding</li>
-<li>fix an issue with adding non-existent profile</li>
-<li>fix multiple adding of the same entry</li>
-<li>fix an issue when the added entry should go to end of index</li>
+<li><p>add the normalizer postprocessor</p></li>
+<li><p>add the time collector</p></li>
+<li><p>refactor the git module to use the python package</p></li>
+<li><p>add loadinng of config from local yml</p></li>
+<li><p>refactor construction of job matrix</p></li>
+<li><p>remove cmd from job tuple and rename params to args</p></li>
+<li><p>break perun run to run matrix (from config) and run job (from stdout)</p></li>
+<li><p>fix issue of assuming different structure of profile</p></li>
+<li><p>add functionality of creating and storing profiles</p></li>
+<li><p>add generation of the profile name for given job</p></li>
+<li><p>add storing of the profile at given path</p></li>
+<li><p>add generation of profile out of collected data</p></li>
+<li><p>update the params between the phases</p></li>
+<li><p>polish the perun –short header</p></li>
+<li><p>various minor tweaks for outputs</p></li>
+<li><p>change init-vcs-* options to just vcs-*</p></li>
+<li><p>fix an issue with incorrectly outputed comma if no profile type was present</p></li>
+<li><p>fix an issue with loading profile having two modes (compressed and uncompressed)</p></li>
+<li><p>implement base logic for calling collectors and postprocessors</p></li>
+<li><p>enhance output of profile numbers in perun log and status with colours and types</p></li>
+<li><p>add header for short info</p></li>
+<li><p>add colours to the header</p></li>
+<li><p>add base implementation of perun show</p></li>
+<li><p>fix loading of compressed file</p></li>
+<li><p>polish output of perun log and status by adding indent, colours and padding</p></li>
+<li><p>fix an issue with adding non-existent profile</p></li>
+<li><p>fix multiple adding of the same entry</p></li>
+<li><p>fix an issue when the added entry should go to end of index</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id46">
-<h2>0.1 (2017-02-22)<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id61">
+<h2>0.1 (2017-02-22)<a class="headerlink" href="#id61" title="Link to this heading">¶</a></h2>
 <p><strong>First partially working implementation</strong></p>
 <p><cite>commit: 4dd5ee3c638570489d60c50ca41b519029da9007</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>add short printing of minor version info (–short-minors | -s option)</li>
-<li>fix reverse output of log (oldest was displayed first)</li>
-<li>implement simplistic perun log outputing minor version history and profile numbers</li>
-<li>fix an incorrect warning about already tracked profiles</li>
-<li>add removal of the entry from the index</li>
-<li>add registering of  files to the minor version index</li>
-<li>refactor according to pylint</li>
-<li>add base implementation of perun log</li>
-<li>add base implementation of perun status</li>
-<li>add base implementation of perun add</li>
-<li>add base implementation of perun rm</li>
-<li>add base implementation of perun init</li>
-<li>add base implementation of perun config</li>
-<li>add base commandline interface through click</li>
+<li><p>add short printing of minor version info (–short-minors | -s option)</p></li>
+<li><p>fix reverse output of log (oldest was displayed first)</p></li>
+<li><p>implement simplistic perun log outputing minor version history and profile numbers</p></li>
+<li><p>fix an incorrect warning about already tracked profiles</p></li>
+<li><p>add removal of the entry from the index</p></li>
+<li><p>add registering of  files to the minor version index</p></li>
+<li><p>refactor according to pylint</p></li>
+<li><p>add base implementation of perun log</p></li>
+<li><p>add base implementation of perun status</p></li>
+<li><p>add base implementation of perun add</p></li>
+<li><p>add base implementation of perun rm</p></li>
+<li><p>add base implementation of perun init</p></li>
+<li><p>add base implementation of perun config</p></li>
+<li><p>add base commandline interface through click</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="id47">
-<h2>0.0 (2016-12-10)<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id62">
+<h2>0.0 (2016-12-10)<a class="headerlink" href="#id62" title="Link to this heading">¶</a></h2>
 <p><strong>Initial minimalistic repository</strong></p>
 <p><cite>commit: 2a6d1e65e5f3871e091d395789b9fd44450ef9e4</cite></p>
 <blockquote>
 <div><ul class="simple">
-<li>empty root</li>
+<li><p>empty root</p></li>
 </ul>
 </div></blockquote>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -837,64 +1087,85 @@ to customize performance checking</li>
     <h3>Perun</h3>
   </a>
 </p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
 <li><a class="reference internal" href="#head">HEAD</a></li>
+<li><a class="reference internal" href="#id1">0.20.4 (2022-06-28)</a></li>
+<li><a class="reference internal" href="#id2">0.20.3 (2022-06-28)</a></li>
+<li><a class="reference internal" href="#hotfix2-2022-06-28">0.20.2-hotfix2 (2022-06-28)</a></li>
+<li><a class="reference internal" href="#hotfix-2022-06-21">0.20.2-hotfix (2022-06-21)</a></li>
+<li><a class="reference internal" href="#id3">0.20.2 (2021-05-12)</a></li>
+<li><a class="reference internal" href="#id4">0.20.1 (2021-05-12)</a></li>
+<li><a class="reference internal" href="#id5">0.20 (2021-03-05)</a></li>
+<li><a class="reference internal" href="#id6">0.19 (2021-02-08)</a></li>
+<li><a class="reference internal" href="#hotfix2-2020-08-31">0.18.3-hotfix2 (2020-08-31)</a></li>
+<li><a class="reference internal" href="#hotfix-2020-05-11">0.18.3-hotfix (2020-05-11)</a></li>
+<li><a class="reference internal" href="#id7">0.18.3 (2020-03-20)</a></li>
+<li><a class="reference internal" href="#id8">0.18.2 (2020-02-13)</a></li>
+<li><a class="reference internal" href="#id9">0.18.1 (2020-02-13)</a></li>
+<li><a class="reference internal" href="#id10">0.18 (2020-02-11)</a></li>
+<li><a class="reference internal" href="#id11">0.17.4 (2020-01-28)</a></li>
+<li><a class="reference internal" href="#id12">0.17.3 (2020-01-09)</a></li>
+<li><a class="reference internal" href="#id13">0.17.2 (2019-08-16)</a></li>
+<li><a class="reference internal" href="#id14">0.17.1 (2019-07-24)</a></li>
+<li><a class="reference internal" href="#id15">0.17 (2019-07-09)</a></li>
 <li><a class="reference internal" href="#hotfix-2019-06-18">0.16.9-hotfix (2019-06-18)</a></li>
-<li><a class="reference internal" href="#id1">0.16.9 (2019-06-18)</a></li>
-<li><a class="reference internal" href="#id2">0.16.8 (2019-05-18)</a></li>
+<li><a class="reference internal" href="#id16">0.16.9 (2019-06-18)</a></li>
+<li><a class="reference internal" href="#id17">0.16.8 (2019-05-18)</a></li>
 <li><a class="reference internal" href="#hotfix-2019-04-15">0.16.7-hotfix (2019-04-15)</a></li>
-<li><a class="reference internal" href="#id3">0.16.7 (2019-04-15)</a></li>
-<li><a class="reference internal" href="#id4">0.16.6 (2019-03-25)</a></li>
-<li><a class="reference internal" href="#id5">0.16.5 (2019-03-22)</a></li>
-<li><a class="reference internal" href="#id6">0.16.4 (2019-03-14)</a></li>
-<li><a class="reference internal" href="#id7">0.16.3 (2019-03-02)</a></li>
-<li><a class="reference internal" href="#id8">0.16.2 (2019-03-02)</a></li>
-<li><a class="reference internal" href="#id9">0.16.1 (2019-03-01)</a></li>
-<li><a class="reference internal" href="#id10">0.16 (2019-02-16)</a></li>
-<li><a class="reference internal" href="#id11">0.15.4 (2018-08-13)</a></li>
+<li><a class="reference internal" href="#id18">0.16.7 (2019-04-15)</a></li>
+<li><a class="reference internal" href="#id19">0.16.6 (2019-03-25)</a></li>
+<li><a class="reference internal" href="#id20">0.16.5 (2019-03-22)</a></li>
+<li><a class="reference internal" href="#id21">0.16.4 (2019-03-14)</a></li>
+<li><a class="reference internal" href="#id22">0.16.3 (2019-03-02)</a></li>
+<li><a class="reference internal" href="#id23">0.16.2 (2019-03-02)</a></li>
+<li><a class="reference internal" href="#id24">0.16.1 (2019-03-01)</a></li>
+<li><a class="reference internal" href="#id25">0.16 (2019-02-16)</a></li>
+<li><a class="reference internal" href="#id26">0.15.4 (2018-08-13)</a></li>
 <li><a class="reference internal" href="#hotfix-2018-08-02">0.15.3-hotfix (2018-08-02)</a></li>
-<li><a class="reference internal" href="#id12">0.15.3 (2018-08-01)</a></li>
-<li><a class="reference internal" href="#id13">0.15.2 (2018-07-20)</a></li>
-<li><a class="reference internal" href="#id14">0.15.1 (2018-07-17)</a></li>
-<li><a class="reference internal" href="#id15">0.15 (2018-06-20)</a></li>
-<li><a class="reference internal" href="#id16">0.14.4 (2018-06-17)</a></li>
-<li><a class="reference internal" href="#id17">0.14.3 (2018-06-12)</a></li>
-<li><a class="reference internal" href="#id18">0.14.2 (2018-05-15)</a></li>
-<li><a class="reference internal" href="#id19">0.14.1 (2018-04-19)</a></li>
-<li><a class="reference internal" href="#id20">0.14 (2018-03-27)</a></li>
-<li><a class="reference internal" href="#id21">0.13 (2018-03-27)</a></li>
-<li><a class="reference internal" href="#id22">0.12.1 (2018-03-08)</a></li>
-<li><a class="reference internal" href="#id23">0.12 (2018-03-05)</a></li>
-<li><a class="reference internal" href="#id24">0.11.1 (2018-02-28)</a></li>
-<li><a class="reference internal" href="#id25">0.11 (2017-11-27)</a></li>
-<li><a class="reference internal" href="#id26">0.10.1 (2017-10-24)</a></li>
-<li><a class="reference internal" href="#id27">0.10 (2017-10-10)</a></li>
-<li><a class="reference internal" href="#id28">0.9.2 (2017-09-28)</a></li>
-<li><a class="reference internal" href="#id29">0.9.1 (2017-09-24)</a></li>
-<li><a class="reference internal" href="#id30">0.9 (2017-08-31)</a></li>
-<li><a class="reference internal" href="#id31">0.8.3 (2017-08-31)</a></li>
-<li><a class="reference internal" href="#id32">0.8.2 (2017-07-31)</a></li>
-<li><a class="reference internal" href="#id33">0.8.1 (2017-07-30)</a></li>
-<li><a class="reference internal" href="#id34">0.8 (2017-07-03)</a></li>
-<li><a class="reference internal" href="#id35">0.7.2 (2017-07-03)</a></li>
-<li><a class="reference internal" href="#id36">0.7.1 (2017-06-30)</a></li>
-<li><a class="reference internal" href="#id37">0.7 (2017-06-26)</a></li>
-<li><a class="reference internal" href="#id38">0.6 (2017-06-26)</a></li>
-<li><a class="reference internal" href="#id39">0.5.1 (2016-06-22)</a></li>
-<li><a class="reference internal" href="#id40">0.5 (2016-06-21)</a></li>
-<li><a class="reference internal" href="#id41">0.4.2 (2017-05-31)</a></li>
-<li><a class="reference internal" href="#id42">0.4.1 (2017-05-15)</a></li>
-<li><a class="reference internal" href="#id43">0.4 (2017-03-17)</a></li>
-<li><a class="reference internal" href="#id44">0.3 (2017-03-14)</a></li>
-<li><a class="reference internal" href="#id45">0.2 (2017-03-07)</a></li>
-<li><a class="reference internal" href="#id46">0.1 (2017-02-22)</a></li>
-<li><a class="reference internal" href="#id47">0.0 (2016-12-10)</a></li>
+<li><a class="reference internal" href="#id27">0.15.3 (2018-08-01)</a></li>
+<li><a class="reference internal" href="#id28">0.15.2 (2018-07-20)</a></li>
+<li><a class="reference internal" href="#id29">0.15.1 (2018-07-17)</a></li>
+<li><a class="reference internal" href="#id30">0.15 (2018-06-20)</a></li>
+<li><a class="reference internal" href="#id31">0.14.4 (2018-06-17)</a></li>
+<li><a class="reference internal" href="#id32">0.14.3 (2018-06-12)</a></li>
+<li><a class="reference internal" href="#id33">0.14.2 (2018-05-15)</a></li>
+<li><a class="reference internal" href="#id34">0.14.1 (2018-04-19)</a></li>
+<li><a class="reference internal" href="#id35">0.14 (2018-03-27)</a></li>
+<li><a class="reference internal" href="#id36">0.13 (2018-03-27)</a></li>
+<li><a class="reference internal" href="#id37">0.12.1 (2018-03-08)</a></li>
+<li><a class="reference internal" href="#id38">0.12 (2018-03-05)</a></li>
+<li><a class="reference internal" href="#id39">0.11.1 (2018-02-28)</a></li>
+<li><a class="reference internal" href="#id40">0.11 (2017-11-27)</a></li>
+<li><a class="reference internal" href="#id41">0.10.1 (2017-10-24)</a></li>
+<li><a class="reference internal" href="#id42">0.10 (2017-10-10)</a></li>
+<li><a class="reference internal" href="#id43">0.9.2 (2017-09-28)</a></li>
+<li><a class="reference internal" href="#id44">0.9.1 (2017-09-24)</a></li>
+<li><a class="reference internal" href="#id45">0.9 (2017-08-31)</a></li>
+<li><a class="reference internal" href="#id46">0.8.3 (2017-08-31)</a></li>
+<li><a class="reference internal" href="#id47">0.8.2 (2017-07-31)</a></li>
+<li><a class="reference internal" href="#id48">0.8.1 (2017-07-30)</a></li>
+<li><a class="reference internal" href="#id49">0.8 (2017-07-03)</a></li>
+<li><a class="reference internal" href="#id50">0.7.2 (2017-07-03)</a></li>
+<li><a class="reference internal" href="#id51">0.7.1 (2017-06-30)</a></li>
+<li><a class="reference internal" href="#id52">0.7 (2017-06-26)</a></li>
+<li><a class="reference internal" href="#id53">0.6 (2017-06-26)</a></li>
+<li><a class="reference internal" href="#id54">0.5.1 (2016-06-22)</a></li>
+<li><a class="reference internal" href="#id55">0.5 (2016-06-21)</a></li>
+<li><a class="reference internal" href="#id56">0.4.2 (2017-05-31)</a></li>
+<li><a class="reference internal" href="#id57">0.4.1 (2017-05-15)</a></li>
+<li><a class="reference internal" href="#id58">0.4 (2017-03-17)</a></li>
+<li><a class="reference internal" href="#id59">0.3 (2017-03-14)</a></li>
+<li><a class="reference internal" href="#id60">0.2 (2017-03-07)</a></li>
+<li><a class="reference internal" href="#id61">0.1 (2017-02-22)</a></li>
+<li><a class="reference internal" href="#id62">0.0 (2016-12-10)</a></li>
 </ul>
 </li>
 </ul>
-<div class="relations">
+
+  </div><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -910,15 +1181,15 @@ to customize performance checking</li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -927,8 +1198,8 @@ to customize performance checking</li>
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/changelog.rst.txt"

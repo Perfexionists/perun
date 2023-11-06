@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Performance Fuzz-testing &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Perun Configuration files" href="config.html" />
+    <link rel="prev" title="Detecting Performance Changes" href="degradation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="performance-fuzz-testing">
+<span id="fuzzing-overview"></span><h1>Performance Fuzz-testing<a class="headerlink" href="#performance-fuzz-testing" title="Link to this heading">¶</a></h1>
+<p>Unfortunately, in our experience, manually created test cases usually do not detect hidden
+performance bugs, because they do not cover all cases of inputs. The performance testing of ones
+application heavily depends on input workloads. So in order to have best set of input workloads, it
+is appropriate to adapt more advanced techniques of testing.</p>
+<p><em>Fuzzing</em> is a well-known testing technique used to find vulnerabilities in applications by sending
+garbled data as an input and then monitoring the application for crashes. It has been shown that
+even just an aggressive random testing is impressively effective at finding faults and has enjoyed
+great success at discovering security-critical bugs as well. Using fuzz testing, developers and
+testers can ‘hack’ their systems to detect potential security threats before attackers can. So why
+should not we use fuzzing to discover implementation faults affecting performance?</p>
+<p>We noticed that, while there are many projects implementing fuzz testing technique, unfortunately,
+none of them allows to add custom mutation strategies which could be more adapted for the target
+program and mainly for triggering performance bugs. In Perun, we proposed a modification of fuzz
+testing unit that specializes for producing inputs greedy for resources. We proposed new mutation
+strategies inspired by causes of performance bugs found in real projects. We believe that combining
+performance versioning and fuzzing could raise the ratio of successfully found performance bugs
+early in the process.</p>
+<section id="overview">
+<span id="fuzing-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>The underdeveloped field of performance fuzz testing has inspired us to
+explore this field more and extend the Perun tool with fuzzing module
+that tries to find new workloads (or inputs) that will likely cause
+a change in program performance. In particular, the fuzzing mode of Perun offers:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><strong>New mutation rules</strong>: We devised new rules designed to affect performance.
+Our group of rules is general, and does not focus on the only one type of
+potential performance problem and tackles several types of input files and
+their associated performance issues.</p></li>
+<li><p><strong>Classic rules</strong>:
+The existing fuzzers proposed so called <em>classical rules</em>, and they have achieved
+great success in past, therefore we adapt the classic generally
+used mutation rules to our collection of rules as well.</p></li>
+<li><p><strong>Perun-based evaluation</strong>:
+We select inputs for mutation mainly according to the Perun results,
+instead of using classical evaluation criteria.</p></li>
+<li><p><strong>Heuristics based on coverage testing</strong>:
+The fuzzing is in general a brute-force technique, and so we do not want to test
+with Perun every workload, since Perun adds considerable overhead for each testing.
+We implement a heuristic, that first tests the coverage of the code to quickly filter
+out completely uninteresting workloads before evaluating them by Perun.</p></li>
+<li><p><strong>Interpretation of mutated workloads</strong>:
+We believe that after the fuzz testing, testers primarily want
+to know what workloads are making the troubles to application and how
+they differ from the original files. We propose a simple technique for visualizing
+the results of the fuzzing by showing the differences between input seeds and their
+resulting mutations.</p></li>
+<li><p><strong>Interpretation of the fuzzing process</strong>:
+Additionally to visualization of inferred workload, we also provide several graphs that
+illustrates the illustrates the fuzzing process itself. This allows developers to tune
+out regular fuzzing testings to achieve best results in best possible time.</p></li>
+</ol>
+</div></blockquote>
+<a class="reference internal image-reference" href="_images/excel-fuzzing-overview.svg"><img alt="_images/excel-fuzzing-overview.svg" class="align-center" src="_images/excel-fuzzing-overview.svg" width="100%" /></a>
+<p>Our solution currently modifies input workload <em>files</em> (one of the most common
+format of program workload) based on <em>mutational</em> approach.
+The feedback loop is extended with coverage information,
+for the purpose of increasing the efficiency and chances to find
+the worst-case workloads and is used as initial test for finding possible
+time-consuming workloads. After the initial evaluation we use Perun,
+to automatically detects performance changes based on the data
+collected within the program runtime.</p>
+<p>For different file types (or those of similar characteristics) we
+use different groups of mutation methods. Hence, we apply domain-specific
+knowledge for certain types of files to trigger the performance change
+or find unique errors more quickly.</p>
+<p>Before the actual fuzzing loop, we first determine the <em>performance baseline</em>, i.e. the expected
+performance of the program, to which future results (so called targets) will be compared. In initial
+testing we first measure code coverage (number of executed lines of code) while executing each
+initial seed. The median of measured coverage data is then considered as the baseline for coverage
+testing. Second, Perun is run to collected memory, time or trace resource records with initial seeds
+resulting into baseline profiles (<code class="docutils literal notranslate"><span class="pre">base_profile</span></code>). Practically <em>performance baseline</em> profiles
+describe the performance of the program on the given workload corpus. After the initial testing,
+the seeds in the corpus are considered as parents for future mutations and rated by the evaluation
+function.</p>
+<p>The fuzzing loop itself starts with choosing one individual file from corpus (initial seeds). This
+file is then transformed into mutations.  We first precollect the interesting mutations: those that
+increase the number of executed lines. We argue that prefiltering the results with coverage based
+testing is fast and can yield satisfying results. In later step, we combine these results with
+the performance check, which is on the other hand slower, but yields precise results</p>
+<p>After precollecting the interesting workloads, we collect run-time resources (memory, trace, time)
+using Perun’s collectors (see <a class="reference internal" href="collectors.html#collectors-overview"><span class="std std-ref">Collectors Overview</span></a>), transforms them to so called target
+profiles and checks for performance changes by comparing newly generated target profile with
+baseline performance profile (see <a class="reference internal" href="degradation.html#degradation-overview"><span class="std std-ref">Detecting Performance Changes</span></a> for more details about degradation
+checks). We repeat, that the intuition is, that running coverage testing is faster than collecting
+performance data (since it introduces certain overhead) and collecting performance data only for
+possibly newly covered paths could result into more interesting workloads. According to the number
+of gathered workloads we adapt the coverage increase ratio, with an aim to either mitigate or
+tighten the condition for classification a workload as an interesting one.</p>
+<p>List of results of each testing iteration in the main loop contains successful mutations and
+the history of the used rules, that led to their current form. Collection of interesting workloads
+is limited by two parameters: the current number of program executions (specified by option
+<code class="docutils literal notranslate"><span class="pre">--execs-limit</span></code>) and the current number of collected files (specified by
+<code class="docutils literal notranslate"><span class="pre">--interesting-files-limit</span></code>). The first limit guarantees that the loop will terminate. On
+the other hand, if it is set to excessively high value, it would lead to a long duration of this
+phase, especially if the test program itself is used to run for a longer time. The latter limit
+ensures the loop will end in reasonable time and collects reasonable number of workloads.
+The combination of these limits ensures termination in reasonable time.</p>
+<p>Note, that we can collect line coverage only in the presence of source files. In case we are
+supplied only with binary or script, we skip the first (and fast) testing phase and only checks for
+possible performance changes.</p>
+</section>
+<section id="mutation-strategies">
+<h2>Mutation Strategies<a class="headerlink" href="#mutation-strategies" title="Link to this heading">¶</a></h2>
+<p>In general, the goal of mutational strategies is to randomly modify a workload to create a new one.
+We propose a series of rules inspired by both existing performance bugs found in real projects, and
+general knowledge about used data structures, sorting algorithms, or regular expressions.</p>
+<p>Both the types of workloads and the rules for their modification are
+divided into several groups: <em>text</em>, <em>binary</em> and <em>domain specific</em>. In particular, we
+currently support domain-specific rules for XML format based files. We identify each rule with
+its own label name (T stands for text, B for binary and D for domain-specific),
+with a brief description of what it concentrates on and the demonstration result of its application
+on some sample data. In case the rule is inspired by concrete bug found in real application, we
+list the link to the report.</p>
+<p id="module-perun.fuzz.methods.textfile">Collects fuzzing rules specific for text files.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.change_character">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">change_character</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.change_character" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.4: Change random character.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quack brown [b]ox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Adaptation of classical rule for text files. Changes a random character
+at random line to different character.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_character">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_character</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_character" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.15: remove a random character.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quck brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Removes a random character in random word in random line.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.divide_line">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">divide_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.divide_line" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.3: Divide line.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “&lt;author&gt;Gambardella, Matthew&lt;/author&gt;”</p></li>
+<li><p><strong>Mutation</strong>: “&lt;author&gt;Gambardella, Matthew&lt;/au”, “thor&gt;”</p></li>
+<li><p><strong>Description</strong>: Divides a line by inserting newline character in random position.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.double_line">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">double_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.double_line" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.1: Double the size of a line.</strong></p>
+<ul>
+<li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
+<li><p><strong>Mutation</strong>: “The quick brown fox.The quick brown fox.”</p></li>
+<li><p><strong>Description</strong>: This rule focuses on possible performance issues associated with long lines
+appearing in files. The rule doubles the selected random line in the input.</p></li>
+<li><p><strong>Known Issues</strong>:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="https://wiki.gnome.org/Apps/Gedit">gedit</a> text editor (issue with too long lines)</p></li>
+<li><p>Poorly validated regexps (issue with lengthy backtracking)</p></li>
+</ol>
+</div></blockquote>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.duplicate_line">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">duplicate_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.duplicate_line" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.2: Duplicate a line.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
+<li><p><strong>Mutation</strong>: “The quick brown fox.”, “The quick brown fox.”</p></li>
+<li><p><strong>Description</strong>: Extends the file vertically, by duplicating random
+line in the file.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_line">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_line" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.13: Remove random line.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “”</p></li>
+<li><p><strong>Description</strong>: Removes random line.</p></li>
+<li><p><strong>Known Issues</strong>:</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.append_whitespace">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">append_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.append_whitespace" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.8: Append whitespaces.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quick brown fox jumps over the lazy dog[    ]”</p></li>
+<li><p><strong>Description</strong>: The rule appends random number of whitespaces at random line.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.insert_whitespace">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">insert_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.insert_whitespace" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.10: Insert whitespaces on a random place.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “The quick bro[   ]wn fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: The rule inserts random number of whitespaces at random place in the random
+line. There are several intuitions behind this rule: (1) some trimming regular expressions
+can induce the excessive number of backtracking, and (2) some structures, such as hash
+tables, can have bad properties and lead to a singly-linked list when induced with lots of
+words (e.g. when one chooses wrong size of the table or bad hash-function.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.prepend_whitespace">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">prepend_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.prepend_whitespace" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.9: Prepend whitespaces.</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “[    ]The quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: The rule prepends random number of whitespaces at random line.</p></li>
+<li><p><strong>Known Issues</strong>:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016">StackOverflow</a> regular expression with quadratic number of backtrackings.</p></li>
+</ol>
+</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.repeat_whitespace">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_whitespace" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.11: Repeat whitespaces.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “The quick brown[    ] fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: The rule repeats random number of whitespaces at random place in the random
+line. There intuition behind this rule is that some trimming regular expressions
+can induce the excessive number of backtracking.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.bloat_words">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">bloat_words</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.bloat_words" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.12: Remove whitespaces.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
+<li><p><strong>Mutation</strong>: “The quickbrown fox.”</p></li>
+<li><p><strong>Description</strong>: Removes whitespace from a random line. The intuition is to create a bigger
+words that might bloat the underlying structures.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.repeat_word">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_word</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_word" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.5: Repeat random word of a line.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quick brown [brown] fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: The rule picks a random word in random line and repeats it several times.
+The intuition is, that there e.g. exist certain vulnerabilities, when repeated occurrences
+of words can either lead to faster (e.g. when the word is cached) or slower time
+(e.g. when in hash-table the underlying structure is degradated to list). Moreover, some
+algorithms, such as quick sort are forced to worst-case, when all elements are same.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_word">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_word</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_word" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.14: Remove random word</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Removes random word in random line.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.sort_line">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.6: Sort words or numbers of a line.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
+<li><p><strong>Mutation</strong>: “brown fox quick The.</p></li>
+<li><p><strong>Description</strong>: The intuition of this rule is to force bad behaviour, e.g. to sorting
+algorithm, that in some cases perform worse for sorted output, or to balanced trees, which
+might be unbalanced for sorted values.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.textfile.sort_line_in_reverse">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line_in_reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line_in_reverse" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule T.7: Sort words or numbers of a line in reverse.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
+<li><p><strong>Mutation</strong>: “brown fox quick The.</p></li>
+<li><p><strong>Description</strong>: The intuition of this rule is to force bad behaviour, e.g. to sorting
+algorithm, that in some cases perform worse for sorted output, or to balanced trees, which
+might be unbalanced for sorted values.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<p id="module-perun.fuzz.methods.binary">In case of binary files we cannot apply specific domain knowledge nor can we be inspired by
+existing performance issues. Instead, we mostly adapt the classical fuzzing rules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.insert_byte">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_byte" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.3: Insert random byte.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the qui#ck brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.remove_byte">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_byte" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.4: Remove random byte.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quik brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.swap_byte">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">swap_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.swap_byte" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.5: Swap random bytes.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quock brown fix jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Implementation of classical fuzzing rule. Picks two random lines and
+two random bytes in the line and swaps them.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.insert_zero_byte">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_zero_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_zero_byte" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.2: Insert random zero byte.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: This is C string. You are gonna love it.</p></li>
+<li><p><strong>Mutation</strong>: This is string.```` You are gonna love it.</p></li>
+<li><p><strong>Description</strong>: The rule inserts random zero byte <code class="docutils literal notranslate"><span class="pre">\</span></code> in the string. The intuition is to
+target the C language application, that process the strings as zero-terminated string of
+bytes.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.remove_zero_byte">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_zero_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_zero_byte" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.1: Remove random zero byte</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: This is C string.You are gonna love it.</p></li>
+<li><p><strong>Mutation</strong>: This is string. You are gonna love it.</p></li>
+<li><p><strong>Description</strong>: The rule removes random zero byte <code class="docutils literal notranslate"><span class="pre">\</span></code> in the string. The intuition is to
+target the C language application, that process the strings as zero-terminated string of
+bytes. Removing the zero byte could lead to program non-termination, or at least crashing
+when reading the whole memory.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.binary.flip_bit">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">flip_bit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.flip_bit" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule B.6: Flip random bit.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Mutation</strong>: “the quack brown fox jumps over the lazy dog”</p></li>
+<li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<p id="module-perun.fuzz.methods.xml">Exploiting more domain-specific knowledge about the workload we
+devised specific rules for concrete formats. We propose rules for
+removing tags, attributes, names or values of attributes used in XML
+based files (i.e. . <code class="docutils literal notranslate"><span class="pre">xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.svg</span></code>, <code class="docutils literal notranslate"><span class="pre">.xhtml</span></code>, <code class="docutils literal notranslate"><span class="pre">.xul</span></code>).
+For example, we can assume a situation, when fuzzer removes closing tag,
+which will increase the nesting. Then a recursively implemented parser
+will fail to find one or more of closing brackets (representing recursion
+stop condition) and may hit a stack overflow error.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute_value">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_value" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule D.3: Removed attribute value.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
+<li><p><strong>Mutation</strong>: &lt;book id=”bk106” pages=””&gt;</p></li>
+<li><p><strong>Description</strong>: Removes random value of the attribute in the random line and tag.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute_name">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_name" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule D.2: Remove attribute name.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
+<li><p><strong>Mutation</strong>: &lt;book id=”bk106” “457”&gt;</p></li>
+<li><p><strong>Description</strong>: Removes name of the attribute in random tag in the random line.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule D.1: Remove an attribute.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
+<li><p><strong>Mutation</strong>: &lt;book id=”bk106”&gt;</p></li>
+<li><p><strong>Description</strong>: Selects random tag and removes a random attribute.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_tag">
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_tag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_tag" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Rule D.4: Remove tag.</strong></p>
+<ul class="simple">
+<li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
+<li><p><strong>Mutation</strong>:</p></li>
+<li><p><strong>Description</strong>: Removes a random tag.</p></li>
+<li><p><strong>Known Issues</strong>: none</p></li>
+</ul>
+</dd></dl>
+
+<p>We further offer the possibility of adding custom rules. For adding the rules to a mutation strategy
+set, you can launch the fuzzer with a special file in YAML file format containing the description of
+applied rules using the <code class="docutils literal notranslate"><span class="pre">--regex-rules</span></code> option. Each rule is represented as an associative array
+in a form <em>key: value</em>, where both are regular expressions but <em>key</em> is a pattern which should be
+replaced, and value* is the replacement.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">Back</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Front</span>
+<span class="nt">del</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">add</span>
+<span class="nt">remove</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">create</span>
+<span class="l l-Scalar l-Scalar-Plain">([0-9]{6}),([0-9]{2})</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">\\1.\\2</span>
+<span class="nt">(\\w+)=(\\w+)</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">\\2=\\1</span>
+</pre></div>
+</div>
+<p>Additionally, one can extend the existing rules by modifying files <code class="docutils literal notranslate"><span class="pre">binary.py</span></code>, <code class="docutils literal notranslate"><span class="pre">textfile.py</span></code> or
+<code class="docutils literal notranslate"><span class="pre">xml.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">methods</span></code> package. Further, it is necessary to modify the script
+<code class="docutils literal notranslate"><span class="pre">filetype.py</span></code>, which is responsible for selecting the rules. To add, for example, specific rules
+for JSON file type, one just has to create a new script, e.g. <code class="docutils literal notranslate"><span class="pre">json.py</span></code>, and modify the rules
+selection. Note that every rule should contain a brief description, which will be displayed after
+fuzzing.</p>
+</section>
+<section id="passing-input-sample">
+<h2>Passing Input Sample<a class="headerlink" href="#passing-input-sample" title="Link to this heading">¶</a></h2>
+<p>Workloads can be passed to fuzzer as an arbitrary mix of files or directories using the
+<code class="docutils literal notranslate"><span class="pre">--input-sample</span></code> option. Directories are then iteratively walked for all files with reading
+permissions. Optionally files can be filtered using option <code class="docutils literal notranslate"><span class="pre">--workloads-filter</span></code>: a user specified
+regular expression that file names must match. E.g one can fuzz with XML files by setting expression
+<code class="docutils literal notranslate"><span class="pre">--workloads-filter=&quot;^.*.xml$&quot;</span></code>. Or if one wants to skip all the files with the name containing
+string “error” one can use <code class="docutils literal notranslate"><span class="pre">--workloads-filter=&quot;^((?!error).)*$&quot;</span></code>. Note that the fuzzer should
+always be launched with just one type of initial files even if the target application supports more
+types, since we tune the rules according to workload file format.</p>
+</section>
+<section id="selecting-mutation-methods">
+<h2>Selecting Mutation Methods<a class="headerlink" href="#selecting-mutation-methods" title="Link to this heading">¶</a></h2>
+<p>We select corresponding mutation strategies based on the first loaded workload file. Basically, if
+the file is a binary, all the rules specific to binaries are added to the set of rules, otherwise we
+add all the basic text rules. We further analyse the mime type of a file and if it is supported by
+the fuzzer, we add to the set of rules mime-specific rules as well as any user-defined rules.</p>
+<p>We argue the advantage of fuzzing with one file type rests in its code covering feature. To be more
+precise, we are not observing at the overall percentage of code coverage, but how many lines of code
+has been executed in total during the run, with an aim to maximise it. Consider an application that
+extracts meta-data from different media files, such as WAV, JPEG, PNG, etc. If a PNG image file is
+used as a seed to this application, only the parts related to PNG files will be tested. Then testing
+with WAV will cause, that completely different parts of the program will be executed, hence total
+executed code lines of these two runs cannot compare with each other because reaching higher line
+coverage with WAV files would lead to preferring them for fuzzing, and PNG files would be neglected.
+Moreover, we are aware that this strategy may miss some performance bugs. Fuzzing multiple
+mime-types is current feature work.</p>
+</section>
+<section id="initial-testing">
+<h2>Initial Testing<a class="headerlink" href="#initial-testing" title="Link to this heading">¶</a></h2>
+<p>The newly mutated results have to be compared against some expected behaviour, performance or value:
+so called baseline results (i.e. results and measurements of workload corpus). Hence, initial seeds
+become test cases and they are used to collect performance baselines. By default, our initial
+program testing (as well as testing within the fuzzing loop) interleaves two phases described in
+more details below: coverage and performance-guided testing.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">perun-fuzz</span></code>, we use <a class="reference external" href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a> tool to measure the code coverage. Note that the program has to be
+build for coverage analysis with GNU Compiler Collection (GCC) with the option <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> (or
+alternatively a pair of options <code class="docutils literal notranslate"><span class="pre">-fprofile-arcs</span> <span class="pre">-ftest-coverage</span></code>). The resulting file with
+the extension <code class="docutils literal notranslate"><span class="pre">.gcno</span></code> then contains the information about basic block graphs and assigns source
+line numbers to blocks. If we execute the target application a separate <code class="docutils literal notranslate"><span class="pre">.gcda</span></code> files are then
+created for each object file in the project. These files contain arc transition counts, value
+profile counts, and additional summary information <a class="reference external" href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a>.</p>
+<p>Total count of executed code lines through all source files represents the baseline coverage (and
+partly also a performance) indicator. An increase of the value means that more instructions have
+been executed (for example, some loop has been repeated more times) so we hope that performance
+degradation was likely triggered as well. Note that the limitation of this approach is that it does
+not track uniquely covered paths, which could trigger performance change as well. Support of more
+precise coverage metrics is a future work.</p>
+<p>First the target program is executed with all workloads from corpus. After each execution, <code class="docutils literal notranslate"><span class="pre">.gcda</span></code>
+files are filled with coverage information, which Gcov tool parses and generates output files. We
+parse coverage data from the output <code class="docutils literal notranslate"><span class="pre">.gcov</span></code> file, sum up line executions, compare with the current
+maximum, update the maximum if new coverage is greater and iterate again. It follows that base
+coverage is the maximum count of executed lines reached during testing with seeds.</p>
+<p>While coverage-based testing within fuzzing can give us fast feedback, it does not serve as an
+accurate performance indicator. We hence want to exploit results from Perun. We run the target
+application with a given workload, collect performance data about the run (such as runtime or
+consumed memory) and store them as a persistent profile (i.e. the set of performance records).
+Again, we will need a performance baseline, which will be compared with newly generated mutations.
+Profiles measured on fuzzed workloads (so called <em>target profiles</em>) are then compared with a profile
+describing the performance of the program on the initial corpus (so called<em>baseline profiles</em>). In
+order to compare the pair of baseline and target profiles, we use sets of calculated regression
+models, which represents the performance using mathematical functions computed by the least-squares
+method. We then use the Perun internal degradation methods (see <a class="reference internal" href="degradation.html#degradation-overview"><span class="std std-ref">Detecting Performance Changes</span></a>.</p>
+</section>
+<section id="evaluation-of-mutations">
+<h2>Evaluation of Mutations<a class="headerlink" href="#evaluation-of-mutations" title="Link to this heading">¶</a></h2>
+<p>Initially, the workload corpus is filled with seeds (given by user), which will be parents to newly
+generated mutations (we can also call these seeds <em>parent workloads</em>). In the main loop, we extend
+this corpus with successful mutations which in retrospect become <em>parent workloads</em> too. The success
+of every workload is represented by the <em>fitness score</em>: a numeric value indicating workload’s point
+rating. The better rating of workload leads either to better code coverage (and possibly new
+explored paths or iterations) or to newly found performance changes. We calculate the total score by
+the following evaluation function:</p>
+<p><span class="math notranslate nohighlight">\(score_{workload} = icovr_\text{workload} * (1 + pcr_\text{workload})\)</span>.</p>
+<p><strong>Increase coverage rate (icovr)</strong>: This value indicates how much
+coverage will change if we run the program with the workload, compared to
+the base coverage measured for initial corpus. Basically, it is a ratio
+between coverage measured with the mutated workload and the base
+coverage:</p>
+<p><span class="math notranslate nohighlight">\(icovr_\text{workload} = cov_\text{workload} / cov_\text{base}\)</span>.</p>
+<p><strong>Performance change rate (pcr)</strong>: In general, we compare the newly
+created profile with the baseline profile  and the result is a list of
+located performance changes (namely <em>degradations</em>, <em>optimisations</em> and
+<em>no changes</em>). Performance change rate is then computed as ratio number
+of degradations in the result list:</p>
+<p><span class="math notranslate nohighlight">\(pcr_\text{workload} = \text{cnt(}degradation\text{, }result\text{)} / \text{len}(result)\)</span></p>
+<p>This value plays a large role in the overall ranking of workload, because it is based on the real
+data collected from the run. And so workloads that report performance degradations and not just
+increases coverage have better ranking. The computation of <span class="math notranslate nohighlight">\(pcr_\text{workload}\)</span> could further
+be extended by the rate of degradations, i.e. if two workloads found the same number of
+degradations, the workload which contains more serious change would be ranked better. Optimisations
+of ranking algorithm is another future work. This evaluation serves for informed candidate selection
+for fuzzing from the parents.</p>
+</section>
+<section id="fuzzing-loop">
+<h2>Fuzzing Loop<a class="headerlink" href="#fuzzing-loop" title="Link to this heading">¶</a></h2>
+<p>We can catch SIGINT signal to terminate the fuzzing when one decides to quit earlier. Fuzz unit of
+Perun catches this signal, however, other Perun units (collectors, postprocessors) have not
+implemented handlers for interruption signal, hence it is not recommended to interrupt during
+performance testing, but only in the coverage-guided testing phase. In the following, we will
+describe selected aspects of the main loop of the whole fuzzing process.</p>
+<p>At the beginning of every iteration we first select the workloads from parents which will be further
+mutated. All parents are kept sorted by their scores, and the selection for mutation consists of
+dividing the seeds into five intervals such that the seeds with similar value are grouped together.
+In our experience, five intervals seem to be appropriate because with fewer intervals parents are in
+too big and inappropriate groups and in the case of more intervals, parents with similar score are
+pointlessly scattered.</p>
+<p>First, we assign a weight to each interval using linear distribution. Then we perform a weighted
+random choice of interval. Finally, we randomly choose a parent from this interval, whereas
+differences between parent’s scores in the same interval are not very notable. The intuition behind
+this strategy is to select the workload for mutation from the best rated parents. From our
+experience, selecting only the best rated parent in every iteration does not lead to a better
+results, and other parents are naturally ignored. Hence we do selection from all the parents, but
+the parent with better score has a greater chance to be selected.</p>
+<a class="reference internal image-reference" href="_images/seed_selection.svg"><img alt="_images/seed_selection.svg" class="align-center" src="_images/seed_selection.svg" width="100%" /></a>
+<p>In each iteration of fuzzing we generate new workloads. However, we first determine how many new
+mutation (<span class="math notranslate nohighlight">\(N\)</span>) to generate by rule <span class="math notranslate nohighlight">\(f\)</span> in the current iteration of fuzzing loop. If
+<span class="math notranslate nohighlight">\(N\)</span> is too big and we generate mutations for each rule <span class="math notranslate nohighlight">\(f\)</span> from the set of rules,
+the corpus will bloat. On the other hand, if <span class="math notranslate nohighlight">\(N\)</span> is too low, we might not trigger any change
+at all, as we will not prefer successful rules more. Instead we propose to dynamically calculate
+the value of <span class="math notranslate nohighlight">\(N\)</span> according to the statistics of fuzzing rules during the process. Statistical
+value of rule <span class="math notranslate nohighlight">\(f\)</span> is a function:</p>
+<p><span class="math notranslate nohighlight">\(stats_f = (degs_f + icovr_f)\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(degs_f\)</span> represents the number of detected degradations by applying the rule <span class="math notranslate nohighlight">\(f\)</span>,
+and <span class="math notranslate nohighlight">\(icovr_f\)</span> stands for how many times the coverage was increased by applying rule <span class="math notranslate nohighlight">\(f\)</span>.
+Fuzzer then calculates the number of new mutations for every rule to be applied in four possible
+ways using <code class="docutils literal notranslate"><span class="pre">--mutations-per-rule</span></code> option:</p>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=unitary</span></code>.
+The case when <span class="math notranslate nohighlight">\(N=1\)</span>, the fuzzer will generate one mutation per
+each rule. This is a simple heuristic without the usage of
+statistical data and where all the rules are equivalent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=proportional</span></code>.
+The case when <span class="math notranslate nohighlight">\(N=min(stats_f+1, FLPR)\)</span>, the fuzzer will
+generate mutations proportionally to the statistical value of
+function (i.e. <span class="math notranslate nohighlight">\(stats_f\)</span>). More mutation workloads are
+generated for more successful rules. In case the rule <span class="math notranslate nohighlight">\(f\)</span> has
+not caused any change in coverage or performance (i.e.
+<span class="math notranslate nohighlight">\(stat_f=0\)</span>) yet, the function will ensure the same result as in
+the first strategy. File Limit Per Rule (FLPR) serves to limit
+the maximum number of created mutations per rule and is set to value
+100.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=probabilistic</span></code>.
+Heuristic that depends on the total number of degradation or
+coverage increases (<span class="math notranslate nohighlight">\(total\)</span>). The ratio between
+<span class="math notranslate nohighlight">\(stats_f\)</span> and <span class="math notranslate nohighlight">\(total\)</span> determines the probability
+<span class="math notranslate nohighlight">\(prob_f\)</span>, i.e. the probability whether the rule <span class="math notranslate nohighlight">\(f\)</span>
+should be applied, as follows:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}prob_f =
+    \begin{cases}
+        1    &amp;  \text{if } total=0 \\
+        0.1  &amp;  \text{if } stats_f / total &lt; 0.1\\
+        stats_f / total &amp; \text{otherwise}
+    \end{cases}\end{split}\]</div>
+</div></blockquote>
+<p>and we choose <span class="math notranslate nohighlight">\(N\)</span> as:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\begin{split}N =
+    \begin{cases}
+        1  &amp;  \text{if } random &lt;= prob_f \\
+        0  &amp;  \text{otherwise }
+    \end{cases}\end{split}\]</div>
+</div></blockquote>
+<p>Until some change in coverage or performance occurs, (i.e. while
+<span class="math notranslate nohighlight">\(total=0\)</span>), one new workload is generated by each rule. After
+some iterations, more successful rules have higher probability, and
+so they are applied more often. On contrary rules with a poor ratio
+will be highly ignored. However, since they still may trigger some
+changes we round them to the probability of 10%.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=mixed</span></code>.
+The last heuristic is a modified third strategy combined with
+the second one. When the probability is high enough that the rule
+should be applied, the amount of generated workloads is appropriate
+to the statistical value. Probability <span class="math notranslate nohighlight">\(prob_f\)</span> is calculated
+equally, but the equation for choosing <span class="math notranslate nohighlight">\(N\)</span> is modified to:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}N =
+    \begin{cases}
+        min(stats_f+1, FLPR)  &amp;  \text{if } random &lt;= prob_f \\
+        0  &amp;  \text{otherwise }
+    \end{cases}\end{split}\]</div>
+</li>
+</ol>
+<p>Our fuzzer uses by default the last heuristic, <code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=mixed</span></code>, because in our
+experience it guarantees that it will generate enough new workloads each iteration and will as well
+filter out unsuccessful rules without totally discarding them. In case that target program is prone
+to workload change and the user wants better interleaving of testing phases, it is recommended to
+use the third method (<code class="docutils literal notranslate"><span class="pre">--mutations-per-rule=probabilistic</span></code>) because the maximum number of all
+created mutations in one iteration is limited by the number of selected mutation rules.</p>
+<p>The threshold for discarding mutations is multiple of base coverage, set to 1.5 by default. The
+threshold can be changed by specifying the <code class="docutils literal notranslate"><span class="pre">--coverage-increase-rate</span></code>. A mutation is classified as
+an interesting workload in case two criteria are met:</p>
+<p><span class="math notranslate nohighlight">\(cov_{mut} &gt; cov_{threshold} \And cov_{mut} &gt; cov_{parent}\)</span></p>
+<p>i.e. it has to exceed the given threshold and achieve a higher number of executed lines than its
+predecessor.</p>
+<p>In addition, the constant which multiplies the base coverage (and thus determines the threshold)
+changes dynamically during fuzzing. In case it is problematic to reach the specified coverage
+threshold, the value of the constant decreases and thus gives more chance for further mutations to
+succeed. Vice versa, if the mutations have no problem to exceed the threshold, the value of
+the constant is probably too low, and hence we increase it.</p>
+<p>During the testing, fuzzed workload can cause that target program terminates with an error (e.g.
+SIGSEGV, SIGBUS, SIGILL, …) or it can be terminated by timeout. Even though we are not primarily
+focused on faults, they can be interesting for us as well because an incorrect internal program
+state can contain some degradation and in case of error, handlers can also contain degradation.</p>
+<a class="reference internal image-reference" href="_images/lifetime_of_mutation.svg"><img alt="_images/lifetime_of_mutation.svg" class="align-center" src="_images/lifetime_of_mutation.svg" width="100%" /></a>
+</section>
+<section id="interpretation-of-fuzzing-results">
+<h2>Interpretation of Fuzzing Results<a class="headerlink" href="#interpretation-of-fuzzing-results" title="Link to this heading">¶</a></h2>
+<p>The result of the fuzzing is illustrated by the following directory structure.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>output_dir/
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>diffs/
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>medium_words-02000b239d024dbe933684b6c740512e-diff.html
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>medium_words-389d4162ad6641d187dc405000b8d50a-diff.html
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>medium_words-39b5d7aa55fd404aa4d31422c6513e2c-diff.html
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>faults/
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>medium_words-389d4162ad6641d187dc405000b8d50a.txt
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>graphs/
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>coverage_ts.pdf
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>degradations_ts.pdf
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>hangs
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>medium_words-39b5d7aa55fd404aa4d31422c6513e2c.txt
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>logs
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>coverage_plot_data.txt
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>degradation_plot_data.txt
+<span class="w">    </span><span class="p">|</span>---<span class="w"> </span>results_data.txt
+<span class="w">  </span><span class="p">|</span>---<span class="w"> </span>medium_words-02000b239d024dbe933684b6c740512e.txt
+</pre></div>
+</div>
+<p>The results will be saved to the directory specified by <code class="docutils literal notranslate"><span class="pre">--output-dir</span></code> option. The fuzzing
+generates three kinds of mutations: those resulting into degradations (stored in <code class="docutils literal notranslate"><span class="pre">output_dir</span></code>),
+those resulting into errors or faults (stored in <code class="docutils literal notranslate"><span class="pre">output_dir/faults</span></code>), and those terminated by
+timeout (stored in <code class="docutils literal notranslate"><span class="pre">output_dir/hangs</span></code>). The fuzzing alos generates two time series graphs
+in <code class="docutils literal notranslate"><span class="pre">output_dir/graphs</span></code>), which will be described later. At last in <code class="docutils literal notranslate"><span class="pre">output_dir/diffs</span></code> are
+stored differences between individual mutations and their parents.</p>
+<p>The <strong>time series</strong> graphs show the number of found mutations causing degradation and the maximum
+recorded number of lines executed per one run. From these graphs, one can e.g. read the time needed
+to achieve sufficient results and estimate orientation time for future testing. In both graphs are
+denoted three statistically significant values: first quartile, second quartile (median) and third
+quartile from the y-axis values. The intention is to illustrate at what point in time we have
+achieved the individual portion of the result. The usage of time series graphs is meant to tune
+the properties and options of the fuzzing process.</p>
+<a class="reference internal image-reference" href="_images/example_deg_ts.svg"><img alt="_images/example_deg_ts.svg" class="align-center" src="_images/example_deg_ts.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/example_cov_ts.svg"><img alt="_images/example_cov_ts.svg" class="align-center" src="_images/example_cov_ts.svg" width="100%" /></a>
+<p>Besides visualisation, we create <strong>diff file</strong> for every output file. It shows the differences
+between files and the original seed, from which the file was created by mutation. The file is in
+HTML format, and the differences are color-coded for better orientation.</p>
+</section>
+</section>
+<section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<p>In the following we briefly explore several performance issues found in real projects and a group of
+regular expressions that have been confirmed as harmful. All the tests ran on a reference machine
+Lenovo G580 using 4 cores processor Intel Core i3-3110M with maximum frequency 2.40GHz, 4GiB memory,
+and Ubuntu 18.04.2 LTS operating system.</p>
+<section id="regular-expression-denial-of-service-redos">
+<h2>Regular Expression Denial of Service (ReDoS).<a class="headerlink" href="#regular-expression-denial-of-service-redos" title="Link to this heading">¶</a></h2>
+<p>In this case study, we analysed artificial programs which use <code class="docutils literal notranslate"><span class="pre">std::regex_search</span></code> with regular
+expressions inspired by existing reported ReDoS attacks (see e.g. <a class="reference external" href="https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS">redos</a>). In nutshell, ReDoS is
+an attack based on algorithmic complexity where regular expression are forced to take long time to
+evaluate, mostly because of backtracking algorithm, and leads to the denial of service.</p>
+<section id="stackoverflow-trim-regex">
+<h3>StackOverflow trim regex.<a class="headerlink" href="#stackoverflow-trim-regex" title="Link to this heading">¶</a></h3>
+<p>The first experiment focuses on the regular expression that caused an outage of <a class="reference external" href="https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016">StackOverflow</a> in
+July, 2016. We constructed an artificial program that reads every line and search for match with
+the regular expression. We used simple source code in C performing parallel grep as an initial seed,
+written in 150 lines. With only two tests, we could force the vulnerability, as we show in the
+Table.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>size [B]</strong></p></th>
+<th class="head"><p><strong>runtime [s]</strong></p></th>
+<th class="head"><p><strong>executed LOC ratio</strong></p></th>
+<th class="head"><p><strong>lines</strong></p></th>
+<th class="head"><p><strong>whitespaces</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(seed\)</span></p></td>
+<td><p>3535</p></td>
+<td><p>0.096</p></td>
+<td><p>1.00</p></td>
+<td><p>150</p></td>
+<td><p>306</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>5000</p></td>
+<td><p><strong>1.566</strong></p></td>
+<td><p>24.32</p></td>
+<td><p>5</p></td>
+<td><p>4881</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>10000</p></td>
+<td><p><strong>2.611</strong></p></td>
+<td><p>41.38</p></td>
+<td><p>17</p></td>
+<td><p>9603</p></td>
+</tr>
+</tbody>
+</table>
+<p>The following shows the used mutation rules for each mutation:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>used mutation rules</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{1}\)</span></p></td>
+<td><p>[T.10, T.10, T.10, T.10]</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{2}\)</span></p></td>
+<td><p>[T.10, T.10, T.10, T.10, T.10]</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="email-validation-regex">
+<h3>Email validation regex.<a class="headerlink" href="#email-validation-regex" title="Link to this heading">¶</a></h3>
+<p>This regular expression is part of the public <a class="reference external" href="http://regexlib.com/REDetails.aspx?regexp_id=1757">RegExLib</a> library and is marked as malicious
+and triggering ReDoS. We constructed a program that takes an email address from a file and tries to
+find a match with this regular expression. As an initial seed we used a file containing valid email
+address <code class="docutils literal notranslate"><span class="pre">spse1po&#64;gmail.com</span></code>. We ran two tests, in the first case with an email that must contain
+the same count of characters as the seed, and in the second case it can contain twice the size.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>size [B]</strong></p></th>
+<th class="head"><p><strong>runtime [s]</strong></p></th>
+<th class="head"><p><strong>executed LOC ratio</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(seed\)</span></p></td>
+<td><p>18</p></td>
+<td><p>0.016</p></td>
+<td><p>1.00</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>18</p></td>
+<td><p>0.176</p></td>
+<td><p>70.83</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>25</p></td>
+<td><p><strong>10.098</strong></p></td>
+<td><p>4470.72</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{2hang}\)</span></p></td>
+<td><p>36</p></td>
+<td><p><strong>&gt;5 hours</strong></p></td>
+<td><p><span class="math notranslate nohighlight">\(\infty\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<p>Two rules, namely removing random character and extending a size of line, were mostly encouraged in
+the generation of the presented workloads.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>used mutation rules</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>[T.15, T.8, T.15, T.1]</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>[T.15, T.15, T.1]</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{2hang}\)</span></p></td>
+<td><p>[T.15, T.15, T.1]</p></td>
+</tr>
+</tbody>
+</table>
+<p>In the following we list the most greedy workloads from each testing and
+their <strong>content</strong>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span>: <code class="docutils literal notranslate"><span class="pre">spse1pogailcspse1p</span></code></p></li>
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span>: <code class="docutils literal notranslate"><span class="pre">spse1poailcospse1poailco</span></code></p></li>
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{2hang}\)</span>: <code class="docutils literal notranslate"><span class="pre">spse1poailcospse1poailcospse1poailco</span></code></p></li>
+</ul>
+</section>
+<section id="java-classname-validation-regex">
+<h3>Java Classname validation regex.<a class="headerlink" href="#java-classname-validation-regex" title="Link to this heading">¶</a></h3>
+<p>This vulnerable regular expression for validation of Java class names appeared in <a class="reference external" href="https://owasp.org/www-community/OWASP_Validation_Regex_Repository">owasp</a> Validation
+Regex Repository. The testing program was similar to the previous one: ti reads a class name from
+a file and tries to find a match with this regular expression. Initial file had one line with string
+<code class="docutils literal notranslate"><span class="pre">myAwesomeClassName</span></code>. To avoid the large lines, first we set a size limit for mutations to
+the size of the initial seed (19 bytes), then to double and finally to quadruple of the size.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>size [B]</strong></p></th>
+<th class="head"><p><strong>runtime [s]</strong></p></th>
+<th class="head"><p><strong>executed LOC ratio</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(seed\)</span></p></td>
+<td><p>19</p></td>
+<td><p>0.005</p></td>
+<td><p>1.00</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>19</p></td>
+<td><p>0.016</p></td>
+<td><p>14.31</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>36</p></td>
+<td><p>1.587</p></td>
+<td><p>2383.99</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_3\)</span></p></td>
+<td><p>78</p></td>
+<td><p><strong>3.344</strong></p></td>
+<td><p>5056.67</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{3hang}\)</span></p></td>
+<td><p>78</p></td>
+<td><p><span class="math notranslate nohighlight">\(\infty\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\infty\)</span></p></td>
+</tr>
+</tbody>
+</table>
+<p>We detected two orders of magnitude degradation within run of program with the worst-case from
+the last test case (<span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_3\)</span>). The fuzzer generates and stores another 26 files
+that was classified as hangs. By additional testing we found the <span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{3hang}\)</span>
+workload which had enormous impact on program performance, and program did not terminate even after
+13 hours lasting run.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>used mutation rules</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>[T.8, T.15, T.8, T.15, T.15, T.1, T.12, T.8, T.1]</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>[T.8, T.15, T.15, T.2, T.8, T.15]</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_3\)</span></p></td>
+<td><p>[T.8, T.15, T.1, T.4, T.2]</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{3hang}\)</span></p></td>
+<td><p>[T.8, T.15, T.1, T.15, T.2]</p></td>
+</tr>
+</tbody>
+</table>
+<p>In Table above, we list the rules in order they was applied on the initial seeds and created
+malicious workloads. Removing characters together with data duplicating, appending whitespaces and
+other rules collaborated on generation of the worst-case mutations for this case study.</p>
+<p>We again list the <strong>content</strong> of generated mutations:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span>: <code class="docutils literal notranslate"><span class="pre">mywesomelassamemywm</span></code></p></li>
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span>: <code class="docutils literal notranslate"><span class="pre">mywesomelassamemywesomelassam</span></code></p></li>
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_3\)</span>:
+<code class="docutils literal notranslate"><span class="pre">ssammyAwesomelassammyAweiomelassaVmyAwes×melassammmyAwesome</span> <span class="pre">lassammyAweomel</span></code></p></li>
+<li><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_{3hang}\)</span>:
+<code class="docutils literal notranslate"><span class="pre">laalaalaalaalaalaalaalaalaalaalaalaalaalaalaalaalaalaala</span> <span class="pre">alaalaalaalaalaalaal</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="hash-collisions">
+<h2>Hash Collisions<a class="headerlink" href="#hash-collisions" title="Link to this heading">¶</a></h2>
+<p>In other experiment we analysed a simple word frequency counting program, which uses hash table with
+a fixed number of buckets (12289 exactly) and the maximum length of the word limited to 127.
+The distribution of the words in the table is ensured by the hash function. It computes a hash,
+which is then used as an index to the table. Java 1.1 string library used a hash function that only
+examined 8-9 evenly spaced characters, which then could result into collisions for long strings. We
+have implemented this behaviour into an artificial program. The likely intention of the developers
+was to save the function from going through the whole string if it is longer. Therefore, for
+fuzzing, we initially generated a seed with 10000 words of 20 characters and started fuzzing. To
+compare the results we chose the DJB <a class="reference external" href="http://www.partow.net/programming/hashfunctions/#DJBHashFunction">hash</a> function, as one of the most efficient hash functions.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td><p><strong>size [kB]</strong></p></td>
+<td><p><strong>runtime [ms]</strong></p></td>
+<td><p><strong>LOC ratio</strong></p></td>
+<td><p><strong>runtime [ms]</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(seed\)</span></p></td>
+<td><p>210</p></td>
+<td><p>26</p></td>
+<td><p>1.0</p></td>
+<td><p>13</p></td>
+<td><p>1.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>458</p></td>
+<td><p>115</p></td>
+<td><p>3.48</p></td>
+<td><p>27</p></td>
+<td><p>2.19</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>979</p></td>
+<td><p>187</p></td>
+<td><p>7.88</p></td>
+<td><p>43</p></td>
+<td><p>4.12</p></td>
+</tr>
+</tbody>
+</table>
+<p>After only 10 minutes of fuzzing each test case was able to find interesting mutations. We then
+compared the run by replacing the hash function in early Java version with DJB hash function, which
+computes hash from every character of a string. Table shows, that worst-case workloads have much
+more impact on performance of the hash table and less stable times using Java hash function,
+compared to DJB. With such a simple fuzz testing developers could avoid similar implementation bugs.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p><strong>used mutation rules</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_1\)</span></p></td>
+<td><p>[T.2, T.3, T.15, T.15, T.11, T.15]</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(worst\)</span>-<span class="math notranslate nohighlight">\(case_2\)</span></p></td>
+<td><p>[T.2, T.3, T.4, T.15, T.9, T.4, T.2, T.3, T.15, T.15]</p></td>
+</tr>
+</tbody>
+</table>
+<p>Above we show the sequence of mutation rules that transformed the seed into worst-case workloads. In
+this experiment the rules that duplicates data (T.2), increases number of lines (T.3), changes and
+removes random characters (T.4 and T.15) were the most frequent.</p>
+</section>
+<section id="fuzz-testing-cli">
+<span id="fuzzing-cli"></span><h2>Fuzz-testing CLI<a class="headerlink" href="#fuzz-testing-cli" title="Link to this heading">¶</a></h2>
+<section id="perun-fuzz">
+<h3>perun fuzz<a class="headerlink" href="#perun-fuzz" title="Link to this heading">¶</a></h3>
+<p>Performs fuzzing for the specified command according to the initial sample of workload.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>fuzz<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-b">
+<span id="cmdoption-perun-fuzz-cmd"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--cmd</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;cmd&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-b" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> The command which will be fuzzed.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-a">
+<span id="cmdoption-perun-fuzz-args"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--args</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;args&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-a" title="Link to this definition">¶</a></dt>
+<dd><p>Arguments for the fuzzed command.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-w">
+<span id="cmdoption-perun-fuzz-input-sample"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--input-sample</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;input_sample&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-w" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Initial sample of workloads (the so called corpus).These will serve as initial workloads to evaluate the baseline for performance testing.The parameter expects either paths to files (which will be directly added), or paths to directories (which will be recursively searched).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-c">
+<span id="cmdoption-perun-fuzz-collector"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--collector</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;collector&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-c" title="Link to this definition">¶</a></dt>
+<dd><p>Collector that will be used to collect performance data and used to infer baseline or target performance profiles. The profiles are further used for performance testing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>trace | memory | time | complexity | bounds</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-cp">
+<span id="cmdoption-perun-fuzz-collector-params"></span><span class="sig-name descname"><span class="pre">-cp</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--collector-params</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;collector_params&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-cp" title="Link to this definition">¶</a></dt>
+<dd><p>Additional parameters for the &lt;collector&gt;: can be specified as a file in YAML format or as YAML string</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-p">
+<span id="cmdoption-perun-fuzz-postprocessor"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--postprocessor</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;postprocessor&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-p" title="Link to this definition">¶</a></dt>
+<dd><p>After each collection of performance data, the fuzzer can run &lt;postprocessor&gt; to postprocess the collected resources (e.g. to create models of resources). This can be used for more thorough performance analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>clusterizer | normalizer | regression-analysis | regressogram | moving-average | kernel-regression</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-pp">
+<span id="cmdoption-perun-fuzz-postprocessor-params"></span><span class="sig-name descname"><span class="pre">-pp</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--postprocessor-params</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;postprocessor_params&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-pp" title="Link to this definition">¶</a></dt>
+<dd><p>Additional parameters for the &lt;postprocessor&gt;: can be specified as a file in YAML format or as YAML string</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-m">
+<span id="cmdoption-perun-fuzz-minor-version"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--minor-version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;minor_version_list&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-m" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the head minor version in the wrapped repository. The fuzzing will be performed for this particular version of the project.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-wf">
+<span id="cmdoption-perun-fuzz-workloads-filter"></span><span class="sig-name descname"><span class="pre">-wf</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workloads-filter</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;regexp&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-wf" title="Link to this definition">¶</a></dt>
+<dd><p>Regular expression that will the filter input workloads/corpus. E.g. to restrict to certain filetypes, filenames or subdirectories.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-skip-coverage-testing">
+<span class="sig-name descname"><span class="pre">--skip-coverage-testing</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-fuzz-skip-coverage-testing" title="Link to this definition">¶</a></dt>
+<dd><p>If set to true, then the evaluation of mutations based on coverage testing will not be performed. The coverage testing is a fast heuristic to filter out mutations that will probably not lead to severe real degradation. The testing through perun is costly, though very precise.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-s">
+<span id="cmdoption-perun-fuzz-source-path"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--source-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;path&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-s" title="Link to this definition">¶</a></dt>
+<dd><p>The path to the directory of the project source files.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-g">
+<span id="cmdoption-perun-fuzz-gcno-path"></span><span class="sig-name descname"><span class="pre">-g</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--gcno-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;path&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-g" title="Link to this definition">¶</a></dt>
+<dd><p>The path to the directory where .gcno files are stored.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-o">
+<span id="cmdoption-perun-fuzz-output-dir"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output-dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;path&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-o" title="Link to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> The path to the directory where generated outputs will be stored.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-t">
+<span id="cmdoption-perun-fuzz-timeout"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--timeout</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-t" title="Link to this definition">¶</a></dt>
+<dd><p>Time limit for fuzzing (in seconds).  Default value is 1800s.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-h">
+<span id="cmdoption-perun-fuzz-hang-timeout"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--hang-timeout</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-h" title="Link to this definition">¶</a></dt>
+<dd><p>The time limit before the input is classified as a hang/timeout (in seconds). Default value is 10s.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-N">
+<span id="cmdoption-perun-fuzz-max-size"></span><span class="sig-name descname"><span class="pre">-N</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--max-size</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-N" title="Link to this definition">¶</a></dt>
+<dd><p>Absolute value of the maximum size of the generated mutation wrt parent corpus. The value will be adjusted wrt to the maximal size of the workloads in corpus. Using this option, the maximal size of the generated mutation will be set to max(size of the largest workload in corpus, &lt;int&gt;).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-mi">
+<span id="cmdoption-perun-fuzz-max-size-increase"></span><span class="sig-name descname"><span class="pre">-mi</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--max-size-increase</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-mi" title="Link to this definition">¶</a></dt>
+<dd><p>Absolute value of the maximal increase in the size of the generated mutation wrt parent corpus. Using this option, the maximal size of generated mutation will be set to (size of the largest corpus in workload + &lt;INT&gt;). Default value is 1 000 000 B = 1MB.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-mp">
+<span id="cmdoption-perun-fuzz-max-size-ratio"></span><span class="sig-name descname"><span class="pre">-mp</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--max-size-ratio</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-mp" title="Link to this definition">¶</a></dt>
+<dd><p>Relative value of the maximal increase in the size of the generated mutation wrt parent corpus. Using this option, the maximal size of generated mutation will be set to (size of the largest corpus in workload * &lt;INT&gt;).  E.g. 1.5, max size=largest workload size * 1.5</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-e">
+<span id="cmdoption-perun-fuzz-exec-limit"></span><span class="sig-name descname"><span class="pre">-e</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--exec-limit</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-e" title="Link to this definition">¶</a></dt>
+<dd><p>The maximum number of fuzzing iteration while gathering interesting inputs. By interesting inputs we mean files that might potentially lead to timeouts, hang or severe severe performance degradation.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-l">
+<span id="cmdoption-perun-fuzz-interesting-files-limit"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--interesting-files-limit</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-l" title="Link to this definition">¶</a></dt>
+<dd><p>The minimum number of gathered mutations, that are so called interesting, before perun testing is performed. By interesting inputs we mean files that might potentially lead to timeouts, hang or severe severe performance degradation.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-cr">
+<span id="cmdoption-perun-fuzz-coverage-increase-rate"></span><span class="sig-name descname"><span class="pre">-cr</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--coverage-increase-rate</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-cr" title="Link to this definition">¶</a></dt>
+<dd><p>The threshold of coverage increase against base coverage, which is used to evaluate, whether the generated mutation is interesting for further evaluation by performance testing. E.g 1.5, base coverage = 100 000, so threshold = 150 000.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-mpr">
+<span id="cmdoption-perun-fuzz-mutations-per-rule"></span><span class="sig-name descname"><span class="pre">-mpr</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mutations-per-rule</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;str&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-mpr" title="Link to this definition">¶</a></dt>
+<dd><p>Strategy which determines how many mutations will be generated by certain fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>unitary | proportional | probabilistic | mixed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-r">
+<span id="cmdoption-perun-fuzz-regex-rules"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--regex-rules</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-r" title="Link to this definition">¶</a></dt>
+<dd><p>Option for adding custom fuzzing rules specified by regular expressions, written in YAML format file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-fuzz-np">
+<span id="cmdoption-perun-fuzz-no-plotting"></span><span class="sig-name descname"><span class="pre">-np</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-plotting</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-fuzz-np" title="Link to this definition">¶</a></dt>
+<dd><p>Will not plot the interpretation of the fuzzing in form of graphs.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="index.html">
+    <h3>Perun</h3>
+  </a>
+</p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Performance Fuzz-testing</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#mutation-strategies">Mutation Strategies</a><ul>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.change_character"><code class="docutils literal notranslate"><span class="pre">change_character()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.delete_character"><code class="docutils literal notranslate"><span class="pre">delete_character()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.divide_line"><code class="docutils literal notranslate"><span class="pre">divide_line()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.double_line"><code class="docutils literal notranslate"><span class="pre">double_line()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.duplicate_line"><code class="docutils literal notranslate"><span class="pre">duplicate_line()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.delete_line"><code class="docutils literal notranslate"><span class="pre">delete_line()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.append_whitespace"><code class="docutils literal notranslate"><span class="pre">append_whitespace()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.insert_whitespace"><code class="docutils literal notranslate"><span class="pre">insert_whitespace()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.prepend_whitespace"><code class="docutils literal notranslate"><span class="pre">prepend_whitespace()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.repeat_whitespace"><code class="docutils literal notranslate"><span class="pre">repeat_whitespace()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.bloat_words"><code class="docutils literal notranslate"><span class="pre">bloat_words()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.repeat_word"><code class="docutils literal notranslate"><span class="pre">repeat_word()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.delete_word"><code class="docutils literal notranslate"><span class="pre">delete_word()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.sort_line"><code class="docutils literal notranslate"><span class="pre">sort_line()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.textfile.sort_line_in_reverse"><code class="docutils literal notranslate"><span class="pre">sort_line_in_reverse()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.insert_byte"><code class="docutils literal notranslate"><span class="pre">insert_byte()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.remove_byte"><code class="docutils literal notranslate"><span class="pre">remove_byte()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.swap_byte"><code class="docutils literal notranslate"><span class="pre">swap_byte()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.insert_zero_byte"><code class="docutils literal notranslate"><span class="pre">insert_zero_byte()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.remove_zero_byte"><code class="docutils literal notranslate"><span class="pre">remove_zero_byte()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.binary.flip_bit"><code class="docutils literal notranslate"><span class="pre">flip_bit()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.xml.remove_attribute_value"><code class="docutils literal notranslate"><span class="pre">remove_attribute_value()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.xml.remove_attribute_name"><code class="docutils literal notranslate"><span class="pre">remove_attribute_name()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.xml.remove_attribute"><code class="docutils literal notranslate"><span class="pre">remove_attribute()</span></code></a></li>
+<li><a class="reference internal" href="#perun.fuzz.methods.xml.remove_tag"><code class="docutils literal notranslate"><span class="pre">remove_tag()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#passing-input-sample">Passing Input Sample</a></li>
+<li><a class="reference internal" href="#selecting-mutation-methods">Selecting Mutation Methods</a></li>
+<li><a class="reference internal" href="#initial-testing">Initial Testing</a></li>
+<li><a class="reference internal" href="#evaluation-of-mutations">Evaluation of Mutations</a></li>
+<li><a class="reference internal" href="#fuzzing-loop">Fuzzing Loop</a></li>
+<li><a class="reference internal" href="#interpretation-of-fuzzing-results">Interpretation of Fuzzing Results</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#regular-expression-denial-of-service-redos">Regular Expression Denial of Service (ReDoS).</a><ul>
+<li><a class="reference internal" href="#stackoverflow-trim-regex">StackOverflow trim regex.</a></li>
+<li><a class="reference internal" href="#email-validation-regex">Email validation regex.</a></li>
+<li><a class="reference internal" href="#java-classname-validation-regex">Java Classname validation regex.</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hash-collisions">Hash Collisions</a></li>
+<li><a class="reference internal" href="#fuzz-testing-cli">Fuzz-testing CLI</a><ul>
+<li><a class="reference internal" href="#perun-fuzz">perun fuzz</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="degradation.html" title="previous chapter">Detecting Performance Changes</a></li>
+      <li>Next: <a href="config.html" title="next chapter">Perun Configuration files</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fuzzing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/fuzzing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

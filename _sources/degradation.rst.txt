@@ -57,9 +57,31 @@ the following details:
        verbosity of the command line interface (see :doc:`cli` how to increase the verbosity of the
        output).
 
+     ``Total Degradation`` or ``Total Optimization``:
+
+       Represents an overall program degradation or optimization. The overall degradation or
+       optimization report may actually be further divided into per-binary or per-file reports
+       (e.g., a standalone report for ``mybin`` and its library ``mylib`` as done by
+       :ref:`degradation-method-eto`).
+
+     ``Not in Baseline`` or ``Not in Target``:
+
+       Represents a performance change caused by new or deleted resources, e.g., functions that
+       are newly introduced (resp newly missing) in the new project version. Reporting these
+       changes is useful since even a simple function refactoring may introduce serious performance
+       slowdown or speedup.
+
+     ``Severe Degradation`` or ``Severe Optimization``:
+
+       Represents that the performance of resource group has severely degraded (resp optimized),
+       i.e., got severely worse (resp better) with a high confidence. Each report also usually
+       shows the confidence of this report, e.g. by the value of coefficient of determination (see
+       :ref:`postprocessors-regression-analysis`), which quantifies how the prediction or
+       regression models of both versions were fitting the data.
+
      ``Degradation`` or ``Optimization``:
 
-       Represents that the performance of resource group has degradated (resp optimized), i.e. got
+       Represents that the performance of resource group has degraded (resp optimized), i.e. got
        worse (resp got better) with a fairly high confidence. Each report also usually shows the
        confidence of this report, e.g. by the value of coefficient of determination (see
        :ref:`postprocessors-regression-analysis`), which quantifies how the prediction or
@@ -98,7 +120,7 @@ reported at all. However, this behaviour can be changed by increasing the verbos
 Detection Methods
 -----------------
 
-Currently we support two simple strategies for detection of the performance changes:
+Currently we support three simple strategies for detection of the performance changes:
 
   1. :ref:`degradation-method-bmoe` which is based on results of
      :ref:`postprocessors-regression-analysis` and only checks for each uniquely identified group
@@ -110,6 +132,10 @@ Currently we support two simple strategies for detection of the performance chan
      for each uniquely identified group of resources. Each average of the target is then compared
      with the average of the baseline and if the their ration exceeds a certain threshold interval,
      the method reports the change.
+
+  3. :ref:`degradation-method-eto` which identifies outliers within the function exclusive time
+     deltas. The outliers are identified using three different statistical techniques, resulting in
+     three different change severity categories based on which technique discovered the outlier.
 
 Refer to :ref:`degradation-custom` to create your own detection method.
 
@@ -126,6 +152,13 @@ Average Amount Threshold
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: perun.check.average_amount_threshold
+
+.. _degradation-method-eto:
+
+Exclusive Time Outliers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.check.exclusive_time_outliers
 
 .. _degradation-fast-check:
 
@@ -259,11 +292,11 @@ latter is meant to be used for new projects, after crawling through the whole hi
 project and collecting the profiles. Additionally ``perun check profiles`` can be used for an
 isolate comparison of two standalone profiles (either registered in index or as a standalone file).
 
-.. click:: perun.cli:check_head
+.. click:: perun.cli_groups.check_cli:check_head
    :prog: perun check head
 
-.. click:: perun.cli:check_all
+.. click:: perun.cli_groups.check_cli:check_all
    :prog: perun check all
 
-.. click:: perun.cli:check_profiles
+.. click:: perun.cli_groups.check_cli:check_profiles
    :prog: perun check profiles

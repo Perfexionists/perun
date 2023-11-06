@@ -22,4 +22,4 @@ def after(**kwargs):
 @click.pass_context
 def mycollector(ctx, **kwargs):
     """..."""
-    runner.run_collector_from_cli_context(ctx, 'mycollector', kwargs)
+    runner.run_collector_from_cli_context(ctx, "mycollector", kwargs)

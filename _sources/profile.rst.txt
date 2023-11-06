@@ -330,8 +330,8 @@ given by `structure-unit-size`. Note that these resources are suitable for
                 "name": "b1"
             }
         ],
-        "x_interval_start": 0,
-        "x_interval_end": 11892,
+        "x_start": 0,
+        "x_end": 11892,
         "model": "linear",
         "method": "full",
     }
@@ -355,11 +355,12 @@ to the look-up table should greatly reduce the size of profiles.
 Profile API
 -----------
 
+.. automodule:: perun.profile.helpers
+
 .. automodule:: perun.profile.factory
 
-.. autofunction:: load_profile_from_file
-
-.. autofunction:: store_profile_at
+.. autoclass:: Profile
+   :members: all_resources, all_snapshots, all_models, all_filtered_models
 
 .. _profile-conversion-api:
 
@@ -369,10 +370,6 @@ Profile Conversions API
 .. automodule:: perun.profile.convert
 
 .. autofunction:: resources_to_pandas_dataframe
-
-.. autofunction:: to_heap_map_format
-
-.. autofunction:: to_heat_map_format
 
 .. autofunction:: to_flame_graph_format
 
@@ -385,18 +382,12 @@ Profile Query API
 
 .. automodule:: perun.profile.query
 
-.. autofunction:: all_resources_of
-
 .. autofunction:: all_items_of
-
-.. autofunction:: all_resource_fields_of
 
 .. autofunction:: all_numerical_resource_fields_of
 
 .. autofunction:: unique_resource_values_of
 
 .. autofunction:: all_key_values_of
-
-.. autofunction:: all_models_of
 
 .. autofunction:: unique_model_values_of

@@ -57,10 +57,10 @@ run matrix`` for running the pre-configured matrix in Yaml_ format specifing the
 regular measuring and profiling, e.g. during end of release cycles, before push to origin/upstream
 or even after each commit.
 
-.. click:: perun.cli:job
+.. click:: perun.cli_groups.run_cli:job
    :prog: perun run job
 
-.. click:: perun.cli:matrix
+.. click:: perun.cli_groups.run_cli:matrix
    :prog: perun run matrix
 
 .. _Yaml: http://yaml.org/

@@ -1,39 +1,27 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Configuration files &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Perun Configuration files &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Customize Logs and Statuses" href="logs.html" />
-    <link rel="prev" title="Detecting Performance Changes" href="degradation.html" />
+    <link rel="prev" title="Performance Fuzz-testing" href="fuzzing.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -43,8 +31,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="perun-configuration-files">
-<span id="config-file"></span><h1>Perun Configuration files<a class="headerlink" href="#perun-configuration-files" title="Permalink to this headline">¶</a></h1>
+  <section id="perun-configuration-files">
+<span id="config-file"></span><h1>Perun Configuration files<a class="headerlink" href="#perun-configuration-files" title="Link to this heading">¶</a></h1>
 <p>Perun stores its configuration in <a class="reference external" href="http://yaml.org/">Yaml</a> format, either locally for each wrapped repository, or
 globally for the whole system (see <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a>). Most of the configuration options is
 recursively looked up in the hierarchy, created by local and global configurations, until the
@@ -52,13 +40,13 @@ option is found in the nearest configuration. Refer to <a class="reference inter
 of options, such as formatting strings for status and log outputs, specification of job matrix (in
 more details described in <a class="reference internal" href="jobs.html#jobs-matrix"><span class="std std-ref">Job Matrix Format</span></a>) or information about wrapped repository.</p>
 <p>In order to configure your local instance of Perun run the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="o">--</span><span class="n">edit</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="o">--</span><span class="n">edit</span>
 </pre></div>
 </div>
-<p>This will open the nearest local configuration in text editor (by default in <code class="docutils literal"><span class="pre">vim</span></code>) and lets you
+<p>This will open the nearest local configuration in text editor (by default in <code class="docutils literal notranslate"><span class="pre">vim</span></code>) and lets you
 modify the options w.r.t. <a class="reference external" href="http://yaml.org/">Yaml</a> format.</p>
-<div class="section" id="configuration-types">
-<span id="config-types"></span><h2>Configuration types<a class="headerlink" href="#configuration-types" title="Permalink to this headline">¶</a></h2>
+<section id="configuration-types">
+<span id="config-types"></span><h2>Configuration types<a class="headerlink" href="#configuration-types" title="Link to this heading">¶</a></h2>
 <p>Perun uses two types of configurations: <strong>global</strong>  and <strong>local</strong>. The global configuration
 contains options shared by all of the Perun instances found on the host and the local configuration
 corresponds to concrete wrapped repositories (which can, obviously, be of different type, with
@@ -69,93 +57,93 @@ nearest local perun instance, and traverse to higher instances until we find the
 eventually end up in the global configuration) or gathered from all of the configurations from the
 whole configuration hierarchy (ordered by the depth of the hierarchy, i.e. options found in global
 configuration will be on the bottom of the list). Options are specified by configuration sections,
-subsections and then concrete options delimited by <code class="docutils literal"><span class="pre">.</span></code>, e.g.  <code class="docutils literal"><span class="pre">local.general.editor</span></code>
-corresponds to the <code class="docutils literal"><span class="pre">editor</span></code> option in the <code class="docutils literal"><span class="pre">general</span></code> section in <code class="docutils literal"><span class="pre">local</span></code> configuration.</p>
+subsections and then concrete options delimited by <code class="docutils literal notranslate"><span class="pre">.</span></code>, e.g.  <code class="docutils literal notranslate"><span class="pre">local.general.editor</span></code>
+corresponds to the <code class="docutils literal notranslate"><span class="pre">editor</span></code> option in the <code class="docutils literal notranslate"><span class="pre">general</span></code> section in <code class="docutils literal notranslate"><span class="pre">local</span></code> configuration.</p>
 <p>The location of global configuration differs according to the host system. In UNIX systems, the
 <strong>global</strong> configuration can be found at:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$HOME/.config/perun
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$HOME/.config/perun
 </pre></div>
 </div>
 <p>In Windows systems it is located in user storage:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">USERPROFILE</span><span class="o">%</span>\<span class="n">AppData</span>\<span class="n">Local</span>\<span class="n">perun</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">USERPROFILE</span><span class="o">%</span>\<span class="n">AppData</span>\<span class="n">Local</span>\<span class="n">perun</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="list-of-supported-options">
-<span id="config-options"></span><h2>List of Supported Options<a class="headerlink" href="#list-of-supported-options" title="Permalink to this headline">¶</a></h2>
-<dl class="confunit">
-<dt id="confunit-vcs">
-<code class="descname">vcs</code><a class="headerlink" href="#confunit-vcs" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Section, which contains options corresponding to the version control system
+</section>
+<section id="list-of-supported-options">
+<span id="config-options"></span><h2>List of Supported Options<a class="headerlink" href="#list-of-supported-options" title="Link to this heading">¶</a></h2>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-vcs">
+<span class="sig-name descname"><span class="pre">vcs</span></span><a class="headerlink" href="#confunit-vcs" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Section, which contains options corresponding to the version control system
 that is wrapped by instance of Perun. Specifies e.g. the type (in order to call corresponding
 auxiliary functions), the location in the filesystem or wrapper specific options (e.g. the
-lightweight custom <code class="docutils literal"><span class="pre">tagit</span></code> vcs constains additional options).</p>
+lightweight custom <code class="docutils literal notranslate"><span class="pre">tagit</span></code> vcs constains additional options).</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-vcs.type">
-<code class="descname">vcs.type</code><a class="headerlink" href="#confkey-vcs.type" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Specifies the type of the wrapped version control system, in order to call
-corresponding auxiliary functions. Currently <code class="docutils literal"><span class="pre">git</span></code> is supported, with custom lightweight vcs
-<code class="docutils literal"><span class="pre">tagit</span></code> in development.</p>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-vcs.type">
+<span class="sig-name descname"><span class="pre">vcs.type</span></span><a class="headerlink" href="#confkey-vcs.type" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Specifies the type of the wrapped version control system, in order to call
+corresponding auxiliary functions. Currently <code class="docutils literal notranslate"><span class="pre">git</span></code> is supported, with custom lightweight vcs
+<code class="docutils literal notranslate"><span class="pre">tagit</span></code> in development.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-vcs.url">
-<code class="descname">vcs.url</code><a class="headerlink" href="#confkey-vcs.url" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Specifies path to the wrapped version control system, either as an absolute or
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-vcs.url">
+<span class="sig-name descname"><span class="pre">vcs.url</span></span><a class="headerlink" href="#confkey-vcs.url" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Specifies path to the wrapped version control system, either as an absolute or
 a relative path that leads to the directory, where the root of the wrapped repository is (e.g.
-where <code class="docutils literal"><span class="pre">.git</span></code> is).</p>
+where <code class="docutils literal notranslate"><span class="pre">.git</span></code> is).</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-general">
-<code class="descname">general</code><a class="headerlink" href="#confunit-general" title="Permalink to this definition">¶</a></dt>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-general">
+<span class="sig-name descname"><span class="pre">general</span></span><a class="headerlink" href="#confunit-general" title="Link to this definition">¶</a></dt>
 <dd><p>Section, which contains options and specifications potentially shared by more Perun instances.
 This section contains e.g. underlying text editor for editing, or paging strategy etc.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-general.paging">
-<code class="descname">general.paging</code><a class="headerlink" href="#confkey-general.paging" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the paging for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>. Paging can be currently set to the
-following four options: <code class="docutils literal"><span class="pre">always</span></code> (both <code class="docutils literal"><span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">status</span></code> will be paged), <code class="docutils literal"><span class="pre">only-log</span></code>
-(only output of <code class="docutils literal"><span class="pre">log</span></code> will be paged), <code class="docutils literal"><span class="pre">only-status</span></code> (only output of <code class="docutils literal"><span class="pre">status</span></code> will be
-paged and <code class="docutils literal"><span class="pre">never</span></code>. By default <code class="docutils literal"><span class="pre">only-log</span></code> is used in the configuration. The behaviour of
-paging can be overwritten by option <code class="docutils literal"><span class="pre">--no-pager</span></code> (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a>).</p>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-general.paging">
+<span class="sig-name descname"><span class="pre">general.paging</span></span><a class="headerlink" href="#confkey-general.paging" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the paging for <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code>. Paging can be currently set to the
+following four options: <code class="docutils literal notranslate"><span class="pre">always</span></code> (both <code class="docutils literal notranslate"><span class="pre">log</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> will be paged), <code class="docutils literal notranslate"><span class="pre">only-log</span></code>
+(only output of <code class="docutils literal notranslate"><span class="pre">log</span></code> will be paged), <code class="docutils literal notranslate"><span class="pre">only-status</span></code> (only output of <code class="docutils literal notranslate"><span class="pre">status</span></code> will be
+paged and <code class="docutils literal notranslate"><span class="pre">never</span></code>. By default <code class="docutils literal notranslate"><span class="pre">only-log</span></code> is used in the configuration. The behaviour of
+paging can be overwritten by option <code class="docutils literal notranslate"><span class="pre">--no-pager</span></code> (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a>).</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-general.editor">
-<code class="descname">general.editor</code><a class="headerlink" href="#confkey-general.editor" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Sets user choice of text editor, that is e.g. used for manual text-editing of
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-general.editor">
+<span class="sig-name descname"><span class="pre">general.editor</span></span><a class="headerlink" href="#confkey-general.editor" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Sets user choice of text editor, that is e.g. used for manual text-editing of
 configuration files of Perun. Specified editor needs to be executable, has to take the filename
-as an argument and will be called as <code class="docutils literal"><span class="pre">general.editor</span> <span class="pre">config.yml</span></code>. By default <code class="xref std std-ckey docutils literal"><span class="pre">editor</span></code> is
-set to <code class="docutils literal"><span class="pre">vim</span></code>.</p>
+as an argument and will be called as <code class="docutils literal notranslate"><span class="pre">general.editor</span> <span class="pre">config.yml</span></code>. By default <code class="xref std std-ckey docutils literal notranslate"><span class="pre">editor</span></code> is
+set to <code class="docutils literal notranslate"><span class="pre">vim</span></code>.</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-format">
-<code class="descname">format</code><a class="headerlink" href="#confunit-format" title="Permalink to this definition">¶</a></dt>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-format">
+<span class="sig-name descname"><span class="pre">format</span></span><a class="headerlink" href="#confunit-format" title="Link to this definition">¶</a></dt>
 <dd><p>This section contains various formatting specifications e.g. formatting specifications for
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-format.status">
-<code class="descname">format.status</code><a class="headerlink" href="#confkey-format.status" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> command.
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-format.status">
+<span class="sig-name descname"><span class="pre">format.status</span></span><a class="headerlink" href="#confkey-format.status" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> command.
 The formatting string can contain raw delimiters and special tags, which are used to output
 concrete information about each profile, like e.g. command it corresponds to, type of the
 profile, time of creation, etc. Refer to <a class="reference internal" href="logs.html#logs-status"><span class="std std-ref">Customizing Statuses</span></a> for more information regarding the
-formatting strings for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
+formatting strings for <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
 <p>E.g. the following formatting string:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
 </pre></div>
 </div>
-<p>will yield the following status when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
+<p>will yield the following status when running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
 profiles):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
   id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
 ═══════════════════════════════════════════════════════════════════════════════▣
  0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
@@ -166,20 +154,20 @@ profiles):</p>
 </div>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-format.shortlog">
-<code class="descname">format.shortlog</code><a class="headerlink" href="#confkey-format.shortlog" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the short format of <code class="docutils literal"><span class="pre">perun</span>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-format.shortlog">
+<span class="sig-name descname"><span class="pre">format.shortlog</span></span><a class="headerlink" href="#confkey-format.shortlog" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the short format of <code class="docutils literal notranslate"><span class="pre">perun</span>
 <span class="pre">log</span></code> command. The formatting string can contain raw characters (delimiters, etc.) and special
 tags, which are used to output information about concrete minor version (e.g. minor version
 description, number of assigned profiles, etc.). Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for more information
-regarding the formatting strings for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code>.</p>
+regarding the formatting strings for <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code>.</p>
 <p>E.g. the following formatting string:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">d:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">d:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%&#39;</span>
 </pre></div>
 </div>
-<p>will yield the following output when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">minor</span>   <span class="p">(</span><span class="n">a</span><span class="o">|</span><span class="n">m</span><span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">t</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">info</span>
+<p>will yield the following output when running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">minor</span>   <span class="p">(</span><span class="n">a</span><span class="o">|</span><span class="n">m</span><span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">t</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">info</span>
 <span class="mi">53</span><span class="n">d35c</span>  <span class="p">(</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">deleted</span> <span class="n">jobs</span> <span class="n">directory</span>
 <span class="mi">07</span><span class="n">f2b4</span>  <span class="p">(</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">necessary</span> <span class="n">files</span> <span class="k">for</span> <span class="n">perun</span> <span class="n">to</span> <span class="n">work</span> <span class="n">on</span> <span class="n">this</span> <span class="n">repo</span><span class="o">.</span>
 <span class="n">bd3dc3</span>  <span class="o">---</span><span class="n">no</span><span class="o">--</span><span class="n">profiles</span><span class="o">---</span> <span class="n">root</span>
@@ -187,233 +175,243 @@ regarding the formatting strings for <code class="docutils literal"><span class=
 </div>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-format.output_profile_template">
-<code class="descname">format.output_profile_template</code><a class="headerlink" href="#confkey-format.output_profile_template" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the format for automatic generation of profile files (e.g. when
-running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">collect</span></code> or <code class="docutils literal"><span class="pre">perun</span> <span class="pre">postprocessby</span></code>.
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-format.output_profile_template">
+<span class="sig-name descname"><span class="pre">format.output_profile_template</span></span><a class="headerlink" href="#confkey-format.output_profile_template" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the format for automatic generation of profile files (e.g. when
+running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span></code> or <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">postprocessby</span></code>.
 The formatting string consists either of raw characters or special tags, that output
 information according to the resulting profile. By default the following formatting string is
 set in the global configuration:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">args</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">args</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
 </pre></div>
 </div>
 <p>The supported tags are as follows:</p>
-<p><code class="docutils literal"><span class="pre">%collector%</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">%collector%</span></code>:</p>
 <blockquote>
-<div>Placeholder for the collection unit that collected the profiling data of the given profile.
-Refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a> for full list of supported collectors.</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%postprocessors%</span></code>:</p>
+<div><p>Placeholder for the collection unit that collected the profiling data of the given profile.
+Refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a> for full list of supported collectors.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%postprocessors%</span></code>:</p>
 <blockquote>
-<div>Placeholder for list of postprocessors that were used on the given profile. The resulting
-string consists of postprocessor names joined by <code class="docutils literal"><span class="pre">-and-</span></code> string, i.e. for example this will
-output string <code class="docutils literal"><span class="pre">normalizer-and-filter</span></code>.</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%&lt;unit&gt;.&lt;param&gt;%</span></code>:</p>
+<div><p>Placeholder for list of postprocessors that were used on the given profile. The resulting
+string consists of postprocessor names joined by <code class="docutils literal notranslate"><span class="pre">-and-</span></code> string, i.e. for example this will
+output string <code class="docutils literal notranslate"><span class="pre">normalizer-and-regression-analysis</span></code>.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%&lt;unit&gt;.&lt;param&gt;%</span></code>:</p>
 <blockquote>
-<div>Placeholder for concrete value of <code class="docutils literal"><span class="pre">&lt;param&gt;</span></code> of one unit <code class="docutils literal"><span class="pre">&lt;unit&gt;</span></code> (either collector or
-postprocessor)</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%cmd%</span></code>:</p>
+<div><p>Placeholder for concrete value of <code class="docutils literal notranslate"><span class="pre">&lt;param&gt;</span></code> of one unit <code class="docutils literal notranslate"><span class="pre">&lt;unit&gt;</span></code> (either collector or
+postprocessor)</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%cmd%</span></code>:</p>
 <blockquote>
-<div>Placeholder for the command that was profiled, i.e. some binary, script or command (refer
-to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal"><span class="pre">cmds</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%args%</span></code>:</p>
+<div><p>Placeholder for the command that was profiled, i.e. some binary, script or command (refer
+to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal notranslate"><span class="pre">cmds</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%args%</span></code>:</p>
 <blockquote>
-<div>Placeholder for arguments that were supplied to the profiled command (refer to
-<a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal"><span class="pre">args</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%workload%</span></code>:</p>
+<div><p>Placeholder for arguments that were supplied to the profiled command (refer to
+<a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal notranslate"><span class="pre">args</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%workload%</span></code>:</p>
 <blockquote>
-<div>Placeholder for workload that was supplied to the profiled command (refer to
-<a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%type%</span></code>:</p>
+<div><p>Placeholder for workload that was supplied to the profiled command (refer to
+<a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%type%</span></code>:</p>
 <blockquote>
-<div>Placeholder for global type of the resources of the profile, i.e. <cite>memory</cite>, <cite>time</cite>,
-<cite>mixed</cite>, etc.</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%date%</span></code>:</p>
+<div><p>Placeholder for global type of the resources of the profile, i.e. <cite>memory</cite>, <cite>time</cite>,
+<cite>mixed</cite>, etc.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%date%</span></code>:</p>
 <blockquote>
-<div>Placeholder for the time and date that the profile was generated in form of
-<code class="docutils literal"><span class="pre">YEAR-MONTH-DAY-HOUR-MINUTES-SECONDS</span></code>.</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%origin%</span></code>:</p>
+<div><p>Placeholder for the time and date that the profile was generated in form of
+<code class="docutils literal notranslate"><span class="pre">YEAR-MONTH-DAY-HOUR-MINUTES-SECONDS</span></code>.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%origin%</span></code>:</p>
 <blockquote>
-<div>Placeholder for the origin of the profile, i.e. the minor version identification for which
-the profiles was generated and the profiling data was collected.</div></blockquote>
-<p><code class="docutils literal"><span class="pre">%counter%</span></code>:</p>
+<div><p>Placeholder for the origin of the profile, i.e. the minor version identification for which
+the profiles was generated and the profiling data was collected.</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%counter%</span></code>:</p>
 <blockquote>
-<div>Placeholder for increasing counter (counting from 0) for one run of perun. Note that this
+<div><p>Placeholder for increasing counter (counting from 0) for one run of perun. Note that this
 may rewrite existing profiles and is mostly meant to distinguish between profiles during
-one batch run of profile generation (e.g. when <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> is executed).</div></blockquote>
+one batch run of profile generation (e.g. when <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> is executed).</p>
+</div></blockquote>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-format.sort_profiles_by">
-<code class="descname">format.sort_profiles_by</code><a class="headerlink" href="#confkey-format.sort_profiles_by" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies which key of the profile will be used for sorting the output of the
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be one of the following attributes specified by the class
-attribute <code class="docutils literal"><span class="pre">ProfileInfo.valid_attributes</span></code>:</p>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-format.sort_profiles_by">
+<span class="sig-name descname"><span class="pre">format.sort_profiles_by</span></span><a class="headerlink" href="#confkey-format.sort_profiles_by" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies which key of the profile will be used for sorting the output of the
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be one of the following attributes specified by the class
+attribute <code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code>:</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="perun.profile.factory.ProfileInfo.valid_attributes">
-<code class="descclassname">ProfileInfo.</code><code class="descname">valid_attributes</code><em class="property"> = ['realpath', 'type', 'time', 'cmd', 'args', 'workload', 'collector', 'checksum', 'source']</em><a class="headerlink" href="#perun.profile.factory.ProfileInfo.valid_attributes" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'args',</span> <span class="pre">'workload',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-execute">
-<code class="descname">execute</code><a class="headerlink" href="#confunit-execute" title="Permalink to this definition">¶</a></dt>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><a class="headerlink" href="#confunit-execute" title="Link to this definition">¶</a></dt>
 <dd><p>Groups various list of commands, that can be executed before specific phases. Currently this
-contains only <code class="docutils literal"><span class="pre">pre_run</span></code> phase, which is executed before any collection of the data. This is
+contains only <code class="docutils literal notranslate"><span class="pre">pre_run</span></code> phase, which is executed before any collection of the data. This is
 mainly meant to execute compiling of the binaries and other stuff to ease the development. Note
 that these commands are executed without shell, but any risks of commands executed by these
 commands fall entirely into the user hands and we have no responsibility for them.</p>
 <p>All of these list are as follows:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">execute</span><span class="p">:</span>
-  <span class="nt">pre_run</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Running the code again&quot;</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">make</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">make install</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">execute</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pre_run</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo &quot;Running the code again&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make install</span>
 </pre></div>
 </div>
 <p>The list of commands above first outputs some text into the standard output, then it runs the
 makefile to compile the collected binary and then installs it.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-execute.pre_run">
-<code class="descname">execute.pre_run</code><a class="headerlink" href="#confkey-execute.pre_run" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]]</span></code> Runs the code before the collection of the data. This is meant to prepare the
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-execute.pre_run">
+<span class="sig-name descname"><span class="pre">execute.pre_run</span></span><a class="headerlink" href="#confkey-execute.pre_run" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]]</span></code> Runs the code before the collection of the data. This is meant to prepare the
 binaries and other settings for the actual collection of the new data.</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-cmds">
-<code class="descname">cmds</code><a class="headerlink" href="#confunit-cmds" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal"><span class="pre">cmds</span></code></a>.</p>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-cmds">
+<span class="sig-name descname"><span class="pre">cmds</span></span><a class="headerlink" href="#confunit-cmds" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal notranslate"><span class="pre">cmds</span></code></a>.</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-args">
-<code class="descname">args</code><a class="headerlink" href="#confunit-args" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal"><span class="pre">args</span></code></a>.</p>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#confunit-args" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal notranslate"><span class="pre">args</span></code></a>.</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-workloads">
-<code class="descname">workloads</code><a class="headerlink" href="#confunit-workloads" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a></p>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-workloads">
+<span class="sig-name descname"><span class="pre">workloads</span></span><a class="headerlink" href="#confunit-workloads" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a></p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-collectors">
-<code class="descname">collectors</code><a class="headerlink" href="#confunit-collectors" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-collectors"><code class="xref std std-munit docutils literal"><span class="pre">collectors</span></code></a></p>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-collectors">
+<span class="sig-name descname"><span class="pre">collectors</span></span><a class="headerlink" href="#confunit-collectors" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-collectors"><code class="xref std std-munit docutils literal notranslate"><span class="pre">collectors</span></code></a></p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-postprocessors">
-<code class="descname">postprocessors</code><a class="headerlink" href="#confunit-postprocessors" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-postprocessors"><code class="xref std std-munit docutils literal"><span class="pre">postprocessors</span></code></a></p>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-postprocessors">
+<span class="sig-name descname"><span class="pre">postprocessors</span></span><a class="headerlink" href="#confunit-postprocessors" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-postprocessors"><code class="xref std std-munit docutils literal notranslate"><span class="pre">postprocessors</span></code></a></p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-profiles">
-<code class="descname">profiles</code><a class="headerlink" href="#confunit-profiles" title="Permalink to this definition">¶</a></dt>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-profiles">
+<span class="sig-name descname"><span class="pre">profiles</span></span><a class="headerlink" href="#confunit-profiles" title="Link to this definition">¶</a></dt>
 <dd><p>Groups various option specific for profiles, such as strategies for adding or generating
 profiles</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-profiles.register_after_run">
-<code class="descname">profiles.register_after_run</code><a class="headerlink" href="#confkey-profiles.register_after_run" title="Permalink to this definition">¶</a></dt>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-profiles.register_after_run">
+<span class="sig-name descname"><span class="pre">profiles.register_after_run</span></span><a class="headerlink" href="#confkey-profiles.register_after_run" title="Link to this definition">¶</a></dt>
 <dd><p>If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
-profile (e.g. by running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>) is automatically registered in the appropriate
+profile (e.g. by running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>) is automatically registered in the appropriate
 minor version index.</p>
 </dd></dl>
 
-<dl class="confunit">
-<dt id="confunit-degradation">
-<code class="descname">degradation</code><a class="headerlink" href="#confunit-degradation" title="Permalink to this definition">¶</a></dt>
+<dl class="std confunit">
+<dt class="sig sig-object std" id="confunit-degradation">
+<span class="sig-name descname"><span class="pre">degradation</span></span><a class="headerlink" href="#confunit-degradation" title="Link to this definition">¶</a></dt>
 <dd><p>Speficies the list of strategies and how they are applied when checked for degradation in
 methods.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-degradation.collect_before_check">
-<code class="descname">degradation.collect_before_check</code><a class="headerlink" href="#confkey-degradation.collect_before_check" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> If set to true, then before checking profiles of two minor versions, we run the
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-degradation.collect_before_check">
+<span class="sig-name descname"><span class="pre">degradation.collect_before_check</span></span><a class="headerlink" href="#confkey-degradation.collect_before_check" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> If set to true, then before checking profiles of two minor versions, we run the
 collection for job matrix to collect fresh or unexisting profiles. By default, the output of
-this phase is discarded into a <code class="docutils literal"><span class="pre">devnull</span></code>. This behaviour can be changed by setting the
-<a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a>.</p>
+this phase is discarded into a <code class="docutils literal notranslate"><span class="pre">devnull</span></code>. This behaviour can be changed by setting the
+<a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a>.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-degradation.log_collect">
-<code class="descname">degradation.log_collect</code><a class="headerlink" href="#confkey-degradation.log_collect" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> If both <a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a> and
-<a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.collect_before_check</span></code></a> are set to true, then the precollect phase will be
-saved into a log of form <code class="docutils literal"><span class="pre">%minor_version$-precollect.log</span></code>. Otherwise, the output will be
-stashed into a black hole (i.e. <code class="docutils literal"><span class="pre">devnull</span></code>).</p>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-degradation.log_collect">
+<span class="sig-name descname"><span class="pre">degradation.log_collect</span></span><a class="headerlink" href="#confkey-degradation.log_collect" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> If both <a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a> and
+<a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.collect_before_check</span></code></a> are set to true, then the precollect phase will be
+saved into a log of form <code class="docutils literal notranslate"><span class="pre">%minor_version$-precollect.log</span></code>. Otherwise, the output will be
+stashed into a black hole (i.e. <code class="docutils literal notranslate"><span class="pre">devnull</span></code>).</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-degradation.apply">
-<code class="descname">degradation.apply</code><a class="headerlink" href="#confkey-degradation.apply" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies which strategies are picked for application, if more than one
-strategy satisfies the specified constraints. If the key is set to <code class="docutils literal"><span class="pre">first</span></code>, then first
-strategy from the ordered list of <a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a> is applied; otherwise if the
-key is set to <code class="docutils literal"><span class="pre">all</span></code>, then all of the strategies from the ordered list are applied.</p>
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-degradation.apply">
+<span class="sig-name descname"><span class="pre">degradation.apply</span></span><a class="headerlink" href="#confkey-degradation.apply" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies which strategies are picked for application, if more than one
+strategy satisfies the specified constraints. If the key is set to <code class="docutils literal notranslate"><span class="pre">first</span></code>, then first
+strategy from the ordered list of <a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a> is applied; otherwise if the
+key is set to <code class="docutils literal notranslate"><span class="pre">all</span></code>, then all of the strategies from the ordered list are applied.</p>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-degradation.strategies">
-<code class="descname">degradation.strategies</code><a class="headerlink" href="#confkey-degradation.strategies" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[gathered]</span></code> Specifies the rules for application of the performance degradation methods for
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-degradation.strategies">
+<span class="sig-name descname"><span class="pre">degradation.strategies</span></span><a class="headerlink" href="#confkey-degradation.strategies" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[gathered]</span></code> Specifies the rules for application of the performance degradation methods for
 profiles with corresponding profile configurations (e.g. with concrete profile type, specified
 collector, etc.). Refer to <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> for more details about application of
 strategies.</p>
 <p>The following configuration will apply the <a class="reference internal" href="degradation.html#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> method for all of the
 <cite>mixed</cite> types of the profiles, which were postprocessed using the
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> and <a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a> otherwise.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
-  <span class="nt">strategies</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
-      <span class="nt">postprocessor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">strategies</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mixed</span>
+<span class="w">      </span><span class="nt">postprocessor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+<span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aat</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="confkey">
-<dt id="confkey-generators.workload">
-<code class="descname">generators.workload</code><a class="headerlink" href="#confkey-generators.workload" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">[gathered]</span></code> Specifies generators of the workload. Each workload has to be specified by its
-<code class="docutils literal"><span class="pre">id</span></code> and <code class="docutils literal"><span class="pre">type</span></code>, which corresponds to the name of the generator (currently we support only
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-generators.workload">
+<span class="sig-name descname"><span class="pre">generators.workload</span></span><a class="headerlink" href="#confkey-generators.workload" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[gathered]</span></code> Specifies generators of the workload. Each workload has to be specified by its
+<code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">type</span></code>, which corresponds to the name of the generator (currently we support only
 Integer generator, that generates the range of values). Further you can specify rest of the
 params, where each workload generator has different parameters. The specification can be as
 follows:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
-  <span class="nt">workload</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gen1</span>
-      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-      <span class="nt">profile_for_each_workload</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
-    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gen2</span>
-      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-      <span class="nt">min_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-      <span class="nt">max_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
-      <span class="nt">step</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">workload</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gen1</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span>
+<span class="w">      </span><span class="nt">profile_for_each_workload</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gen2</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span>
+<span class="w">      </span><span class="nt">min_range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">max_range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">      </span><span class="nt">step</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
-<p>This specifies two integer workload generators <code class="docutils literal"><span class="pre">gen1</span></code> and <code class="docutils literal"><span class="pre">gen2</span></code>. The first uses the
+<p>This specifies two integer workload generators <code class="docutils literal notranslate"><span class="pre">gen1</span></code> and <code class="docutils literal notranslate"><span class="pre">gen2</span></code>. The first uses the
 default range, while the latter specifies the range 10, 20, …, 100. If
-<code class="docutils literal"><span class="pre">profile_for_each_workload</span></code> is set to true value (true, yes, etc.), then isolate profile will
+<code class="docutils literal notranslate"><span class="pre">profile_for_each_workload</span></code> is set to true value (true, yes, etc.), then isolate profile will
 be generated for each collected workload. Otherwise the resulting profiles are merged into the
 one profile, and each resources has additional key called “workload”, that allows using
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> of amount depending on the workload.</p>
 <p>For more details about supported generators refer to <a class="reference internal" href="jobs.html#jobs-workload-generators"><span class="std std-ref">List of Supported Workload Generators</span></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-perun.logic.config_templates">
-<span id="predefined-configuration-templates"></span><span id="config-templates"></span><h2>Predefined Configuration Templates<a class="headerlink" href="#module-perun.logic.config_templates" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-perun.logic.config_templates">
+<span id="predefined-configuration-templates"></span><span id="config-templates"></span><h2>Predefined Configuration Templates<a class="headerlink" href="#module-perun.logic.config_templates" title="Link to this heading">¶</a></h2>
 <p>Internally local configuration files are specified w.r.t a Jinja2 template.</p>
 <p>This template can further be augmented by named sets of predefined configuration as follows:</p>
 <blockquote>
@@ -429,107 +427,101 @@ the data and the commands that will be profiled.</p>
 empty.</p>
 </div></blockquote>
 <p>The actually set options are specified in the following table. When the option is not set
-(signaled by <code class="docutils literal"><span class="pre">-</span></code> symbol) we output in the configuration table only a commented-out hint.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="34%" />
-<col width="32%" />
-<col width="25%" />
-<col width="10%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>&#160;</td>
-<td><strong>user</strong></td>
-<td><strong>developer</strong></td>
-<td><strong>master</strong></td>
+(signaled by <code class="docutils literal notranslate"><span class="pre">-</span></code> symbol) we output in the configuration table only a commented-out hint.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td><p><strong>user</strong></p></td>
+<td><p><strong>developer</strong></p></td>
+<td><p><strong>master</strong></p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#confunit-cmds"><code class="xref std std-cunit docutils literal"><span class="pre">cmds</span></code></a></td>
-<td>auto lookup</td>
-<td>–</td>
-<td>–</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confunit-cmds"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">cmds</span></code></a></p></td>
+<td><p>auto lookup</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#confunit-args"><code class="xref std std-cunit docutils literal"><span class="pre">args</span></code></a></td>
-<td>–</td>
-<td>–</td>
-<td>–</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confunit-args"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">args</span></code></a></p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#confunit-workloads"><code class="xref std std-cunit docutils literal"><span class="pre">workloads</span></code></a></td>
-<td>auto lookup</td>
-<td>–</td>
-<td>–</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confunit-workloads"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">workloads</span></code></a></p></td>
+<td><p>auto lookup</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#confunit-collectors"><code class="xref std std-cunit docutils literal"><span class="pre">collectors</span></code></a></td>
-<td><a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a></td>
-<td>–</td>
-<td>–</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confunit-collectors"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">collectors</span></code></a></p></td>
+<td><p><a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a></p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a></td>
-<td><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></td>
-<td><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></td>
-<td>–</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a></p></td>
+<td><p><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></p></td>
+<td><p><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.collect_before_check</span></code></a></td>
-<td>true</td>
-<td>true</td>
-<td>–</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.collect_before_check</span></code></a></p></td>
+<td><p>true</p></td>
+<td><p>true</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a></td>
-<td>true</td>
-<td>true</td>
-<td>–</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a></p></td>
+<td><p>true</p></td>
+<td><p>true</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal"><span class="pre">execute.pre_run</span></code></a></td>
-<td>make</td>
-<td>make</td>
-<td>–</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">execute.pre_run</span></code></a></p></td>
+<td><p>make</p></td>
+<td><p>make</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal"><span class="pre">profiles.register_after_run</span></code></a></td>
-<td>true</td>
-<td>–</td>
-<td>–</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.register_after_run</span></code></a></p></td>
+<td><p>true</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a></td>
-<td>%collector%-of-%cmd%-%workload%-%date%</td>
-<td>–</td>
-<td>–</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a></p></td>
+<td><p>%collector%-of-%cmd%-%workload%-%date%</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
 </tr>
 </tbody>
 </table>
 <p>In <strong>user</strong> configuration, we try to lookup the actual commands and workloads for profiling purpose.
-Currently for candidate executables we look within a subfolders named <code class="docutils literal"><span class="pre">build</span></code>, <code class="docutils literal"><span class="pre">_build</span></code> or
-<code class="docutils literal"><span class="pre">dist</span></code> and check if we find any executables. Each found executable is then registered as profiled
+Currently for candidate executables we look within a subfolders named <code class="docutils literal notranslate"><span class="pre">build</span></code>, <code class="docutils literal notranslate"><span class="pre">_build</span></code> or
+<code class="docutils literal notranslate"><span class="pre">dist</span></code> and check if we find any executables. Each found executable is then registered as profiled
 command. For workloads we look for any file (without restrictions), and we restrict ourselves to
-subfolders with names such as <code class="docutils literal"><span class="pre">workload</span></code>, <code class="docutils literal"><span class="pre">workloads</span></code>, <code class="docutils literal"><span class="pre">examples</span></code> or <code class="docutils literal"><span class="pre">payloads</span></code>. Each
+subfolders with names such as <code class="docutils literal notranslate"><span class="pre">workload</span></code>, <code class="docutils literal notranslate"><span class="pre">workloads</span></code>, <code class="docutils literal notranslate"><span class="pre">examples</span></code> or <code class="docutils literal notranslate"><span class="pre">payloads</span></code>. Each
 compatible file is then registered as workload.</p>
-<p>Currently the templates are set by <code class="docutils literal"><span class="pre">-t</span></code> option of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code> command (see <a class="reference internal" href="cli.html#cli-main-ref"><span class="std std-ref">Perun Commands</span></a>
-for details on <code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code>). By default <strong>master</strong> configuration is used.</p>
-</div>
-<div class="section" id="command-line-interface">
-<span id="config-cli"></span><h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
-<p>We advise to manipulate with configurations using the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--edit</span></code> command. In order to
-change the nearest local (resp. global) configuration run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--local</span> <span class="pre">--edit</span></code> (resp.
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--shared</span> <span class="pre">--edit</span></code>).</p>
-<div class="section" id="perun-config">
-<h3>perun config<a class="headerlink" href="#perun-config" title="Permalink to this headline">¶</a></h3>
+<p>Currently the templates are set by <code class="docutils literal notranslate"><span class="pre">-t</span></code> option of <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">init</span></code> command (see <a class="reference internal" href="cli.html#cli-main-ref"><span class="std std-ref">Perun Commands</span></a>
+for details on <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">init</span></code>). By default <strong>master</strong> configuration is used.</p>
+</section>
+<section id="command-line-interface">
+<span id="config-cli"></span><h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h2>
+<p>We advise to manipulate with configurations using the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--edit</span></code> command. In order to
+change the nearest local (resp. global) configuration run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--local</span> <span class="pre">--edit</span></code> (resp.
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--shared</span> <span class="pre">--edit</span></code>).</p>
+<section id="perun-config">
+<h3>perun config<a class="headerlink" href="#perun-config" title="Link to this heading">¶</a></h3>
 <p>Manages the stored local and shared configuration.</p>
 <p>Perun supports two external configurations:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><code class="docutils literal"><span class="pre">local.yml</span></code>: the local configuration stored in <code class="docutils literal"><span class="pre">.perun</span></code>
+<li><p><code class="docutils literal notranslate"><span class="pre">local.yml</span></code>: the local configuration stored in <code class="docutils literal notranslate"><span class="pre">.perun</span></code>
 directory, containing the keys such as specification of wrapped
 repository or job matrix used for quick generation of profiles (run
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for information
-how to construct the job matrix).</li>
-<li><code class="docutils literal"><span class="pre">shared.yml</span></code>:  the global configuration shared by all perun
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for information
+how to construct the job matrix).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shared.yml</span></code>:  the global configuration shared by all perun
 instances, containing shared keys, such as text editor, formatting
-string, etc.</li>
+string, etc.</p></li>
 </ol>
 </div></blockquote>
-<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in most operations consists of section
-separated by dots, e.g. <code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code>
-section. The lookup of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes,
-<code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>, locating or setting the
-<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration respectively (e.g. when
+<p>The syntax of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> in most operations consists of section
+separated by dots, e.g. <code class="docutils literal notranslate"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal notranslate"><span class="pre">type</span></code> key in <code class="docutils literal notranslate"><span class="pre">vcs</span></code>
+section. The lookup of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes,
+<code class="docutils literal notranslate"><span class="pre">--local</span></code>, <code class="docutils literal notranslate"><span class="pre">--shared</span></code> and <code class="docutils literal notranslate"><span class="pre">--nearest</span></code>, locating or setting the
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration respectively (e.g. when
 one is trying to get some key, there may be nested perun instances that do
 not contain the given key). By default, perun operates in the nearest
 config mode.</p>
@@ -537,62 +529,66 @@ config mode.</p>
 <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
 <p>E.g. using the following one can retrieve the type of the nearest perun
 instance wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vcs.type
-vcs.type: git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span>vcs.type
+vcs.type:<span class="w"> </span>git
 </pre></div>
 </div>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-config-l">
-<code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--local</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-l" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the local config, i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>, as the source config.</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-l">
+<span id="cmdoption-perun-config-local"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--local</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-l" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the local config, i.e. <code class="docutils literal notranslate"><span class="pre">.perun/local.yml</span></code>, as the source config.</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-config-h">
-<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shared</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-h" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the shared config, i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code>, as the source config</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-h">
+<span id="cmdoption-perun-config-shared"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--shared</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-h" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the shared config, i.e. <code class="docutils literal notranslate"><span class="pre">shared.yml.</span></code>, as the source config</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-config-n">
-<code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nearest</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-n" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the nearest suitable config as the source config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-n">
+<span id="cmdoption-perun-config-nearest"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--nearest</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-n" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the nearest suitable config as the source config. The lookup strategy can differ for <code class="docutils literal notranslate"><span class="pre">set</span></code> and <code class="docutils literal notranslate"><span class="pre">get</span></code>/<code class="docutils literal notranslate"><span class="pre">edit</span></code>.</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
 <dl class="object">
-<dt>
-<code class="descname">edit</code></dt>
-<dd></dd></dl>
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">edit</span></span></dt>
+<dd><p>Edits the configuration file in the…</p>
+</dd></dl>
 
 <dl class="object">
-<dt>
-<code class="descname">get</code></dt>
-<dd></dd></dl>
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">get</span></span></dt>
+<dd><p>Looks up the given <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> within the…</p>
+</dd></dl>
 
 <dl class="object">
-<dt>
-<code class="descname">reset</code></dt>
-<dd></dd></dl>
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">reset</span></span></dt>
+<dd><p>Resets the configuration file to a sane…</p>
+</dd></dl>
 
 <dl class="object">
-<dt>
-<code class="descname">set</code></dt>
-<dd></dd></dl>
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">set</span></span></dt>
+<dd><p>Sets the value of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> to the…</p>
+</dd></dl>
 
-</div>
-<div class="section" id="perun-config-get">
-<h3>perun config get<a class="headerlink" href="#perun-config-get" title="Permalink to this headline">¶</a></h3>
-<p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the configuration hierarchy and returns
+</section>
+<section id="perun-config-get">
+<h3>perun config get<a class="headerlink" href="#perun-config-get" title="Link to this heading">¶</a></h3>
+<p>Looks up the given <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> within the configuration hierarchy and returns
 the stored value.</p>
-<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> consists of section separated by dots, e.g.
-<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. The lookup of the
-<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and
-<code class="docutils literal"><span class="pre">--nearest</span></code>, locating the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest
+<p>The syntax of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> consists of section separated by dots, e.g.
+<code class="docutils literal notranslate"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal notranslate"><span class="pre">type</span></code> key in <code class="docutils literal notranslate"><span class="pre">vcs</span></code> section. The lookup of the
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes, <code class="docutils literal notranslate"><span class="pre">--local</span></code>, <code class="docutils literal notranslate"><span class="pre">--shared</span></code> and
+<code class="docutils literal notranslate"><span class="pre">--nearest</span></code>, locating the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest
 configuration respectively (e.g. when one is trying to get some key, there
 may be nested perun instances that do not contain the given key). By
 default, perun operates in the nearest config mode.</p>
@@ -600,75 +596,75 @@ default, perun operates in the nearest config mode.</p>
 <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
 <p>E.g. using the following can retrieve the type of the nearest perun
 wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vcs.type
-vcs.type: git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span>vcs.type
+vcs.type:<span class="w"> </span>git
 
-$ perun config --shared get general.editor
-general.editor: vim
+$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span>--shared<span class="w"> </span>get<span class="w"> </span>general.editor
+general.editor:<span class="w"> </span>vim
 </pre></div>
 </div>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config get <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;
 </pre></div>
 </div>
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-config-get-arg-key">
-<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-get-arg-key" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-get-arg-key">
+<span class="sig-name descname"><span class="pre">&lt;key&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-get-arg-key" title="Link to this definition">¶</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
-</div>
-<div class="section" id="perun-config-set">
-<h3>perun config set<a class="headerlink" href="#perun-config-set" title="Permalink to this headline">¶</a></h3>
-<p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> in the target
+</section>
+<section id="perun-config-set">
+<h3>perun config set<a class="headerlink" href="#perun-config-set" title="Link to this heading">¶</a></h3>
+<p>Sets the value of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> to the given <code class="docutils literal notranslate"><span class="pre">&lt;value&gt;</span></code> in the target
 configuration file.</p>
-<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> corresponds of section separated by dots, e.g.
-<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. Perun sets the
-<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>,
-which sets the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration
+<p>The syntax of the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> corresponds of section separated by dots, e.g.
+<code class="docutils literal notranslate"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal notranslate"><span class="pre">type</span></code> key in <code class="docutils literal notranslate"><span class="pre">vcs</span></code> section. Perun sets the
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> in three modes, <code class="docutils literal notranslate"><span class="pre">--local</span></code>, <code class="docutils literal notranslate"><span class="pre">--shared</span></code> and <code class="docutils literal notranslate"><span class="pre">--nearest</span></code>,
+which sets the <code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration
 respectively (e.g.  when one is trying to get some key, there may be nested
 perun instances that do not contain the given key). By default, perun will
 operate in the nearest config mode.</p>
-<p>The <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> is arbitrary depending on the key.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">&lt;value&gt;</span></code> is arbitrary depending on the key.</p>
 <p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
 <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options and their
 values.</p>
 <p>E.g. using the following can set the log format for nearest perun instance
 wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config <span class="nb">set</span> format.shortlog <span class="s2">&quot;| %source% | %collector% |&quot;</span>
-format.shortlog: <span class="p">|</span> %source% <span class="p">|</span> %collector% <span class="p">|</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>format.shortlog<span class="w"> </span><span class="s2">&quot;| %source% | %collector% |&quot;</span>
+format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w"> </span>%source%<span class="w"> </span><span class="p">|</span><span class="w"> </span>%collector%<span class="w"> </span><span class="p">|</span>
 </pre></div>
 </div>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="nb">set</span> <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt; &lt;value&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span>&lt;value&gt;
 </pre></div>
 </div>
 <p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-config-set-arg-key">
-<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-key" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-set-arg-key">
+<span class="sig-name descname"><span class="pre">&lt;key&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-set-arg-key" title="Link to this definition">¶</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
-<dl class="option">
-<dt id="cmdoption-perun-config-set-arg-value">
-<code class="descname">&lt;value&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-value" title="Permalink to this definition">¶</a></dt>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-config-set-arg-value">
+<span class="sig-name descname"><span class="pre">&lt;value&gt;</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-config-set-arg-value" title="Link to this definition">¶</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
-</div>
-<div class="section" id="perun-config-edit">
-<h3>perun config edit<a class="headerlink" href="#perun-config-edit" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="perun-config-edit">
+<h3>perun config edit<a class="headerlink" href="#perun-config-edit" title="Link to this heading">¶</a></h3>
 <p>Edits the configuration file in the external editor.</p>
-<p>The used editor is specified by the <a class="reference internal" href="#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> option,
+<p>The used editor is specified by the <a class="reference internal" href="#confkey-general.editor"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.editor</span></code></a> option,
 specified in the nearest perun configuration..</p>
 <p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
 <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config edit <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>edit<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -681,11 +677,15 @@ specified in the nearest perun configuration..</p>
     <h3>Perun</h3>
   </a>
 </p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Perun Configuration files</a><ul>
 <li><a class="reference internal" href="#configuration-types">Configuration types</a></li>
-<li><a class="reference internal" href="#list-of-supported-options">List of Supported Options</a></li>
+<li><a class="reference internal" href="#list-of-supported-options">List of Supported Options</a><ul>
+<li><a class="reference internal" href="#perun.profile.helpers.ProfileInfo.valid_attributes"><code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-perun.logic.config_templates">Predefined Configuration Templates</a></li>
 <li><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-config">perun config</a></li>
@@ -697,11 +697,12 @@ specified in the nearest perun configuration..</p>
 </ul>
 </li>
 </ul>
-<div class="relations">
+
+  </div><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="degradation.html" title="previous chapter">Detecting Performance Changes</a></li>
+      <li>Previous: <a href="fuzzing.html" title="previous chapter">Performance Fuzz-testing</a></li>
       <li>Next: <a href="logs.html" title="next chapter">Customize Logs and Statuses</a></li>
   </ul></li>
 </ul>
@@ -714,15 +715,15 @@ specified in the nearest perun configuration..</p>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -731,8 +732,8 @@ specified in the nearest perun configuration..</p>
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/config.rst.txt"

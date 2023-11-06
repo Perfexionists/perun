@@ -1,27 +1,16 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Internals &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Perun Internals &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
+    <script src="_static/documentation_options.js?v=6081af2d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
@@ -32,8 +21,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -43,213 +31,162 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="perun-internals">
-<span id="internals-overview"></span><h1>Perun Internals<a class="headerlink" href="#perun-internals" title="Permalink to this headline">¶</a></h1>
+  <section id="perun-internals">
+<span id="internals-overview"></span><h1>Perun Internals<a class="headerlink" href="#perun-internals" title="Link to this heading">¶</a></h1>
 <p>Conceptually one Perun instances serves as a wrapper around the existing version control system
 (e.g. some repository). Perun takes specializes on storing the performance profiles and manages the
 link between minor versions and their corresponding profiles. Currently as a target vcs we support
-only <code class="docutils literal"><span class="pre">git</span></code>, with a custom lightweigth vcs being in development (called <code class="docutils literal"><span class="pre">tagit</span></code>). The
+only <code class="docutils literal notranslate"><span class="pre">git</span></code>, with a custom lightweigth vcs being in development (called <code class="docutils literal notranslate"><span class="pre">tagit</span></code>). The
 architecture of Perun contains an interface that can be used to register support for new version
 control system as described in <a class="reference internal" href="#internals-vcs-custom"><span class="std std-ref">Creating Support for Custom VCS</span></a>. Internal structure of one instance of
 Perun is inspired by git: performance profiles are similarly stored as objects compressed by zlib
 method and identified by hashes. <a class="reference internal" href="#internals-store"><span class="std std-ref">Perun Storage</span></a> describes the internal model of Perun more
 briefly.</p>
-<a class="reference internal image-reference" href="_images/perun-vs-vcs.svg"><div align="center" class="align-center"><img alt="_images/perun-vs-vcs.svg" src="_images/perun-vs-vcs.svg" width="100%" /></div>
-</a>
+<a class="reference internal image-reference" href="_images/perun-vs-vcs.svg"><img alt="_images/perun-vs-vcs.svg" class="align-center" src="_images/perun-vs-vcs.svg" width="100%" /></a>
 <p>The diagram above highlights the responsibilities and storage of individual systems. Version
 control systems manage the functionality of the project—its versions and precise code
 changes—but lack proper support for managing performance. On the other hand, performance
 versioning systems manages the performance of project—its individual performance profiles, data
 visualizations of various statistics—but lack the precise functionality changes. This means that
 vcs stores the actual code chungs and version references and pvs stores the actual profiling data.</p>
-<a class="reference internal image-reference" href="_images/perun-flow.svg"><div align="center" class="align-center"><img alt="_images/perun-flow.svg" src="_images/perun-flow.svg" width="100%" /></div>
-</a>
+<a class="reference internal image-reference" href="_images/perun-flow.svg"><img alt="_images/perun-flow.svg" class="align-center" src="_images/perun-flow.svg" width="100%" /></a>
 <p>This diagram shows one of the proper usages of Perun’s tool suite. Each developer keeps his own
 instance of both versioning and performance systems. In this mode one can share both the code
 changes and performance measurement through the wider range of developers.</p>
-<div class="section" id="version-control-systems">
-<span id="internals-vcs"></span><h2>Version Control Systems<a class="headerlink" href="#version-control-systems" title="Permalink to this headline">¶</a></h2>
+<section id="version-control-systems">
+<span id="internals-vcs"></span><h2>Version Control Systems<a class="headerlink" href="#version-control-systems" title="Link to this heading">¶</a></h2>
 <p>Version Control System manages the history of functionality of one project, i.e. stores the changes
 between different versions (or snapshots) of project. Each code change usually requires
 corresponding the performance profiles in order to detect potential performance degradation early
 in the development. The following subsection <a class="reference internal" href="#internals-vcs-api"><span class="std std-ref">Version Control System API</span></a> describes the layer which
 serves as an interface in Perun which supplies the necessary information between the version
 control and performance versioning systems.</p>
-<div class="section" id="module-perun.vcs">
-<span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="perun.vcs.init">
-<code class="descclassname">perun.vcs.</code><code class="descname">init</code><span class="sig-paren">(</span><em>vcs_init_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.init" title="Permalink to this definition">¶</a></dt>
+<section id="module-perun.vcs">
+<span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.init">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcs_init_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.init" title="Link to this definition">¶</a></dt>
 <dd><p>Calls the implementation of initialization of wrapped underlying version
 control system.</p>
 <p>The initialization should take care of both reinitialization of existing
 version control system instances and newly created instances. Init is
-called during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code> command from command line interface.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vcs_init_params</strong> (<em>dict</em>) – dictionary of keyword arguments passed to
-initialization method of the underlying vcs module</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">true if the underlying vcs was successfully initialized</td>
-</tr>
-</tbody>
-</table>
+called during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">init</span></code> command from command line interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vcs_init_params</strong> (<em>dict</em>) – dictionary of keyword arguments passed to
+initialization method of the underlying vcs module</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the underlying vcs was successfully initialized</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.walk_minor_versions">
-<code class="descclassname">perun.vcs.</code><code class="descname">walk_minor_versions</code><span class="sig-paren">(</span><em>head_minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_minor_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_minor_versions" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.walk_minor_versions">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">walk_minor_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">head_minor_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">MinorVersion</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#walk_minor_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.walk_minor_versions" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of minor versions for the given major version, which yields
-the <code class="docutils literal"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
-<code class="docutils literal"><span class="pre">date</span></code>, <code class="docutils literal"><span class="pre">author</span></code>, <code class="docutils literal"><span class="pre">email</span></code>, <code class="docutils literal"><span class="pre">checksum</span></code> (i.e. the hash representation
-of the minor version), <code class="docutils literal"><span class="pre">commit_description</span></code> and <code class="docutils literal"><span class="pre">commit_parents</span></code> (i.e.
+the <code class="docutils literal notranslate"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
+<code class="docutils literal notranslate"><span class="pre">date</span></code>, <code class="docutils literal notranslate"><span class="pre">author</span></code>, <code class="docutils literal notranslate"><span class="pre">email</span></code>, <code class="docutils literal notranslate"><span class="pre">checksum</span></code> (i.e. the hash representation
+of the minor version), <code class="docutils literal notranslate"><span class="pre">commit_description</span></code> and <code class="docutils literal notranslate"><span class="pre">commit_parents</span></code> (i.e.
 other minor versions).</p>
-<p>Minor versions are walked through this function during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code>
+<p>Minor versions are walked through this function during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code>
 command.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>head_minor_version</strong> (<em>str</em>) – the root minor versions which is the root
-of the walk.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iterable stream of minor version representation</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>head_minor_version</strong> (<em>str</em>) – the root minor versions which is the root
+of the walk.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>iterable stream of minor version representation</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.walk_major_versions">
-<code class="descclassname">perun.vcs.</code><code class="descname">walk_major_versions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_major_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_major_versions" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.walk_major_versions">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">walk_major_versions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">MajorVersion</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#walk_major_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.walk_major_versions" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of major versions for the current wrapped repository.</p>
 <p>This function is currently unused, but will be needed in the future.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterable stream of major version representation</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of major version representation</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.get_minor_head">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_head</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_head" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.get_minor_head">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_minor_head</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_head"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.get_minor_head" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the string representation of head of current major version, i.e.
 for git this returns the massaged HEAD reference.</p>
-<p>This function is called mainly during the outputs of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and
-<code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> but also during the automatic generation of profiles
-(either by <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span></code> or <code class="docutils literal"><span class="pre">perun</span> <span class="pre">collect</span></code>), where the retrieved
-identification is used as <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">unique string representation of current head (usually in SHA)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – if the head cannot be retrieved from the current
-context</td>
-</tr>
-</tbody>
-</table>
+<p>This function is called mainly during the outputs of <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code> and
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> but also during the automatic generation of profiles
+(either by <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span></code> or <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span></code>), where the retrieved
+identification is used as <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>unique string representation of current head (usually in SHA)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if the head cannot be retrieved from the current
+context</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.get_head_major_version">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_head_major_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_head_major_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_head_major_version" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.get_head_major_version">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_head_major_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#get_head_major_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.get_head_major_version" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the string representation of current major version of the
 wrapped repository.</p>
-<p>Major version is displayed during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> output, which shows
+<p>Major version is displayed during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> output, which shows
 the current working major version of the project.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string representation of the major version</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string representation of the major version</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.get_minor_version_info">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_version_info</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_version_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_version_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields the specification of concrete minor version in form of
-the <code class="docutils literal"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
-<code class="docutils literal"><span class="pre">date</span></code>, <code class="docutils literal"><span class="pre">author</span></code>, <code class="docutils literal"><span class="pre">email</span></code>, <code class="docutils literal"><span class="pre">checksum</span></code> (i.e. the hash representation
-of the minor version), <code class="docutils literal"><span class="pre">commit_description</span></code> and <code class="docutils literal"><span class="pre">commit_parents</span></code> (i.e.
-other minor versions).</p>
-<p>This function is a non-generator alternative of
-<a class="reference internal" href="#perun.vcs.walk_minor_versions" title="perun.vcs.walk_minor_versions"><code class="xref py py-func docutils literal"><span class="pre">perun.vcs.walk_minor_versions()</span></code></a> and is used during the <code class="docutils literal"><span class="pre">perun</span>
-<span class="pre">status</span></code> output to display the specifics of minor version.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
-sha e.g.) for which we are retrieving the details</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">minor version named tuple</td>
-</tr>
-</tbody>
-</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.get_minor_version_info">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_minor_version_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#perun.vcs.get_minor_version_info" title="Link to this definition">¶</a></dt>
+<dd><p>Wrapper function of the &#64;p func</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.check_minor_version_validity">
-<code class="descclassname">perun.vcs.</code><code class="descname">check_minor_version_validity</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#check_minor_version_validity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.check_minor_version_validity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks whether the given minor version specification corresponds to the
-wrapped version control system, and is not in wrong format.</p>
-<p>Minor version validity is mostly checked during the lookup of the minor
-versions from the command line interface.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
-sha e.g.) for which we are checking the validity</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>VersionControlSystemException</strong> – when the given minor version is
-invalid in the context of the wrapped version control system.</td>
-</tr>
-</tbody>
-</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.check_minor_version_validity">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">check_minor_version_validity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#perun.vcs.check_minor_version_validity" title="Link to this definition">¶</a></dt>
+<dd><p>Wrapper function of the &#64;p func</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.massage_parameter">
-<code class="descclassname">perun.vcs.</code><code class="descname">massage_parameter</code><span class="sig-paren">(</span><em>parameter</em>, <em>parameter_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#massage_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.massage_parameter" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.massage_parameter">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">massage_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#massage_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.massage_parameter" title="Link to this definition">¶</a></dt>
 <dd><p>Conversion function for massaging (or unifying different representations
 of objects) the parameters for version control systems.</p>
 <p>Massaging is mainly executed during from the command line interface, when
-one can e.g. use the references (like <code class="docutils literal"><span class="pre">HEAD</span></code>) to specify concrete minor
+one can e.g. use the references (like <code class="docutils literal notranslate"><span class="pre">HEAD</span></code>) to specify concrete minor
 versions. Massing then unifies e.g. the references or proper hash
 representations, to just one representation for internal processing.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>parameter</strong> (<em>str</em>) – vcs parameter (e.g. revision, minor or major version)
-which will be massaged, i.e. transformed to unified representation</li>
-<li><strong>parameter_type</strong> (<em>str</em>) – more detailed type of the parameter</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter</strong> (<em>str</em>) – vcs parameter (e.g. revision, minor or major version)
+which will be massaged, i.e. transformed to unified representation</p></li>
+<li><p><strong>parameter_type</strong> (<em>str</em>) – more detailed type of the parameter</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string representation of parameter</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>string representation of parameter</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.is_dirty">
-<code class="descclassname">perun.vcs.</code><code class="descname">is_dirty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.is_dirty">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">is_dirty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Link to this definition">¶</a></dt>
 <dd><p>Tests whether the wrapped repository is dirty.</p>
 <p>By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
 we are in the middle of commit) or any unsubmitted changes to tracked files in the current
@@ -257,311 +194,282 @@ working directory.</p>
 <p>Note that this is crucial for performance testing, as any uncommited changes may skew
 the profiled data and hence the resulting profiles would not correctly represent the performance
 of minor versions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the given repository is dirty or not</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>whether the given repository is dirty or not</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.save_state">
-<code class="descclassname">perun.vcs.</code><code class="descname">save_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.save_state" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.save_state">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">save_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.save_state" title="Link to this definition">¶</a></dt>
 <dd><p>Saves the state of the repository in case it is dirty.</p>
 <p>When saving the state of the repository one should store all of the uncommited changes to
 the working directory and index. Any issues while this process happens should be handled by
 user itself, hence no workarounds and mending should take place in this function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(bool, str) the tuple of indication that some changes were stashed and the state of
+previous head.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.restore_state">
-<code class="descclassname">perun.vcs.</code><code class="descname">restore_state</code><span class="sig-paren">(</span><em>saved</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.restore_state">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">restore_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">saved</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Link to this definition">¶</a></dt>
 <dd><p>Restores the previous state of the the repository</p>
 <p>When restoring the state of the repository one should pop the stored changes from the stash
 and reapply them on the current directory. This make sure, that after the performance testing,
 the project is in the previous state and developer can continue with his work.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>saved</strong> (<em>bool</em>) – whether the stashed was something</li>
-<li><strong>state</strong> (<em>str</em>) – the previous state of the repository</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saved</strong> (<em>bool</em>) – whether the stashed was something</p></li>
+<li><p><strong>state</strong> (<em>str</em>) – the previous state of the repository</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="perun.vcs.checkout">
-<code class="descclassname">perun.vcs.</code><code class="descname">checkout</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.checkout" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.vcs.checkout">
+<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">checkout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minor_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.checkout" title="Link to this definition">¶</a></dt>
 <dd><p>Checks out the new working directory corresponding to the given minor version.</p>
 <p>According to the supplied minor version, this command should remake the working directory
 so it corresponds to the state defined by the minor version.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</p>
+</dd>
+</dl>
 </dd></dl>
 
-</div>
-<div class="section" id="creating-support-for-custom-vcs">
-<span id="internals-vcs-custom"></span><h3>Creating Support for Custom VCS<a class="headerlink" href="#creating-support-for-custom-vcs" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="creating-support-for-custom-vcs">
+<span id="internals-vcs-custom"></span><h3>Creating Support for Custom VCS<a class="headerlink" href="#creating-support-for-custom-vcs" title="Link to this heading">¶</a></h3>
 <p>You can register support for your own version control system as follows:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Create a new module in <code class="docutils literal"><span class="pre">perun/vcs</span></code> directory implementing functions from
-<a class="reference internal" href="#internals-vcs-api"><span class="std std-ref">Version Control System API</span></a>.</li>
-<li>Finally register your newly created vcs wrapper in <code class="xref py py-func docutils literal"><span class="pre">get_supported_module_names()</span></code>
-located in <code class="docutils literal"><span class="pre">perun.utils.__init__.py</span></code>:</li>
+<li><p>Create a new module in <code class="docutils literal notranslate"><span class="pre">perun/vcs</span></code> directory implementing functions from
+<a class="reference internal" href="#internals-vcs-api"><span class="std std-ref">Version Control System API</span></a>.</p></li>
+<li><p>Finally register your newly created vcs wrapper in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code>
+located in <code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
 </ol>
-<div class="highlight-udiff"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names_collectors.py</span>
-<span class="gu">@@ -6,7 +6,7 @@</span>
-         ))
-     return {
-         &#39;vcs&#39;: [&#39;git&#39;],
-<span class="gd">-        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],</span>
-<span class="gi">+        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;, &#39;mycollector&#39;],</span>
-         &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression-analysis&#39;],
-         &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]
-     }[package]
+<div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
+<span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
+<span class="linenos"> 3</span><span class="gu">@@ -6,7 +6,7 @@</span>
+<span class="linenos"> 4</span><span class="w"> </span>        )
+<span class="linenos"> 5</span><span class="w"> </span>    return {
+<span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;],
+<span class="linenos"> 7</span><span class="gd">-        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],</span>
+<span class="linenos"> 8</span><span class="gi">+        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;, &quot;mycollector&quot;],</span>
+<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [&quot;filter&quot;, &quot;normalizer&quot;, &quot;regression-analysis&quot;],
+<span class="linenos">10</span><span class="w"> </span>        &quot;view&quot;: [
+<span class="linenos">11</span><span class="w"> </span>            &quot;alloclist&quot;,
 </pre></div>
-</td></tr></table></div>
+</div>
 <ol class="arabic" start="3">
-<li><p class="first">Optionally implement batch of automatic test cases using (preferably based on <a class="reference external" href="https://docs.pytest.org/en/latest/">pytest</a>) in
-<code class="docutils literal"><span class="pre">tests</span></code> directory. Verify that registering did not break anything in the Perun, your
+<li><p>Optionally implement batch of automatic test cases using (preferably based on <a class="reference external" href="https://docs.pytest.org/en/latest/">pytest</a>) in
+<code class="docutils literal notranslate"><span class="pre">tests</span></code> directory. Verify that registering did not break anything in the Perun, your
 wrapper is correct and optionally reinstall Perun:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
 <span class="n">make</span> <span class="n">install</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">If you think your wrapper could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p>
-</li>
+<li><p>If you think your wrapper could help others, please, consider making <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">Pull Request</a>.</p></li>
 </ol>
 </div></blockquote>
-</div>
-</div>
-<div class="section" id="perun-storage">
-<span id="internals-store"></span><h2>Perun Storage<a class="headerlink" href="#perun-storage" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="perun-storage">
+<span id="internals-store"></span><h2>Perun Storage<a class="headerlink" href="#perun-storage" title="Link to this heading">¶</a></h2>
 <p>The current internal representation of Perun storage is based on git internals and is meant for
 easy distribution, flexibility and easier managing. The possible extension of Perun to different
 versions of storages is currently under consideration. Internal objects and files for one local
-instance of Perun are stored in the filesystem in the <code class="docutils literal"><span class="pre">.perun</span></code> directory consisting of the
+instance of Perun are stored in the filesystem in the <code class="docutils literal notranslate"><span class="pre">.perun</span></code> directory consisting of the
 following infrastructure:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">perun</span><span class="o">/</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">perun</span><span class="o">/</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">jobs</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">logs</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">objects</span>
     <span class="o">|--</span> <span class="n">local</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">.perun/jobs</span></code>:</dt>
-<dd><p class="first">Contains pending jobs, i.e. those that were generated by collectors, postprocessed by some
-postprocessors, or automatically generated by <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span></code> commands, but are not yet assigned
-to concrete minor versions. These profiles contains the tag <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> that maps the
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code>:</dt><dd><p>Contains pending jobs, i.e. those that were generated by collectors, postprocessed by some
+postprocessors, or automatically generated by <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span></code> commands, but are not yet assigned
+to concrete minor versions. These profiles contains the tag <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> that maps the
 profile to concrete minor version, i.e. the parent of the profile. This key serves as a
 prevention of assigning profiles to incorrect minor versions.</p>
-<div class="last highlight-bash"><div class="highlight"><pre><span></span>.perun/jobs
-    <span class="p">|</span>-- /baseline.perf
-    <span class="p">|</span>-- /sll-comparison.perf
-    <span class="p">|</span>-- /skip-lists-medium-height.perf
-    <span class="p">|</span>-- /skip-lists-unlimited-height.perf
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.perun/jobs
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/baseline.perf
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/sll-comparison.perf
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/skip-lists-medium-height.perf
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/skip-lists-unlimited-height.perf
 </pre></div>
 </div>
 </dd>
-<dt><code class="docutils literal"><span class="pre">.perun/objects</span></code>:</dt>
-<dd><p class="first">Corresponds to main storage of Perun and contains object primitives. Every object of Perun is
+<dt><code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code>:</dt><dd><p>Corresponds to main storage of Perun and contains object primitives. Every object of Perun is
 represented by unique identifier (mostly by sha representation) and corresponds either to an
 object blob (containing compressed profile) or to an index of a corresponding minor version,
 which lists assigned profiles for the given minor version.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>.perun/objects
-    <span class="p">|</span>-- /07
-        <span class="p">|</span>-- f2b4bfa06f6b1be5713f2bbae7740838456758
-        <span class="p">|</span>-- 99dc4c5891947bdf7e26341231ca533432a1f1
-    <span class="p">|</span>-- /3d
-        <span class="p">|</span>-- 3859b46db4eea5866a0b2b28997fac25a95430
-    <span class="p">|</span>-- /ff
-        <span class="p">|</span>-- d35c8962d8d2019d7762a7bc6980c1d0f2fcd7
-        <span class="p">|</span>-- d88aabca6e5427c78ea647e955ffa00d1cd615
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.perun/objects
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/07
+<span class="w">        </span><span class="p">|</span>--<span class="w"> </span>f2b4bfa06f6b1be5713f2bbae7740838456758
+<span class="w">        </span><span class="p">|</span>--<span class="w"> </span>99dc4c5891947bdf7e26341231ca533432a1f1
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/3d
+<span class="w">        </span><span class="p">|</span>--<span class="w"> </span>3859b46db4eea5866a0b2b28997fac25a95430
+<span class="w">    </span><span class="p">|</span>--<span class="w"> </span>/ff
+<span class="w">        </span><span class="p">|</span>--<span class="w"> </span>d35c8962d8d2019d7762a7bc6980c1d0f2fcd7
+<span class="w">        </span><span class="p">|</span>--<span class="w"> </span>d88aabca6e5427c78ea647e955ffa00d1cd615
 </pre></div>
 </div>
-<p class="last">Each object from <code class="docutils literal"><span class="pre">.perun/objects</span></code> is represented by hash value, where the first two characters
+<p>Each object from <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> is represented by hash value, where the first two characters
 are used to specify directory and the rest of the hash value a file name, where the index or
 compressed file is stored.</p>
 </dd>
-<dt><code class="docutils literal"><span class="pre">.perun/logs</span></code>:</dt>
-<dd>Contains various logs for various phases. Currently this holds logs for each minor version,
-for which we precollected new profiles during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span></code> command. This behaviour
-can be set up by setting <a class="reference internal" href="config.html#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a> to true.</dd>
-<dt><code class="docutils literal"><span class="pre">local.yml</span></code>:</dt>
-<dd>Contains local configuration, e.g. the specification of wrapped repository, job matrixes or
+<dt><code class="docutils literal notranslate"><span class="pre">.perun/logs</span></code>:</dt><dd><p>Contains various logs for various phases. Currently this holds logs for each minor version,
+for which we precollected new profiles during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span></code> command. This behaviour
+can be set up by setting <a class="reference internal" href="config.html#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a> to true.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">local.yml</span></code>:</dt><dd><p>Contains local configuration, e.g. the specification of wrapped repository, job matrixes or
 formatting strings corresponding to concrete VCS. See <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for more information about
-configuration of Perun.</dd>
+configuration of Perun.</p>
+</dd>
 </dl>
-<div class="section" id="perun-index-specification">
-<h3>Perun Index Specification<a class="headerlink" href="#perun-index-specification" title="Permalink to this headline">¶</a></h3>
+<section id="perun-index-specification">
+<h3>Perun Index Specification<a class="headerlink" href="#perun-index-specification" title="Link to this heading">¶</a></h3>
 <p>Each minor version of vcs, which has any profile assigned, has corresponding index file in the
-<code class="docutils literal"><span class="pre">.perun/object</span></code> according to its identification. The index file itself is stored in binary format
+<code class="docutils literal notranslate"><span class="pre">.perun/object</span></code> according to its identification. The index file itself is stored in binary format
 with the following specification.</p>
-<a class="reference internal image-reference" href="_images/perun-index-spec.svg"><div align="center" class="align-center"><img alt="_images/perun-index-spec.svg" src="_images/perun-index-spec.svg" width="100%" /></div>
-</a>
-<dl class="docutils">
-<dt><cite>Index signature</cite> [4B]:</dt>
-<dd>Signature are the first bytes of the index containing ascii string <cite>pidx</cite>, which serves as an
-quick identification of minor version index.</dd>
-<dt><cite>Index version</cite> [4B]:</dt>
-<dd>Specification of version of conding of the index. Versioning is introduced for potential future
-backward compatibility with possible different specifications of index.</dd>
-<dt><cite>Number of Entries</cite> [4B]:</dt>
-<dd>Integer count of the number of entries found in the index. Each entry of the index is of
-variable length and lists the profiles with mapping to their corresponding objects.</dd>
-<dt><cite>Entries</cite> [<cite>variable length</cite>]:</dt>
-<dd><p class="first">One entry of the index corresponds to one assigned profile. Each entry is of variable lenght
+<a class="reference internal image-reference" href="_images/perun-index-spec.svg"><img alt="_images/perun-index-spec.svg" class="align-center" src="_images/perun-index-spec.svg" width="100%" /></a>
+<dl class="simple">
+<dt><cite>Index signature</cite> [4B]:</dt><dd><p>Signature are the first bytes of the index containing ascii string <cite>pidx</cite>, which serves as an
+quick identification of minor version index.</p>
+</dd>
+<dt><cite>Index version</cite> [4B]:</dt><dd><p>Specification of version of conding of the index. Versioning is introduced for potential future
+backward compatibility with possible different specifications of index.</p>
+</dd>
+<dt><cite>Number of Entries</cite> [4B]:</dt><dd><p>Integer count of the number of entries found in the index. Each entry of the index is of
+variable length and lists the profiles with mapping to their corresponding objects.</p>
+</dd>
+<dt><cite>Entries</cite> [<cite>variable length</cite>]:</dt><dd><p>One entry of the index corresponds to one assigned profile. Each entry is of variable lenght
 and contains the identification of the original profile file, together with timestamp of
 creation and the identification of the compressed object, that contains the actual profiling
 data. Each entry can be broken into following parts:</p>
-<ul class="last simple">
-<li><cite>Creation time</cite> [4B]: creation time of the profile represented as 4B timestamp.</li>
-<li><cite>Profile ID</cite> [20B]: unique identification of the profile, i.e. specification of the concrete
-compressed object located in the <code class="docutils literal"><span class="pre">.perun/objects</span></code>. Profile ID is always in form of SHA-1
-hash, which is obtained from the contents.</li>
-<li><cite>Origin Path</cite> [<cite>variable length</cite>: Original path to the profile represented as ascii string of
-variable length terminated by null byte.</li>
+<ul class="simple">
+<li><p><cite>Creation time</cite> [4B]: creation time of the profile represented as 4B timestamp.</p></li>
+<li><p><cite>Profile ID</cite> [20B]: unique identification of the profile, i.e. specification of the concrete
+compressed object located in the <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code>. Profile ID is always in form of SHA-1
+hash, which is obtained from the contents.</p></li>
+<li><p><cite>Origin Path</cite> [<cite>variable length</cite>: Original path to the profile represented as ascii string of
+variable length terminated by null byte.</p></li>
 </ul>
 </dd>
-<dt><cite>Checksum</cite> [20B]:</dt>
-<dd>Checksum of the whole index, which serves for error detection.</dd>
+<dt><cite>Checksum</cite> [20B]:</dt><dd><p>Checksum of the whole index, which serves for error detection.</p>
+</dd>
 </dl>
-</div>
-<div class="section" id="perun-object-specification">
-<h3>Perun Object Specification<a class="headerlink" href="#perun-object-specification" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="perun-object-specification">
+<h3>Perun Object Specification<a class="headerlink" href="#perun-object-specification" title="Link to this heading">¶</a></h3>
 <p>Each non-index object consist of short header ended with zero byte, consisting of header signature
 string, type of the profile and lenght of the content, and raw content of the performance profile
 w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. First we compute the checksum for these data, which serves as an
-identification in the minor version indexes and in <code class="docutils literal"><span class="pre">.perun/objects</span></code> directory. Finally, the
-object is compressed using zlib method and stored in the <code class="docutils literal"><span class="pre">.perun/objects</span></code> compressed.</p>
-<a class="reference internal image-reference" href="_images/perun-object-spec.svg"><div align="center" class="align-center"><img alt="_images/perun-object-spec.svg" src="_images/perun-object-spec.svg" width="100%" /></div>
-</a>
-<dl class="docutils">
-<dt><cite>Signature</cite> [7B]:</dt>
-<dd>Signature is a 7B prefix containing ascii string “profile”. Serves for quick identification of
-profile.</dd>
-<dt><cite>Type</cite> [<cite>variable length</cite>]:</dt>
-<dd>Ascii specification of the profile type. This serves for quick and easy parsing of profiles.</dd>
-<dt><cite>Content Lenght</cite> [4B]:</dt>
-<dd>Integer count of the non-header data followed after the zero byte in bytes.</dd>
-<dt><cite>Content</cite> [<cite>variable length</cite>]:</dt>
-<dd>Contents of the performance profile w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</dd>
+identification in the minor version indexes and in <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> directory. Finally, the
+object is compressed using zlib method and stored in the <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> compressed.</p>
+<a class="reference internal image-reference" href="_images/perun-object-spec.svg"><img alt="_images/perun-object-spec.svg" class="align-center" src="_images/perun-object-spec.svg" width="100%" /></a>
+<dl class="simple">
+<dt><cite>Signature</cite> [7B]:</dt><dd><p>Signature is a 7B prefix containing ascii string “profile”. Serves for quick identification of
+profile.</p>
+</dd>
+<dt><cite>Type</cite> [<cite>variable length</cite>]:</dt><dd><p>Ascii specification of the profile type. This serves for quick and easy parsing of profiles.</p>
+</dd>
+<dt><cite>Content Lenght</cite> [4B]:</dt><dd><p>Integer count of the non-header data followed after the zero byte in bytes.</p>
+</dd>
+<dt><cite>Content</cite> [<cite>variable length</cite>]:</dt><dd><p>Contents of the performance profile w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p>
+</dd>
 </dl>
-</div>
-<div class="section" id="the-lifetime-of-profile-internals">
-<h3>The Lifetime of profile: Internals<a class="headerlink" href="#the-lifetime-of-profile-internals" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="the-lifetime-of-profile-internals">
+<h3>The Lifetime of profile: Internals<a class="headerlink" href="#the-lifetime-of-profile-internals" title="Link to this heading">¶</a></h3>
 <p>The following subsections describes in more detail the basics of profile manipulations, namely
 registering, removing and lookuping up profiles.</p>
-<div class="section" id="registering-new-profile">
-<h4>Registering new profile<a class="headerlink" href="#registering-new-profile" title="Permalink to this headline">¶</a></h4>
-<p>Given a profile, w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>, called <code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code>, registering this
-profile in <code class="docutils literal"><span class="pre">HEAD</span></code> minor version index, the following steps are executed:</p>
+<section id="registering-new-profile">
+<h4>Registering new profile<a class="headerlink" href="#registering-new-profile" title="Link to this heading">¶</a></h4>
+<p>Given a profile, w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>, called <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code>, registering this
+profile in <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> minor version index, the following steps are executed:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code> is loaded and parsed into <a class="reference external" href="https://www.json.org/">JSON</a>. Profile is verified whether it is
-in format specified by <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</li>
-<li><a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> key is compared with the massaged <code class="docutils literal"><span class="pre">HEAD</span></code> minor version. In case it
+<li><p><code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code> is loaded and parsed into <a class="reference external" href="https://www.json.org/">JSON</a>. Profile is verified whether it is
+in format specified by <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p></li>
+<li><p><a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> key is compared with the massaged <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> minor version. In case it
 differes, an error is raised and adding the profiles is canceled, as we are trying to
 register performance profile corresponding to other point of history. Otherwise the
-<a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> is removed from the profile and will not be stored in persistent storage.</li>
-<li>We construct the header for the profile consisting of <code class="docutils literal"><span class="pre">profile</span></code> prefix, the type of the
+<a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> is removed from the profile and will not be stored in persistent storage.</p></li>
+<li><p>We construct the header for the profile consisting of <code class="docutils literal notranslate"><span class="pre">profile</span></code> prefix, the type of the
 specified by <a class="reference internal" href="profile.html#perfkey-type"><em class="xref std std-pkey">type</em></a> and length of the unpacked <a class="reference external" href="https://www.json.org/">JSON</a> representation of profile, joined
-by spaces and ended by null byte.</li>
-<li><a class="reference external" href="https://www.json.org/">JSON</a> contents of performance profile are appended to the header resulting into one <code class="docutils literal"><span class="pre">object</span></code>.</li>
-<li>An SHA-1 hash <code class="docutils literal"><span class="pre">checksum</span></code> is computed out of the <code class="docutils literal"><span class="pre">object</span></code>. The hash serves both as a check
+by spaces and ended by null byte.</p></li>
+<li><p><a class="reference external" href="https://www.json.org/">JSON</a> contents of performance profile are appended to the header resulting into one <code class="docutils literal notranslate"><span class="pre">object</span></code>.</p></li>
+<li><p>An SHA-1 hash <code class="docutils literal notranslate"><span class="pre">checksum</span></code> is computed out of the <code class="docutils literal notranslate"><span class="pre">object</span></code>. The hash serves both as a check
 that the profile was not damaged during next usage, as well as identification in the
-filesystem.</li>
-<li>The <code class="docutils literal"><span class="pre">object</span></code> is compressed using <cite>zlib</cite> compression method and stored in the
-<code class="docutils literal"><span class="pre">.perun/objects</span></code> directory. First two characters of <code class="docutils literal"><span class="pre">checksum</span></code> specifies the target
-directory and the rest specifies the resulting filename.</li>
-<li>An index corresponding to the <code class="docutils literal"><span class="pre">HEAD</span></code> minor version is opened (if it does not exist, it is
+filesystem.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">object</span></code> is compressed using <cite>zlib</cite> compression method and stored in the
+<code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> directory. First two characters of <code class="docutils literal notranslate"><span class="pre">checksum</span></code> specifies the target
+directory and the rest specifies the resulting filename.</p></li>
+<li><p>An index corresponding to the <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> minor version is opened (if it does not exist, it is
 newly created first). Minor version index is also represented by its hash, where first two
-characters of hash is used as directory and the rest as filename.</li>
-<li>An entry for <code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code> with given modification time is registered within the
-index pointing to the <code class="docutils literal"><span class="pre">checksum</span></code> object with compressed data. The number of registered
-profiles in index is increased.</li>
-<li>Unless it is specified otherwise, the <code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code> is removed from filesystem.</li>
+characters of hash is used as directory and the rest as filename.</p></li>
+<li><p>An entry for <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code> with given modification time is registered within the
+index pointing to the <code class="docutils literal notranslate"><span class="pre">checksum</span></code> object with compressed data. The number of registered
+profiles in index is increased.</p></li>
+<li><p>Unless it is specified otherwise, the <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code> is removed from filesystem.</p></li>
 </ol>
 </div></blockquote>
-<a class="reference internal image-reference" href="_images/register-profile.svg"><div align="center" class="align-center"><img alt="_images/register-profile.svg" src="_images/register-profile.svg" width="100%" /></div>
-</a>
-</div>
-<div class="section" id="removing-profile-from-index">
-<h4>Removing profile from index<a class="headerlink" href="#removing-profile-from-index" title="Permalink to this headline">¶</a></h4>
-<p>Given a profile filename <code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code>, removing it from the <code class="docutils literal"><span class="pre">HEAD</span></code> minor version
+<a class="reference internal image-reference" href="_images/register-profile.svg"><img alt="_images/register-profile.svg" class="align-center" src="_images/register-profile.svg" width="100%" /></a>
+</section>
+<section id="removing-profile-from-index">
+<h4>Removing profile from index<a class="headerlink" href="#removing-profile-from-index" title="Link to this heading">¶</a></h4>
+<p>Given a profile filename <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code>, removing it from the <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> minor version
 index, requires the following steps to be executed:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>An index corresponding to the <code class="docutils literal"><span class="pre">HEAD</span></code> minor version is opened. Minor version index is
+<li><p>An index corresponding to the <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> minor version is opened. Minor version index is
 represented by its hash, where first two characters of hash is used as directory and the
-rest as filename. If the index does not exist, removing ends with an error.</li>
-<li>An entry for <code class="docutils literal"><span class="pre">sll-vs-skiplist.perf</span></code> is looked up within within the index. If it is not
+rest as filename. If the index does not exist, removing ends with an error.</p></li>
+<li><p>An entry for <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code> is looked up within within the index. If it is not
 found, the removing ends with an error. Other wise, the entry is removed from the index and
-the number of registered profiles in index is decreased.</li>
-<li>The original compresed object, which was stored in the entry is kept in the
-<code class="docutils literal"><span class="pre">.perun/objects</span></code> directory.</li>
+the number of registered profiles in index is decreased.</p></li>
+<li><p>The original compresed object, which was stored in the entry is kept in the
+<code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> directory.</p></li>
 </ol>
 </div></blockquote>
-</div>
-<div class="section" id="looking-up-profile">
-<h4>Looking up profile<a class="headerlink" href="#looking-up-profile" title="Permalink to this headline">¶</a></h4>
-<p>Profiles are looked-up during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">show</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">add</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">postprocessby</span></code> or <code class="docutils literal"><span class="pre">perun</span>
+</section>
+<section id="looking-up-profile">
+<h4>Looking up profile<a class="headerlink" href="#looking-up-profile" title="Link to this heading">¶</a></h4>
+<p>Profiles are looked-up during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">postprocessby</span></code> or <code class="docutils literal notranslate"><span class="pre">perun</span>
 <span class="pre">rm</span></code> and can be found in several places, namely the filesystem, pending storage or registered in
 index. Priorities during the lookup are usually as follows:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>If the specification of profile is in form of <code class="docutils literal"><span class="pre">i&#64;i</span></code> or <code class="docutils literal"><span class="pre">i&#64;p</span></code> (i.e. the <cite>index</cite> and
-<cite>pending</cite> tags respectively), then <code class="docutils literal"><span class="pre">i</span></code> th profile registered in index or stored in
-pending jobs directory (<code class="docutils literal"><span class="pre">.perun/jobs</span></code>) is used.</li>
-<li>Index of corresponding minor version is searched.</li>
-<li>Absolute path in filesystem is checked.</li>
-<li><code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory is searched for match, i.e. one can specify just partial name of
-the profile during the lookup.</li>
-<li>Otherwise the whole scope of filesystem is walked. Each successful match asks user for
-confirmation until the profile is found.</li>
+<li><p>If the specification of profile is in form of <code class="docutils literal notranslate"><span class="pre">i&#64;i</span></code> or <code class="docutils literal notranslate"><span class="pre">i&#64;p</span></code> (i.e. the <cite>index</cite> and
+<cite>pending</cite> tags respectively), then <code class="docutils literal notranslate"><span class="pre">i</span></code> th profile registered in index or stored in
+pending jobs directory (<code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code>) is used.</p></li>
+<li><p>Index of corresponding minor version is searched.</p></li>
+<li><p>Absolute path in filesystem is checked.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory is searched for match, i.e. one can specify just partial name of
+the profile during the lookup.</p></li>
+<li><p>Otherwise the whole scope of filesystem is walked. Each successful match asks user for
+confirmation until the profile is found.</p></li>
 </ol>
 </div></blockquote>
 <p>Refer to <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> for precise specification of lookups during individual commands.</p>
-</div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -574,11 +482,26 @@ confirmation until the profile is found.</li>
     <h3>Perun</h3>
   </a>
 </p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Perun Internals</a><ul>
 <li><a class="reference internal" href="#version-control-systems">Version Control Systems</a><ul>
-<li><a class="reference internal" href="#module-perun.vcs">Version Control System API</a></li>
+<li><a class="reference internal" href="#module-perun.vcs">Version Control System API</a><ul>
+<li><a class="reference internal" href="#perun.vcs.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.walk_minor_versions"><code class="docutils literal notranslate"><span class="pre">walk_minor_versions()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.walk_major_versions"><code class="docutils literal notranslate"><span class="pre">walk_major_versions()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.get_minor_head"><code class="docutils literal notranslate"><span class="pre">get_minor_head()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.get_head_major_version"><code class="docutils literal notranslate"><span class="pre">get_head_major_version()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.get_minor_version_info"><code class="docutils literal notranslate"><span class="pre">get_minor_version_info()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.check_minor_version_validity"><code class="docutils literal notranslate"><span class="pre">check_minor_version_validity()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.massage_parameter"><code class="docutils literal notranslate"><span class="pre">massage_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.is_dirty"><code class="docutils literal notranslate"><span class="pre">is_dirty()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.save_state"><code class="docutils literal notranslate"><span class="pre">save_state()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.restore_state"><code class="docutils literal notranslate"><span class="pre">restore_state()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.checkout"><code class="docutils literal notranslate"><span class="pre">checkout()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#creating-support-for-custom-vcs">Creating Support for Custom VCS</a></li>
 </ul>
 </li>
@@ -596,7 +519,8 @@ confirmation until the profile is found.</li>
 </ul>
 </li>
 </ul>
-<div class="relations">
+
+  </div><div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -613,15 +537,15 @@ confirmation until the profile is found.</li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -630,8 +554,8 @@ confirmation until the profile is found.</li>
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/internals.rst.txt"

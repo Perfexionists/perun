@@ -18,6 +18,7 @@ Welcome to Perun's documentation!
    views
    jobs
    degradation
+   fuzzing
    config
    logs
    internals

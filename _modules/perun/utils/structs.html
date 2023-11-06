@@ -1,27 +1,15 @@
+<!DOCTYPE html>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="../../../">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.utils.structs &#8212; Perun 0.16.9-hotfix documentation</title>
-    <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.16.9-hotfix',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.utils.structs &#8212; Perun 0.21.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../_static/documentation_options.js?v=6081af2d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -30,8 +18,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
@@ -43,28 +30,176 @@
             
   <h1>Source code for perun.utils.structs</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;List of helper and globally used structures and named tuples&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">shlex</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
-<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+    <span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="n">GeneratorSpec</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;GeneratorSpec&#39;</span><span class="p">,</span> <span class="s1">&#39;constructor params&#39;</span><span class="p">)</span>
 
-<span class="n">PerformanceChange</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span>
-    <span class="s1">&#39;PerformanceChange&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization&#39;</span>
-<span class="p">)</span>
+<span class="n">GeneratorSpec</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;GeneratorSpec&quot;</span><span class="p">,</span> <span class="s2">&quot;constructor params&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">PerformanceChange</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Unknown</span> <span class="o">=</span> <span class="o">-</span><span class="mi">6</span>
+    <span class="n">NotInBaseline</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span>
+    <span class="n">TotalDegradation</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
+    <span class="n">SevereDegradation</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span>
+    <span class="n">Degradation</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+    <span class="n">MaybeDegradation</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">NoChange</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">MaybeOptimization</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Optimization</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">SevereOptimization</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">TotalOptimization</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">NotInTarget</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+<span class="k">class</span> <span class="nc">CollectStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple enumeration for statuses of the collectors&quot;&quot;&quot;</span>
+
+    <span class="n">OK</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span> <span class="nc">PostprocessStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple enumeration for statuses of the postprocessors&quot;&quot;&quot;</span>
+
+    <span class="n">OK</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span> <span class="nc">RunnerReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of results reported during the running of the unit</span>
+
+<span class="sd">    :ivar object status: overall status of the whole run of the unit, one of the CollectStatus or</span>
+<span class="sd">        PostprocessStatus enum</span>
+<span class="sd">    :ivar module runner: module of the collector or postprocessor</span>
+<span class="sd">    :ivar str runner_type: string name of the runner type, either collector or postprocessor</span>
+<span class="sd">    :ivar int stat_code: sub status returned by the unit, 0 if nothing happened</span>
+<span class="sd">    :ivar str phase: name of the last executed phase (before, collect/postprocess, after)</span>
+<span class="sd">    :ivar Exception exception: exception (if it was raised) during the run otherwise None</span>
+<span class="sd">    :ivar str message: string message describing the result of run</span>
+<span class="sd">    :ivar dict kwargs: kwargs of the process (should include &quot;profile&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ok_statuses</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CollectStatus</span> <span class="o">|</span> <span class="n">PostprocessStatus</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;collector&quot;</span><span class="p">:</span> <span class="n">CollectStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+        <span class="s2">&quot;postprocessor&quot;</span><span class="p">:</span> <span class="n">PostprocessStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">error_statues</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CollectStatus</span> <span class="o">|</span> <span class="n">PostprocessStatus</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;collector&quot;</span><span class="p">:</span> <span class="n">CollectStatus</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+        <span class="s2">&quot;postprocessor&quot;</span><span class="p">:</span> <span class="n">PostprocessStatus</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">,</span> <span class="n">runner_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param module runner: module of the runner</span>
+<span class="sd">        :param str runner_type: type of the runner (either &#39;collector&#39; or &#39;postprocessor&#39;</span>
+<span class="sd">        :param dict kwargs: initial keyword arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ok_status</span> <span class="o">=</span> <span class="n">RunnerReport</span><span class="o">.</span><span class="n">ok_statuses</span><span class="p">[</span><span class="n">runner_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_status</span> <span class="o">=</span> <span class="n">RunnerReport</span><span class="o">.</span><span class="n">error_statues</span><span class="p">[</span><span class="n">runner_type</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span> <span class="o">=</span> <span class="n">runner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">runner_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="n">CollectStatus</span> <span class="o">|</span> <span class="n">PostprocessStatus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ok_status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Enum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;init&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exception</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;OK&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">update_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the report according to the successful results of one of the phases</span>
+
+<span class="sd">        :param int stat_code: returned code of the run</span>
+<span class="sd">        :param str message: additional message about the run process</span>
+<span class="sd">        :param dict params: updated params</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat_code</span> <span class="o">=</span> <span class="n">stat_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span> <span class="ow">or</span> <span class="p">{})</span>
+
+        <span class="n">is_enum</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat_code</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat_code</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">is_enum</span> <span class="ow">and</span> <span class="n">cast</span><span class="p">(</span><span class="n">Enum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat_code</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_status</span>
+
+        <span class="c1"># Update the message; delete the assumed OK if error occurred</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ok</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">==</span> <span class="s2">&quot;OK&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">+=</span> <span class="n">message</span>
+
+    <span class="k">def</span> <span class="nf">is_ok</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks if the status of the collection or postprocessing is so far ok</span>
+
+<span class="sd">        :return: true if the status is OK</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ok_status</span>
+
+
+<span class="k">class</span> <span class="nc">Executable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents executable command with arguments and workload</span>
+
+<span class="sd">    :ivar str cmd: command to be executed (i.e. script, binary, etc.)</span>
+<span class="sd">    :ivar str args: optional arguments of the command (such as -q, --pretty=no, etc.)</span>
+<span class="sd">    :ivar str workload: optional workloads (or inputs) of the command (i.e. files, whatever)</span>
+<span class="sd">    :ivar str original_workload: workload that was used as an origin (stated from the configration,</span>
+<span class="sd">        note that this is to differentiate between actually generated workloads from generators and</span>
+<span class="sd">        names of the generators.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">workload</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the executable</span>
+
+<span class="sd">        :param str cmd: command to be executed</span>
+<span class="sd">        :param str args: optional arguments of the command</span>
+<span class="sd">        :param str workload: optional workloads of the command</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="o">=</span> <span class="n">workload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin_workload</span> <span class="o">=</span> <span class="n">workload</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns nonescaped, nonlexed string representation of the executable</span>
+
+<span class="sd">        :return: string representation of executable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">executable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span>
+        <span class="n">executable</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">executable</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">executable</span>
+
+    <span class="k">def</span> <span class="nf">to_escaped_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns escaped string representation of executable</span>
+
+<span class="sd">        :return: escaped string representation of executable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">executable</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">executable</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">executable</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">executable</span>
+
 
 <span class="k">class</span> <span class="nc">Unit</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Specification of the unit that is part of run process</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Specification of the unit that is part of run process</span>
 
 <span class="sd">    :ivar str name: name of the unit</span>
 <span class="sd">    :ivar dict params: parameters for the unit</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Constructs the unit, with name being sanitized</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructs the unit, with name being sanitized</span>
 
 <span class="sd">        :param str name: name of the unit</span>
 <span class="sd">        :param dict params: parameters for the unit</span>
@@ -72,10 +207,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">Unit</span><span class="o">.</span><span class="n">sanitize_unit_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
 
-
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">desanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Replace the underscors in the unit name so it is CLI compatible.</span>
+    <span class="k">def</span> <span class="nf">desanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace the underscors in the unit name so it is CLI compatible.</span>
 
 <span class="sd">        In Click 7.0 all subcommands have automatically replaced underscores (_) with dashes (-).</span>
 <span class="sd">        We have to sanitize/desanitize the unit name through the Perun.</span>
@@ -83,11 +217,11 @@
 <span class="sd">        :param str unit_name: name of the unit that is desanitized</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">sanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sanitizes module name so it is usable and uniform in the perun.</span>
+    <span class="k">def</span> <span class="nf">sanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sanitizes module name so it is usable and uniform in the perun.</span>
 
 <span class="sd">        As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).</span>
 <span class="sd">        While this is surely nice feature, Perun works with the Python function names that actually</span>
@@ -98,11 +232,13 @@
 <span class="sd">        :param str unit_name: module name that we are sanitizing</span>
 <span class="sd">        :return: sanitized module name usable inside the Perun (with underscores instead of dashes)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DegradationInfo"><a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo">[docs]</a><span class="k">class</span> <span class="nc">DegradationInfo</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;The returned results for performance check methods</span>
+<div class="viewcode-block" id="DegradationInfo">
+<a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo">[docs]</a>
+<span class="k">class</span> <span class="nc">DegradationInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The returned results for performance check methods</span>
 
 <span class="sd">    :ivar PerformanceChange result: result of the performance change, either can be optimization,</span>
 <span class="sd">        degradation, no change, or certain type of unknown</span>
@@ -114,10 +250,23 @@
 <span class="sd">        optimized or degraded</span>
 <span class="sd">    :ivar str confidence_type: type of the confidence we have in the detected degradation, e.g. r^2</span>
 <span class="sd">    :ivar float confidence_rate: value of the confidence we have in the detected degradation</span>
+<span class="sd">    :ivar float rate_degradation_relative: relative rate of the degradation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">fb</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">rd</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ct</span><span class="o">=</span><span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Each degradation consists of its results, the location, where the change has happened</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">PerformanceChange</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fb</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+        <span class="n">rd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">ct</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span>
+        <span class="n">cr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">pi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">PerformanceChange</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rdr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Each degradation consists of its results, the location, where the change has happened</span>
 <span class="sd">        (this is e.g. the unique id of the resource, like function or concrete line), then the pair</span>
 <span class="sd">        of best models for baseline and target, and the information about confidence.</span>
 
@@ -133,25 +282,32 @@
 <span class="sd">            optimized or degraded</span>
 <span class="sd">        :param str tt: value or model representing the target, i.e. to which the new version was</span>
 <span class="sd">            optimized or degraded</span>
-<span class="sd">        :param int rd: quantified rate of the degradation, i.e. how much exactly it degrades</span>
+<span class="sd">        :param float rd: quantified rate of the degradation, i.e. how much exactly it degrades</span>
 <span class="sd">        :param str ct: type of the confidence we have in the detected degradation, e.g. r^2</span>
 <span class="sd">        :param float cr: value of the confidence we have in the detected degradation</span>
+<span class="sd">        :param float rdr: relative rate of the degradation (i.e. to the entire program run)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">res</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">t</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">from_baseline</span> <span class="o">=</span> <span class="n">fb</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_target</span> <span class="o">=</span> <span class="n">tt</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation</span> <span class="o">=</span> <span class="n">rd</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_type</span> <span class="o">=</span> <span class="n">ct</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span> <span class="o">=</span> <span class="n">cr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">:</span> <span class="n">PerformanceChange</span> <span class="o">=</span> <span class="n">res</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">loc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_baseline</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">fb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">rd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">cr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partial_intervals</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">PerformanceChange</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pi</span> <span class="k">if</span> <span class="n">pi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation_relative</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">rdr</span>
 
-<div class="viewcode-block" id="DegradationInfo.to_storage_record"><a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo.to_storage_record">[docs]</a>    <span class="k">def</span> <span class="nf">to_storage_record</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Transforms the degradation info to a storage_record</span>
+<div class="viewcode-block" id="DegradationInfo.to_storage_record">
+<a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo.to_storage_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_storage_record</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforms the degradation info to a storage_record</span>
 
 <span class="sd">        :return: string representation of the degradation as a stored record in the file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
@@ -159,8 +315,213 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">to_target</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">confidence_type</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span>
-        <span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation_relative</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">class</span> <span class="nc">Job</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents one profiling task in the Perun</span>
+
+<span class="sd">    :ivar Unit collector: collection unit used to collect the SUP</span>
+<span class="sd">    :ivar list postprocessors: list of postprocessing units applied after the collection</span>
+<span class="sd">    :ivar Executable executable: System Under Profiling (SUP)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">:</span> <span class="n">Unit</span><span class="p">,</span> <span class="n">postprocessors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Unit</span><span class="p">],</span> <span class="n">executable</span><span class="p">:</span> <span class="n">Executable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param Unit collector: collection unit used to collect the SUP</span>
+<span class="sd">        :param list postprocessors: list of postprocessing units applied after the collection</span>
+<span class="sd">        :param Executable executable: System Under Profiling (SUP)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collector</span> <span class="o">=</span> <span class="n">collector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">postprocessors</span> <span class="o">=</span> <span class="n">postprocessors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executable</span> <span class="o">=</span> <span class="n">executable</span>
+
+    <span class="k">def</span> <span class="nf">_asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: representation as dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;collector&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">collector</span><span class="p">,</span>
+            <span class="s2">&quot;postprocessors&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocessors</span><span class="p">,</span>
+            <span class="s2">&quot;executable&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span>
+        <span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">OrderedEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An ordered enumeration structure that ranks the elements so that they can be compared in</span>
+<span class="sd">    regards of their order. Taken from:</span>
+<span class="sd">        https://stackoverflow.com/questions/42369749/use-definition-order-of-enum-as-natural-order</span>
+
+<span class="sd">    :ivar int order: the order of the new element</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the new enumeration element and compute its order.</span>
+
+<span class="sd">        :param args: additional element arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># attempt to initialize other parents in the hierarchy</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="c1"># ignore -- there are no other parents</span>
+            <span class="k">pass</span>
+        <span class="n">ordered</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">__members__</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">ordered</span>
+
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Comparison operator &gt;=.</span>
+
+<span class="sd">        :param OrderedEnum other: the other enumeration element</span>
+<span class="sd">        :return bool: the comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Comparison operator &gt;.</span>
+
+<span class="sd">        :param OrderedEnum other: the other enumeration element</span>
+<span class="sd">        :return bool: the comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Comparison operator &lt;=.</span>
+
+<span class="sd">        :param OrderedEnum other: the other enumeration element</span>
+<span class="sd">        :return bool: the comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Comparison operator &lt;.</span>
+
+<span class="sd">        :param OrderedEnum other: the other enumeration element</span>
+<span class="sd">        :return bool: the comparison result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+
+<span class="k">class</span> <span class="nc">ProfileListConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :ivar str colour: colour of the printed list</span>
+<span class="sd">    :ivar str ending: ending for summary of the number of profiles</span>
+<span class="sd">    :ivar int list_len: length of the profile list</span>
+<span class="sd">    :ivar str id_char: character that represents either pending (p) or indexed (i) profiles</span>
+<span class="sd">    :ivar int id_width: number of characters needed for the left column that counts the index of</span>
+<span class="sd">        the profile in the list</span>
+<span class="sd">    :ivar int header_width: overall width of the profile list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">short</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">profile_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the configuration for the profile list.</span>
+
+<span class="sd">        :param str list_type: type of the profile list (either untracked or untracked)</span>
+<span class="sd">        :param bool short: true if the list should be short</span>
+<span class="sd">        :param list profile_list: list of profiles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colour</span> <span class="o">=</span> <span class="s2">&quot;white&quot;</span> <span class="k">if</span> <span class="n">list_type</span> <span class="o">==</span> <span class="s2">&quot;tracked&quot;</span> <span class="k">else</span> <span class="s2">&quot;red&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ending</span> <span class="o">=</span> <span class="s2">&quot;:</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">short</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">profile_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_char</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span> <span class="k">if</span> <span class="n">list_type</span> <span class="o">==</span> <span class="s2">&quot;tracked&quot;</span> <span class="k">else</span> <span class="s2">&quot;p&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_len</span><span class="p">))</span>
+        <span class="c1"># The magic 3 corresponds to the fixed string @p or @i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_width</span> <span class="o">+</span> <span class="mi">3</span>
+
+
+<span class="nd">@dataclass</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">MinorVersion</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Single MinorVersion (commit) from the Version Control System</span>
+
+<span class="sd">    :ivar str data: date when the minor version was commited</span>
+<span class="sd">    :ivar str author: author of the minor version</span>
+<span class="sd">    :ivar str email: email of the author of the minor version</span>
+<span class="sd">    :ivar str checksum: sha checksum of the minor version</span>
+<span class="sd">    :ivar str desc: description of the changes commited in the minor version</span>
+<span class="sd">    :ivar list parents: list of parents of the minor version (empty if root)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">author</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parents</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">to_short</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinorVersion</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns corresponding minor version with shorted one-liner description</span>
+
+<span class="sd">        :return: minor version with one line description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MinorVersion</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">author</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">valid_fields</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: list of valid fields in the dataclass</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;author&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;checksum&quot;</span><span class="p">,</span> <span class="s2">&quot;desc&quot;</span><span class="p">,</span> <span class="s2">&quot;parents&quot;</span><span class="p">]</span>
+
+
+<span class="nd">@dataclass</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">MajorVersion</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Single Major Version (branch) of the Version Control System</span>
+
+<span class="sd">    :ivar str name: name of the major version</span>
+<span class="sd">    :ivar str head: sha checksum of the corresponding head minor version</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">head</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="nd">@dataclass</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">ModelRecord</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper class for holding the model parts</span>
+
+<span class="sd">    :ivar str type: type of the model (i.e. its class)</span>
+<span class="sd">    :ivar float r_square: R^2 value of the model</span>
+<span class="sd">    :ivar float b0: constant coefficient of the model</span>
+<span class="sd">    :ivar float b1: slope coefficient of the model</span>
+<span class="sd">    :ivar float b2: quadratic coefficient of the model</span>
+<span class="sd">    :ivar int x_start: start of the interval, where the model holds</span>
+<span class="sd">    :ivar int x_end: end of the interval, where the model holds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">r_square</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">b0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">b1</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">b2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">x_start</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">x_end</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">def</span> <span class="nf">coeff_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Counts the number of coefficients in the model</span>
+
+<span class="sd">        :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b0</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b2</span> <span class="o">!=</span> <span class="mf">0.0</span>
 </pre></div>
 
           </div>
@@ -182,15 +543,15 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -199,8 +560,8 @@
       &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 
