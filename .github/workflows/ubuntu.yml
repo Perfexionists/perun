@@ -66,6 +66,10 @@ jobs:
         run: |
           pip3 install dist/*.tar.gz
 
+      - name: Try running perun and getting help
+        run: |
+          perun --help
+
   # Tests that documentation is buildable. We limit the test to version 3.11 in order to have less clutter in Actions
   build-docs:
     runs-on: ubuntu-latest

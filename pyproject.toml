@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=60", "setuptools-scm>=8.0", "wheel"]
+requires = ["setuptools>=60", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "perun"
+name = "perun-toolsuite"
 description = "Perun: Lightweight Performance Version System"
+version = "0.21.1"
 requires-python = ">=3.9"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -56,8 +57,7 @@ dependencies = [
 ]
 # (1) Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
 # dependency and its version constraints specified only once to avoid inconsistencies.
-# (2) Version is made dynamic, so it can be used to automatically infer and tag the version of Perun
-dynamic = ["optional-dependencies", "version"]
+dynamic = ["optional-dependencies"]
 
 
 [project.urls]
@@ -116,6 +116,7 @@ exclude = [
     "build",
     "docs",
     "perun.egg-info",
+    "perun_toolsuite.egg-info",
     "venv",
     # Fixme: Temporary exclude
     "perun/collect/trace"
@@ -218,5 +219,3 @@ target-version = [
 ]
 line-length = 100
 
-# This line has to be there, because otherwise the setuptools_scm will not infer the version
-[tool.setuptools_scm]

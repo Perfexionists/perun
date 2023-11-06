@@ -9,7 +9,7 @@ on:
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true
+    if: ${{ github.event.pull_request.merged == true }} && ${{ contains(github.event.head_commit.message, 'Release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest version
@@ -17,12 +17,16 @@ jobs:
         with:
           ref: devel
 
+      - name: Set version
+        id: manual-tagger
+        run: echo "NEW_TAG=$(perun --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+
       - name: Tag the new version
-        uses: phish108/autotag-action@1.1.51
+        uses: phish108/autotag-action@1.1.64
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch: devel
-          bump: minor
+          tag: ${{ steps.manual-tagger.outputs.NEW_TAG }}
 
   build-and-deploy-doc:
     needs: release
@@ -42,9 +46,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
-      - name: Compile the documentation
+      - name: Generate docs for Python using Tox
         run: |
-          make -C docs html
+          tox -e docs
 
       - name: Deploy to GH pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -74,10 +78,10 @@ jobs:
         run: |
           # Install and upgrade pip
           python3 -m pip install --upgrade pip
-          # Install dependencies for build and deplo
+          # Install dependencies for build and deploy
           python3 -m pip install setuptools wheel twine
 
-      - name: Build python release distrubution package
+      - name: Build python release distribution package
         run: |
           pip3 install -q build
           make pypi-release

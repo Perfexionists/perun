@@ -718,7 +718,7 @@ def generate_cli_dump(
         split = re.split(version_delimiter, requirement)
         return split[0] if len(split) > 0 else ""
 
-    reqs = {split_requirement(req) for req in metadata.requires("perun") or []}
+    reqs = {split_requirement(req) for req in metadata.requires("perun-toolsuite") or []}
 
     dump_directory = pcs.get_safe_path(os.getcwd())
     dump_file = os.path.join(
