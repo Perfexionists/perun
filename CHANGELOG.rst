@@ -1,23 +1,28 @@
 Changelog
 =========
 
-HEAD
-----
+0.21.3 (2023-11-06)
+-------------------
 
-**To be included in next release**
+  - Add typing information to function
+  - Add github actions (linting, testing, deploying docs and pypi)
+  - Add formatting using `black`.
+  - Fix and reduce dependencies
+  - Fix various small issues (deprecations, tests, etc.)
+  - Remove obsolete information (authorship tags, etc.)
+  - Remove `demandimport`
+  - Speeds up tests
+  - Update build process to `pyproject.toml` and `tox`
 
 0.20.4 (2022-06-28)
 -------------------
 
-`commit: 862f02acefbeae7e68c1f9271abfbca2c0026697`
-
 **Add exclusive time outliers check**
+
   - Add new degradation detection method "Exclusive Time Outliers" (ETO).
 
 0.20.3 (2022-06-28)
 -------------------
-
-`commit: 1e7fb33f3b38b3a9d915d6cf52cdddb50b7eff35`
 
 **Fix issues in Tracer**
 
@@ -27,16 +32,12 @@ HEAD
 0.20.2-hotfix2 (2022-06-28)
 ---------------------------
 
-`commit: b16b5cd65b8746368f55247d2dab53abc105d846`
-
 **Hotfix failing nondeterministic test**
 
   - Fix test_regression_detections_methods having too specific mock results
 
 0.20.2-hotfix (2022-06-21)
 --------------------------
-
-`commit: 0a19a8a63816a2a7bb1481fe3a89ea092af606e6`
 
 **Enhance the Performance and Code Culture**
 
@@ -49,8 +50,6 @@ HEAD
 
 0.20.2 (2021-05-12)
 -------------------
-
-`commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
 
 **Enhance the Performance and Code Culture**
 
@@ -68,18 +67,13 @@ HEAD
 0.20.1 (2021-05-12)
 -------------------
 
-`commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
-
 **Update install instructions in readme**
 
   - Update README with additional install instructions
   - SystemTap and BCC instructions for Ubuntu and Fedora
 
-
 0.20 (2021-03-05)
 -----------------
-
-`commit: 12c181f1a3c94699ee2818f996ee2651a7e30578`
 
 **Add optimizations of collect process**
 
@@ -91,8 +85,6 @@ HEAD
 
 0.19 (2021-02-08)
 -----------------
-
-`commit: 07a6c7a54392ae245964956ed69a56f050f89fca`
 
 **Update Perun to Python 3.8+**
 
@@ -109,21 +101,15 @@ HEAD
 0.18.3-hotfix2 (2020-08-31)
 ---------------------------
 
-`commit: ac5e719b483f62b56e5273afc165335c46a68f76`
-
   - update the acknowledgements in README
 
 0.18.3-hotfix (2020-05-11)
 --------------------------
 
-`commit: 3998d715041f624b836bef46b123d2139a8528fe`
-
   - fix two minor issues in average amount threshold check (fix for profiles without amounts and to soften the dependency on numpy.float64)
 
 0.18.3 (2020-03-20)
 -------------------
-
-`commit: 7b19f07eb2612899be96dfaa24b5912705c6ae42`
 
 **Extend the Perun and fix selected issues**
 
@@ -145,8 +131,6 @@ HEAD
 0.18.2 (2020-02-13)
 -------------------
 
-`commit: c68ba580d53b6e40df48bcef4e2bd6af3c9754e6`
-
 **Fix errors in novel check methods**
 
   - fix selected errors in novel check methods
@@ -155,8 +139,6 @@ HEAD
 
 0.18.1 (2020-02-13)
 -------------------
-
-`commit: 5166ec167bddc5e72877029dc19f1302aaa8cb8b`
 
 **Refactor trace collector**
 
@@ -171,16 +153,12 @@ HEAD
 0.18 (2020-02-11)
 -----------------
 
-`commit: 252078825559d67b6c915ab01827a9433af92dfa`
-
 **Add performance fuzz-testing**
 
   - add ``perun fuzz`` mode implementing mutation based fuzzer. See :ref:`fuzzing-overview` for more details.
 
 0.17.4 (2020-01-28)
 -------------------
-
-`commit: cfb264ed53155a4aabf3874729c2c573533b0d1d`
 
 **Add tabular view**
 
@@ -197,8 +175,6 @@ HEAD
 0.17.3 (2020-01-09)
 -------------------
 
-`commit: f3819834803b1eed878feeee51b697b260988c65`
-
 **Add Loopus collector in Perun**
 
   - fix an issue in profiles which contained only persistent properties
@@ -206,8 +182,6 @@ HEAD
 
 0.17.2 (2019-08-16)
 -------------------
-
-`commit: d82d15ec5635dacf8027311e44aa65b4776dc8fb`
 
 **Improve the runner logic**
 
@@ -226,8 +200,6 @@ HEAD
 0.17.1 (2019-07-24)
 -------------------
 
-`commit: e2fad3cd2ac22f17aa7abfe4375d9940eb9f2847`
-
 **Add new degradation detection methods**
 
   - add new detection methods for parametric and non-parametric models
@@ -239,8 +211,6 @@ HEAD
 0.17 (2019-07-09)
 -----------------
 
-`commit: e6b1e88d766d93cdab4f114464df51114d6415a8`
-
 **Optimize profile format**
 
   - make profile format more compact
@@ -250,16 +220,12 @@ HEAD
 0.16.9-hotfix (2019-06-18)
 --------------------------
 
-`commit: 126473caba3685878bf79f687115023918d5048a`
-
 **Hotfix issue in Makefile**
 
  - hotfix issue in Makefile
 
 0.16.9 (2019-06-18)
 -------------------
-
-`commit: 8e7228deb81cdfacfea7e7273fd25e70503cbe2b`
 
 **Add CLI for stats manipulation**
 
@@ -270,16 +236,12 @@ HEAD
 0.16.8 (2019-05-18)
 -------------------
 
-`commit: 05d7275cb5f00183a72f8428bc4aaba0420bb73b`
-
 **Extend perun instances with temporaries**
 
   - add new logic module that allows to store temporary files in separate directory (.perun/tmp)
 
 0.16.7-hotfix (2019-04-15)
 --------------------------
-
-`commit: 686ea87a64d845b215474193f879db0240c05732`
 
 **Hotfix Jinja potential vulnerability**
 
@@ -288,16 +250,12 @@ HEAD
 0.16.7 (2019-04-15)
 -------------------
 
-`commit: 4152091bc4c2e5d1553ebccfef059d8153255aba`
-
 **Extend perun instances with stats**
 
   - add new logic module that allows to store stats for profiles in separate directory (.perun/stats)
 
 0.16.6 (2019-03-25)
 -------------------
-
-`commit: 18870d9d5853726d5cc966962d275111e451ab06`
 
 **Improve the quality of life of Perun**
 
@@ -315,22 +273,16 @@ HEAD
 0.16.5 (2019-03-22)
 -------------------
 
-`commit: a2bd359479920178cfed1a0de779ef6fa5f4d4ac`
-
 **Revive complexity collector**
 
   - revive the complexity collector
   - increase the test coverage of complexity collector
   - update the complexity collector to comply with latest version of Perun
 
-`commit: 983b02ca54faa66941dcea06f990c8033eaf98f6`
-
 **Add kernel non-parametric regression**
 
 0.16.4 (2019-03-14)
 -------------------
-
-`commit: 983b02ca54faa66941dcea06f990c8033eaf98f6`
 
 **Add kernel non-parametric regression**
 
@@ -341,8 +293,6 @@ HEAD
 0.16.3 (2019-03-02)
 -------------------
 
-`commit: de699ab66d8438166d0ad2d55c74bf43a59d1fc4`
-
 **Overhaul the trace collector**
 
   - update to Click version 7.0 (because underscores are replaced by dashes)
@@ -352,8 +302,6 @@ HEAD
 
 0.16.2 (2019-03-02)
 -------------------
-
-`commit: 77bed5eb7654274687fc0fa7130f28a6ff282fba`
 
 **Fix and refactor the memory collector**
 
@@ -366,8 +314,6 @@ HEAD
 0.16.1 (2019-03-01)
 -------------------
 
-`commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd`
-
 **Add moving average postprocessor**
 
   - add moving average postprocessor, other of the non-parametric analysis
@@ -378,8 +324,6 @@ HEAD
 0.16 (2019-02-16)
 -----------------
 
-`commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd`
-
 **Add regressogram postprocessor**
 
   - add --version option to perun cli, so it shows version of perun (d'oh!)
@@ -388,8 +332,6 @@ HEAD
 
 0.15.4 (2018-08-13)
 -------------------
-
-`commit: b1e2e3bdcca839efcf7a59ebb8fdbd2b8fc38888`
 
 **Add cleanup procedures to Trace collector**
 
@@ -401,17 +343,12 @@ HEAD
 0.15.3-hotfix (2018-08-02)
 --------------------------
 
-`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
-
 **Hotfix unused workload parameter in trace collector**
 
   - hotfix missing workload parameter in trace collector
 
-
 0.15.3 (2018-08-01)
 -------------------
-
-`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
 
 **Extract trace configuration automatically**
 
@@ -425,8 +362,6 @@ HEAD
 0.15.2 (2018-07-20)
 -------------------
 
-`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
-
 **Upgrade Trace collector architecture**
 
   - update the cli of the :ref:`collectors-trace` with new options
@@ -436,8 +371,6 @@ HEAD
 
 0.15.1 (2018-07-17)
 -------------------
-
-`commit: f137abac6c428fc5e580dfa0fc9446c65ac30e4c`
 
 **Rehaul the notion of workloads**
 
@@ -458,8 +391,6 @@ HEAD
 0.15 (2018-06-20)
 -----------------
 
-`commit: 6bb792fd8e172ab6c97a3cd1ac517bfe416b6c85`
-
 **Extend the suite of change detection methods**
 
   - add fast check degradation check method (:ref:`degradation-fast-check`)
@@ -471,8 +402,6 @@ HEAD
 
 0.14.4 (2018-06-17)
 -------------------
-
-`commit: 4e36142252e123f3e8e6422583c71383adc9fc30`
 
 **Refactor the code**
 
@@ -491,8 +420,6 @@ HEAD
 0.14.3 (2018-06-12)
 -------------------
 
-`commit: a2820c0cb50cff5b758a3d01ca7b8e356af5d2cf`
-
 **Extend utils module**
 
   - print timing of various collection phases
@@ -508,8 +435,6 @@ HEAD
 
 0.14.2 (2018-05-15)
 -------------------
-
-`commit: 0faaa74097a159c4b441d65415dba504265c2059`
 
 **Rehaul the command line output**
 
@@ -539,8 +464,6 @@ HEAD
 0.14.1 (2018-04-19)
 -------------------
 
-`commit: b7922d7c1bbe7ea89fe735c93cf1e6c8a7604765`
-
 **Extend the automation**
 
   - add two new options to regression analysis module (see :ref:`postprocessors-regression-analysis` for more details)
@@ -568,8 +491,6 @@ HEAD
 0.14 (2018-03-27)
 -----------------
 
-`commit: 3e56911baad6a7cd0ab0b90b23c6edbc57abeb43`
-
 **Add clusterization postprocessor**
 
   - add clusterizer postprocessor (see :ref:`postprocessors-clusterizer`)
@@ -578,8 +499,6 @@ HEAD
 
 0.13 (2018-03-27)
 -----------------
-
-`commit: 9642c1dcd7ba39b91ef791039690f5be79312dd2`
 
 **Add SystemTap based complexity collector**
 
@@ -590,8 +509,6 @@ HEAD
 0.12.1 (2018-03-08)
 -------------------
 
-`commit: 96ef4443244568260e5dd25fa4cde5230eba8a36`
-
 **Update project readme**
 
   - update the project readme
@@ -599,8 +516,6 @@ HEAD
 
 0.12 (2018-03-05)
 -----------------
-
-`commit: 7ac008e0a7be32d5ddfceb3cbe7042036323f82d`
 
 **Add basic testing of performance changes between profiles**
 
@@ -618,8 +533,6 @@ HEAD
 
 0.11.1 (2018-02-28)
 -------------------
-
-`commit: 8a6b1ac90c4cfca6f11546d0d3c4aa4fbe2000c3`
 
 **Enhance the regression model suite**
 
@@ -644,8 +557,6 @@ HEAD
 
 **Adding proper documentation**
 
-`commit: a2ad710aafa171dfc6974c7121b572ee3ea2033b`
-
   - add HTML and latex documentation
   - refactor the documentation of publicly visible modules
   - add additional figures and examples of outputs and profiles
@@ -659,8 +570,6 @@ HEAD
 -------------------
 
 **Remodeling of the  regression analysis interface**
-
-`commit: 14ce41c28d4d847ed2c74eac6a2dbfe7644cfd93`
 
   - refactor the interface of regression analysis
   - update the regression analysis error computation
@@ -678,8 +587,6 @@ HEAD
 
 **Add Scatter plot visualization module**
 
-`commit: f0d9785639e5c03a994eb439d54206722a455da3`
-
   - add scatter plot as new visualisation module (basic version with some temporary workarounds)
   - fix bisection method not producing model for some intervals
   - add examples of scatter plot graphs
@@ -689,8 +596,6 @@ HEAD
 
 **Extend the regression analysis module**
 
-`commit: 12c06251193701356685e8163a7ef8ce8b7d9f2a`
-
   - add transformation of models to plotable data points
   - add helper functions for plotting models
   - add support of regression analysis extensions
@@ -699,8 +604,6 @@ HEAD
 ------------------
 
 **Extend the query module**
-
-`commit: bf8ff341cfa942b82093850c63655b79674ea615`
 
   - add proper testing to query module
   - polish the messy conftest.py
@@ -712,16 +615,11 @@ HEAD
 
 **Add regression analysis postprocessing module**
 
-`commit: 2b3d0d637699ae35b36672df3ce4c14fa0fed701`
-
   - add regression analysis postprocessor module
   - add example resulting profiles
 
-
 0.8.3 (2017-08-31)
 ------------------
-
-`commit: e47f5588e834fd70042bb18ea53a7d76f75cc8b7`
 
 **Update and fix complexity collector**
 
@@ -739,8 +637,6 @@ HEAD
 
 **Update the command line interface of complexity collector**
 
-`commit: 1451ae054e77e81bf0aa4930639bf323c09c510e`
-
   - add new options to complexity collector interface
   - add thorough documentation
   - refactor the implementation
@@ -749,8 +645,6 @@ HEAD
 ------------------
 
 **Update the performance of command line interface**
-
-`commit: 1fef373e8899b3ff0b0525ec99da91ba7a67fac0`
 
   - add on demand import of big libraries
   - optimize the memory collector by minimizing subprocess calls
@@ -769,16 +663,12 @@ HEAD
 
 **Add flame graph visualization**
 
-`commit: 56a29c807f2d7ad34b7af6002e5ebf90c717e8d7`
-
   - add flame graph visualization module
 
 0.7.2 (2017-07-03)
 ------------------
 
 **Refactor flow graph to a more generic form**
-
-`commit: eb33811236575599fc9aa82ce417c492be22d79b`
 
   - refactor flow to more generic format
   - work with flattened pandas.DataFrame format
@@ -794,8 +684,6 @@ HEAD
 
 **Refactor bar graph to a more generic form**
 
-`commit: 5942e0b1aa8cc09ce0e22b030c3ec17dfdce0556`
-
   - refactor bars to more generic format
   - work with flattened pandas.DataFrame format
   - make the cli API generic
@@ -809,8 +697,6 @@ HEAD
 
 **Add bar graph visualization**
 
-`commit: a0f1a4921ecf9ef8f5b7c14ba42442fc589581ed`
-
   - integrate bar graph visualization
 
 0.6 (2017-06-26)
@@ -818,16 +704,12 @@ HEAD
 
 **Add Flow graph visualization**
 
-`commit: 5683141b2e622af871eabc1c7259654151177256`
-
   - integrate flow graph visualization
 
 0.5.1 (2016-06-22)
 ------------------
 
 **Fix issues in memory collector**
-
-`commit: 28560e8d47cb2b1e2087d7072c44584563f78870`
 
   - extend the CLI for memory collect
   - annotate phases of memory collect with basic informations
@@ -839,8 +721,6 @@ HEAD
 ----------------
 
 **Add Heap map visualization**
-
-`commit: 6ac6e43080f0a9b0c856636ed5ae12ee25a3d4df`
 
   - integrate Heap map visualization
   - add thorough testing of heap and heat map
@@ -864,8 +744,6 @@ HEAD
 
 **Collective fixes mostly for Memory collector**
 
-`commit: 4d94299bc196292284995aabdce0c702e76b33ca`
-
   - fix a collector issue with zero value addresses
   - add checking validity of the looked up minor version
   - fix issue with incorrect parameter of the NotPerunRepositoryException
@@ -882,8 +760,6 @@ HEAD
 
 **Collective fixes mosty for Complexity collector**
 
-`commit: 13bebd88613fce58458d50207aea01ee7f672f86`
-
   - fixed size data container growth if functions were sampled
   - enhance the perun status with info about untracked profiles
   - add colours to printing of profile list (red for untracked)
@@ -895,17 +771,12 @@ HEAD
 
 **Add Complexity collector**
 
-`commit: 323228f95050e52041b47af899eaea6e90eb0605`
-
   - add complexity collector module
-
 
 0.3 (2017-03-14)
 ----------------
 
 **Adding Memory Collector**
-
-`commit: 558ae1eee3acd370c519ac39e774d7fe05d23e35`
 
   - add memory collector module
   - fix the issue with detached head state and perun status
@@ -915,8 +786,6 @@ HEAD
 ----------------
 
 **Add basic job units**
-
-`commit: 7994b5618eb27684da57ce0941f4f58604ac29ea`
 
   - add the normalizer postprocessor
   - add the time collector
@@ -952,8 +821,6 @@ HEAD
 
 **First partially working implementation**
 
-`commit: 4dd5ee3c638570489d60c50ca41b519029da9007`
-
   - add short printing of minor version info (--short-minors | -s option)
   - fix reverse output of log (oldest was displayed first)
   - implement simplistic perun log outputing minor version history and profile numbers
@@ -973,7 +840,5 @@ HEAD
 ----------------
 
 **Initial minimalistic repository**
-
-`commit: 2a6d1e65e5f3871e091d395789b9fd44450ef9e4`
 
   - empty root
