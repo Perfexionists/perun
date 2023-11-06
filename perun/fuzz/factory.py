@@ -28,11 +28,17 @@ import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
 import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 
 from perun.utils.structs import Executable, MinorVersion
-from perun.fuzz.structs import FuzzingProgress, Mutation, FuzzingConfiguration, RuleSet, TimeSeries
+from perun.fuzz.structs import (
+    FuzzingProgress,
+    Mutation,
+    FuzzingConfiguration,
+    RuleSet,
+    TimeSeries,
+)
 
 
 # to ignore numpy division warnings
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
 FP_ALLOWED_ERROR = 0.00001
 MAX_FILES_PER_RULE = 100
@@ -55,12 +61,12 @@ def compute_safe_ratio(lhs: float, rhs: float) -> float:
 
 
 def get_max_size(
-        seeds: list[Mutation],
-        max_size: Optional[int],
-        max_size_ratio: Optional[float],
-        max_size_gain: int
+    seeds: list[Mutation],
+    max_size: Optional[int],
+    max_size_ratio: Optional[float],
+    max_size_gain: int,
 ) -> int:
-    """ Finds out max size among the sample files and compare it to specified
+    """Finds out max size among the sample files and compare it to specified
     max size of mutated file.
 
     :param list seeds: list of paths to sample files and their fuzz history
@@ -86,7 +92,7 @@ def get_max_size(
 
 
 def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int) -> int:
-    """ Function decides how many workloads will be generated using certain fuzz method.
+    """Function decides how many workloads will be generated using certain fuzz method.
 
     Strategies:
         - "unitary" - always 1
@@ -103,7 +109,7 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
     if strategy == "unitary":
         return 1
     elif strategy == "proportional":
-        return min(int(rule_set.hits[index])+1, MAX_FILES_PER_RULE)
+        return min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE)
     elif strategy == "probabilistic":
         ratio = compute_safe_ratio(rule_set.hits[index], rule_set.hits[-1])
         rand = randomizer.rand_from_range(0, 10) / 10
@@ -111,15 +117,15 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
     elif strategy == "mixed":
         ratio = compute_safe_ratio(rule_set.hits[index], rule_set.hits[-1])
         rand = randomizer.rand_from_range(0, 10) / 10
-        return min(int(rule_set.hits[index])+1, MAX_FILES_PER_RULE) if rand <= ratio else 0
+        return min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE) if rand <= ratio else 0
     else:
         return 1
 
 
 def fuzz(
-        parent: Mutation, max_bytes: int, rule_set: RuleSet, config: FuzzingConfiguration
+    parent: Mutation, max_bytes: int, rule_set: RuleSet, config: FuzzingConfiguration
 ) -> list[Mutation]:
-    """ Provides fuzzing on workload parent using all the implemented methods.
+    """Provides fuzzing on workload parent using all the implemented methods.
 
     Reads the file and store the lines in list. Makes a copy of the list to send it to every
     single function providing one fuzzing method. With every fuzzing method: creates a new file
@@ -180,19 +186,24 @@ def fuzz(
 
 
 def print_legend(rule_set: RuleSet) -> None:
-    """ Prints stats of each fuzzing method.
+    """Prints stats of each fuzzing method.
 
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
     """
     log.info("Statistics of rule set")
-    log.info(tabulate.tabulate([
-        [
-            i, rule_set.hits[i], method[1]
-        ] for (i, method) in enumerate(rule_set.rules)
-    ], headers=["id", "Rule Efficiency", "Description"]))
+    log.info(
+        tabulate.tabulate(
+            [[i, rule_set.hits[i], method[1]] for (i, method) in enumerate(rule_set.rules)],
+            headers=["id", "Rule Efficiency", "Description"],
+        )
+    )
 
 
-def print_results(fuzzing_report: dict[str, Any], fuzzing_config: FuzzingConfiguration, rule_set: RuleSet) -> None:
+def print_results(
+    fuzzing_report: dict[str, Any],
+    fuzzing_config: FuzzingConfiguration,
+    rule_set: RuleSet,
+) -> None:
     """Prints results of fuzzing.
 
     :param dict fuzzing_report: general information about current fuzzing
@@ -206,7 +217,9 @@ def print_results(fuzzing_report: dict[str, Any], fuzzing_config: FuzzingConfigu
     if fuzzing_config.coverage_testing:
         log.info(f"Program executions for coverage testing: {fuzzing_report['cov_execs']}")
         log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
-        log.info(f"Total program tests: {fuzzing_report['perun_execs'] + fuzzing_report['cov_execs']}")
+        log.info(
+            f"Total program tests: {fuzzing_report['perun_execs'] + fuzzing_report['cov_execs']}"
+        )
         log.info(f"Maximum coverage ratio: {fuzzing_report['max_cov']}")
     else:
         log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
@@ -218,7 +231,7 @@ def print_results(fuzzing_report: dict[str, Any], fuzzing_config: FuzzingConfigu
 
 
 def rate_parent(fuzz_progress: FuzzingProgress, mutation: Mutation) -> bool:
-    """ Rate the `mutation` with fitness function and adds it to list with fitness values.
+    """Rate the `mutation` with fitness function and adds it to list with fitness values.
 
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     :param Mutation mutation: path to a file which is classified as mutation
@@ -245,7 +258,7 @@ def rate_parent(fuzz_progress: FuzzingProgress, mutation: Mutation) -> bool:
 
 
 def update_parent_rate(parents: list[Mutation], mutation: Mutation) -> None:
-    """ Update rate of the `parent` according to degradation ratio yielded from perf testing.
+    """Update rate of the `parent` according to degradation ratio yielded from perf testing.
 
     :param list parents: sorted list of fitness score of parents
     :param Mutation mutation: path to a file which is classified as parent
@@ -271,7 +284,7 @@ def update_parent_rate(parents: list[Mutation], mutation: Mutation) -> None:
 
 
 def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
-    """ Chooses one of the workload file, that will be fuzzed.
+    """Chooses one of the workload file, that will be fuzzed.
 
     If number of parents is smaller than intervals, function provides random choice.
     Otherwise, it splits parents to intervals, each interval assigns weight(probability)
@@ -286,9 +299,9 @@ def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
     if num_of_parents < num_intervals:
         return randomizer.rand_choice(parents)
 
-    triangle_num = (num_intervals*num_intervals + num_intervals) / 2
+    triangle_num = (num_intervals * num_intervals + num_intervals) / 2
     bottom = 0
-    tresh = int(num_of_parents/num_intervals)
+    tresh = int(num_of_parents / num_intervals)
     top = tresh
     intervals = []
     weights = []
@@ -299,14 +312,14 @@ def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
         if num_of_parents - top < tresh:
             top = num_of_parents
         intervals.append((bottom, top))
-        weights.append((i+1)/triangle_num)
+        weights.append((i + 1) / triangle_num)
         bottom = top
         top += tresh
 
     # choose an interval
     interval_idx = np.random.choice(range(num_intervals), replace=False, p=weights)
     # choose a parent from the interval
-    return randomizer.rand_choice(parents[intervals[interval_idx][0]:intervals[interval_idx][1]])
+    return randomizer.rand_choice(parents[intervals[interval_idx][0] : intervals[interval_idx][1]])
 
 
 def save_fuzz_state(time_series: TimeSeries, state: int) -> None:
@@ -323,11 +336,11 @@ def save_fuzz_state(time_series: TimeSeries, state: int) -> None:
 
 
 def teardown(
-        fuzz_progress: FuzzingProgress,
-        output_dirs: dict[str, str],
-        parents: list[Mutation],
-        rule_set: RuleSet,
-        config: FuzzingConfiguration
+    fuzz_progress: FuzzingProgress,
+    output_dirs: dict[str, str],
+    parents: list[Mutation],
+    rule_set: RuleSet,
+    config: FuzzingConfiguration,
 ) -> None:
     """Teardown function at the end of the fuzzing, either by natural rundown of timeout or because
     of unnatural circumstances (e.g. exception)
@@ -343,13 +356,19 @@ def teardown(
         # Plot the results as time series
         log.info("Plotting time series of fuzzing process...")
         interpret.plot_fuzz_time_series(
-            fuzz_progress.deg_time_series, output_dirs["graphs"] + "/degradations_ts.pdf",
-            "Fuzzing in time", "time (s)", "degradations"
+            fuzz_progress.deg_time_series,
+            output_dirs["graphs"] + "/degradations_ts.pdf",
+            "Fuzzing in time",
+            "time (s)",
+            "degradations",
         )
         if config.coverage_testing:
             interpret.plot_fuzz_time_series(
-                fuzz_progress.cov_time_series, output_dirs["graphs"] + "/coverage_ts.pdf",
-                "Max path during fuzzing", "time (s)", "executed lines ratio"
+                fuzz_progress.cov_time_series,
+                output_dirs["graphs"] + "/coverage_ts.pdf",
+                "Max path during fuzzing",
+                "time (s)",
+                "executed lines ratio",
             )
     # Plot the differences between seeds and inferred mutation
     interpret.files_diff(fuzz_progress, output_dirs["diffs"])
@@ -366,11 +385,11 @@ def teardown(
 
 
 def process_successful_mutation(
-        mutation: Mutation,
-        parents: list[Mutation],
-        fuzz_progress: FuzzingProgress,
-        rule_set: RuleSet,
-        config: FuzzingConfiguration
+    mutation: Mutation,
+    parents: list[Mutation],
+    fuzz_progress: FuzzingProgress,
+    rule_set: RuleSet,
+    config: FuzzingConfiguration,
 ) -> None:
     """If the @p mutation is successful during the evaluation, we update the parent queue
     @p parents, as well as statistics for given rule in rule_set and stats stored in fuzzing
@@ -405,15 +424,16 @@ def save_state(fuzz_progress: FuzzingProgress) -> None:
     save_fuzz_state(fuzz_progress.deg_time_series, fuzz_progress.stats["degradations"])
     save_fuzz_state(fuzz_progress.cov_time_series, fuzz_progress.stats["max_cov"])
 
-    timer = threading.Timer(SAMPLING, lambda: save_state(fuzz_progress),)
+    timer = threading.Timer(
+        SAMPLING,
+        lambda: save_state(fuzz_progress),
+    )
     timer.daemon = True
     timer.start()
 
 
 def perform_baseline_coverage_testing(
-        executable: Executable,
-        parents: list[Mutation],
-        config: FuzzingConfiguration
+    executable: Executable, parents: list[Mutation], config: FuzzingConfiguration
 ) -> int:
     """Performs the baseline testing for the coverage
 
@@ -437,14 +457,14 @@ def perform_baseline_coverage_testing(
 
 
 @log.print_elapsed_time
-@decorators.phase_function('fuzz performance')
+@decorators.phase_function("fuzz performance")
 def run_fuzzing_for_command(
-        executable: Executable,
-        input_sample: list[str],
-        collector: str,
-        postprocessor: list[str],
-        minor_version_list: list[MinorVersion],
-        **kwargs: Any
+    executable: Executable,
+    input_sample: list[str],
+    collector: str,
+    postprocessor: list[str],
+    minor_version_list: list[MinorVersion],
+    **kwargs: Any,
 ) -> None:
     """Runs fuzzing for a command w.r.t initial set of workloads
 
@@ -489,11 +509,11 @@ def run_fuzzing_for_command(
     )
     log.done()
 
-    log.info("Rating parents ", end='')
+    log.info("Rating parents ", end="")
     # Rate seeds
     for parent_seed in parents:
         rate_parent(fuzz_progress, parent_seed)
-        log.info('.', end='')
+        log.info(".", end="")
     log.done()
 
     save_state(fuzz_progress)
@@ -523,7 +543,12 @@ def run_fuzzing_for_command(
                         fuzz_progress.stats["cov_execs"] += 1
                         # testing for coverage
                         result = evaluate_workloads_by_coverage.target_testing(
-                            executable, mutation, config, current_workload, fuzz_progress, **kwargs
+                            executable,
+                            mutation,
+                            config,
+                            current_workload,
+                            fuzz_progress,
+                            **kwargs,
                         )
                     # error occurred
                     except CalledProcessError:
@@ -536,12 +561,12 @@ def run_fuzzing_for_command(
                     # timeout expired
                     except TimeoutExpired:
                         fuzz_progress.stats["hangs"] += 1
-                        log.warn("Timeout ({}s) reached when testing. See {}.".format(
-                            config.hang_timeout, output_dirs["hangs"]
-                        ))
-                        mutation.path = filesystem.move_file_to(
-                            mutation.path, output_dirs["hangs"]
+                        log.warn(
+                            "Timeout ({}s) reached when testing. See {}.".format(
+                                config.hang_timeout, output_dirs["hangs"]
+                            )
                         )
+                        mutation.path = filesystem.move_file_to(mutation.path, output_dirs["hangs"])
                         fuzz_progress.hangs.append(mutation)
                         continue
 
@@ -571,15 +596,20 @@ def run_fuzzing_for_command(
         for mutation in fuzz_progress.interesting_workloads:
             # creates copy of generator
             base_result_profile, base_copy = itertools.tee(base_result_profile)
-            log.info('.', end="")
+            log.info(".", end="")
 
             # testing with perun
             successful_result = False
             try:
                 fuzz_progress.stats["perun_execs"] += 1
                 successful_result = evaluate_workloads_by_perun.target_testing(
-                    executable, mutation, collector, postprocessor, minor_version_list, base_copy,
-                    **kwargs
+                    executable,
+                    mutation,
+                    collector,
+                    postprocessor,
+                    minor_version_list,
+                    base_copy,
+                    **kwargs,
                 )
                 if successful_result:
                     process_successful_mutation(mutation, parents, fuzz_progress, rule_set, config)

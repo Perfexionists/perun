@@ -19,10 +19,10 @@ from perun.utils.structs import DegradationInfo, ModelRecord
 
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state
-_INTEGRATE_DIFF_NO_CHANGE = .10
+_INTEGRATE_DIFF_NO_CHANGE = 0.10
 # an upper limit of relative error to detect changes between compared profiles
 # - the difference between these two values represents the state of uncertain changes - MAYBE
-_INTEGRATE_DIFF_CHANGE = .25
+_INTEGRATE_DIFF_CHANGE = 0.25
 
 
 def compute_param_integral(model: ModelRecord) -> float:
@@ -38,7 +38,15 @@ def compute_param_integral(model: ModelRecord) -> float:
     :return float: the value of integral of `formula` from `x_start` to `x_end`
     """
     formula = regression_models.get_formula_of(model.type)
-    coeffs = (model.b0, model.b1, model.b2,) if model.type == 'quadratic' else (model.b0, model.b1)
+    coeffs = (
+        (
+            model.b0,
+            model.b1,
+            model.b2,
+        )
+        if model.type == "quadratic"
+        else (model.b0, model.b1)
+    )
     return integrate.quad(formula, model.x_start, model.x_end, args=coeffs)[0]
 
 
@@ -59,11 +67,11 @@ def compute_nparam_integral(x_pts: list[float], y_pts: list[float]) -> float:
 
 
 def execute_analysis(
-        uid: str,
-        baseline_model: ModelRecord,
-        target_model: ModelRecord,
-        target_profile: Profile,
-        **_: Any
+    uid: str,
+    baseline_model: ModelRecord,
+    target_model: ModelRecord,
+    target_profile: Profile,
+    **_: Any,
 ) -> dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
@@ -86,16 +94,25 @@ def execute_analysis(
         uid, baseline_model, target_profile, target_model
     )
 
-    baseline_integral = compute_param_integral(baseline_model) if baseline_model.b1 is not None else \
-        compute_nparam_integral(x_pts, baseline_y_pts)
-    target_integral = compute_param_integral(target_model) if target_model.b1 is not None else \
-        compute_nparam_integral(x_pts, target_y_pts)
+    baseline_integral = (
+        compute_param_integral(baseline_model)
+        if baseline_model.b1 is not None
+        else compute_nparam_integral(x_pts, baseline_y_pts)
+    )
+    target_integral = (
+        compute_param_integral(target_model)
+        if target_model.b1 is not None
+        else compute_nparam_integral(x_pts, target_y_pts)
+    )
 
-    rel_error = tools.safe_division(float(target_integral - baseline_integral), float(baseline_integral))
+    rel_error = tools.safe_division(
+        float(target_integral - baseline_integral), float(baseline_integral)
+    )
 
     change_info = nparam_helpers.classify_change(
         rel_error if np.isfinite(rel_error) else 0,
-        _INTEGRATE_DIFF_NO_CHANGE, _INTEGRATE_DIFF_CHANGE
+        _INTEGRATE_DIFF_NO_CHANGE,
+        _INTEGRATE_DIFF_CHANGE,
     )
 
     return {
@@ -105,7 +122,9 @@ def execute_analysis(
 
 
 def integral_comparison(
-        baseline_profile: Profile, target_profile: Profile, models_strategy: str = 'best-model'
+    baseline_profile: Profile,
+    target_profile: Profile,
+    models_strategy: str = "best-model",
 ) -> Iterable[DegradationInfo]:
     """
     The wrapper of `integral comparison` detection method. Method calls the general method
@@ -118,6 +137,6 @@ def integral_comparison(
     :returns: tuple - degradation result (structure DegradationInfo)
     """
     for degradation_info in factory.run_detection_with_strategy(
-            execute_analysis, baseline_profile, target_profile, models_strategy
+        execute_analysis, baseline_profile, target_profile, models_strategy
     ):
         yield degradation_info

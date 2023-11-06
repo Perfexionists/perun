@@ -66,11 +66,21 @@ import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
 import perun.cli_groups.utils_cli as utils_cli
 
-from perun.collect.trace.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
+from perun.collect.trace.optimizations.structs import (
+    Pipeline,
+    Optimizations,
+    CallGraphTypes,
+)
 from perun.collect.trace.optimizations.structs import Parameters
-from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
-    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, ExternalEditorErrorException
+from perun.utils.exceptions import (
+    UnsupportedModuleException,
+    UnsupportedModuleFunctionException,
+    NotPerunRepositoryException,
+    IncorrectProfileFormatException,
+    EntryNotFoundException,
+    MissingConfigSectionException,
+    ExternalEditorErrorException,
+)
 from perun.utils.structs import Executable
 from perun.profile.factory import Profile
 
@@ -79,31 +89,65 @@ DEV_MODE = False
 
 
 @click.group()
-@click.option('--dev-mode', '-d', default=False, is_flag=True,
-              help='Suppresses the catching of all exceptions from the CLI and generating of the '
-                   'dump.')
-@click.option('--no-pager', default=False, is_flag=True,
-              help='Disables the paging of the long standard output (currently'
-              ' affects only ``status`` and ``log`` outputs). See '
-              ':ckey:`paging` to change the default paging strategy.')
-@click.option('--no-color', '-nc', default=False, is_flag=True,
-              help='Disables the colored output.')
-@click.option('--verbose', '-v', count=True, default=0,
-              help='Increases the verbosity of the standard output. Verbosity '
-              'is incremental, and each level increases the extent of output.')
-@click.option('--version', help='Prints the current version of Perun.',
-              is_eager=True, is_flag=True, default=False,
-              callback=cli_helpers.print_version)
-@click.option('--metrics', '-m', type=(str, str), default=["", ""],
-              callback=cli_helpers.configure_metrics,
-              help='Enables the collection of metrics into the given temp file'
-                   '(first argument) under the supplied ID (second argument).')
+@click.option(
+    "--dev-mode",
+    "-d",
+    default=False,
+    is_flag=True,
+    help="Suppresses the catching of all exceptions from the CLI and generating of the dump.",
+)
+@click.option(
+    "--no-pager",
+    default=False,
+    is_flag=True,
+    help=(
+        "Disables the paging of the long standard output (currently"
+        " affects only ``status`` and ``log`` outputs). See "
+        ":ckey:`paging` to change the default paging strategy."
+    ),
+)
+@click.option(
+    "--no-color",
+    "-nc",
+    default=False,
+    is_flag=True,
+    help="Disables the colored output.",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    count=True,
+    default=0,
+    help=(
+        "Increases the verbosity of the standard output. Verbosity "
+        "is incremental, and each level increases the extent of output."
+    ),
+)
+@click.option(
+    "--version",
+    help="Prints the current version of Perun.",
+    is_eager=True,
+    is_flag=True,
+    default=False,
+    callback=cli_helpers.print_version,
+)
+@click.option(
+    "--metrics",
+    "-m",
+    type=(str, str),
+    default=["", ""],
+    callback=cli_helpers.configure_metrics,
+    help=(
+        "Enables the collection of metrics into the given temp file"
+        "(first argument) under the supplied ID (second argument)."
+    ),
+)
 def cli(
-        dev_mode: bool = False,
-        no_color: bool = False,
-        verbose: int = 0,
-        no_pager: bool = False,
-        **_: Any
+    dev_mode: bool = False,
+    no_color: bool = False,
+    verbose: int = 0,
+    no_pager: bool = False,
+    **_: Any,
 ) -> None:
     """Perun is an open source light-weight Performance Versioning System.
 
@@ -145,36 +189,69 @@ def configure_local_perun(perun_path: str) -> None:
     :param str perun_path: destination path of the perun repository
     :raises: ExternalEditorErrorException: when underlying editor makes any mistake
     """
-    editor = perun_config.lookup_key_recursively('general.editor')
-    local_config_file = os.path.join(perun_path, '.perun', 'local.yml')
+    editor = perun_config.lookup_key_recursively("general.editor")
+    local_config_file = os.path.join(perun_path, ".perun", "local.yml")
     utils.run_external_command([editor, local_config_file])
 
 
 @cli.command()
-@click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
-@click.option('--vcs-type', metavar='<type>', default='git',
-              type=click.Choice(utils.get_supported_module_names('vcs')),
-              help="In parallel to initialization of Perun, initialize the vcs"
-              " of <type> as well (by default ``git``).")
-@click.option('--vcs-path', metavar='<path>',
-              help="Sets the destination of wrapped vcs initialization at "
-              "<path>.")
-@click.option('--vcs-param', nargs=2, metavar='<param>', multiple=True,
-              callback=cli_helpers.vcs_parameter_callback,
-              help="Passes additional (key, value) parameter to initialization"
-              " of version control system, e.g. ``separate-git-dir dir``.")
-@click.option('--vcs-flag', nargs=1, metavar='<flag>', multiple=True,
-              callback=cli_helpers.vcs_parameter_callback,
-              help="Passes additional flag to a initialization of version "
-              "control system, e.g. ``bare``.")
-@click.option('--configure', '-c', is_flag=True, default=False,
-              help='After successful initialization of both systems, opens '
-              'the local configuration using the :ckey:`editor` set in shared '
-              'config.')
-@click.option('--config-template', '-t', type=click.STRING, default='master',
-              help='States the configuration template that will be used for initialization of local'
-                   ' configuration. See :ref:`config-templates` for more details about predefined '
-                   ' configurations.')
+@click.argument("dst", required=False, default=os.getcwd(), metavar="<path>")
+@click.option(
+    "--vcs-type",
+    metavar="<type>",
+    default="git",
+    type=click.Choice(utils.get_supported_module_names("vcs")),
+    help=(
+        "In parallel to initialization of Perun, initialize the vcs"
+        " of <type> as well (by default ``git``)."
+    ),
+)
+@click.option(
+    "--vcs-path",
+    metavar="<path>",
+    help="Sets the destination of wrapped vcs initialization at <path>.",
+)
+@click.option(
+    "--vcs-param",
+    nargs=2,
+    metavar="<param>",
+    multiple=True,
+    callback=cli_helpers.vcs_parameter_callback,
+    help=(
+        "Passes additional (key, value) parameter to initialization"
+        " of version control system, e.g. ``separate-git-dir dir``."
+    ),
+)
+@click.option(
+    "--vcs-flag",
+    nargs=1,
+    metavar="<flag>",
+    multiple=True,
+    callback=cli_helpers.vcs_parameter_callback,
+    help="Passes additional flag to a initialization of version control system, e.g. ``bare``.",
+)
+@click.option(
+    "--configure",
+    "-c",
+    is_flag=True,
+    default=False,
+    help=(
+        "After successful initialization of both systems, opens "
+        "the local configuration using the :ckey:`editor` set in shared "
+        "config."
+    ),
+)
+@click.option(
+    "--config-template",
+    "-t",
+    type=click.STRING,
+    default="master",
+    help=(
+        "States the configuration template that will be used for initialization of local"
+        " configuration. See :ref:`config-templates` for more details about predefined "
+        " configurations."
+    ),
+)
 def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None:
     """Initializes performance versioning system at the destination path.
 
@@ -215,9 +292,12 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
             configure_local_perun(dst)
         else:
             msg = "\nIn order to automatically run jobs configure the matrix at:\n"
-            msg += "\n" + (" "*4) + ".perun/local.yml\n"
+            msg += "\n" + (" " * 4) + ".perun/local.yml\n"
             perun_log.quiet_info(msg)
-    except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
+    except (
+        UnsupportedModuleException,
+        UnsupportedModuleFunctionException,
+    ) as unsup_module_exp:
         perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
@@ -228,18 +308,45 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
 
 
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
-                callback=cli_helpers.lookup_added_profile_callback)
-@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
-              callback=cli_helpers.lookup_minor_version_callback,
-              help='<profile> will be stored at this minor version (default is HEAD).')
-@click.option('--keep-profile', is_flag=True, required=False, default=False,
-              help='Keeps the profile in filesystem after registering it in'
-              ' Perun storage. Otherwise it is deleted.')
-@click.option('--force', '-f', is_flag=True, default=False, required=False,
-              help='If set to true, then the profile will be registered in the <hash> minor version'
-                   'index, even if its origin <hash> is different. WARNING: This can screw the '
-                   'performance history of your project.')
+@click.argument(
+    "profile",
+    required=True,
+    metavar="<profile>",
+    nargs=-1,
+    callback=cli_helpers.lookup_added_profile_callback,
+)
+@click.option(
+    "--minor",
+    "-m",
+    required=False,
+    default=None,
+    metavar="<hash>",
+    is_eager=True,
+    callback=cli_helpers.lookup_minor_version_callback,
+    help="<profile> will be stored at this minor version (default is HEAD).",
+)
+@click.option(
+    "--keep-profile",
+    is_flag=True,
+    required=False,
+    default=False,
+    help=(
+        "Keeps the profile in filesystem after registering it in"
+        " Perun storage. Otherwise it is deleted."
+    ),
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    default=False,
+    required=False,
+    help=(
+        "If set to true, then the profile will be registered in the <hash> minor version"
+        "index, even if its origin <hash> is different. WARNING: This can screw the "
+        "performance history of your project."
+    ),
+)
 def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     """Links profile to concrete minor version storing its content in the
     ``.perun`` dir and registering the profile in internal minor version index.
@@ -298,26 +405,40 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     See :doc:`internals` for information how perun handles profiles internally.
     """
     try:
-        warning_message = 'Warning: Are you sure you want to force the add?' \
-                          'This will make the performance history of your project imprecise ' \
-                          'or simply wrong.'
-        if not kwargs['force'] or click.confirm(warning_message):
+        warning_message = (
+            "Warning: Are you sure you want to force the add?"
+            "This will make the performance history of your project imprecise "
+            "or simply wrong."
+        )
+        if not kwargs["force"] or click.confirm(warning_message):
             commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
         perun_log.error("error while adding profile:{}".format(str(exception)))
 
 
-@cli.command('rm')
-@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
-                callback=cli_helpers.lookup_removed_profile_callback)
-@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
-              callback=cli_helpers.lookup_minor_version_callback,
-              help='<profile> will be stored at this minor version (default is HEAD).')
+@cli.command("rm")
+@click.argument(
+    "profile",
+    required=True,
+    metavar="<profile>",
+    nargs=-1,
+    callback=cli_helpers.lookup_removed_profile_callback,
+)
+@click.option(
+    "--minor",
+    "-m",
+    required=False,
+    default=None,
+    metavar="<hash>",
+    is_eager=True,
+    callback=cli_helpers.lookup_minor_version_callback,
+    help="<profile> will be stored at this minor version (default is HEAD).",
+)
 def remove(
-        from_index_generator: set[str],
-        from_jobs_generator: set[str],
-        minor: Optional[str],
-        **_: Any
+    from_index_generator: set[str],
+    from_jobs_generator: set[str],
+    minor: Optional[str],
+    **_: Any,
 ) -> None:
     """Unlinks the profile from the given minor version, keeping the contents
     stored in ``.perun`` directory.
@@ -376,10 +497,14 @@ def remove(
 
 
 @cli.command()
-@click.argument('head', required=False, default=None, metavar='<hash>')
-@click.option('--short', '-s', is_flag=True, default=False,
-              help="Shortens the output of ``log`` to include only most "
-              "necessary information.")
+@click.argument("head", required=False, default=None, metavar="<hash>")
+@click.option(
+    "--short",
+    "-s",
+    is_flag=True,
+    default=False,
+    help="Shortens the output of ``log`` to include only most necessary information.",
+)
 def log(head: Optional[str], **kwargs: Any) -> None:
     """Shows history of versions and associated profiles.
 
@@ -408,17 +533,29 @@ def log(head: Optional[str], **kwargs: Any) -> None:
 
 
 @cli.command()
-@click.option('--short', '-s', required=False, default=False, is_flag=True,
-              help="Shortens the output of ``status`` to include only most"
-              " necessary information.")
-@click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
-              type=click.Choice(profiles.ProfileInfo.valid_attributes),
-              callback=cli_helpers.set_config_option_from_flag(
-                  pcs.local_config, 'format.sort_profiles_by', str
-              ),
-              help="Sets the <key> in the local configuration for sorting profiles. "
-                   "Note that after setting the <key> it will be used for sorting which is "
-                   "considered in pending and index tags!")
+@click.option(
+    "--short",
+    "-s",
+    required=False,
+    default=False,
+    is_flag=True,
+    help="Shortens the output of ``status`` to include only most necessary information.",
+)
+@click.option(
+    "--sort-by",
+    "-sb",
+    "format__sort_profiles_by",
+    nargs=1,
+    type=click.Choice(profiles.ProfileInfo.valid_attributes),
+    callback=cli_helpers.set_config_option_from_flag(
+        pcs.local_config, "format.sort_profiles_by", str
+    ),
+    help=(
+        "Sets the <key> in the local configuration for sorting profiles. "
+        "Note that after setting the <key> it will be used for sorting which is "
+        "considered in pending and index tags!"
+    ),
+)
 def status(**kwargs: Any) -> None:
     """Shows the status of vcs, associated profiles and perun.
 
@@ -448,18 +585,30 @@ def status(**kwargs: Any) -> None:
     """
     try:
         commands.status(**kwargs)
-    except (NotPerunRepositoryException, UnsupportedModuleException,
-            MissingConfigSectionException) as exception:
+    except (
+        NotPerunRepositoryException,
+        UnsupportedModuleException,
+        MissingConfigSectionException,
+    ) as exception:
         perun_log.error("could not print status of repository: {}".format(str(exception)))
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>',
-                callback=cli_helpers.lookup_any_profile_callback)
-@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=cli_helpers.lookup_minor_version_callback,
-              help='Will check the index of different minor version <hash>'
-              ' during the profile lookup')
+@click.argument(
+    "profile",
+    required=True,
+    metavar="<profile>",
+    callback=cli_helpers.lookup_any_profile_callback,
+)
+@click.option(
+    "--minor",
+    "-m",
+    nargs=1,
+    default=None,
+    is_eager=True,
+    callback=cli_helpers.lookup_minor_version_callback,
+    help="Will check the index of different minor version <hash> during the profile lookup",
+)
 @click.pass_context
 def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     """Interprets the given profile using the selected visualization technique.
@@ -509,19 +658,35 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>',
-                callback=cli_helpers.lookup_any_profile_callback)
-@click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_config_option_from_flag(
-                  perun_config.runtime, 'format.output_profile_template', str
-              ), help='Specifies the template for automatic generation of output filename'
-              ' This way the postprocessed file will have a resulting filename w.r.t to this'
-              ' parameter. Refer to :ckey:`format.output_profile_template` for more'
-              ' details about the format of the template.')
-@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=cli_helpers.lookup_minor_version_callback,
-              help='Will check the index of different minor version <hash>'
-              ' during the profile lookup')
+@click.argument(
+    "profile",
+    required=True,
+    metavar="<profile>",
+    callback=cli_helpers.lookup_any_profile_callback,
+)
+@click.option(
+    "--output-filename-template",
+    "-ot",
+    default=None,
+    callback=cli_helpers.set_config_option_from_flag(
+        perun_config.runtime, "format.output_profile_template", str
+    ),
+    help=(
+        "Specifies the template for automatic generation of output filename"
+        " This way the postprocessed file will have a resulting filename w.r.t to this"
+        " parameter. Refer to :ckey:`format.output_profile_template` for more"
+        " details about the format of the template."
+    ),
+)
+@click.option(
+    "--minor",
+    "-m",
+    nargs=1,
+    default=None,
+    is_eager=True,
+    callback=cli_helpers.lookup_minor_version_callback,
+    help="Will check the index of different minor version <hash> during the profile lookup",
+)
 @click.pass_context
 def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     """Postprocesses the given stored or pending profile using selected
@@ -578,55 +743,140 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
 
 
 @cli.group()
-@click.option('--profile-name', '-pn', nargs=1, required=False, multiple=False, type=str,
-              help="Specifies the name of the profile, which will be collected, e.g. profile.perf.")
-@click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
-              help='Specifies the head minor version, for which the profiles will be collected.')
-@click.option('--crawl-parents', '-cp', is_flag=True, default=False, is_eager=True,
-              help='If set to true, then for each specified minor versions, profiles for parents'
-                   ' will be collected as well')
-@click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],
-              help='Command that is being profiled. Either corresponds to some'
-              ' script, binary or command, e.g. ``./mybin`` or ``perun``.')
-@click.option('--args', '-a', nargs=1, required=False, multiple=True,
-              help='Additional parameters for <cmd>. E.g. ``status`` or '
-              '``-al`` is command parameter.')
-@click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
-              help='Inputs for <cmd>. E.g. ``./subdir`` is possible workload'
-              'for ``ls`` command.')
-@click.option('--params', '-p', nargs=1, required=False, multiple=True,
-              callback=cli_helpers.single_yaml_param_callback,
-              help='Additional parameters for called collector read from '
-              'file in YAML format.')
-@click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_config_option_from_flag(
-                  perun_config.runtime, 'format.output_profile_template', str
-              ), help='Specifies the template for automatic generation of output filename'
-              ' This way the file with collected data will have a resulting filename w.r.t '
-              ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
-              ' details about the format of the template.')
-@click.option('--optimization-pipeline', '-op', type=click.Choice(Pipeline.supported()),
-              default=Pipeline.default(), callback=cli_helpers.set_optimization,
-              help='Pre-configured combinations of collection optimization methods.')
-@click.option('--optimization-on', '-on',
-              type=click.Choice(Optimizations.supported()), multiple=True,
-              callback=cli_helpers.set_optimization,
-              help='Enable the specified collection optimization method.')
-@click.option('--optimization-off', '-off',
-              type=click.Choice(Optimizations.supported()), multiple=True,
-              callback=cli_helpers.set_optimization,
-              help='Disable the specified collection optimization method.')
-@click.option('--optimization-args', '-oa', type=(click.Choice(Parameters.supported()), str),
-              multiple=True, callback=cli_helpers.set_optimization_param,
-              help='Set parameter values for various optimizations.')
-@click.option('--optimization-cache-off', is_flag=True, callback=cli_helpers.set_optimization_cache,
-              help='Ignore cached optimization data (e.g., cached call graph).')
-@click.option('--optimization-reset-cache', is_flag=True, default=False,
-              callback=cli_helpers.reset_optimization_cache,
-              help='Remove the cached optimization resources and data.')
-@click.option('--use-cg-type', '-cg', type=(click.Choice(CallGraphTypes.supported())),
-              default=CallGraphTypes.default(), callback=cli_helpers.set_call_graph_type)
+@click.option(
+    "--profile-name",
+    "-pn",
+    nargs=1,
+    required=False,
+    multiple=False,
+    type=str,
+    help="Specifies the name of the profile, which will be collected, e.g. profile.perf.",
+)
+@click.option(
+    "--minor-version",
+    "-m",
+    "minor_version_list",
+    nargs=1,
+    multiple=True,
+    callback=cli_helpers.minor_version_list_callback,
+    default=["HEAD"],
+    help="Specifies the head minor version, for which the profiles will be collected.",
+)
+@click.option(
+    "--crawl-parents",
+    "-cp",
+    is_flag=True,
+    default=False,
+    is_eager=True,
+    help=(
+        "If set to true, then for each specified minor versions, profiles for parents"
+        " will be collected as well"
+    ),
+)
+@click.option(
+    "--cmd",
+    "-c",
+    nargs=1,
+    required=False,
+    multiple=True,
+    default=[""],
+    help=(
+        "Command that is being profiled. Either corresponds to some"
+        " script, binary or command, e.g. ``./mybin`` or ``perun``."
+    ),
+)
+@click.option(
+    "--args",
+    "-a",
+    nargs=1,
+    required=False,
+    multiple=True,
+    help="Additional parameters for <cmd>. E.g. ``status`` or ``-al`` is command parameter.",
+)
+@click.option(
+    "--workload",
+    "-w",
+    nargs=1,
+    required=False,
+    multiple=True,
+    default=[""],
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workloadfor ``ls`` command.",
+)
+@click.option(
+    "--params",
+    "-p",
+    nargs=1,
+    required=False,
+    multiple=True,
+    callback=cli_helpers.single_yaml_param_callback,
+    help="Additional parameters for called collector read from file in YAML format.",
+)
+@click.option(
+    "--output-filename-template",
+    "-ot",
+    default=None,
+    callback=cli_helpers.set_config_option_from_flag(
+        perun_config.runtime, "format.output_profile_template", str
+    ),
+    help=(
+        "Specifies the template for automatic generation of output filename"
+        " This way the file with collected data will have a resulting filename w.r.t "
+        " to this parameter. Refer to :ckey:`format.output_profile_template` for more"
+        " details about the format of the template."
+    ),
+)
+@click.option(
+    "--optimization-pipeline",
+    "-op",
+    type=click.Choice(Pipeline.supported()),
+    default=Pipeline.default(),
+    callback=cli_helpers.set_optimization,
+    help="Pre-configured combinations of collection optimization methods.",
+)
+@click.option(
+    "--optimization-on",
+    "-on",
+    type=click.Choice(Optimizations.supported()),
+    multiple=True,
+    callback=cli_helpers.set_optimization,
+    help="Enable the specified collection optimization method.",
+)
+@click.option(
+    "--optimization-off",
+    "-off",
+    type=click.Choice(Optimizations.supported()),
+    multiple=True,
+    callback=cli_helpers.set_optimization,
+    help="Disable the specified collection optimization method.",
+)
+@click.option(
+    "--optimization-args",
+    "-oa",
+    type=(click.Choice(Parameters.supported()), str),
+    multiple=True,
+    callback=cli_helpers.set_optimization_param,
+    help="Set parameter values for various optimizations.",
+)
+@click.option(
+    "--optimization-cache-off",
+    is_flag=True,
+    callback=cli_helpers.set_optimization_cache,
+    help="Ignore cached optimization data (e.g., cached call graph).",
+)
+@click.option(
+    "--optimization-reset-cache",
+    is_flag=True,
+    default=False,
+    callback=cli_helpers.reset_optimization_cache,
+    help="Remove the cached optimization resources and data.",
+)
+@click.option(
+    "--use-cg-type",
+    "-cg",
+    type=(click.Choice(CallGraphTypes.supported())),
+    default=CallGraphTypes.default(),
+    callback=cli_helpers.set_call_graph_type,
+)
 @click.pass_context
 def collect(ctx: click.Context, **kwargs: Any) -> None:
     """Generates performance profile using selected collector.
@@ -652,110 +902,286 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     ctx.obj = kwargs
 
 
-@cli.command('fuzz')
-@click.option('--cmd', '-b', nargs=1, required=True,
-              help='The command which will be fuzzed.')
-@click.option('--args', '-a', nargs=1, required=False, default='',
-              help='Arguments for the fuzzed command.')
-@click.option('--input-sample', '-w', nargs=1, required=True, multiple=True,
-              help='Initial sample of workloads (the so called corpus).'
-                   'These will serve as initial workloads to evaluate the baseline for performance testing.'
-                   'The parameter expects either paths to files (which will be directly added), or '
-                   'paths to directories (which will be recursively searched).')
-@click.option('--collector', '-c', nargs=1, default='time',
-              type=click.Choice(utils.get_supported_module_names('collect')),
-              help='Collector that will be used to collect performance data and used to infer '
-                   'baseline or target performance profiles. '
-                   'The profiles are further used for performance testing.')
-@click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
-              callback=cli_helpers.yaml_param_callback,
-              help='Additional parameters for the <collector>: '
-                   'can be specified as a file in YAML format or as YAML string')
-@click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              type=click.Choice(utils.get_supported_module_names('postprocess')),
-              help='After each collection of performance data, the fuzzer can run <postprocessor> to '
-                   'postprocess the collected resources (e.g. to create models of resources). '
-                   'This can be used for more thorough performance analysis.')
-@click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
-              callback=cli_helpers.yaml_param_callback,
-              help='Additional parameters for the <postprocessor>: '
-                   'can be specified as a file in YAML format or as YAML string')
-@click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
-              help='Specifies the head minor version in the wrapped repository. '
-                   'The fuzzing will be performed for this particular version of the project.')
-@click.option('--workloads-filter', '-wf', nargs=1, required=False,
-              type=str, metavar='<regexp>', default="",
-              help='Regular expression that will the filter input workloads/corpus. '
-                   'E.g. to restrict to certain filetypes, filenames or subdirectories.')
-@click.option('--skip-coverage-testing', is_flag=True, required=False,
-              help="If set to true, then the evaluation of mutations based on coverage testing will not be performed. "
-                   "The coverage testing is a fast heuristic to filter out mutations that will probably not lead "
-                   "to severe real degradation. The testing through perun is costly, though very precise.")
-@click.option('--source-path', '-s', nargs=1, required=False, default='.',
-              type=click.Path(exists=True, readable=True), metavar='<path>',
-              help='The path to the directory of the project source files.')
-@click.option('--gcno-path', '-g', nargs=1, required=False, default='.',
-              type=click.Path(exists=True, writable=True), metavar='<path>',
-              help='The path to the directory where .gcno files are stored.')
-@click.option('--output-dir', '-o', nargs=1, required=True,
-              type=click.Path(exists=True, writable=True), metavar='<path>',
-              help='The path to the directory where generated outputs will be stored.')
-@click.option('--timeout', '-t', nargs=1, required=False, default=1800.0,
-              type=click.FloatRange(0.001, None, False), metavar='<float>',
-              help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
-@click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
-              type=click.FloatRange(0.001, None, False), metavar='<float>',
-              help='The time limit before the input is classified as a hang/timeout (in seconds).'
-              ' Default value is 10s.')
-@click.option('--max-size', '-N', nargs=1, required=False,
-              type=click.IntRange(1, None, False), metavar='<int>',
-              help='Absolute value of the maximum size of the generated mutation wrt parent corpus. '
-                   'The value will be adjusted wrt to the maximal size of the workloads in corpus. '
-                   'Using this option, the maximal size of the generated mutation will be set to '
-                   'max(size of the largest workload in corpus, <int>). ')
-@click.option('--max-size-increase', '-mi', nargs=1, required=False, default=1000000,
-              type=click.IntRange(0, None, False), metavar='<int>',
-              help='Absolute value of the maximal increase in the size of the generated mutation wrt parent corpus. '
-                   'Using this option, the maximal size of generated mutation will be set to '
-                   '(size of the largest corpus in workload + <INT>). '
-                   'Default value is 1 000 000 B = 1MB.')
-@click.option('--max-size-ratio', '-mp', nargs=1, required=False,
-              type=click.FloatRange(0.1, None, False), metavar='<float>',
-              help='Relative value of the maximal increase in the size of the generated mutation wrt parent corpus. '
-                   'Using this option, the maximal size of generated mutation will be set to '
-                   '(size of the largest corpus in workload * <INT>). '
-                   ' E.g. 1.5, max size=largest workload size * 1.5')
-@click.option('--exec-limit', '-e', nargs=1, required=False, default=100,
-              type=click.IntRange(1, None, False), metavar='<int>',
-              help='The maximum number of fuzzing iteration while gathering interesting inputs. '
-                   'By interesting inputs we mean files that might potentially lead to timeouts, hang or severe '
-                   'severe performance degradation.')
-@click.option('--interesting-files-limit', '-l', nargs=1, required=False,
-              type=click.IntRange(1, None, False), metavar='<int>', default=20,
-              help='The minimum number of gathered mutations, that are so called interesting, '
-                   'before perun testing is performed. '
-                   'By interesting inputs we mean files that might potentially lead to timeouts, hang or severe '
-                   'severe performance degradation.')
-@click.option('--coverage-increase-rate', '-cr', nargs=1, required=False, default=1.5,
-              type=click.FloatRange(0, None, False), metavar='<int>',
-              help='The threshold of coverage increase against base coverage, which is used to evaluate, '
-                   'whether the generated mutation is interesting for further evaluation by performance testing. '
-                   'E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
-@click.option('--mutations-per-rule', '-mpr', nargs=1, required=False, default='mixed',
-              type=click.Choice(['unitary', 'proportional', 'probabilistic', 'mixed']),
-              metavar='<str>',
-              help='Strategy which determines how many mutations will be generated by certain'
-              ' fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed')
-@click.option('--regex-rules', '-r', nargs=1, required=False, multiple=True,
-              callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
-              help='Option for adding custom fuzzing rules specified by regular expressions,'
-              ' written in YAML format file.')
-@click.option('--no-plotting', '-np', is_flag=True, required=False,
-              help='Will not plot the interpretation of the fuzzing in form of graphs.')
+@cli.command("fuzz")
+@click.option("--cmd", "-b", nargs=1, required=True, help="The command which will be fuzzed.")
+@click.option(
+    "--args",
+    "-a",
+    nargs=1,
+    required=False,
+    default="",
+    help="Arguments for the fuzzed command.",
+)
+@click.option(
+    "--input-sample",
+    "-w",
+    nargs=1,
+    required=True,
+    multiple=True,
+    help=(
+        "Initial sample of workloads (the so called corpus)."
+        "These will serve as initial workloads to evaluate the baseline for performance testing."
+        "The parameter expects either paths to files (which will be directly added), or "
+        "paths to directories (which will be recursively searched)."
+    ),
+)
+@click.option(
+    "--collector",
+    "-c",
+    nargs=1,
+    default="time",
+    type=click.Choice(utils.get_supported_module_names("collect")),
+    help=(
+        "Collector that will be used to collect performance data and used to infer "
+        "baseline or target performance profiles. "
+        "The profiles are further used for performance testing."
+    ),
+)
+@click.option(
+    "--collector-params",
+    "-cp",
+    nargs=2,
+    required=False,
+    multiple=True,
+    callback=cli_helpers.yaml_param_callback,
+    help=(
+        "Additional parameters for the <collector>: "
+        "can be specified as a file in YAML format or as YAML string"
+    ),
+)
+@click.option(
+    "--postprocessor",
+    "-p",
+    nargs=1,
+    required=False,
+    multiple=True,
+    type=click.Choice(utils.get_supported_module_names("postprocess")),
+    help=(
+        "After each collection of performance data, the fuzzer can run <postprocessor> to "
+        "postprocess the collected resources (e.g. to create models of resources). "
+        "This can be used for more thorough performance analysis."
+    ),
+)
+@click.option(
+    "--postprocessor-params",
+    "-pp",
+    nargs=2,
+    required=False,
+    multiple=True,
+    callback=cli_helpers.yaml_param_callback,
+    help=(
+        "Additional parameters for the <postprocessor>: "
+        "can be specified as a file in YAML format or as YAML string"
+    ),
+)
+@click.option(
+    "--minor-version",
+    "-m",
+    "minor_version_list",
+    nargs=1,
+    multiple=True,
+    callback=cli_helpers.minor_version_list_callback,
+    default=["HEAD"],
+    help=(
+        "Specifies the head minor version in the wrapped repository. "
+        "The fuzzing will be performed for this particular version of the project."
+    ),
+)
+@click.option(
+    "--workloads-filter",
+    "-wf",
+    nargs=1,
+    required=False,
+    type=str,
+    metavar="<regexp>",
+    default="",
+    help=(
+        "Regular expression that will the filter input workloads/corpus. "
+        "E.g. to restrict to certain filetypes, filenames or subdirectories."
+    ),
+)
+@click.option(
+    "--skip-coverage-testing",
+    is_flag=True,
+    required=False,
+    help=(
+        "If set to true, then the evaluation of mutations based on coverage testing will not be"
+        " performed. The coverage testing is a fast heuristic to filter out mutations that will"
+        " probably not lead to severe real degradation. The testing through perun is costly, though"
+        " very precise."
+    ),
+)
+@click.option(
+    "--source-path",
+    "-s",
+    nargs=1,
+    required=False,
+    default=".",
+    type=click.Path(exists=True, readable=True),
+    metavar="<path>",
+    help="The path to the directory of the project source files.",
+)
+@click.option(
+    "--gcno-path",
+    "-g",
+    nargs=1,
+    required=False,
+    default=".",
+    type=click.Path(exists=True, writable=True),
+    metavar="<path>",
+    help="The path to the directory where .gcno files are stored.",
+)
+@click.option(
+    "--output-dir",
+    "-o",
+    nargs=1,
+    required=True,
+    type=click.Path(exists=True, writable=True),
+    metavar="<path>",
+    help="The path to the directory where generated outputs will be stored.",
+)
+@click.option(
+    "--timeout",
+    "-t",
+    nargs=1,
+    required=False,
+    default=1800.0,
+    type=click.FloatRange(0.001, None, False),
+    metavar="<float>",
+    help="Time limit for fuzzing (in seconds).  Default value is 1800s.",
+)
+@click.option(
+    "--hang-timeout",
+    "-h",
+    nargs=1,
+    required=False,
+    default=10,
+    type=click.FloatRange(0.001, None, False),
+    metavar="<float>",
+    help=(
+        "The time limit before the input is classified as a hang/timeout (in seconds)."
+        " Default value is 10s."
+    ),
+)
+@click.option(
+    "--max-size",
+    "-N",
+    nargs=1,
+    required=False,
+    type=click.IntRange(1, None, False),
+    metavar="<int>",
+    help=(
+        "Absolute value of the maximum size of the generated mutation wrt parent corpus. "
+        "The value will be adjusted wrt to the maximal size of the workloads in corpus. "
+        "Using this option, the maximal size of the generated mutation will be set to "
+        "max(size of the largest workload in corpus, <int>). "
+    ),
+)
+@click.option(
+    "--max-size-increase",
+    "-mi",
+    nargs=1,
+    required=False,
+    default=1000000,
+    type=click.IntRange(0, None, False),
+    metavar="<int>",
+    help=(
+        "Absolute value of the maximal increase in the size of the generated mutation wrt parent"
+        " corpus. Using this option, the maximal size of generated mutation will be set to (size of"
+        " the largest corpus in workload + <INT>). Default value is 1 000 000 B = 1MB."
+    ),
+)
+@click.option(
+    "--max-size-ratio",
+    "-mp",
+    nargs=1,
+    required=False,
+    type=click.FloatRange(0.1, None, False),
+    metavar="<float>",
+    help=(
+        "Relative value of the maximal increase in the size of the generated mutation wrt parent"
+        " corpus. Using this option, the maximal size of generated mutation will be set to (size of"
+        " the largest corpus in workload * <INT>).  E.g. 1.5, max size=largest workload size * 1.5"
+    ),
+)
+@click.option(
+    "--exec-limit",
+    "-e",
+    nargs=1,
+    required=False,
+    default=100,
+    type=click.IntRange(1, None, False),
+    metavar="<int>",
+    help=(
+        "The maximum number of fuzzing iteration while gathering interesting inputs. By interesting"
+        " inputs we mean files that might potentially lead to timeouts, hang or severe severe"
+        " performance degradation."
+    ),
+)
+@click.option(
+    "--interesting-files-limit",
+    "-l",
+    nargs=1,
+    required=False,
+    type=click.IntRange(1, None, False),
+    metavar="<int>",
+    default=20,
+    help=(
+        "The minimum number of gathered mutations, that are so called interesting, before perun"
+        " testing is performed. By interesting inputs we mean files that might potentially lead to"
+        " timeouts, hang or severe severe performance degradation."
+    ),
+)
+@click.option(
+    "--coverage-increase-rate",
+    "-cr",
+    nargs=1,
+    required=False,
+    default=1.5,
+    type=click.FloatRange(0, None, False),
+    metavar="<int>",
+    help=(
+        "The threshold of coverage increase against base coverage, which is used to evaluate,"
+        " whether the generated mutation is interesting for further evaluation by performance"
+        " testing. E.g 1.5, base coverage = 100 000, so threshold = 150 000."
+    ),
+)
+@click.option(
+    "--mutations-per-rule",
+    "-mpr",
+    nargs=1,
+    required=False,
+    default="mixed",
+    type=click.Choice(["unitary", "proportional", "probabilistic", "mixed"]),
+    metavar="<str>",
+    help=(
+        "Strategy which determines how many mutations will be generated by certain"
+        " fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed"
+    ),
+)
+@click.option(
+    "--regex-rules",
+    "-r",
+    nargs=1,
+    required=False,
+    multiple=True,
+    callback=cli_helpers.single_yaml_param_callback,
+    metavar="<file>",
+    help=(
+        "Option for adding custom fuzzing rules specified by regular expressions,"
+        " written in YAML format file."
+    ),
+)
+@click.option(
+    "--no-plotting",
+    "-np",
+    is_flag=True,
+    required=False,
+    help="Will not plot the interpretation of the fuzzing in form of graphs.",
+)
 def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
-    kwargs['executable'] = Executable(cmd, args)
+    kwargs["executable"] = Executable(cmd, args)
     fuzz.run_fuzzing_for_command(**kwargs)
 
 
@@ -765,9 +1191,11 @@ def init_unit_commands(lazy_init: bool = True) -> None:
     Some of the subunits has to be dynamically initialized according to the registered modules,
     like e.g. show has different forms (raw, graphs, etc.).
     """
-    for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
-                                     (perun.postprocess, postprocessby, 'postprocessby'),
-                                     (perun.collect, collect, 'collect')]:
+    for unit, cli_cmd, cli_arg in [
+        (perun.view, show, "show"),
+        (perun.postprocess, postprocessby, "postprocessby"),
+        (perun.collect, collect, "collect"),
+    ]:
         if lazy_init and cli_arg not in sys.argv:
             continue
         for cmd in unit.lazy_get_cli_commands():
@@ -790,6 +1218,7 @@ def launch_cli_in_dev_mode() -> None:
     """
     import tracemalloc
     import faulthandler
+
     tracemalloc.start()
     faulthandler.enable()
     cli()
@@ -807,8 +1236,9 @@ def launch_cli_safely() -> None:
     try:
         cli()
     except Exception as catched_exception:
-        error_module = catched_exception.__module__ + '.' \
-            if hasattr(catched_exception, '__module__') else ''
+        error_module = (
+            catched_exception.__module__ + "." if hasattr(catched_exception, "__module__") else ""
+        )
         error_name = error_module + catched_exception.__class__.__name__
 
         reported_error = error_name + ": " + str(catched_exception)
@@ -819,7 +1249,7 @@ def launch_cli_safely() -> None:
 
 def launch_cli() -> None:
     """Runs the CLI either in developer mode or in safe mode"""
-    if DEV_MODE or '--dev-mode' in sys.argv or '-d' in sys.argv:
+    if DEV_MODE or "--dev-mode" in sys.argv or "-d" in sys.argv:
         launch_cli_in_dev_mode()
     else:
         launch_cli_safely()

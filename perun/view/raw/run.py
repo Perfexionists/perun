@@ -20,38 +20,46 @@ def show(profile: Profile, **kwargs: Any) -> None:
     :param dict _: additional keyword for the non coloured show
     :returns str: string representation of the profile
     """
-    raw_indent = kwargs.get('indent', 4)
+    raw_indent = kwargs.get("indent", 4)
 
     # Construct the header
-    header = profile['header']
-    for header_item in ['type', 'cmd', 'args', 'workload']:
+    header = profile["header"]
+    for header_item in ["type", "cmd", "args", "workload"]:
         if header_item in header.keys():
-            print("{}: {}".format(
-                log.in_color(header_item, RAW_KEY_COLOUR),
-                log.in_color(header[header_item], RAW_ITEM_COLOUR)
-            ))
+            print(
+                "{}: {}".format(
+                    log.in_color(header_item, RAW_KEY_COLOUR),
+                    log.in_color(header[header_item], RAW_ITEM_COLOUR),
+                )
+            )
 
-    print('')
+    print("")
 
     # Construct the collector info
-    if 'collector_info' in profile.keys():
-        print(log.in_color('collector:', RAW_KEY_COLOUR))
-        collector_info = profile['collector_info']
-        for collector_item in ['name', 'params']:
+    if "collector_info" in profile.keys():
+        print(log.in_color("collector:", RAW_KEY_COLOUR))
+        collector_info = profile["collector_info"]
+        for collector_item in ["name", "params"]:
             if collector_item in collector_info.keys():
-                print(int(raw_indent)*1*' ' + "- {}: {}".format(
-                    log.in_color(collector_item, RAW_KEY_COLOUR),
-                    log.in_color(
-                        collector_info[collector_item] or 'none', RAW_ITEM_COLOUR
+                print(
+                    int(raw_indent) * 1 * " "
+                    + "- {}: {}".format(
+                        log.in_color(collector_item, RAW_KEY_COLOUR),
+                        log.in_color(collector_info[collector_item] or "none", RAW_ITEM_COLOUR),
                     )
-                ))
+                )
 
 
 @click.command()
-@click.option('--one-line', '-o', is_flag=True,
-              help="Shows the aggregated one-liner raw profile.")
-@click.option('--indent', '-i', type=click.INT, metavar="<INT>", default=4,
-              help="Sets indent to <INT>.")
+@click.option("--one-line", "-o", is_flag=True, help="Shows the aggregated one-liner raw profile.")
+@click.option(
+    "--indent",
+    "-i",
+    type=click.INT,
+    metavar="<INT>",
+    default=4,
+    help="Sets indent to <INT>.",
+)
 @pass_profile
 def raw(profile: Profile, **kwargs: Any) -> None:
     """Raw display of the profile, without formating, as JSON object."""

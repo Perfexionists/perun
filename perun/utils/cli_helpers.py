@@ -19,6 +19,7 @@ import importlib.metadata as metadata
 
 from collections import defaultdict
 from typing import Optional, Callable, Any, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion
 
@@ -40,8 +41,12 @@ import perun.utils.metrics as metrics
 from perun.collect.trace.optimizations.optimization import Optimization
 from perun.collect.trace.optimizations.structs import CallGraphTypes
 from perun.profile.factory import Profile
-from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
-    StatsFileNotFoundException, NotPerunRepositoryException
+from perun.utils.exceptions import (
+    VersionControlSystemException,
+    TagOutOfRangeException,
+    StatsFileNotFoundException,
+    NotPerunRepositoryException,
+)
 from perun.utils.helpers import SuppressedExceptions
 
 
@@ -52,7 +57,9 @@ def print_version(_: click.Context, __: click.Option, value: bool) -> None:
         exit(0)
 
 
-def process_bokeh_axis_title(ctx: click.Context, param: click.Option, value: Optional[str]) -> Optional[str]:
+def process_bokeh_axis_title(
+    ctx: click.Context, param: click.Option, value: Optional[str]
+) -> Optional[str]:
     """Processes default value for axes.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
@@ -64,17 +71,19 @@ def process_bokeh_axis_title(ctx: click.Context, param: click.Option, value: Opt
     :param object value: given value for the the option param
     :returns object: either value (if it is non-None) or default legend for given axis
     """
-    if not value and param.human_readable_name.startswith('x'):
-        if 'per_key' in ctx.params.keys():
-            return ctx.params['per_key']
-        elif 'through_key' in ctx.params.keys():
-            return ctx.params['through_key']
-    elif not value and param.human_readable_name.startswith('y'):
-        return ctx.params['of_key']
+    if not value and param.human_readable_name.startswith("x"):
+        if "per_key" in ctx.params.keys():
+            return ctx.params["per_key"]
+        elif "through_key" in ctx.params.keys():
+            return ctx.params["through_key"]
+    elif not value and param.human_readable_name.startswith("y"):
+        return ctx.params["of_key"]
     return value
 
 
-def process_resource_key_param(ctx: click.Context, param: click.Option, value: Optional[str]) -> Optional[str]:
+def process_resource_key_param(
+    ctx: click.Context, param: click.Option, value: Optional[str]
+) -> Optional[str]:
     """Processes value for the key param (according to the profile)
 
     Checks the global context for stored profile, and obtains all the keys, which serves
@@ -87,21 +96,23 @@ def process_resource_key_param(ctx: click.Context, param: click.Option, value: O
     :returns object: value or raises bad parameter
     :raises click.BadParameter: if the value is invalid for the profile
     """
-    if param.human_readable_name in ('per_key', 'through_key') and value == 'snapshots':
+    if param.human_readable_name in ("per_key", "through_key") and value == "snapshots":
         return value
     # Validate the keys, if it is one of the set
-    if hasattr(ctx, 'parent') and ctx.parent is not None:
-        valid_keys = set(ctx.parent.params.get('profile', Profile()).all_resource_fields())
+    if hasattr(ctx, "parent") and ctx.parent is not None:
+        valid_keys = set(ctx.parent.params.get("profile", Profile()).all_resource_fields())
     else:
         valid_keys = set()
     if value not in valid_keys:
-        error_msg_ending = ", 'snaphots'" if param.human_readable_name == 'per_key' else ""
+        error_msg_ending = ", 'snaphots'" if param.human_readable_name == "per_key" else ""
         valid_keys_str = ", ".join(f"'{vk}'" for vk in valid_keys) + error_msg_ending
         raise click.BadParameter(f"'{value}' is not one of {valid_keys_str}.")
     return value
 
 
-def process_continuous_key(ctx: click.Context, _: click.Option, value: Optional[str]) -> Optional[str]:
+def process_continuous_key(
+    ctx: click.Context, _: click.Option, value: Optional[str]
+) -> Optional[str]:
     """Helper function for processing the continuous key for the param.
 
     Continuous keys are used in the continuous graphs (do'h!) on the x axis, i.e. they have to be
@@ -113,9 +124,11 @@ def process_continuous_key(ctx: click.Context, _: click.Option, value: Optional[
     :returns object: value or raises bad parameter
     :raises click.BadParameter: if the value is invalid for the profile
     """
-    if value != 'snapshots' and ctx.parent is not None:
+    if value != "snapshots" and ctx.parent is not None:
         # If the requested value is not 'snapshots', then get all the numerical keys
-        valid_numeric_keys = set(query.all_numerical_resource_fields_of(ctx.parent.params.get('profile', Profile())))
+        valid_numeric_keys = set(
+            query.all_numerical_resource_fields_of(ctx.parent.params.get("profile", Profile()))
+        )
         # Check if the value is valid numeric key
         if value not in valid_numeric_keys:
             valid_choices = ", ".join(f"'{vnk}'" for vnk in valid_numeric_keys | {"snapshots"})
@@ -124,9 +137,9 @@ def process_continuous_key(ctx: click.Context, _: click.Option, value: Optional[
 
 
 def set_config_option_from_flag(
-        dst_config_getter: Callable[[], config.Config],
-        config_option: str,
-        postprocess_function: Callable[[str], str] = lambda x: x
+    dst_config_getter: Callable[[], config.Config],
+    config_option: str,
+    postprocess_function: Callable[[str], str] = lambda x: x,
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """Helper function for setting the config option from the CLI option handler
 
@@ -139,6 +152,7 @@ def set_config_option_from_flag(
     :param function postprocess_function: function which will postprocess the value
     :return: handler for the command line interface
     """
+
     def option_handler(_: click.Context, __: click.Option, value: Any) -> Any:
         """Wrapper handling function
 
@@ -150,10 +164,13 @@ def set_config_option_from_flag(
         if value:
             dst_config_getter().set(config_option, postprocess_function(value))
         return value
+
     return option_handler
 
 
-def yaml_param_callback(_: click.Context, __: click.Option, value: list[tuple[str, str]]) -> dict[str, Any]:
+def yaml_param_callback(
+    _: click.Context, __: click.Option, value: list[tuple[str, str]]
+) -> dict[str, Any]:
     """Callback function for parsing the yaml files to dictionary object
 
     :param Context _: context of the called command
@@ -162,7 +179,7 @@ def yaml_param_callback(_: click.Context, __: click.Option, value: list[tuple[st
     :returns dict: parsed yaml file
     """
     unit_to_params: dict[str, dict[Any, Any]] = defaultdict(dict)
-    for (unit, yaml_file) in value:
+    for unit, yaml_file in value:
         unit_to_params[unit].update(streams.safely_load_yaml(yaml_file))
     return unit_to_params
 
@@ -185,7 +202,9 @@ def single_yaml_param_callback(_: click.Context, __: click.Option, value: str) -
     return unit_to_params
 
 
-def minor_version_list_callback(ctx: click.Context, _: click.Option, value: str) -> list[MinorVersion]:
+def minor_version_list_callback(
+    ctx: click.Context, _: click.Option, value: str
+) -> list[MinorVersion]:
     """Callback function for parsing the minor version list for running the automation
 
     :param Context ctx: context of the called command
@@ -197,7 +216,7 @@ def minor_version_list_callback(ctx: click.Context, _: click.Option, value: str)
     for minor_version in value or []:
         massaged_version = vcs.massage_parameter(minor_version)
         # If we should crawl all the parents, we collect them
-        if ctx.params.get('crawl_parents', False):
+        if ctx.params.get("crawl_parents", False):
             minors.extend(vcs.walk_minor_versions(massaged_version))
         # Otherwise we retrieve the minor version info for the param
         else:
@@ -228,7 +247,10 @@ def config_key_validation_callback(_: click.Context, param: click.Option, value:
     :returns object: value for the <key> argument
     """
     if not config.is_valid_key(str(value)):
-        err_msg = f"<key> argument '{value}' for {str(param.param_type_name)} config operation is in invalid format. "
+        err_msg = (
+            f"<key> argument '{value}' for {str(param.param_type_name)} config operation is in"
+            " invalid format. "
+        )
         err_msg += "Valid key should be represented as sections delimited by dot (.), "
         err_msg += "e.g. general.paging is valid key."
         raise click.BadParameter(err_msg)
@@ -246,13 +268,13 @@ def vcs_parameter_callback(ctx: click.Context, param: click.Option, value: Any) 
     :param str value: value that is being read from the commandline
     :returns tuple: tuple of flags or parameters
     """
-    if 'vcs_params' not in ctx.params.keys():
-        ctx.params['vcs_params'] = {}
+    if "vcs_params" not in ctx.params.keys():
+        ctx.params["vcs_params"] = {}
     for vcs_param in value:
         if isinstance(param.name, str) and param.name.endswith("param"):
-            ctx.params['vcs_params'][vcs_param[0]] = vcs_param[1]
+            ctx.params["vcs_params"][vcs_param[0]] = vcs_param[1]
         else:
-            ctx.params['vcs_params'][vcs_param] = True
+            ctx.params["vcs_params"][vcs_param] = True
     return value
 
 
@@ -267,12 +289,16 @@ def lookup_nth_pending_filename(position: int) -> str:
     if 0 <= position < len(pending):
         return pending[position].realpath
     else:
-        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
-            "{}@p".format(position), '0@p', '{}@p'.format(len(pending)-1)
-        ))
+        raise click.BadParameter(
+            "invalid tag '{}' (choose from interval <{}, {}>)".format(
+                "{}@p".format(position), "0@p", "{}@p".format(len(pending) - 1)
+            )
+        )
 
 
-def apply_func_for_range(range_match: re.Match[str], function_for_tag: Callable[[int], Any], tag: str) -> None:
+def apply_func_for_range(
+    range_match: re.Match[str], function_for_tag: Callable[[int], Any], tag: str
+) -> None:
     """Applies the function for tags either from index or pending according to the range i-j
 
     :param match range_match: match of the range
@@ -306,7 +332,9 @@ def lookup_added_profile_callback(_: click.Context, __: click.Option, value: str
             massaged_values.add(lookup_nth_pending_filename(int(pending_match.group(1))))
         elif range_match:
             apply_func_for_range(
-                range_match, lambda j: massaged_values.add(lookup_nth_pending_filename(j)), "p"
+                range_match,
+                lambda j: massaged_values.add(lookup_nth_pending_filename(j)),
+                "p",
             )
         else:
             massaged_values.add(lookup_profile_in_filesystem(single_value))
@@ -324,18 +352,17 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
     :param str value: value that is being read from the commandline
     :returns str: filename of the profile to be removed
     """
+
     def add_to_removed_from_index(index: int) -> None:
         """Helper function for adding stuff to massaged values
 
         :param int index: index we are looking up and registering to massaged values
         """
         try:
-            index_filename = profiles.get_nth_profile_of(
-                index, ctx.params['minor']
-            )
-            start = index_filename.rfind('objects') + len('objects')
+            index_filename = profiles.get_nth_profile_of(index, ctx.params["minor"])
+            start = index_filename.rfind("objects") + len("objects")
             # Remove the .perun/objects/... prefix and merge the directory and file to sha
-            ctx.params['from_index_generator'].add("".join(index_filename[start:].split('/')))
+            ctx.params["from_index_generator"].add("".join(index_filename[start:].split("/")))
         except TagOutOfRangeException as exc:
             # Invalid tag value, rethrow as click error
             raise click.BadParameter(str(exc))
@@ -346,10 +373,10 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
         :param int pending: index of the pending profile
         """
         pending_profile = lookup_nth_pending_filename(pending)
-        ctx.params['from_jobs_generator'].add(pending_profile)
+        ctx.params["from_jobs_generator"].add(pending_profile)
 
-    ctx.params.setdefault('from_index_generator', set())
-    ctx.params.setdefault('from_jobs_generator', set())
+    ctx.params.setdefault("from_index_generator", set())
+    ctx.params.setdefault("from_jobs_generator", set())
 
     massaged_values = set()
     for single_value in value:
@@ -361,20 +388,21 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
             if index_match:
                 add_to_removed_from_index(int(index_match.group(1)))
             elif index_range_match:
-                apply_func_for_range(index_range_match, add_to_removed_from_index, 'i')
+                apply_func_for_range(index_range_match, add_to_removed_from_index, "i")
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                apply_func_for_range(pending_range_match, add_to_removed_from_pending, 'p')
+                apply_func_for_range(pending_range_match, add_to_removed_from_pending, "p")
             # We check if this is actually something from pending, then we will remove it
-            elif os.path.exists(single_value) and \
-                os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):
-                ctx.params['from_jobs_generator'].add(single_value)
+            elif os.path.exists(single_value) and os.path.samefile(
+                os.path.split(single_value)[0], pcs.get_job_directory()
+            ):
+                ctx.params["from_jobs_generator"].add(single_value)
             # other profiles that are specified by the path are removed from index only
             else:
-                ctx.params['from_index_generator'].add(single_value)
-    massaged_values.update(ctx.params['from_index_generator'])
-    massaged_values.update(ctx.params['from_jobs_generator'])
+                ctx.params["from_index_generator"].add(single_value)
+    massaged_values.update(ctx.params["from_index_generator"])
+    massaged_values.update(ctx.params["from_jobs_generator"])
     return massaged_values
 
 
@@ -405,7 +433,7 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
     for root, _, files in os.walk(os.getcwd()):
         for file in files:
             full_path = os.path.join(root, file)
-            if file.endswith('.perf') and searched_regex.search(full_path):
+            if file.endswith(".perf") and searched_regex.search(full_path):
                 rel_path = os.path.relpath(full_path, os.getcwd())
                 if click.confirm(f"did you perhaps mean '{rel_path}'?"):
                     return full_path
@@ -439,8 +467,8 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     # TODO: only temporary
     profile_path = os.path.join(pcs.get_job_directory(), value)
     if metrics.is_enabled() and os.path.exists(profile_path):
-        metrics.add_metric('profile size', os.stat(profile_path).st_size)
-    parts = value.split('^')
+        metrics.add_metric("profile size", os.stat(profile_path).st_size)
+    parts = value.split("^")
     rev = None
     if len(parts) > 1:
         rev, value = parts[0], parts[1]
@@ -449,9 +477,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
         try:
-            index_profile = profiles.get_nth_profile_of(
-                int(index_tag_match.group(1)), rev
-            )
+            index_profile = profiles.get_nth_profile_of(int(index_tag_match.group(1)), rev)
             return store.load_profile_from_file(index_profile, is_raw_profile=False)
         except TagOutOfRangeException as exc:
             raise click.BadParameter(str(exc))
@@ -478,7 +504,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
 
 
 def check_stats_minor_callback(_: click.Context, param: click.Argument, value: str) -> str:
-    """ Callback for checking existence of the minor version value in the VCS and also checking
+    """Callback for checking existence of the minor version value in the VCS and also checking
     that a corresponding version directory exists in the stats.
 
     The only exception is a 'in_minor' parameter which can also refer to all the available
@@ -490,7 +516,7 @@ def check_stats_minor_callback(_: click.Context, param: click.Argument, value: s
 
     :return str: the original value, which has been however checked
     """
-    if param.name == 'in_minor' and value == '.':
+    if param.name == "in_minor" and value == ".":
         return value
     elif value:
         # Check the minor version existence and that it has a directory in the 'stats'
@@ -508,7 +534,7 @@ def check_stats_minor_callback(_: click.Context, param: click.Argument, value: s
 
 
 def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str) -> Any:
-    """ Callback for looking up the stats file in the stats directory. The stats file is searched
+    """Callback for looking up the stats file in the stats directory. The stats file is searched
     for in the specific minor version - if provided in 'in_minor' parameter - otherwise no lookup
     is performed.
 
@@ -519,20 +545,21 @@ def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str
     :return: either the looked up path of the file or the original value if no lookup was performed
     """
     # Resolve the 'in_minor' to HEAD if not specified
-    in_minor = vcs.get_minor_head() if not ctx.params['in_minor'] else ctx.params['in_minor']
+    in_minor = vcs.get_minor_head() if not ctx.params["in_minor"] else ctx.params["in_minor"]
     # Check the existence only for files with specific 'in_minor'
-    if in_minor != '.':
+    if in_minor != ".":
         try:
             return stats.get_stats_file_path(value, in_minor, True)
         except StatsFileNotFoundException:
             raise click.BadParameter(
-                f"The requested file '{value}' does not exist in the stats directory for minor version '{in_minor}'."
+                f"The requested file '{value}' does not exist in the stats directory for minor"
+                f" version '{in_minor}'."
             )
     return value
 
 
 def resources_key_options(
-        func: Callable[..., Any]
+    func: Callable[..., Any]
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """
     This method creates Click decorator for common options for  all non-parametric
@@ -543,12 +570,26 @@ def resources_key_options(
     :return: returns sequence of the single options for the current function (f) as decorators
     """
     options = [
-        click.option('--per-key', '-per', 'per_key', default='structure-unit-size',
-                     nargs=1, metavar='<per_resource_key>', callback=process_resource_key_param,
-                     help='Sets the key that will be used as a source variable (x-coordinates).'),
-        click.option('--of-key', '-of', 'of_key', nargs=1, metavar='<of_resource_key>',
-                     default='amount', callback=process_resource_key_param,
-                     help='Sets key for which we are finding the model (y-coordinates).')
+        click.option(
+            "--per-key",
+            "-per",
+            "per_key",
+            default="structure-unit-size",
+            nargs=1,
+            metavar="<per_resource_key>",
+            callback=process_resource_key_param,
+            help="Sets the key that will be used as a source variable (x-coordinates).",
+        ),
+        click.option(
+            "--of-key",
+            "-of",
+            "of_key",
+            nargs=1,
+            metavar="<of_resource_key>",
+            default="amount",
+            callback=process_resource_key_param,
+            help="Sets key for which we are finding the model (y-coordinates).",
+        ),
     ]
     return functools.reduce(lambda x, option: option(x), options, func)
 
@@ -639,7 +680,12 @@ Context
 """
 
 
-def generate_cli_dump(reported_error: str, catched_exception: Exception, stdout: log.Logger, stderr: log.Logger) -> None:
+def generate_cli_dump(
+    reported_error: str,
+    catched_exception: Exception,
+    stdout: log.Logger,
+    stderr: log.Logger,
+) -> None:
     """Generates the dump of the current snapshot of the CLI
 
     In particular this yields the dump template with the following information:
@@ -662,7 +708,7 @@ def generate_cli_dump(reported_error: str, catched_exception: Exception, stdout:
     if not CLI_DUMP_TEMPLATE:
         env = jinja2.Environment(
             trim_blocks=True,
-            line_statement_prefix='//',
+            line_statement_prefix="//",
         )
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
     version_delimiter = re.compile(r"[=><;~! ]")
@@ -670,70 +716,87 @@ def generate_cli_dump(reported_error: str, catched_exception: Exception, stdout:
     def split_requirement(requirement: str) -> str:
         """Helper function for splitting requirement and its required version"""
         split = re.split(version_delimiter, requirement)
-        return split[0] if len(split) > 0 else ''
+        return split[0] if len(split) > 0 else ""
+
     reqs = {split_requirement(req) for req in metadata.requires("perun") or []}
 
     dump_directory = pcs.get_safe_path(os.getcwd())
-    dump_file = os.path.join(dump_directory, 'dump-{}'.format(
-        timestamps.timestamp_to_str(time.time()).replace(' ', '-').replace(':', '-')
-    ) + '.rst')
+    dump_file = os.path.join(
+        dump_directory,
+        "dump-{}".format(
+            timestamps.timestamp_to_str(time.time()).replace(" ", "-").replace(":", "-")
+        )
+        + ".rst",
+    )
 
     stdout.log.seek(0)
     stderr.log.seek(0)
 
     ctx = {
-        "\n".join([
-            " "*4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split('\n')
-        ]) for p in config.runtime().safe_get('context.profiles', []) if 'origin' in p.keys()
+        "\n".join(
+            [
+                " " * 4 + line
+                for line in json.dumps(p.serialize(), indent=2, sort_keys=True).split("\n")
+            ]
+        )
+        for p in config.runtime().safe_get("context.profiles", [])
+        if "origin" in p.keys()
     }
-    config.runtime().set('context.profiles', [])
+    config.runtime().set("context.profiles", [])
 
     output = CLI_DUMP_TEMPLATE.render(
         {
-            'env': {
-                'perun': perun.__version__,
-                'os': {
-                    'type': os.environ.get('OSTYPE', '???'),
-                    'distro': platform.platform(()),  # type: ignore
-                    'arch': os.environ.get('HOSTTYPE', '???'),
-                    'shell': os.environ.get('SHELL', '???')
+            "env": {
+                "perun": perun.__version__,
+                "os": {
+                    "type": os.environ.get("OSTYPE", "???"),
+                    "distro": platform.platform(()),  # type: ignore
+                    "arch": os.environ.get("HOSTTYPE", "???"),
+                    "shell": os.environ.get("SHELL", "???"),
                 },
-                'python': {
-                    'version': sys.version.replace('\n', ''),
-                    'packages': [
+                "python": {
+                    "version": sys.version.replace("\n", ""),
+                    "packages": [
                         f"{req.name} ({req.version})"
                         for req in metadata.distributions()
-                        if hasattr(req, 'name') and req.name in reqs and req.name != ''
-                    ]
-                }
+                        if hasattr(req, "name") and req.name in reqs and req.name != ""
+                    ],
+                },
             },
-            'command': " ".join(['perun'] + sys.argv[1:]),
-            'output': helpers.escape_ansi("".join([" "*4 + l for l in stdout.log.readlines()])),
-            'error': helpers.escape_ansi("".join([" "*4 + l for l in stderr.log.readlines()])),
-            'exception': reported_error,
-            'trace': "\n".join(
-                [' '*4 + t for t in "".join(
-                    traceback.format_tb(catched_exception.__traceback__)
-                ).split('\n')]
+            "command": " ".join(["perun"] + sys.argv[1:]),
+            "output": helpers.escape_ansi(
+                "".join([" " * 4 + line for line in stdout.log.readlines()])
             ),
-            'config': {
-                'runtime': streams.yaml_to_string(config.runtime().data),
-                'local': '' if '.perun' not in dump_directory else streams.yaml_to_string(
-                    config.local(dump_directory).data
-                ),
-                'global': streams.yaml_to_string(config.shared().data)
+            "error": helpers.escape_ansi(
+                "".join([" " * 4 + line for line in stderr.log.readlines()])
+            ),
+            "exception": reported_error,
+            "trace": "\n".join(
+                [
+                    " " * 4 + t
+                    for t in "".join(traceback.format_tb(catched_exception.__traceback__)).split(
+                        "\n"
+                    )
+                ]
+            ),
+            "config": {
+                "runtime": streams.yaml_to_string(config.runtime().data),
+                "local": ""
+                if ".perun" not in dump_directory
+                else streams.yaml_to_string(config.local(dump_directory).data),
+                "global": streams.yaml_to_string(config.shared().data),
             },
-            'context': ctx,
+            "context": ctx,
         }
     )
 
-    with open(dump_file, 'w') as dump_handle:
+    with open(dump_file, "w") as dump_handle:
         dump_handle.write(output)
     log.info(f"Saved dump to '{dump_file}'")
 
 
 def set_optimization(_: click.Context, param: click.Argument, value: str) -> str:
-    """ Callback for enabling or disabling optimization pipelines or methods.
+    """Callback for enabling or disabling optimization pipelines or methods.
 
     :param click.core.Context _: click context
     :param click.core.Argument param: the click parameter
@@ -741,21 +804,21 @@ def set_optimization(_: click.Context, param: click.Argument, value: str) -> str
     :return str: the value
     """
     # Set the optimization pipeline
-    if param.human_readable_name == 'optimization_pipeline':
+    if param.human_readable_name == "optimization_pipeline":
         Optimization.set_pipeline(value)
     # Enable certain optimization method
-    elif param.human_readable_name == 'optimization_on':
+    elif param.human_readable_name == "optimization_on":
         for method in value:
             Optimization.enable_optimization(method)
     # Disable certain optimization method
-    elif param.human_readable_name == 'optimization_off':
+    elif param.human_readable_name == "optimization_off":
         for method in value:
             Optimization.disable_optimization(method)
     return value
 
 
 def set_optimization_param(_: click.Context, __: click.Argument, value: str) -> str:
-    """ Set parameter value for optimizations
+    """Set parameter value for optimizations
 
     :param click.core.Context _: click context
     :param click.core.Argument __: the click parameter
@@ -773,7 +836,7 @@ def set_optimization_param(_: click.Context, __: click.Argument, value: str) -> 
 
 
 def set_optimization_cache(_: click.Context, __: click.Option, value: str) -> None:
-    """ Enable or disable the usage of optimization and collection cache.
+    """Enable or disable the usage of optimization and collection cache.
 
     :param click.core.Context _: click context
     :param click.core.Argument __: the click parameter
@@ -783,7 +846,7 @@ def set_optimization_cache(_: click.Context, __: click.Option, value: str) -> No
 
 
 def reset_optimization_cache(_: click.Context, __: click.Option, value: str) -> None:
-    """ Remove the cache entries for the optimization, thus forcing them to recompute the cached
+    """Remove the cache entries for the optimization, thus forcing them to recompute the cached
     data.
 
     :param click.core.Context _: click context
@@ -794,7 +857,7 @@ def reset_optimization_cache(_: click.Context, __: click.Option, value: str) -> 
 
 
 def set_call_graph_type(_: click.Context, __: click.Argument, value: str) -> None:
-    """ Set the selected Call Graph type to be used for optimizations.
+    """Set the selected Call Graph type to be used for optimizations.
 
     :param click.core.Context _: click context
     :param click.core.Argument __: the click parameter
@@ -804,7 +867,7 @@ def set_call_graph_type(_: click.Context, __: click.Argument, value: str) -> Non
 
 
 def configure_metrics(_: click.Context, __: click.Option, value: tuple[str, str]) -> None:
-    """ Set the temp file and ID for the collected metrics.
+    """Set the temp file and ID for the collected metrics.
 
     :param click.core.Context _: click context
     :param click.core.Argument __: the click parameter

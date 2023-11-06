@@ -64,9 +64,7 @@ def partition_list(source_list: list[str], pred: Callable[[str], bool]) -> list[
     """
     starts = [i for (i, element) in enumerate(source_list) if pred(element)]
     ends = starts[1:] + [len(source_list)]
-    partitions = [
-        source_list[start:end] for (start, end) in zip(starts, ends)
-    ]
+    partitions = [source_list[start:end] for (start, end) in zip(starts, ends)]
     return partitions
 
 
@@ -82,15 +80,15 @@ def parse_file(file_info: str, source_map: dict[str, str]) -> list[dict[str, Any
     """
     filtered_file = list(filter(lambda line: not re.match(r"^\s*$", line), file_info.split("\n")))
     file_match = RE_FILE.search(filtered_file[0])
-    file_name = file_match.group('filename') if file_match else "<unknown_filename>"
+    file_name = file_match.group("filename") if file_match else "<unknown_filename>"
     resources = []
-    for func in partition_list(filtered_file, lambda x: 'Function' in x):
+    for func in partition_list(filtered_file, lambda x: "Function" in x):
         resources.extend(parse_function(func, source_map[file_name]))
     return resources
 
 
 def lookup_function_location(
-        function_name: str, file_name: str, lines_for_bounds: list[int]
+    function_name: str, file_name: str, lines_for_bounds: list[int]
 ) -> tuple[int, int]:
     """For given function, finds its location in the file, i.e. the line and column.
 
@@ -103,7 +101,7 @@ def lookup_function_location(
     """
     if not lines_for_bounds:
         return 0, 0
-    with open(file_name, 'r') as fp:
+    with open(file_name, "r") as fp:
         lines = fp.readlines()
     line = [
         (i, l) for (i, l) in enumerate(lines) if function_name in l and i < min(lines_for_bounds)
@@ -139,48 +137,52 @@ def parse_function(func_info: list[str], file_name: str) -> list[dict[str, Any]]
     resources = []
     collective_bounds = []
     collective_lines = []
-    total_complexity_line = func_info[-1].replace('\u001b[37;31mFAILED\u001b[0m', 'FAILED').strip()
+    total_complexity_line = func_info[-1].replace("\u001b[37;31mFAILED\u001b[0m", "FAILED").strip()
     function_match = RE_FUNCTION.search(func_info[0])
-    function_name = function_match.group('funcname') if function_match else "<unknown function>"
-    for resource in partition_list(func_info[1:-1], lambda x: 'line' in x):
+    function_name = function_match.group("funcname") if function_match else "<unknown function>"
+    for resource in partition_list(func_info[1:-1], lambda x: "line" in x):
         line_match = RE_LINE.search(resource[0])
-        line = line_match.group('line') if line_match else -1
-        col = line_match.group('column') if line_match else -1
+        line = line_match.group("line") if line_match else -1
+        col = line_match.group("column") if line_match else -1
         if len(resource) == 3:
             # Case (1): the bounds were successfully inferred;
             bound = resource[1].strip()
             class_of_bound = resource[2].strip()
         else:
             # Case (2): the bounds could not be inferred
-            bound = resource[1].replace('\u001b[37;31mFAILED\u001b[0m', 'FAILED').strip()
-            class_of_bound = 'O(∞)'
+            bound = resource[1].replace("\u001b[37;31mFAILED\u001b[0m", "FAILED").strip()
+            class_of_bound = "O(∞)"
         collective_bounds.append(bound)
         collective_lines.append(int(line))
-        resources.append({
-            'uid': {
-                'function': function_name,
-                'line': int(line),
-                'column': int(col),
-                'source': file_name
-            },
-            'bound': bound,
-            'class': class_of_bound,
-            'type': 'local bound'
-        })
+        resources.append(
+            {
+                "uid": {
+                    "function": function_name,
+                    "line": int(line),
+                    "column": int(col),
+                    "source": file_name,
+                },
+                "bound": bound,
+                "class": class_of_bound,
+                "type": "local bound",
+            }
+        )
 
     line, column = lookup_function_location(function_name, file_name, collective_lines)
-    total_class = total_complexity_line.split(':', 1)[1].strip()
-    resources.append({
-        'uid': {
-            'function': function_name,
-            'line': line,
-            'column': column,
-            'source': file_name
-        },
-        'bound': total_class if 'FAILED' in total_class else " + ".join(collective_bounds),
-        'class': 'O(∞)' if 'FAILED' in total_class else total_class,
-        'type': 'total bound'
-    })
+    total_class = total_complexity_line.split(":", 1)[1].strip()
+    resources.append(
+        {
+            "uid": {
+                "function": function_name,
+                "line": line,
+                "column": column,
+                "source": file_name,
+            },
+            "bound": total_class if "FAILED" in total_class else " + ".join(collective_bounds),
+            "class": "O(∞)" if "FAILED" in total_class else total_class,
+            "type": "total bound",
+        }
+    )
 
     return resources
 
@@ -194,9 +196,7 @@ def parse_output(output: str, source_map: dict[str, str]) -> list[dict[str, Any]
     :param dict source_map: mapping of compiled files to real sources
     :return: list of resources
     """
-    files = [
-        finfo for finfo in output.split("--------------------------------------\n") if finfo
-    ]
+    files = [finfo for finfo in output.split("--------------------------------------\n") if finfo]
     resources = []
     for file_info in files:
         resources.extend(parse_file(file_info, source_map))

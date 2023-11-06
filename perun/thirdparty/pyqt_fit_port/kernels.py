@@ -10,7 +10,11 @@ import numpy as np
 from scipy import fftpack, integrate
 from scipy.special import erf
 
-from perun.thirdparty.pyqt_fit_port.utils import make_ufunc, numpy_trans, numpy_trans_idx
+from perun.thirdparty.pyqt_fit_port.utils import (
+    make_ufunc,
+    numpy_trans,
+    numpy_trans_idx,
+)
 
 
 S2PI = np.sqrt(2.0 * np.pi)

@@ -1,1 +1,1 @@
-SUPPORTED_PROFILES = ['all']
+SUPPORTED_PROFILES = ["all"]

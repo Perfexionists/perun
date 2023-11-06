@@ -17,7 +17,7 @@ from perun.collect.trace.watchdog import WATCH_DOG
 
 # TODO: rethink the interface signatures to conform to LSP
 class CollectEngine(ABC):
-    """ The base abstract class for all the collection engines. Stores some of the configuration
+    """The base abstract class for all the collection engines. Stores some of the configuration
     parameters for easier access.
 
     :ivar str binary: the path to the binary file to be probed
@@ -29,11 +29,12 @@ class CollectEngine(ABC):
     :ivar str files_dir: the directory path of the temporary files
     :ivar str locks_dir: the directory path of the lock files
     """
+
     # Set the supported engines
-    _supported = ['stap', 'ebpf']
+    _supported = ["stap", "ebpf"]
 
     def __init__(self, config):
-        """ Initializes the default engine parameters.
+        """Initializes the default engine parameters.
 
         :param Configuration config: the configuration object
         """
@@ -49,12 +50,11 @@ class CollectEngine(ABC):
 
     @abstractmethod
     def check_dependencies(self):
-        """ Check that the specific dependencies for a given engine are satisfied.
-        """
+        """Check that the specific dependencies for a given engine are satisfied."""
 
     @abstractmethod
     def available_usdt(self, **kwargs):
-        """ List the available USDT probes within the given binary files and libraries using
+        """List the available USDT probes within the given binary files and libraries using
         an engine-specific approach.
 
         :param kwargs: the required parameters
@@ -64,14 +64,14 @@ class CollectEngine(ABC):
 
     @abstractmethod
     def assemble_collect_program(self, **kwargs):
-        """ Assemble the collection program that specifies the probes and the handlers, if needed.
+        """Assemble the collection program that specifies the probes and the handlers, if needed.
 
         :param kwargs: the required parameters
         """
 
     @abstractmethod
     def collect(self, **kwargs):
-        """ Collect the raw performance data using the assembled collection program and other
+        """Collect the raw performance data using the assembled collection program and other
         parameters.
 
         :param kwargs: the required parameters
@@ -79,7 +79,7 @@ class CollectEngine(ABC):
 
     @abstractmethod
     def transform(self, **kwargs):
-        """ Transform the raw performance data into a resources as used in the profiles.
+        """Transform the raw performance data into a resources as used in the profiles.
 
         :param kwargs: the required parameters
 
@@ -88,14 +88,14 @@ class CollectEngine(ABC):
 
     @abstractmethod
     def cleanup(self, **kwargs):
-        """ Cleans up all the engine-related resources such as files, processes, locks, etc.
+        """Cleans up all the engine-related resources such as files, processes, locks, etc.
 
         :param kwargs: the required parameters
         """
 
     @staticmethod
     def available():
-        """ Lists all the available and supported engines.
+        """Lists all the available and supported engines.
 
         :return list: the names of the supported engines.
         """
@@ -103,14 +103,14 @@ class CollectEngine(ABC):
 
     @staticmethod
     def default():
-        """ Provide the default collection engine.
+        """Provide the default collection engine.
 
         :return str: the name of the default engine
         """
         return CollectEngine._supported[0]
 
     def _assemble_file_name(self, name, suffix):
-        """ Builds a full path to a temporary file name using the tmp/ directory within perun.
+        """Builds a full path to a temporary file name using the tmp/ directory within perun.
 
         :param str name: the name of the temporary file
         :param str suffix: the suffix of the file
@@ -118,12 +118,13 @@ class CollectEngine(ABC):
         :return str: the full path to the temporary file
         """
         return os.path.join(
-            self.files_dir, 'collect_{}_{}_{}{}'.format(name, self.timestamp, self.pid, suffix)
+            self.files_dir,
+            "collect_{}_{}_{}{}".format(name, self.timestamp, self.pid, suffix),
         )
 
     @staticmethod
     def _create_collect_files(paths):
-        """ Creates the requested temporary files.
+        """Creates the requested temporary files.
 
         :param list paths: the list of file paths to create
         """
@@ -132,15 +133,16 @@ class CollectEngine(ABC):
             WATCH_DOG.debug("Temporary file '{}' successfully created".format(path))
 
     def _finalize_collect_files(self, files, keep_temps, zip_temps):
-        """ Zip and delete the temporary collect files.
+        """Zip and delete the temporary collect files.
 
         :param list files: the name of the object attribute that contains the file path
         :param bool keep_temps: specifies if the temporary files should be kept or deleted
         :param bool zip_temps: specifies if the temporary files should be zipped or not
         """
         pack_name = os.path.join(
-            get_log_directory(), 'trace',
-            'collect_files_{}_{}.zip.lzma'.format(self.timestamp, self.pid)
+            get_log_directory(),
+            "trace",
+            "collect_files_{}_{}.zip.lzma".format(self.timestamp, self.pid),
         )
         with Zipper(zip_temps, pack_name) as temp_pack:
             for file_name in files:
@@ -155,7 +157,7 @@ class CollectEngine(ABC):
             WATCH_DOG.end_session(temp_pack)
 
     def _terminate_process(self, proc_name):
-        """ Terminates the given subprocess (identified by the proc_name).
+        """Terminates the given subprocess (identified by the proc_name).
 
         The process has to terminated by a 'sudo kill' operation since it has been probably invoked
         with 'sudo' rights (this may or may not be true for the user-supplied command) and thus
@@ -173,14 +175,19 @@ class CollectEngine(ABC):
 
         # Attempt to terminate the process if it's still running
         if proc.poll() is None:
-            WATCH_DOG.debug("Attempting to terminate the '{}' subprocess with PID '{}'"
-                            .format(proc_name, proc.pid))
-            utils.run_safely_external_command('sudo kill -{} {}'.format(SIGINT, proc.pid), False)
+            WATCH_DOG.debug(
+                "Attempting to terminate the '{}' subprocess with PID '{}'".format(
+                    proc_name, proc.pid
+                )
+            )
+            utils.run_safely_external_command("sudo kill -{} {}".format(SIGINT, proc.pid), False)
             # The wait is needed to get rid of the resulting zombie process
             try:
                 proc.wait(timeout=CLEANUP_TIMEOUT)
                 WATCH_DOG.debug("Successfully terminated the subprocess")
             except TimeoutExpired:
                 # However the process hasn't terminated, report to the user
-                WATCH_DOG.warn("Failed to terminate the '{}' subprocess with PID '{}', "
-                               "manual termination is advised".format(proc_name, proc.pid))
+                WATCH_DOG.warn(
+                    "Failed to terminate the '{}' subprocess with PID '{}', "
+                    "manual termination is advised".format(proc_name, proc.pid)
+                )

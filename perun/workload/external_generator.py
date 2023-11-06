@@ -60,8 +60,16 @@ class ExternalGenerator(WorkloadGenerator):
         collectable/persistent parts for the resources
     :ivar list key: list of keys for extracted resources
     """
-    def __init__(self, job: Job, external_generator: str, output_dir: str, file_format: str,
-                 delimiters: str = '{}', **kwargs: Any) -> None:
+
+    def __init__(
+        self,
+        job: Job,
+        external_generator: str,
+        output_dir: str,
+        file_format: str,
+        delimiters: str = "{}",
+        **kwargs: Any,
+    ) -> None:
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -94,7 +102,8 @@ class ExternalGenerator(WorkloadGenerator):
         :return: parsed workload format
         """
         split_format = [
-            token for split in self.file_format.split(self.delimiters[0])
+            token
+            for split in self.file_format.split(self.delimiters[0])
             for token in split.split(self.delimiters[1])
         ]
         return split_format[0::2], split_format[1::2]
@@ -133,9 +142,11 @@ class ExternalGenerator(WorkloadGenerator):
         try:
             utils.run_safely_external_command(self.generator, check_results=True)
         except subprocess.CalledProcessError as error:
-            log.warn("External workload generator '{}' returned failed with: {}".format(
-                self.generator, str(error)
-            ))
+            log.warn(
+                "External workload generator '{}' returned failed with: {}".format(
+                    self.generator, str(error)
+                )
+            )
 
         for workload in os.listdir(self.output_dir):
             path_to_workload = os.path.join(self.output_dir, workload)
@@ -143,8 +154,9 @@ class ExternalGenerator(WorkloadGenerator):
             if len(values) == len(self.keys):
                 yield path_to_workload, {key: value for (key, value) in zip(self.keys, values)}
             else:
-                log.warn("Could not match format '{}' for workload file '{}'".format(
-                    self.file_format, workload
-                ))
+                log.warn(
+                    "Could not match format '{}' for workload file '{}'".format(
+                        self.file_format, workload
+                    )
+                )
                 yield path_to_workload, {}
-

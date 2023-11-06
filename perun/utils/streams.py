@@ -22,7 +22,7 @@ def store_json(profile: dict[Any, Any], file_path: str) -> None:
     :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
     :param str file_path: output path, where the `profile` will be stored
     """
-    with open(file_path, 'w') as profile_handle:
+    with open(file_path, "w") as profile_handle:
         serialized_profile = json.dumps(profile, indent=2)
         serialized_profile = re.sub(r",\s+(\d+)", r", \1", serialized_profile)
         profile_handle.write(serialized_profile)
@@ -34,10 +34,10 @@ def safely_load_yaml_from_file(yaml_file: str) -> dict[Any, Any]:
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
     """
     if not os.path.exists(yaml_file):
-        log.warn('yaml source file \'{}\' does not exist'.format(yaml_file))
+        log.warn("yaml source file '{}' does not exist".format(yaml_file))
         return {}
 
-    with open(yaml_file, 'r') as yaml_handle:
+    with open(yaml_file, "r") as yaml_handle:
         return safely_load_yaml_from_stream(yaml_handle)
 
 
@@ -78,7 +78,7 @@ def yaml_to_string(dictionary: dict[Any, Any]) -> str:
     yaml_dumper = YAML()
     yaml_dumper.dump(dictionary, string_stream)
     string_stream.seek(0)
-    return "".join([" "*4 + s for s in string_stream.readlines()])
+    return "".join([" " * 4 + s for s in string_stream.readlines()])
 
 
 def safely_load_file(filename: str) -> list[str]:
@@ -87,7 +87,7 @@ def safely_load_file(filename: str) -> list[str]:
     :param str filename: read filename
     :return: list of read lines
     """
-    with open(filename, 'r') as file_handle:
+    with open(filename, "r") as file_handle:
         try:
             return file_handle.readlines()
         except UnicodeDecodeError as ude:

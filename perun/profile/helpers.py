@@ -37,14 +37,16 @@ import perun.utils.decorators as decorators
 import perun.profile.factory as profiles
 from perun.utils import get_module
 from perun.utils.exceptions import (
-    InvalidParameterException, MissingConfigSectionException, TagOutOfRangeException
+    InvalidParameterException,
+    MissingConfigSectionException,
+    TagOutOfRangeException,
 )
 from perun.utils.helpers import sanitize_filepart
 from perun.utils.structs import Unit, Executable, Job
 
 
 PROFILE_COUNTER = 0
-DEFAULT_SORT_KEY = 'time'
+DEFAULT_SORT_KEY = "time"
 
 
 def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
@@ -69,13 +71,9 @@ def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     :param str param: parameter we will use in the resulting profile
     :return: collector or postprocess unit name that is incorporated in the filename
     """
-    unit_param_map = {
-        post['name']: post['params'] for post in profile.get('postprocessors', [])
-    }
-    used_collector = profile['collector_info']
-    unit_param_map.update({
-        used_collector.get('name', '?'): used_collector.get('params', {})
-    })
+    unit_param_map = {post["name"]: post["params"] for post in profile.get("postprocessors", [])}
+    used_collector = profile["collector_info"]
+    unit_param_map.update({used_collector.get("name", "?"): used_collector.get("params", {})})
 
     # Lookup the unit params
     unit_params = unit_param_map.get(unit)
@@ -118,48 +116,73 @@ def generate_profile_name(profile: profiles.Profile) -> str:
     """
     global PROFILE_COUNTER
     # TODO: This might be broken in new versions?
-    fmt_parser = re.Scanner([  # type: ignore
-        (r"%collector%", lambda scanner, token:
-            lookup_value(profile['collector_info'], 'name', "_")
-        ),
-        (r"%postprocessors%", lambda scanner, token:
-            ("after-" + "-and-".join(map(lambda p: p['name'], profile['postprocessors'])))
-                if profile['postprocessors'] else '_'
-        ),
-        (r"%[^.]+\.[^%]+%", lambda scanner, token:
-            lookup_param(profile, *token[1:-1].split('.', maxsplit=1))
-        ),
-        (r"%cmd%", lambda scanner, token:
-            os.path.split(lookup_value(profile['header'], 'cmd', '_'))[-1]
-        ),
-        (r"%args%", lambda scanner, token:
-            "[" + sanitize_filepart(lookup_value(profile['header'], 'args', '_')) + "]"
-        ),
-        (r"%workload%", lambda scanner, token:
-            "[" + sanitize_filepart(
-                os.path.split(lookup_value(profile['header'], 'workload', '_'))[-1]
-            ) + "]"
-        ),
-        (r"%type%", lambda scanner, token: lookup_value(profile['header'], 'type', '_')),
-        (r"%date%", lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())),
-        (r"%origin%", lambda scanner, token: lookup_value(profile, 'origin', '_')),
-        (r"%counter%", lambda scanner, token: str(PROFILE_COUNTER)),
-        (r"%%", lambda scanner, token: token),
-        ('[^%]+', lambda scanner, token: token)
-    ])
+    fmt_parser = re.Scanner(  # type: ignore
+        [
+            (
+                r"%collector%",
+                lambda scanner, token: lookup_value(profile["collector_info"], "name", "_"),
+            ),
+            (
+                r"%postprocessors%",
+                lambda scanner, token: (
+                    "after-" + "-and-".join(map(lambda p: p["name"], profile["postprocessors"]))
+                )
+                if profile["postprocessors"]
+                else "_",
+            ),
+            (
+                r"%[^.]+\.[^%]+%",
+                lambda scanner, token: lookup_param(profile, *token[1:-1].split(".", maxsplit=1)),
+            ),
+            (
+                r"%cmd%",
+                lambda scanner, token: os.path.split(lookup_value(profile["header"], "cmd", "_"))[
+                    -1
+                ],
+            ),
+            (
+                r"%args%",
+                lambda scanner, token: "["
+                + sanitize_filepart(lookup_value(profile["header"], "args", "_"))
+                + "]",
+            ),
+            (
+                r"%workload%",
+                lambda scanner, token: "["
+                + sanitize_filepart(
+                    os.path.split(lookup_value(profile["header"], "workload", "_"))[-1]
+                )
+                + "]",
+            ),
+            (
+                r"%type%",
+                lambda scanner, token: lookup_value(profile["header"], "type", "_"),
+            ),
+            (
+                r"%date%",
+                lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime()),
+            ),
+            (r"%origin%", lambda scanner, token: lookup_value(profile, "origin", "_")),
+            (r"%counter%", lambda scanner, token: str(PROFILE_COUNTER)),
+            (r"%%", lambda scanner, token: token),
+            ("[^%]+", lambda scanner, token: token),
+        ]
+    )
     PROFILE_COUNTER += 1
 
     # Obtain the formatting template from the configuration
-    template = config.lookup_key_recursively('format.output_profile_template')
+    template = config.lookup_key_recursively("format.output_profile_template")
     tokens, rest = fmt_parser.scan(template)
     if rest:
-        perun_log.error("formatting string '{}' could not be parsed\n\n".format(template) +
-                        "Run perun config to modify the formatting pattern. "
-                        "Refer to documentation for more information about formatting patterns")
+        perun_log.error(
+            "formatting string '{}' could not be parsed\n\n".format(template)
+            + "Run perun config to modify the formatting pattern. "
+            "Refer to documentation for more information about formatting patterns"
+        )
     return "".join(tokens) + ".perf"
 
 
-def load_list_for_minor_version(minor_version: str) -> list['ProfileInfo']:
+def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
     """Returns profiles assigned to the given minor version.
 
     :param str minor_version: identification of the commit (preferably sha1)
@@ -170,20 +193,17 @@ def load_list_for_minor_version(minor_version: str) -> list['ProfileInfo']:
     profile_info_list = []
     for index_entry in profiles:
         inside_info = {
-            'header': {
-                'type': index_entry.type,
-                'cmd': index_entry.cmd,
-                'args': index_entry.args,
-                'workload': index_entry.workload
+            "header": {
+                "type": index_entry.type,
+                "cmd": index_entry.cmd,
+                "args": index_entry.args,
+                "workload": index_entry.workload,
             },
-            'collector_info': {'name': index_entry.collector},
-            'postprocessors': [
-                {'name': p} for p in index_entry.postprocessors
-            ]
+            "collector_info": {"name": index_entry.collector},
+            "postprocessors": [{"name": p} for p in index_entry.postprocessors],
         }
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
-        profile_info \
-            = ProfileInfo(index_entry.path, profile_name, index_entry.time, inside_info)
+        profile_info = ProfileInfo(index_entry.path, profile_name, index_entry.time, inside_info)
         profile_info_list.append(profile_info)
 
     return profile_info_list
@@ -203,12 +223,12 @@ def get_nth_profile_of(position: int, minor_version: str) -> str:
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
     else:
-        raise TagOutOfRangeException(position, len(registered_profiles) - 1, 'i')
+        raise TagOutOfRangeException(position, len(registered_profiles) - 1, "i")
 
 
 @vcs.lookup_minor_version
 def find_profile_entry(profile: str, minor_version: str) -> index.BasicIndexEntry:
-    """ Finds the profile entry within the index file of the minor version.
+    """Finds the profile entry within the index file of the minor version.
 
     :param str profile: the profile identification, can be given as tag, sha value,
                         sha-path (path to tracked profile in obj) or source-name
@@ -224,11 +244,11 @@ def find_profile_entry(profile: str, minor_version: str) -> index.BasicIndexEntr
     if tag_match:
         profile = get_nth_profile_of(int(tag_match.group(1)), minor_version)
     # Transform the sha-path (obtained or given) to the sha value
-    if not store.is_sha1(profile) and not profile.endswith('.perf'):
+    if not store.is_sha1(profile) and not profile.endswith(".perf"):
         profile = store.version_path_to_sha(profile) or ""
 
     # Search the minor index for the requested profile
-    with open(minor_index, 'rb') as index_handle:
+    with open(minor_index, "rb") as index_handle:
         # The profile can be only sha value or source path now
         if store.is_sha1(profile):
             return index.lookup_entry_within_index(
@@ -257,14 +277,14 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
-    collector = get_module('.'.join(['perun.collect', job.collector.name]))
+    collector = get_module(".".join(["perun.collect", job.collector.name]))
 
     return {
-        'type': collector.COLLECTOR_TYPE,
-        'cmd': job.executable.cmd,
-        'args': job.executable.args,
-        'workload': job.executable.workload,
-        'units': generate_units(collector)
+        "type": collector.COLLECTOR_TYPE,
+        "cmd": job.executable.cmd,
+        "args": job.executable.args,
+        "workload": job.executable.workload,
+        "units": generate_units(collector),
     }
 
 
@@ -274,10 +294,7 @@ def generate_collector_info(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun
         specification
     """
-    return {
-        'name': job.collector.name,
-        'params': job.collector.params
-    }
+    return {"name": job.collector.name, "params": job.collector.params}
 
 
 def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:
@@ -286,10 +303,8 @@ def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:
     :returns dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
     """
     return [
-        {
-            'name': postprocessor.name,
-            'params': postprocessor.params
-        } for postprocessor in job.postprocessors
+        {"name": postprocessor.name, "params": postprocessor.params}
+        for postprocessor in job.postprocessors
     ]
 
 
@@ -299,10 +314,10 @@ def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Pr
     :param Job job: job with information about the computed profile
     :returns dict: valid profile JSON file
     """
-    profile.update({'origin': vcs.get_minor_head()})
-    profile.update({'header': generate_header_for_profile(job)})
-    profile.update({'collector_info': generate_collector_info(job)})
-    profile.update({'postprocessors': generate_postprocessor_info(job)})
+    profile.update({"origin": vcs.get_minor_head()})
+    profile.update({"header": generate_header_for_profile(job)})
+    profile.update({"collector_info": generate_collector_info(job)})
+    profile.update({"postprocessors": generate_postprocessor_info(job)})
     return profile
 
 
@@ -321,13 +336,13 @@ def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]
     :param Profile profile: profile we are converting to configuration tuple
     :returns: tuple of (collector.name, cmd, args, workload, postprocessors joined by ', ')
     """
-    profile_header = profile['header']
+    profile_header = profile["header"]
     return (
-        profile['collector_info']['name'],
-        profile_header.get('cmd', ''),
-        profile_header.get('args', ''),
-        profile_header.get('workload', ''),
-        ', '.join([postprocessor['name'] for postprocessor in profile['postprocessors']])
+        profile["collector_info"]["name"],
+        profile_header.get("cmd", ""),
+        profile_header.get("args", ""),
+        profile_header.get("workload", ""),
+        ", ".join([postprocessor["name"] for postprocessor in profile["postprocessors"]]),
     )
 
 
@@ -348,16 +363,16 @@ def extract_job_from_profile(profile: profiles.Profile) -> Job:
     :param dict profile: dictionary with valid profile
     :returns Job: job according to the profile informations
     """
-    collector_record = profile['collector_info']
-    collector = Unit(collector_record['name'], collector_record['params'])
+    collector_record = profile["collector_info"]
+    collector = Unit(collector_record["name"], collector_record["params"])
 
     posts = []
-    for postprocessor in profile['postprocessors']:
-        posts.append(Unit(postprocessor['name'], postprocessor['params']))
+    for postprocessor in profile["postprocessors"]:
+        posts.append(Unit(postprocessor["name"], postprocessor["params"]))
 
-    cmd = profile['header']['cmd']
-    args = helpers.get_key_with_aliases(profile['header'], ('args', 'params'))
-    workload = profile['header']['workload']
+    cmd = profile["header"]["cmd"]
+    args = helpers.get_key_with_aliases(profile["header"], ("args", "params"))
+    workload = profile["header"]["workload"]
     executable = Executable(cmd, args, workload)
 
     return Job(collector, posts, executable)
@@ -378,16 +393,14 @@ def is_key_aggregatable_by(profile: profiles.Profile, func: str, key: str, keyna
     :raises InvalidParameterException: if the of_key does not support the given function
     """
     # Everything is countable ;)
-    if func in ('count', 'nunique'):
+    if func in ("count", "nunique"):
         return True
 
     # Get all valid numeric keys and validate
     valid_keys = set(query.all_numerical_resource_fields_of(profile))
     if key not in valid_keys:
         choices = "(choose either count/nunique as aggregation function;"
-        choices += " or from the following keys: {})".format(
-            ", ".join(map(str, valid_keys))
-        )
+        choices += " or from the following keys: {})".format(", ".join(map(str, valid_keys)))
         raise InvalidParameterException(keyname, key, choices)
     return True
 
@@ -398,11 +411,11 @@ def get_sort_order():
 
     :return: sorting order
     """
-    sort_order = config.lookup_key_recursively('format.sort_profiles_by')
+    sort_order = config.lookup_key_recursively("format.sort_profiles_by")
     return sort_order
 
 
-def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = True) -> None:
+def sort_profiles(profile_list: list["ProfileInfo"], reverse_profiles: bool = True) -> None:
     """Sorts the profiles according to the key set in either configuration.
 
     The key can either be specified in temporary configuration, or in any of the local or global
@@ -418,21 +431,30 @@ def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = Tr
         sort_order = get_sort_order()
         # If the stored key is invalid, we use the default time as well
         if sort_order not in ProfileInfo.valid_attributes:
-            perun_log.warn("invalid sort key '{}'".format(sort_order) +
-                           " Profiles will be sorted by '{}'\n\n".format(sort_order) +
-                           "Please set sort key in config or cli to one"
-                           " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")")
+            perun_log.warn(
+                "invalid sort key '{}'".format(sort_order)
+                + " Profiles will be sorted by '{}'\n\n".format(sort_order)
+                + "Please set sort key in config or cli to one of ({}".format(
+                    ", ".join(ProfileInfo.valid_attributes)
+                )
+                + ")"
+            )
             sort_order = DEFAULT_SORT_KEY
     except MissingConfigSectionException:
-        perun_log.warn("missing set option 'format.sort_profiles_by'!"
-                       " Profiles will be sorted by '{}'\n\n".format(sort_order) +
-                       "Please run 'perun config edit' and set 'format.sort_profiles_by' to one"
-                       " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")")
+        perun_log.warn(
+            "missing set option 'format.sort_profiles_by'!"
+            " Profiles will be sorted by '{}'\n\n".format(sort_order)
+            + "Please run 'perun config edit' and set 'format.sort_profiles_by' to one"
+            " of ({}".format(", ".join(ProfileInfo.valid_attributes))
+            + ")"
+        )
 
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
-def merge_resources_of(lhs: profiles.Profile | dict[str, Any], rhs: profiles.Profile | dict[str, Any]) -> profiles.Profile:
+def merge_resources_of(
+    lhs: profiles.Profile | dict[str, Any], rhs: profiles.Profile | dict[str, Any]
+) -> profiles.Profile:
     """Merges the resources of lhs and rhs profiles
 
     :param Profile lhs: left operator of the profile merge
@@ -509,13 +531,14 @@ class ProfileInfo:
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
+
     def __init__(
-            self,
-            path: str,
-            real_path: str,
-            mtime: str,
-            profile_info: profiles.Profile | dict[str, Any],
-            is_raw_profile: bool = False
+        self,
+        path: str,
+        real_path: str,
+        mtime: str,
+        profile_info: profiles.Profile | dict[str, Any],
+        is_raw_profile: bool = False,
     ) -> None:
         """
         :param str path: contains the name of the file, which identifies it in the index
@@ -530,18 +553,21 @@ class ProfileInfo:
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
         self.time = mtime
-        self.type = profile_info['header']['type']
-        self.cmd = profile_info['header']['cmd']
-        self.args = helpers.get_key_with_aliases(profile_info['header'], ('args', 'params'))
-        self.workload = profile_info['header']['workload']
-        self.collector = profile_info['collector_info']['name']
+        self.type = profile_info["header"]["type"]
+        self.cmd = profile_info["header"]["cmd"]
+        self.args = helpers.get_key_with_aliases(profile_info["header"], ("args", "params"))
+        self.workload = profile_info["header"]["workload"]
+        self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [
-            postprocessor['name'] for postprocessor in profile_info['postprocessors']
+            postprocessor["name"] for postprocessor in profile_info["postprocessors"]
         ]
         self.checksum = None
         self.config_tuple = (
-            self.collector, self.cmd, self.args, self.workload,
-            ",".join(self.postprocessors)
+            self.collector,
+            self.cmd,
+            self.args,
+            self.workload,
+            ",".join(self.postprocessors),
         )
 
     def load(self) -> profiles.Profile:
@@ -555,5 +581,13 @@ class ProfileInfo:
         return store.load_profile_from_file(self.realpath, self._is_raw_profile)
 
     valid_attributes: list[str] = [
-        "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "source"
+        "realpath",
+        "type",
+        "time",
+        "cmd",
+        "args",
+        "workload",
+        "collector",
+        "checksum",
+        "source",
     ]

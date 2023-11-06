@@ -11,7 +11,12 @@ import distutils.util as dutils
 
 from typing import Any, Iterable, Protocol
 
-from perun.utils.structs import DegradationInfo, PerformanceChange, MinorVersion, ModelRecord
+from perun.utils.structs import (
+    DegradationInfo,
+    PerformanceChange,
+    MinorVersion,
+    ModelRecord,
+)
 from perun.profile.helpers import ProfileInfo
 from perun.profile.factory import Profile
 
@@ -33,13 +38,14 @@ _MIN_CONFIDANCE_RATE = 0.15
 
 class CallableDetectionMethod(Protocol):
     """Protocol for Callable detection method"""
+
     def __call__(
-            self,
-            uid: str,
-            baseline_model: ModelRecord,
-            target_model: ModelRecord,
-            target_profile: Profile,
-            **kwargs: Any
+        self,
+        uid: str,
+        baseline_model: ModelRecord,
+        target_model: ModelRecord,
+        target_profile: Profile,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         pass
 
@@ -62,12 +68,19 @@ def get_supported_detection_models_strategies() -> list[str]:
     :returns list of str: the names of all supported degradation models strategies
     """
     return [
-        'best-model', 'best-param', 'best-nonparam',
-        'all-param', 'all-nonparam', 'all-models', 'best-both'
+        "best-model",
+        "best-param",
+        "best-nonparam",
+        "all-param",
+        "all-nonparam",
+        "all-models",
+        "best-both",
     ]
 
 
-def profiles_to_queue(minor_version: str) -> dict[tuple[str, str, str, str, str], ProfileInfo]:
+def profiles_to_queue(
+    minor_version: str,
+) -> dict[tuple[str, str, str, str, str], ProfileInfo]:
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
     The map represents both the queue and also provides the mapping of configurations to profiles.
@@ -76,9 +89,7 @@ def profiles_to_queue(minor_version: str) -> dict[tuple[str, str, str, str, str]
     :returns: dictionary mapping configurations of profiles to the actual profiles
     """
     minor_version_profiles = profiles.load_list_for_minor_version(minor_version)
-    return {
-        profile.config_tuple: profile for profile in minor_version_profiles
-    }
+    return {profile.config_tuple: profile for profile in minor_version_profiles}
 
 
 @decorators.static_variables(minor_version_cache=set())
@@ -92,34 +103,35 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
 
     :param MinorVersion minor_version: minor version for which we are collecting the data
     """
-    should_precollect = dutils.strtobool(str(
-        config.lookup_key_recursively('degradation.collect_before_check', 'false')
-    ))
+    should_precollect = dutils.strtobool(
+        str(config.lookup_key_recursively("degradation.collect_before_check", "false"))
+    )
     if should_precollect and minor_version.checksum not in pre_collect_profiles.minor_version_cache:
         # Set the registering after run to true for this run
-        config.runtime().set('profiles.register_after_run', 'true')
+        config.runtime().set("profiles.register_after_run", "true")
         # Actually collect the resources
-        collect_to_log = dutils.strtobool(str(
-            config.lookup_key_recursively('degradation.log_collect', 'false')
-        ))
+        collect_to_log = dutils.strtobool(
+            str(config.lookup_key_recursively("degradation.log_collect", "false"))
+        )
         log_file = os.path.join(
-            pcs.get_log_directory(),
-            "{}-precollect.log".format(minor_version.checksum)
+            pcs.get_log_directory(), "{}-precollect.log".format(minor_version.checksum)
         )
         out = log_file if collect_to_log else os.devnull
-        with open(out, 'w') as black_hole:
+        with open(out, "w") as black_hole:
             with contextlib.redirect_stdout(black_hole):
                 try:
                     runner.run_matrix_job([minor_version])
                 except SystemExit as system_exit:
-                    log.warn("Could not precollect data for {} minor version: {}".format(
-                        minor_version.checksum[:6], str(system_exit)
-                    ))
+                    log.warn(
+                        "Could not precollect data for {} minor version: {}".format(
+                            minor_version.checksum[:6], str(system_exit)
+                        )
+                    )
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
 def degradation_in_minor(
-        minor_version: str, quiet: bool = False
+    minor_version: str, quiet: bool = False
 ) -> list[tuple[DegradationInfo, str, str]]:
     """Checks for degradation according to the profiles stored for the given minor version.
 
@@ -154,13 +166,21 @@ def degradation_in_minor(
                 # Print information about configuration
                 # and extend the list of the detected changes including the configuration
                 # and source minor version.
-                baseline_prof = store.load_profile_from_file(baseline_profile_info.realpath, False, True)
-                target_prof = store.load_profile_from_file(target_profile_info.realpath, False, True)
-                detected_changes.extend([
-                    (deg, cmdstr, baseline_info.checksum) for deg in
-                    degradation_between_profiles(baseline_prof, target_prof, 'best-model')
-                    if deg.result != PerformanceChange.NoChange
-                ])
+                baseline_prof = store.load_profile_from_file(
+                    baseline_profile_info.realpath, False, True
+                )
+                target_prof = store.load_profile_from_file(
+                    target_profile_info.realpath, False, True
+                )
+                detected_changes.extend(
+                    [
+                        (deg, cmdstr, baseline_info.checksum)
+                        for deg in degradation_between_profiles(
+                            baseline_prof, target_prof, "best-model"
+                        )
+                        if deg.result != PerformanceChange.NoChange
+                    ]
+                )
                 del target_profile_queue[target_profile_info.config_tuple]
 
         # Store the detected degradation
@@ -171,7 +191,7 @@ def degradation_in_minor(
 
 
 @log.print_elapsed_time
-@decorators.phase_function('check whole repository')
+@decorators.phase_function("check whole repository")
 def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     """Walks through the minor version starting from the given head, checking for degradation.
 
@@ -194,9 +214,7 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
 
 
 def degradation_between_profiles(
-        baseline_profile: Profile,
-        target_profile: Profile,
-        models_strategy: str
+    baseline_profile: Profile, target_profile: Profile, models_strategy: str
 ) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
@@ -211,19 +229,23 @@ def degradation_between_profiles(
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
         yield from utils.dynamic_module_function_call(
-            'perun.check', degradation_method, degradation_method,
-            baseline_profile, target_profile, models_strategy=models_strategy
+            "perun.check",
+            degradation_method,
+            degradation_method,
+            baseline_profile,
+            target_profile,
+            models_strategy=models_strategy,
         )
 
 
 @log.print_elapsed_time
-@decorators.phase_function('check two profiles')
+@decorators.phase_function("check two profiles")
 def degradation_between_files(
-        baseline_file: profile_factory.Profile,
-        target_file: profile_factory.Profile,
-        minor_version: str,
-        models_strategy: str,
-        force: bool = False
+    baseline_file: profile_factory.Profile,
+    target_file: profile_factory.Profile,
+    minor_version: str,
+    models_strategy: str,
+    force: bool = False,
 ) -> None:
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
@@ -237,17 +259,18 @@ def degradation_between_files(
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
-    target_minor_version = target_file.get('origin', minor_version)
+    target_minor_version = target_file.get("origin", minor_version)
     if not force:
         if baseline_config != target_config:
-            log.error("incompatible configurations '{}' and '{}'".format(
-                baseline_config, target_config
-            ) + "\n\nPerformance check does not make sense for profiles "
-                "collected in different ways!")
+            log.error(
+                "incompatible configurations '{}' and '{}'".format(baseline_config, target_config)
+                + "\n\nPerformance check does not make sense for profiles "
+                "collected in different ways!"
+            )
 
     detected_changes = [
-        (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version) for deg in
-        degradation_between_profiles(baseline_file, target_file, models_strategy)
+        (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version)
+        for deg in degradation_between_profiles(baseline_file, target_file, models_strategy)
         if deg.result != PerformanceChange.NoChange
     ]
 
@@ -279,16 +302,16 @@ def is_rule_applicable_for(rule: dict[str, Any], configuration: Profile) -> bool
     :return: true if the rule is applicable for given profile
     """
     for key, value in rule.items():
-        if key == 'method':
+        if key == "method":
             continue
-        if key == 'postprocessor':
-            postprocessors = [post['name'] for post in configuration['postprocessors']]
+        if key == "postprocessor":
+            postprocessors = [post["name"] for post in configuration["postprocessors"]]
             if value not in postprocessors:
                 return False
-        elif key == 'collector':
-            if configuration['collector_info']['name'] != value:
+        elif key == "collector":
+            if configuration["collector_info"]["name"] != value:
                 return False
-        elif configuration['header'].get(key, None) != value:
+        elif configuration["header"].get(key, None) != value:
             return False
     return True
 
@@ -302,14 +325,14 @@ def parse_strategy(strategy: str) -> str:
     :return:
     """
     short_strings = {
-        'aat': 'average_amount_threshold',
-        'bmoe': 'best_model_order_equality',
-        'preg': 'polynomial_regression',
-        'lreg': 'linear_regression',
-        'fast': 'fast_check',
-        'int': 'integral_comparison',
-        'loc': 'local_statistics',
-        'eto': 'exclusive_time_outliers'
+        "aat": "average_amount_threshold",
+        "bmoe": "best_model_order_equality",
+        "preg": "polynomial_regression",
+        "lreg": "linear_regression",
+        "fast": "fast_check",
+        "int": "integral_comparison",
+        "loc": "local_statistics",
+        "eto": "exclusive_time_outliers",
     }
     return short_strings.get(strategy, strategy)
 
@@ -322,28 +345,30 @@ def get_strategies_for(profile: Profile) -> Iterable[str]:
         the same configuration type
     """
     # Retrieve the application strategy
-    application_strategy = config.lookup_key_recursively('degradation.apply', default='all')
+    application_strategy = config.lookup_key_recursively("degradation.apply", default="all")
 
     # Retrieve all of the strategies from configuration
-    strategies = config.gather_key_recursively('degradation.strategies')
+    strategies = config.gather_key_recursively("degradation.strategies")
     already_applied_strategies = []
     first_applied = False
     for strategy in strategies:
-        if (application_strategy == 'all' or not first_applied) \
-                and is_rule_applicable_for(strategy, profile)\
-                and 'method' in strategy.keys()\
-                and strategy['method'] not in already_applied_strategies:
+        if (
+            (application_strategy == "all" or not first_applied)
+            and is_rule_applicable_for(strategy, profile)
+            and "method" in strategy.keys()
+            and strategy["method"] not in already_applied_strategies
+        ):
             first_applied = True
-            method = parse_strategy(strategy['method'])
+            method = parse_strategy(strategy["method"])
             already_applied_strategies.append(method)
             yield method
 
 
 def run_detection_with_strategy(
-        detection_method: CallableDetectionMethod,
-        baseline_profile: profile_factory.Profile,
-        target_profile: profile_factory.Profile,
-        models_strategy: str
+    detection_method: CallableDetectionMethod,
+    baseline_profile: profile_factory.Profile,
+    target_profile: profile_factory.Profile,
+    models_strategy: str,
 ) -> Iterable[DegradationInfo]:
     """
     The wrapper for running detection methods for all kinds of models.
@@ -359,31 +384,38 @@ def run_detection_with_strategy(
     :param str models_strategy: name of detection models strategy to obtains relevant model kinds
     :returns: tuple - degradation result (structure DegradationInfo)
     """
-    if models_strategy in ('all-models', 'best-both'):
-        partial_strategies = ['all-param', 'all-nonparam'] if models_strategy == 'all-models' else \
-            ['best-param', 'best-nonparam']
+    if models_strategy in ("all-models", "best-both"):
+        partial_strategies = (
+            ["all-param", "all-nonparam"]
+            if models_strategy == "all-models"
+            else ["best-param", "best-nonparam"]
+        )
         for partial_strategy in partial_strategies:
             for degradation_info in run_detection_with_strategy(
-                    detection_method, baseline_profile, target_profile, partial_strategy
+                detection_method, baseline_profile, target_profile, partial_strategy
             ):
                 yield degradation_info
     else:
         baseline_models = baseline_profile.all_filtered_models(models_strategy)
         target_models = target_profile.all_filtered_models(models_strategy)
         for degradation_info in _run_detection_for_models(
-                detection_method, baseline_profile, baseline_models,
-                target_profile, target_models, models_strategy=models_strategy
+            detection_method,
+            baseline_profile,
+            baseline_models,
+            target_profile,
+            target_models,
+            models_strategy=models_strategy,
         ):
             yield degradation_info
 
 
 def _run_detection_for_models(
-        detection_method: CallableDetectionMethod,
-        baseline_profile: profile_factory.Profile,
-        baseline_models: dict[str, ModelRecord],
-        target_profile: profile_factory.Profile,
-        target_models: dict[str, ModelRecord],
-        **kwargs: Any
+    detection_method: CallableDetectionMethod,
+    baseline_profile: profile_factory.Profile,
+    baseline_models: dict[str, ModelRecord],
+    target_profile: profile_factory.Profile,
+    target_models: dict[str, ModelRecord],
+    **kwargs: Any,
 ) -> Iterable[DegradationInfo]:
     """
     The runner of detection methods for a set of models pairs (base and targ).
@@ -402,24 +434,30 @@ def _run_detection_for_models(
     :param kwargs: contains name of detection models strategy to obtains relevant model kinds
     :return: tuple - degradation result (structure DegradationInfo)
     """
-    uid_flag = kwargs['models_strategy'] in ('all-param', 'all-nonparam')
+    uid_flag = kwargs["models_strategy"] in ("all-param", "all-nonparam")
     for uid, target_model in target_models.items():
         baseline_model = baseline_models.get(uid)
 
-        if baseline_model and round(min(baseline_model.r_square, target_model.r_square), 2) \
-                >= _MIN_CONFIDANCE_RATE:
+        if (
+            baseline_model
+            and round(min(baseline_model.r_square, target_model.r_square), 2)
+            >= _MIN_CONFIDANCE_RATE
+        ):
             change_result = detection_method(
-                uid, baseline_model, target_model,
-                baseline_profile=baseline_profile, target_profile=target_profile
+                uid,
+                baseline_model,
+                target_model,
+                baseline_profile=baseline_profile,
+                target_profile=target_profile,
             )
 
             yield DegradationInfo(
-                res=change_result.get('change_info', PerformanceChange.Unknown),
-                loc=re.sub(baseline_model.type + '$', '', uid) if uid_flag else uid,
+                res=change_result.get("change_info", PerformanceChange.Unknown),
+                loc=re.sub(baseline_model.type + "$", "", uid) if uid_flag else uid,
                 fb=baseline_model.type,
                 tt=target_model.type,
-                rd=change_result.get('rel_error', 0.0),
-                ct='r_square',
+                rd=change_result.get("rel_error", 0.0),
+                ct="r_square",
                 cr=round(min(baseline_model.r_square, target_model.r_square), 2),
-                pi=change_result.get('partial_intervals'),
+                pi=change_result.get("partial_intervals"),
             )

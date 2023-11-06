@@ -16,10 +16,11 @@ guidelines:
   <https://github.com/tfiedor/perun/tree/develop/tests> directory and should achieve a suitable
   amount of codecov coverage.
   
-  3. **Commit properly**, write meaningful commit messages, with first short line being short
-  description that can be included into the following template: "This commit will ___".
+  3. **Follow the project formatting** by utilising [Black](https://github.com/psf/black).
   
- 
+  4. **Commit properly**, write meaningful commit messages, with first short line being short
+  description that can be included into the following template: "This commit will ___".
+
 Before considering a merge of pull requests we want the feature branch to fulfill the following:
 
   1. The branch must be compilable (i.e. Travis checks are passing)

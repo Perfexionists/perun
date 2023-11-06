@@ -31,21 +31,34 @@ if TYPE_CHECKING:
     from perun.workload.generator import WorkloadGenerator
 
 from perun.utils import get_module
-from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
-    CollectStatus, PostprocessStatus, Job, MinorVersion
-from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, HandledSignals
+from perun.utils.structs import (
+    GeneratorSpec,
+    Unit,
+    Executable,
+    RunnerReport,
+    CollectStatus,
+    PostprocessStatus,
+    Job,
+    MinorVersion,
+)
+from perun.utils.helpers import (
+    COLLECT_PHASE_COLLECT,
+    COLLECT_PHASE_POSTPROCESS,
+    COLLECT_PHASE_CMD,
+    COLLECT_PHASE_WORKLOAD,
+    HandledSignals,
+)
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.utils.exceptions import SignalReceivedException
 
 
 def construct_job_matrix(
-        cmd: list[str],
-        args: list[str],
-        workload: list[str],
-        collector: list[str],
-        postprocessor: list[str],
-        **kwargs: Any
+    cmd: list[str],
+    args: list[str],
+    workload: list[str],
+    collector: list[str],
+    postprocessor: list[str],
+    **kwargs: Any,
 ) -> tuple[dict[str, dict[str, list[Job]]], int]:
     """Constructs the job matrix represented as dictionary.
 
@@ -75,6 +88,7 @@ def construct_job_matrix(
     :param dict kwargs: additional parameters issued from the command line
     :returns dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
     """
+
     def construct_unit(unit: str, unit_type: str, **ukwargs: Any) -> Unit:
         """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
 
@@ -90,17 +104,19 @@ def construct_job_matrix(
         return Unit(unit, unit_param_dict)
 
     # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
-    collector_pairs = list(map(lambda c: construct_unit(c, 'collector', **kwargs), collector))
-    posts = list(map(lambda p: construct_unit(p, 'postprocessor', **kwargs), postprocessor))
+    collector_pairs = list(map(lambda c: construct_unit(c, "collector", **kwargs), collector))
+    posts = list(map(lambda p: construct_unit(p, "postprocessor", **kwargs), postprocessor))
 
     # Construct the actual job matrix
     matrix = {
         str(b): {
             str(w): [
-                Job(c, posts, Executable(b, a, w)) for c in collector_pairs for a in args or ['']
-                ] for w in workload
-            } for b in cmd
+                Job(c, posts, Executable(b, a, w)) for c in collector_pairs for a in args or [""]
+            ]
+            for w in workload
         }
+        for b in cmd
+    }
 
     # Count overall number of the jobs:
     number_of_jobs = 0
@@ -118,16 +134,16 @@ def load_job_info_from_config() -> dict[str, Any]:
     """
     local_config = pcs.local_config().data
 
-    if 'collectors' not in local_config.keys():
+    if "collectors" not in local_config.keys():
         log.error(
             "missing 'collectors' region in the local.yml\n\n"
             "Run `perun config edit` and fix the job matrix in order to collect the data."
             "For more information about job matrix see :doc:`jobs`."
         )
-    collectors = local_config['collectors']
-    postprocessors = local_config.get('postprocessors', [])
+    collectors = local_config["collectors"]
+    postprocessors = local_config.get("postprocessors", [])
 
-    if 'cmds' not in local_config.keys():
+    if "cmds" not in local_config.keys():
         log.error(
             "missing 'cmds' region in the local.yml\n\n"
             "Run `perun config edit` and fix the job matrix in order to collect the data."
@@ -135,17 +151,17 @@ def load_job_info_from_config() -> dict[str, Any]:
         )
 
     info = {
-        'cmd': local_config['cmds'],
-        'args': helpers.get_key_with_aliases(local_config, ('args', 'params'), default=[]),
-        'workload': local_config.get('workloads', ['']),
-        'postprocessor': [post.get('name', '') for post in postprocessors],
-        'collector': [collect.get('name', '') for collect in collectors],
-        'collector_params': {
-            collect.get('name', ''): collect.get('params', {}) for collect in collectors
-            },
-        'postprocessor_params': {
-            post.get('name', ''): post.get('params', {}) for post in postprocessors
-            }
+        "cmd": local_config["cmds"],
+        "args": helpers.get_key_with_aliases(local_config, ("args", "params"), default=[]),
+        "workload": local_config.get("workloads", [""]),
+        "postprocessor": [post.get("name", "") for post in postprocessors],
+        "collector": [collect.get("name", "") for collect in collectors],
+        "collector_params": {
+            collect.get("name", ""): collect.get("params", {}) for collect in collectors
+        },
+        "postprocessor_params": {
+            post.get("name", ""): post.get("params", {}) for post in postprocessors
+        },
     }
 
     return info
@@ -161,9 +177,9 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     :param RunnerReport report: collective report about the run of the phase
     :param str phase: name of the phase/function that is run
     """
-    phase_function: Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]] = getattr(
-        report.runner, phase, utils.create_empty_pass(report.ok_status)
-    )
+    phase_function: Callable[
+        ..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]
+    ] = getattr(report.runner, phase, utils.create_empty_pass(report.ok_status))
     runner_verb = report.runner_type[:-2]
     report.phase = phase
     try:
@@ -174,11 +190,13 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
         report.status = report.error_status
         report.exception = exc
         report.message = "error while {}{} phase: {}".format(
-            phase, ("_" + runner_verb)*(phase != runner_verb), str(exc)
+            phase, ("_" + runner_verb) * (phase != runner_verb), str(exc)
         )
 
 
-def check_integrity_of_runner(runner: types.ModuleType, runner_type: str, report: RunnerReport) -> None:
+def check_integrity_of_runner(
+    runner: types.ModuleType, runner_type: str, report: RunnerReport
+) -> None:
     """Checks that the runner has basic requirements of collectors and postprocessor.
 
     This function warns user that some expected conventions were not fulfilled. In particular,
@@ -190,17 +208,13 @@ def check_integrity_of_runner(runner: types.ModuleType, runner_type: str, report
     :param str runner_type: string name of the runner (the run function is derived from this)
     :param RunnerReport report: report of the collection phase
     """
-    runner_name = runner.__name__.split('.')[-2]
-    if 'profile' not in report.kwargs.keys() and report.is_ok():
-        log.warn("{} {} does not return any profile".format(
-            runner_name, runner_type
-        ))
+    runner_name = runner.__name__.split(".")[-2]
+    if "profile" not in report.kwargs.keys() and report.is_ok():
+        log.warn("{} {} does not return any profile".format(runner_name, runner_type))
 
     runner_verb = runner_type[:-2]
     if not getattr(runner, runner_verb, None):
-        log.warn("{} is missing {}() function".format(
-            runner_name, runner_verb
-        ))
+        log.warn("{} is missing {}() function".format(runner_name, runner_verb))
 
 
 def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any) -> None:
@@ -209,15 +223,15 @@ def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any) -> None:
     :param RunnerReport status_report: the collection report object
     :param kwargs: additional parameters as supplied by the HandledSignals CM
     """
-    exc = kwargs['exc_val']
+    exc = kwargs["exc_val"]
     if isinstance(exc, SignalReceivedException):
-        log.warn('Received signal: {}, safe termination in process'.format(exc.signum))
+        log.warn("Received signal: {}, safe termination in process".format(exc.signum))
         status_report.status = status_report.error_status
         status_report.exception = exc
-        status_report.message = "received signal during teardown() phase: {} ({})" .format(
+        status_report.message = "received signal during teardown() phase: {} ({})".format(
             exc.signum, str(exc)
         )
-    run_phase_function(status_report, 'teardown')
+    run_phase_function(status_report, "teardown")
 
 
 def runner_signal_handler(signum: int, frame: Any) -> None:
@@ -234,7 +248,7 @@ def runner_signal_handler(signum: int, frame: Any) -> None:
 
 
 def run_all_phases_for(
-        runner: types.ModuleType, runner_type: str, runner_params: dict[str, Any]
+    runner: types.ModuleType, runner_type: str, runner_params: dict[str, Any]
 ) -> tuple[RunnerReport, dict[str, Any]]:
     """Run all the phases (before, runner_type, after) for given params.
 
@@ -252,32 +266,34 @@ def run_all_phases_for(
     """
     runner_verb = runner_type[:-2]
     # Create immutable list of resource that should hold even in case of problems
-    runner_params['opened_resources'] = []
+    runner_params["opened_resources"] = []
 
     report = RunnerReport(runner, runner_type, runner_params)
 
     with HandledSignals(
-            signal.SIGINT, signal.SIGTERM, signal.SIGQUIT, handler=runner_signal_handler,
-            callback=runner_teardown_handler, callback_args=[report]
+        signal.SIGINT,
+        signal.SIGTERM,
+        signal.SIGQUIT,
+        handler=runner_signal_handler,
+        callback=runner_teardown_handler,
+        callback_args=[report],
     ):
-        for phase in ['before', runner_verb, 'after']:
+        for phase in ["before", runner_verb, "after"]:
             run_phase_function(report, phase)
 
             if not report.is_ok():
                 break
 
             # Run the optimizations
-            optimizations.optimize(
-                runner_type, phase, **report.kwargs
-            )
+            optimizations.optimize(runner_type, phase, **report.kwargs)
 
     check_integrity_of_runner(runner, runner_type, report)
 
-    return report, report.kwargs.get('profile', {})
+    return report, report.kwargs.get("profile", {})
 
 
 @log.print_elapsed_time
-@decorators.phase_function('collect')
+@decorators.phase_function("collect")
 def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, Any]]:
     """Run the job of collector of the given name.
 
@@ -288,24 +304,23 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     :param Job job: additional information about the running job
     :returns (int, dict): status of the collection, generated profile
     """
-    log.print_current_phase(
-        "Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT
-    )
+    log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
 
     try:
-        collector_module = get_module(f'perun.collect.{collector.name}.run')
+        collector_module = get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
         log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dictionaries(job._asdict(), collector.params)
-    collection_report, prof = run_all_phases_for(collector_module, 'collector', job_params)
+    collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
         log.error(
             f"while collecting by {collector.name}: {collection_report.message}",
-            recoverable=True, raised_exception=collection_report.exception
+            recoverable=True,
+            raised_exception=collection_report.exception,
         )
     else:
         log.info(f"Successfully collected data from {job.executable.cmd}")
@@ -313,7 +328,9 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     return cast(CollectStatus, collection_report.status), prof
 
 
-def run_collector_from_cli_context(ctx: click.Context, collector_name: str, collector_params: dict[str, Any]) -> None:
+def run_collector_from_cli_context(
+    ctx: click.Context, collector_name: str, collector_params: dict[str, Any]
+) -> None:
     """Runs the collector according to the given cli context.
 
     This is used as a wrapper for calls from various collector modules. This was extracted,
@@ -323,14 +340,12 @@ def run_collector_from_cli_context(ctx: click.Context, collector_name: str, coll
     :param str collector_name: name of the collector that will be run
     :param dict collector_params: dictionary with collector params
     """
-    cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
-    minor_versions = ctx.obj['minor_version_list']
-    collector_params.update(ctx.obj['params'])
+    cmd, args, workload = ctx.obj["cmd"], ctx.obj["args"], ctx.obj["workload"]
+    minor_versions = ctx.obj["minor_version_list"]
+    collector_params.update(ctx.obj["params"])
     run_params = {
-        'collector_params': {
-            collector_name: collector_params
-        },
-        'profile_name': ctx.obj['profile_name']
+        "collector_params": {collector_name: collector_params},
+        "profile_name": ctx.obj["profile_name"],
     }
     collect_status = run_single_job(
         cmd, args, workload, [collector_name], [], minor_versions, **run_params
@@ -340,8 +355,10 @@ def run_collector_from_cli_context(ctx: click.Context, collector_name: str, coll
 
 
 @log.print_elapsed_time
-@decorators.phase_function('postprocess')
-def run_postprocessor(postprocessor: Unit, job: Job, prof: dict[str, Any]) -> tuple[PostprocessStatus, dict[str, Any]]:
+@decorators.phase_function("postprocess")
+def run_postprocessor(
+    postprocessor: Unit, job: Job, prof: dict[str, Any]
+) -> tuple[PostprocessStatus, dict[str, Any]]:
     """Run the job of postprocess of the given name.
 
     Tries to look up the module containing the postprocessor specified by the
@@ -358,19 +375,23 @@ def run_postprocessor(postprocessor: Unit, job: Job, prof: dict[str, Any]) -> tu
     )
 
     try:
-        postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
+        postprocessor_module = get_module("perun.postprocess.{0}.run".format(postprocessor.name))
     except ImportError:
-        log.error("{} postprocessor does not exist".format(postprocessor.name), recoverable=True)
+        log.error(
+            "{} postprocessor does not exist".format(postprocessor.name),
+            recoverable=True,
+        )
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)
-    postprocess_report, prof = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
+    job_params = utils.merge_dict_range(job._asdict(), {"profile": prof}, postprocessor.params)
+    postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:
-        log.error("while postprocessing by {}: {}".format(
-            postprocessor.name, postprocess_report.message
-        ), recoverable=True)
+        log.error(
+            "while postprocessing by {}: {}".format(postprocessor.name, postprocess_report.message),
+            recoverable=True,
+        )
     else:
         log.info("Successfully postprocessed data by {}".format(postprocessor.name))
 
@@ -393,7 +414,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
-        dst = prof.get('origin', vcs.get_minor_head())
+        dst = prof.get("origin", vcs.get_minor_head())
         commands.add([full_profile_path], dst, keep_profile=False)
     else:
         # Else we register the profile in pending index
@@ -401,7 +422,10 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
 
 
 def run_postprocessor_on_profile(
-        prof: Profile, postprocessor_name: str, postprocessor_params: dict[str, Any], skip_store: bool = False
+    prof: Profile,
+    postprocessor_name: str,
+    postprocessor_params: dict[str, Any],
+    skip_store: bool = False,
 ) -> tuple[PostprocessStatus, Profile]:
     """Run the job of the postprocessor according to the given profile.
 
@@ -427,8 +451,8 @@ def run_postprocessor_on_profile(
 
 
 @log.print_elapsed_time
-@decorators.phase_function('prerun')
-def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
+@decorators.phase_function("prerun")
+def run_prephase_commands(phase: str, phase_colour: str = "white") -> None:
     """Runs the phase before the actual collection of the methods
 
     This command first retrieves the phase from the configuration, and runs
@@ -440,7 +464,7 @@ def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
     :param str phase: name of the phase commands
     :param str phase_colour: colour for the printed phase
     """
-    phase_key = ".".join(["execute", phase]) if not phase.startswith('execute') else phase
+    phase_key = ".".join(["execute", phase]) if not phase.startswith("execute") else phase
     cmds = pcs.local_config().safe_get(phase_key, [])
     if cmds:
         log.cprint("Running '{}' phase".format(phase), phase_colour)
@@ -451,15 +475,17 @@ def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
             error_command = str(exception.cmd)
             error_code = exception.returncode
             error_output = exception.output
-            log.error("error during {} phase while running '{}' exited with: {} ({})".format(
-                phase, error_command, error_code, error_output
-            ))
+            log.error(
+                "error during {} phase while running '{}' exited with: {} ({})".format(
+                    phase, error_command, error_code, error_output
+                )
+            )
 
 
 @log.print_elapsed_time
-@decorators.phase_function('batch job run')
+@decorators.phase_function("batch job run")
 def generate_jobs_on_current_working_dir(
-        job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+    job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
 ) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """Runs the batch of jobs on current state of the VCS.
 
@@ -483,7 +509,7 @@ def generate_jobs_on_current_working_dir(
             generator: Type[WorkloadGenerator]
             params: dict[str, Any]
             generator, params = workload_generators_specs.get(
-                workload, GeneratorSpec(SingletonGenerator, {'value': workload})
+                workload, GeneratorSpec(SingletonGenerator, {"value": workload})
             )
             for job in jobs_per_workload:
                 log.print_job_progress(number_of_jobs)
@@ -510,9 +536,11 @@ def generate_jobs_on_current_working_dir(
 
 
 @log.print_elapsed_time
-@decorators.phase_function('overall profiling')
+@decorators.phase_function("overall profiling")
 def generate_jobs(
-        minor_version_list: list[MinorVersion], job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+    minor_version_list: list[MinorVersion],
+    job_matrix: dict[str, dict[str, list[Job]]],
+    number_of_jobs: int,
 ) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """
     :param list minor_version_list: list of MinorVersion info
@@ -522,14 +550,16 @@ def generate_jobs(
     with vcs.CleanState():
         for minor_version in minor_version_list:
             vcs.checkout(minor_version.checksum)
-            run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
+            run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
             yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
 @log.print_elapsed_time
-@decorators.phase_function('overall profiling')
+@decorators.phase_function("overall profiling")
 def generate_jobs_with_history(
-        minor_version_list: list[MinorVersion], job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+    minor_version_list: list[MinorVersion],
+    job_matrix: dict[str, dict[str, list[Job]]],
+    number_of_jobs: int,
 ) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """
     :param list minor_version_list: list of MinorVersion info
@@ -543,20 +573,20 @@ def generate_jobs_with_history(
                 log.newline()
                 history.finish_minor_version(minor_version, [])
                 vcs.checkout(minor_version.checksum)
-                run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
+                run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
                 yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 log.newline()
                 history.flush(with_border=True)
 
 
 def generate_profiles_for(
-        cmd: list[str],
-        args: list[str],
-        workload: list[str],
-        collector: list[str],
-        postprocessor: list[str],
-        minor_version_list: list[MinorVersion],
-        **kwargs: Any
+    cmd: list[str],
+    args: list[str],
+    workload: list[str],
+    collector: list[str],
+    postprocessor: list[str],
+    minor_version_list: list[MinorVersion],
+    **kwargs: Any,
 ) -> Iterable[tuple[CollectStatus, Profile, str]]:
     """Helper generator, that takes job specification and continuously generates profiles
 
@@ -571,19 +601,21 @@ def generate_profiles_for(
     :param list minor_version_list: list of MinorVersion info
     :param dict kwargs: dictionary of additional params for postprocessor and collector
     """
-    job_matrix, number_of_jobs = construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
+    job_matrix, number_of_jobs = construct_job_matrix(
+        cmd, args, workload, collector, postprocessor, **kwargs
+    )
     yield from generate_jobs(minor_version_list, job_matrix, number_of_jobs)
 
 
 def run_single_job(
-        cmd: list[str],
-        args: list[str],
-        workload: list[str],
-        collector: list[str],
-        postprocessor: list[str],
-        minor_version_list: list[MinorVersion],
-        with_history: bool = False,
-        **kwargs: Any
+    cmd: list[str],
+    args: list[str],
+    workload: list[str],
+    collector: list[str],
+    postprocessor: list[str],
+    minor_version_list: list[MinorVersion],
+    with_history: bool = False,
+    **kwargs: Any,
 ) -> CollectStatus:
     """
     :param list cmd: list of commands that will be run
@@ -597,18 +629,21 @@ def run_single_job(
     :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
         of collections or postprocessing failed
     """
-    job_matrix, number_of_jobs = \
-        construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
+    job_matrix, number_of_jobs = construct_job_matrix(
+        cmd, args, workload, collector, postprocessor, **kwargs
+    )
     generator_function = generate_jobs_with_history if with_history else generate_jobs
     status = CollectStatus.OK
     finished_jobs = 0
     for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
-        store_generated_profile(prof, job, kwargs.get('profile_name'))
+        store_generated_profile(prof, job, kwargs.get("profile_name"))
         finished_jobs += 1
     return status if finished_jobs > 0 else CollectStatus.ERROR
 
 
-def run_matrix_job(minor_version_list: list[MinorVersion], with_history: bool = False) -> CollectStatus:
+def run_matrix_job(
+    minor_version_list: list[MinorVersion], with_history: bool = False
+) -> CollectStatus:
     """
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object

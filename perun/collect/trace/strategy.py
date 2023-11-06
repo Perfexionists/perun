@@ -20,7 +20,7 @@ import perun.utils as utils
 
 # TODO: add test to check the existence of specified probes (needs cross-comparison)
 def extract_configuration(engine, probes):
-    """ Handles the specifics for each strategy.
+    """Handles the specifics for each strategy.
 
     The custom strategy - only the user specified probes are used and no automated extraction
     or pairing of symbols is performed.
@@ -38,8 +38,11 @@ def extract_configuration(engine, probes):
 
     # Do some strategy specific actions (e.g. extracting symbols)
     extracted_func, extracted_usdt = _extract_strategy_specifics(engine, probes)
-    WATCH_DOG.debug("Number of extracted function probes: '{}', usdt probes: '{}'"
-                    .format(len(extracted_func), len(extracted_usdt)))
+    WATCH_DOG.debug(
+        "Number of extracted function probes: '{}', usdt probes: '{}'".format(
+            len(extracted_func), len(extracted_usdt)
+        )
+    )
 
     # Create one dictionary of function probes specification
     extracted_func.update(probes.user_func)
@@ -50,13 +53,13 @@ def extract_configuration(engine, probes):
         extracted_usdt.update(probes.usdt)
         # We also need to do some automated pairing of usdt rules
         probes.usdt = _pair_rules(extracted_usdt)
-        probes.usdt_reversed = probes.usdt.pop('#pairs_reversed#')
+        probes.usdt_reversed = probes.usdt.pop("#pairs_reversed#")
 
     WATCH_DOG.info("Configuration built successfully")
 
 
 def _extract_strategy_specifics(engine, probes):
-    """ Handles specific operations related to various strategies such as extracting function
+    """Handles specific operations related to various strategies such as extracting function
     and USDT probe symbols.
 
     :param CollectEngine engine: the collection engine object
@@ -75,38 +78,33 @@ def _extract_strategy_specifics(engine, probes):
 
 
 def _pair_rules(usdt_probes):
-    """ Pairs the rules according to convention:
-     - rule names with ';' serving as a delimiter between two probes, which should be paired
-       as a starting and ending probe
-     - rules are paired according to their endings:
-        <name>, <name>begin, <name>entry,  <name>start,  <name>create,  <name>construct
-                <name>end,   <name>return, <name>finish, <name>destroy, <name>deconstruct.
-     - the pairing algorithm first tries to pair the exact combination (e.g. begin, end) and if
-       such exact combination is not found, then tries to pair rules among other combinations
+    """Pairs the rules according to convention:
+    - rule names with ';' serving as a delimiter between two probes, which should be paired
+      as a starting and ending probe
+    - rules are paired according to their endings:
+       <name>, <name>begin, <name>entry,  <name>start,  <name>create,  <name>construct
+               <name>end,   <name>return, <name>finish, <name>destroy, <name>deconstruct.
+    - the pairing algorithm first tries to pair the exact combination (e.g. begin, end) and if
+      such exact combination is not found, then tries to pair rules among other combinations
 
-     :param dict usdt_probes: the collection of USDT probes that should be paired
+    :param dict usdt_probes: the collection of USDT probes that should be paired
 
-     :return dict: a new USDT probe collection with removed paired probes and updated 'pair' value
-                   for every probe (the probe is paired with itself in case no paired rule is found)
+    :return dict: a new USDT probe collection with removed paired probes and updated 'pair' value
+                  for every probe (the probe is paired with itself in case no paired rule is found)
     """
     # Add reverse mapping for paired probes
-    result = {
-        '#pairs_reversed#': {}
-    }
+    result = {"#pairs_reversed#": {}}
 
     # Direct suffix pairs that should be paired
     suffix_pairs = {
-        'begin': 'end',
-        'entry': 'return',
-        'start': 'finish',
-        'create': 'destroy',
-        'construct': 'deconstruct'
+        "begin": "end",
+        "entry": "return",
+        "start": "finish",
+        "create": "destroy",
+        "construct": "deconstruct",
     }
     # Related suffixes that could still be paired together
-    related = (
-        ['end', 'return', 'finish'],
-        ['destroy', 'deconstruct']
-    )
+    related = (["end", "return", "finish"], ["destroy", "deconstruct"])
 
     # Classify the probes into manually delimited, beginning and ending probes (based on suffixes)
     delimited, beginnings, endings = _classify_usdt_probes(usdt_probes, suffix_pairs)
@@ -114,10 +112,10 @@ def _pair_rules(usdt_probes):
     # First process the delimited probes
     for prb_name, (prb_conf, delimiter) in delimited.items():
         # The key is the same as name
-        prb1, prb2 = prb_conf['name'][:delimiter], prb_conf['name'][delimiter + 1:]
-        prb_conf['name'] = prb1
-        prb_conf['pair'] = prb2
-        result['#pairs_reversed#'][prb2] = prb1
+        prb1, prb2 = prb_conf["name"][:delimiter], prb_conf["name"][delimiter + 1 :]
+        prb_conf["name"] = prb1
+        prb_conf["pair"] = prb2
+        result["#pairs_reversed#"][prb2] = prb1
         result[prb1] = prb_conf
 
     # Process the probes without pairing hints
@@ -138,7 +136,9 @@ def _pair_rules(usdt_probes):
             pairs = _pair_suffixes(b_suffixes, e_suffixes, lambda x: [suffix_pairs[x]])
             # All proper pairs were created, try to pair the rest using the related combinations
             pairs += _pair_suffixes(
-                b_suffixes, e_suffixes, lambda x: related[0] if x in related[0] else related[1]
+                b_suffixes,
+                e_suffixes,
+                lambda x: related[0] if x in related[0] else related[1],
             )
             for pair in pairs:
                 _add_paired_probe(prb_name + pair[0], prb_name + pair[1], usdt_probes, result)
@@ -151,7 +151,7 @@ def _pair_rules(usdt_probes):
 
 
 def _classify_usdt_probes(usdt_probes, suffix_pairs):
-    """ Classifies the USDT probes into pairing groups:
+    """Classifies the USDT probes into pairing groups:
        - explicitly paired probes using the ; delimiter
        - probes with 'starting' suffixes specified in suffix pairs or without suffix
        - probes with 'ending' suffixes
@@ -164,7 +164,7 @@ def _classify_usdt_probes(usdt_probes, suffix_pairs):
     # Split the probes into group with and without delimiter ';'
     delimited, basic = dict(), dict()
     for prb_name, prb_conf in usdt_probes.items():
-        delimiter = prb_conf['name'].find(';')
+        delimiter = prb_conf["name"].find(";")
         if delimiter != -1:
             delimited[prb_name] = (prb_conf, delimiter)
         else:
@@ -177,12 +177,12 @@ def _classify_usdt_probes(usdt_probes, suffix_pairs):
         if not _check_suffix_of(prb_conf, suffix_pairs.values(), endings):
             if not _check_suffix_of(prb_conf, suffix_pairs.keys(), beginnings):
                 # Not starting nor ending suffix, treat as regular probe name
-                beginnings.setdefault(prb_conf['name'], [])
+                beginnings.setdefault(prb_conf["name"], [])
     return delimited, beginnings, endings
 
 
 def _check_suffix_of(usdt_probe, suffix_group, cls):
-    """ Checks if the probe name contains any suffix from the suffix group and if yes, classifies it
+    """Checks if the probe name contains any suffix from the suffix group and if yes, classifies it
     into the specified cls. Also stores the delimiter between the probe name and suffix, if any.
 
     :param dict usdt_probe: the given probe specification
@@ -191,10 +191,10 @@ def _check_suffix_of(usdt_probe, suffix_group, cls):
     """
     # Iterate the suffixes from suffix group and check if the probe name ends with one of them
     for suffix in suffix_group:
-        if usdt_probe['name'].lower().endswith(suffix):
-            name = usdt_probe['name'][:-len(suffix)]
+        if usdt_probe["name"].lower().endswith(suffix):
+            name = usdt_probe["name"][: -len(suffix)]
             # Store the delimiter if any
-            delimiter = ''
+            delimiter = ""
             while name[-1] in SUFFIX_DELIMITERS:
                 delimiter = name[-1] + delimiter
                 name = name[:-1]
@@ -204,7 +204,7 @@ def _check_suffix_of(usdt_probe, suffix_group, cls):
 
 
 def _pair_suffixes(b_suffixes, e_suffixes, pair_by):
-    """ Pairs the starting and ending suffixes of one probe according to the provided
+    """Pairs the starting and ending suffixes of one probe according to the provided
     pairing function. Successfully paired suffixes are removed from the suffix lists.
 
     :param list b_suffixes: the list of beginning suffixes associated with the probe
@@ -215,10 +215,10 @@ def _pair_suffixes(b_suffixes, e_suffixes, pair_by):
     """
     # Check if the probe has matching starting and ending suffixes
     pairs = []
-    for (b_suffix, b_delimiter) in list(b_suffixes):
+    for b_suffix, b_delimiter in list(b_suffixes):
         pair_suffixes = pair_by(b_suffix.lower())
         # Can't use simple 'in' - we need case insensitive comparison and case sensitive result
-        for (e_suffix, e_delimiter) in list(e_suffixes):
+        for e_suffix, e_delimiter in list(e_suffixes):
             if e_suffix.lower() in pair_suffixes:
                 b_suffixes.remove((b_suffix, b_delimiter))
                 e_suffixes.remove((e_suffix, e_delimiter))
@@ -229,32 +229,33 @@ def _pair_suffixes(b_suffixes, e_suffixes, pair_by):
 
 # TODO: Allow multiple pairs (needs advanced processing of sampling across all the pairs)
 def _add_paired_probe(probe_start, probe_end, usdt_probes, result):
-    """ Add paired rule to the resulting probe dictionary.
+    """Add paired rule to the resulting probe dictionary.
 
     :param str probe_start: the starting probe name
     :param str probe_end: the paired ending probe name
     :param dict usdt_probes: the probes dictionary
     :param dict result: the new dictionary of USDT probes
     """
+
     def is_unique(probe_name):
-        """ A helper function for determining if the given probe name is not already contained
+        """A helper function for determining if the given probe name is not already contained
         in the resulting dictionary or if it has not been already removed.
 
         :param str probe_name: the name of the probe to check
 
         :return bool: specifies if the probe is indeed unique
         """
-        return probe_name not in result and probe_name not in result['#pairs_reversed#']
+        return probe_name not in result and probe_name not in result["#pairs_reversed#"]
 
     # Insert the created pair if both probes are unique (multiple pairing problem)
     if is_unique(probe_start) and is_unique(probe_end):
         probe_start, probe_end = usdt_probes[probe_start], usdt_probes[probe_end]
-        sampling = min(probe_start['sample'], probe_end['sample'])
-        probe_start['pair'] = probe_end['name']
-        probe_start['sample'] = sampling
+        sampling = min(probe_start["sample"], probe_end["sample"])
+        probe_start["pair"] = probe_end["name"]
+        probe_start["sample"] = sampling
         # Insert the paired probe and the new probe specification into the result
-        result['#pairs_reversed#'][probe_end['name']] = probe_start['name']
-        result[probe_start['name']] = probe_start
+        result["#pairs_reversed#"][probe_end["name"]] = probe_start["name"]
+        result[probe_start["name"]] = probe_start
     else:
         # The probes are not unique, do the single insertion
         _add_single_probe(probe_start, usdt_probes, result)
@@ -262,7 +263,7 @@ def _add_paired_probe(probe_start, probe_end, usdt_probes, result):
 
 
 def _add_suffix_probes(name, suffixes, usdt_probes, result):
-    """ Add USDT probe rules created from name and suffixes as non-paired rules
+    """Add USDT probe rules created from name and suffixes as non-paired rules
 
     :param str name: the base name of the probe
     :param list suffixes: list of all the suffixes to add
@@ -271,23 +272,23 @@ def _add_suffix_probes(name, suffixes, usdt_probes, result):
     """
     if not suffixes:
         _add_single_probe(name, usdt_probes, result)
-    for (suffix, delimiter) in suffixes:
+    for suffix, delimiter in suffixes:
         # Build the proper name first
         full_name = name + delimiter + suffix
         _add_single_probe(full_name, usdt_probes, result)
 
 
 def _add_single_probe(name, usdt_probes, result):
-    """ Add non-paired USDT probe to the resulting probe collection.
+    """Add non-paired USDT probe to the resulting probe collection.
 
     :param str name: the probe name
     :param dict usdt_probes: the original probes dictionary
     :param dict result: the new USDT probe dictionary
     """
-    if name in usdt_probes and name not in result['#pairs_reversed#']:
-        usdt_probes[name]['pair'] = name
+    if name in usdt_probes and name not in result["#pairs_reversed#"]:
+        usdt_probes[name]["pair"] = name
         # Single probes do not support sampling
-        usdt_probes[name]['sample'] = 1
+        usdt_probes[name]["sample"] = 1
         result.setdefault(name, usdt_probes[name])
 
 
@@ -334,7 +335,8 @@ def _extract_usdt(engine, global_sampling):
     # Transform
     return {
         usdt: Probes.create_probe_record(usdt, ProbeType.USDT, lib=target, sample=global_sampling)
-        for target, target_usdt in usdt_probes.items() for usdt in target_usdt
+        for target, target_usdt in usdt_probes.items()
+        for usdt in target_usdt
     }
 
 
@@ -349,8 +351,9 @@ def _load_function_names(binary, only_user):
     # Extract user function symbols from the supplied binary
     awk_filter = '$2 == "T" || $2 == "t"' if only_user else '$2 == "T" || $2 == "W"'
     output, _ = utils.run_safely_external_command(
-        'nm -P {bin} | awk \'{filt} {{print $1}}\''.format(bin=binary, filt=awk_filter))
-    return output.decode('utf-8')
+        "nm -P {bin} | awk '{filt} {{print $1}}'".format(bin=binary, filt=awk_filter)
+    )
+    return output.decode("utf-8")
 
 
 def _filter_user_symbol(func):
@@ -365,10 +368,10 @@ def _filter_user_symbol(func):
         return False
     # Filter function that start with underscore and not with '_Z', which is used in mangled symbols
     flen = len(func)
-    if func[:2] == '__':
-        if func[:3] != '__Z' or flen < 4:
+    if func[:2] == "__":
+        if func[:3] != "__Z" or flen < 4:
             return False
     # Remove functions that are generated by the compiler
-    if '.' in func or func == '_start' or func == '_init':
+    if "." in func or func == "_start" or func == "_init":
         return False
     return True

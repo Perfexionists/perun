@@ -5,4 +5,4 @@ graphs is for faster localization of resource consumption hot spots and
 bottlenecks.
 """
 
-SUPPORTED_PROFILES = ['memory']
+SUPPORTED_PROFILES = ["memory"]

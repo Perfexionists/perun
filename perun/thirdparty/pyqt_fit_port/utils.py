@@ -173,7 +173,13 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         # names separated by whitespace and/or commas
         field_names = field_names.replace(",", " ").split()
     field_names = tuple(map(str, field_names))
-    forbidden_fields = {"__init__", "__slots__", "__new__", "__repr__", "__getnewargs__"}
+    forbidden_fields = {
+        "__init__",
+        "__slots__",
+        "__new__",
+        "__repr__",
+        "__getnewargs__",
+    }
     if rename:
         names = list(field_names)
         seen = set()
@@ -193,7 +199,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
     for name in (typename,) + field_names:
         if not all(c.isalnum() or c == "_" for c in name):
             raise ValueError(
-                f"Type names and field names can only contain alphanumeric characters "
+                "Type names and field names can only contain alphanumeric characters "
                 f"and underscores: {name}"
             )
         if _iskeyword(name):
@@ -251,9 +257,10 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         reprtxt=reprtxt,
     )
     for i, name in enumerate(field_names):
-        template += (
-            "        %s = _property(_itemgetter(%d), "
-            "doc='Alias for field number %d')\n" % (name, i, i)
+        template += "        %s = _property(_itemgetter(%d), doc='Alias for field number %d')\n" % (
+            name,
+            i,
+            i,
         )
     if verbose:
         print(template)

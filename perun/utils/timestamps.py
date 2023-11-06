@@ -18,7 +18,7 @@ def write_timestamp(file_handle: BinaryIO, timestamp: float) -> None:
     :param file file_handle: opened file handle
     :param float timestamp: timestamp we are writing to file
     """
-    binary_timestamp = struct.pack('<I', round(timestamp))
+    binary_timestamp = struct.pack("<I", round(timestamp))
     file_handle.write(binary_timestamp)
 
 
@@ -28,7 +28,7 @@ def read_timestamp_from_file(file_handle: BinaryIO) -> float:
     :returns int: timestamp
     """
     timestamp_bytes = file_handle.read(4)
-    return struct.unpack('<I', timestamp_bytes)[0]
+    return struct.unpack("<I", timestamp_bytes)[0]
 
 
 def timestamp_to_str(timestamp: float) -> str:

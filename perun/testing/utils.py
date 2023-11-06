@@ -20,7 +20,9 @@ def load_profilename(prof_directory: str, prof_filename: str) -> str:
     :param prof_directory: directory, where profile is
     :param prof_filename: name of the profile
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], '..', '..', 'tests', 'profiles', prof_directory)
+    pool_path = os.path.join(
+        os.path.split(__file__)[0], "..", "..", "tests", "profiles", prof_directory
+    )
     return os.path.join(pool_path, prof_filename)
 
 
@@ -33,7 +35,9 @@ def load_profile(prof_directory: str, prof_filename: str) -> Profile:
     """
     # We fuck the check here
     return store.load_profile_from_file(
-        load_profilename(prof_directory, prof_filename), is_raw_profile=True, unsafe_load=True
+        load_profilename(prof_directory, prof_filename),
+        is_raw_profile=True,
+        unsafe_load=True,
     )
 
 
@@ -43,7 +47,7 @@ def index_filter(file: str) -> bool:
     :param str file: name of the file
     :return: true if the file is not index
     """
-    return file != '.index'
+    return file != ".index"
 
 
 def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: list[str]) -> None:
@@ -53,7 +57,7 @@ def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: lis
     :param str pcs_path: path to PCS
     :param list untracked_profiles: list of untracked profiles to be added to repo
     """
-    jobs_dir = os.path.join(pcs_path, 'jobs')
+    jobs_dir = os.path.join(pcs_path, "jobs")
     for valid_profile in untracked_profiles:
         shutil.copy2(valid_profile, jobs_dir)
 
@@ -70,15 +74,17 @@ def prepare_profile(dest_dir: str, profile: str, origin: str) -> str:
     # Prepare origin for the current version
     copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
     # We skip the check if copied_filename exists, it will fuck the tests if it somehow does not
-    copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True, unsafe_load=True)
-    copied_profile['origin'] = origin
+    copied_profile = store.load_profile_from_file(
+        copied_filename, is_raw_profile=True, unsafe_load=True
+    )
+    copied_profile["origin"] = origin
     streams.store_json(copied_profile.serialize(), copied_filename)
     shutil.copystat(profile, copied_filename)
     return copied_filename
 
 
 def exists_profile_in_index_such_that(
-        index_handle: BinaryIO, pred: Callable[[BasicIndexEntry], bool]
+    index_handle: BinaryIO, pred: Callable[[BasicIndexEntry], bool]
 ) -> bool:
     """Helper assert to check, if there exists any profile in index such that pred holds.
 
@@ -100,10 +106,10 @@ def open_index(pcs_path: str, minor_version: str) -> BinaryIO:
     :param str minor_version: sha minor version representation
     """
     assert store.is_sha1(minor_version)
-    object_dir_path = os.path.join(pcs_path, 'objects')
+    object_dir_path = os.path.join(pcs_path, "objects")
 
     _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
-    return open(minor_version_index, 'rb+')
+    return open(minor_version_index, "rb+")
 
 
 def count_contents_on_path(path: str) -> tuple[int, int]:
@@ -133,7 +139,7 @@ def compare_results(expected: float, actual: float, eps: float = 0.0001) -> None
 
 
 def generate_models_by_uid(
-        profile: Profile, value: str, uid_sequence: list[str], key: str = 'model'
+    profile: Profile, value: str, uid_sequence: list[str], key: str = "model"
 ) -> Iterable[list[dict[str, Any]]]:
     """Provides computed models results for each uid in the specified uid sequence.
 
@@ -143,6 +149,6 @@ def generate_models_by_uid(
     :param str key: the key for matching models
     :return: stream of lists with models dictionaries according to uid sequence
     """
-    models = profile['profile']['models']
+    models = profile["profile"]["models"]
     for uid in uid_sequence:
-        yield [m for m in models if m['uid'] == uid and m[key] == value]
+        yield [m for m in models if m["uid"] == uid and m[key] == value]

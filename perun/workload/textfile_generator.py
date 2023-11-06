@@ -56,9 +56,18 @@ class TextfileGenerator(WorkloadGenerator):
     :ivar bool randomize_rows: if set to true, then the lines in the file will be
         randomized. Otherwise they will always be maximal.
     """
-    def __init__(self, job: Job, min_lines: int, max_lines: int,
-                 step: int = 1, min_rows: int = 5, max_rows: int = 80,
-                 randomize_rows: bool = True, **kwargs: Any):
+
+    def __init__(
+        self,
+        job: Job,
+        min_lines: int,
+        max_lines: int,
+        step: int = 1,
+        min_rows: int = 5,
+        max_rows: int = 80,
+        randomize_rows: bool = True,
+        **kwargs: Any,
+    ):
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -91,9 +100,12 @@ class TextfileGenerator(WorkloadGenerator):
 
         :return: one random line of lorem ipsum dolor text
         """
-        line_len = random.randint(self.min_chars, self.max_chars + 1) \
-            if self.randomize_rows else self.max_chars
-        return self.faker.text(max_nb_chars=line_len).replace('\n', ' ')
+        line_len = (
+            random.randint(self.min_chars, self.max_chars + 1)
+            if self.randomize_rows
+            else self.max_chars
+        )
+        return self.faker.text(max_nb_chars=line_len).replace("\n", " ")
 
     def _get_file_content(self, file_len: int) -> str:
         """Generates text file content for the file of given length
@@ -101,9 +113,7 @@ class TextfileGenerator(WorkloadGenerator):
         :param int file_len: length of the generated file contents
         :return: content to be used in randomly generated file
         """
-        return "\n".join(
-            self._get_line() for _ in range(file_len)
-        )
+        return "\n".join(self._get_line() for _ in range(file_len))
 
     def _generate_next_workload(self) -> Iterable[tuple[str, dict[str, Any]]]:
         """Generates next file workload
@@ -113,7 +123,7 @@ class TextfileGenerator(WorkloadGenerator):
         for file_len in range(self.min_lines, self.max_lines + 1, self.step):
             fd, path = tempfile.mkstemp()
             try:
-                with os.fdopen(fd, 'w') as tmpfile:
+                with os.fdopen(fd, "w") as tmpfile:
                     tmpfile.write(self._get_file_content(file_len))
                 yield path, {}
             finally:

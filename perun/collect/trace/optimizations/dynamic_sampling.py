@@ -11,14 +11,14 @@ import math
 from perun.collect.trace.optimizations.structs import Complexity
 
 
-_SAMPLE_MAX = 2000000000     # Due to the type limitation of collection programs
-_THRESHOLD_EPS_RATIO = 0.1   # The threshold eps tolerance
-_CONSTANT_RATIO = 2          # The ratio applied to constant functions in the initial phase
-_LINEAR_RATIO = 1.5          # The ratio applied to linear functions in the initial phase
+_SAMPLE_MAX = 2000000000  # Due to the type limitation of collection programs
+_THRESHOLD_EPS_RATIO = 0.1  # The threshold eps tolerance
+_CONSTANT_RATIO = 2  # The ratio applied to constant functions in the initial phase
+_LINEAR_RATIO = 1.5  # The ratio applied to linear functions in the initial phase
 
 
 def set_sampling(call_graph, stats, step, threshold):
-    """ The Dynamic Sampling method.
+    """The Dynamic Sampling method.
 
     :param CallGraphResource call_graph: the CGR optimization resource
     :param dict stats: the Dynamic Stats dictionary
@@ -30,7 +30,7 @@ def set_sampling(call_graph, stats, step, threshold):
     threshold_eps = threshold * _THRESHOLD_EPS_RATIO
 
     if threshold == 0:
-        call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - {'main'})
+        call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - {"main"})
         return
 
     for depth, level in enumerate(call_graph.levels):
@@ -39,8 +39,8 @@ def set_sampling(call_graph, stats, step, threshold):
             # Default sampling according to the level
             func_sample = round(step**depth)
             if func in stats:
-                func_calls = stats[func]['sampled_count']
-                func_sample = stats[func]['sample']
+                func_calls = stats[func]["sampled_count"]
+                func_sample = stats[func]["sample"]
                 # The number of function calls is ok, keep the sampling value
                 if threshold - threshold_eps <= func_calls <= threshold + threshold_eps:
                     pass
@@ -50,11 +50,11 @@ def set_sampling(call_graph, stats, step, threshold):
                     # Normalize the value
                     func_sample = 1 if func_sample < 1 else func_sample
             else:
-                if cg_func['complexity'] == Complexity.CONSTANT.value:
+                if cg_func["complexity"] == Complexity.CONSTANT.value:
                     func_sample *= _CONSTANT_RATIO
-                elif cg_func['complexity'] == Complexity.LINEAR.value:
+                elif cg_func["complexity"] == Complexity.LINEAR.value:
                     func_sample *= _LINEAR_RATIO
             # Normalize the sampling
             if func_sample > _SAMPLE_MAX:
                 func_sample = _SAMPLE_MAX
-            cg_func['sample'] = func_sample
+            cg_func["sample"] = func_sample

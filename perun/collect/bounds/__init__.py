@@ -9,6 +9,4 @@ notation highlighting the main source of the complexity.
 """
 
 COLLECTOR_TYPE = "time"
-COLLECTOR_DEFAULT_UNITS = {
-    "bound": "iterations"
-}
+COLLECTOR_DEFAULT_UNITS = {"bound": "iterations"}

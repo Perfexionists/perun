@@ -57,13 +57,13 @@ def get_averages(profile: Profile) -> dict[str, float]:
     """
     data_frame = convert.resources_to_pandas_dataframe(profile)
     # Short fix for non-measured (static) profiles
-    if 'amount' not in data_frame:
-        data_frame['amount'] = 0
-    return data_frame.groupby('uid').mean(numeric_only=True).to_dict()['amount']
+    if "amount" not in data_frame:
+        data_frame["amount"] = 0
+    return data_frame.groupby("uid").mean(numeric_only=True).to_dict()["amount"]
 
 
 def average_amount_threshold(
-        baseline_profile: Profile, target_profile: Profile, **_: Any
+    baseline_profile: Profile, target_profile: Profile, **_: Any
 ) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
@@ -79,8 +79,8 @@ def average_amount_threshold(
     target_averages = get_averages(target_profile)
 
     # Fixme: Temporary solution ;)
-    unit = list(baseline_profile['header']['units'].values())[0]
-    resource_type = baseline_profile['header']['type']
+    unit = list(baseline_profile["header"]["units"].values())[0]
+    resource_type = baseline_profile["header"]["type"]
     for target_uid, target_average in target_averages.items():
         baseline_average = baseline_averages.get(target_uid, None)
         if baseline_average is not None:

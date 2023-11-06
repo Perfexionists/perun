@@ -5,4 +5,4 @@ by creating a series of averages, eventually medians, of different subsets of
 the full data set.
 """
 
-SUPPORTED_PROFILES = ['mixed|memory|time']
+SUPPORTED_PROFILES = ["mixed|memory|time"]

@@ -25,7 +25,7 @@ APPROX_ZERO: float = 0.000001
 
 
 def validate_dictionary_keys(
-        dictionary: dict[str, Any], required_keys: list[str], forbidden_keys: list[str]
+    dictionary: dict[str, Any], required_keys: list[str], forbidden_keys: list[str]
 ) -> None:
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
@@ -119,7 +119,7 @@ def sort_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], li
 
 
 def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.float64]:
-    """ Splits the interval defined by its edges to #steps points in a safe manner, i.e. no zero
+    """Splits the interval defined by its edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
     :param int or float start: the start of interval
@@ -163,10 +163,12 @@ def as_plot_y_dict(plot_y: Any) -> dict[str, Any]:
     :param object plot_y: object that contains plot_y data
     :return: dictionary with key 'plot_y' set to plot_y
     """
-    return {'plot_y': plot_y}
+    return {"plot_y": plot_y}
 
 
-def add_models_to_profile(profile: profiles.Profile, models: list[dict[str, Any]]) -> profiles.Profile:
+def add_models_to_profile(
+    profile: profiles.Profile, models: list[dict[str, Any]]
+) -> profiles.Profile:
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
@@ -175,8 +177,8 @@ def add_models_to_profile(profile: profiles.Profile, models: list[dict[str, Any]
     :return: method has no return value
     """
     # Store the results into the original profile
-    if 'models' not in profile.keys():
-        profile['models'] = models
+    if "models" not in profile.keys():
+        profile["models"] = models
     else:
-        profile['models'].extend(models)
+        profile["models"].extend(models)
     return profile

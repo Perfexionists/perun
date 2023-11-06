@@ -42,7 +42,10 @@ class StringGenerator(WorkloadGenerator):
     :ivar int max_len: maximal length of generated strings
     :ivar int step_len: increment of the lengths
     """
-    def __init__(self, job: Job, min_len: int, max_len: int, step_len: int = 1, **kwargs: Any) -> None:
+
+    def __init__(
+        self, job: Job, min_len: int, max_len: int, step_len: int = 1, **kwargs: Any
+    ) -> None:
         """Initializes the generator of string workloads
 
         :param Job job: job for which we are generating the workloads
@@ -62,8 +65,7 @@ class StringGenerator(WorkloadGenerator):
 
         :return: random string of length in interval (min, max)
         """
-        for str_len in range(self.min_len, self.max_len+1, self.step_len):
+        for str_len in range(self.min_len, self.max_len + 1, self.step_len):
             yield "".join(
-                random.choice(string.ascii_letters + string.digits)
-                for _ in range(str_len)
+                random.choice(string.ascii_letters + string.digits) for _ in range(str_len)
             ), {}

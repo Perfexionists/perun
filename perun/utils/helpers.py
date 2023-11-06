@@ -19,81 +19,81 @@ READ_CHUNK_SIZE = 1024
 
 # Other constants
 MAXIMAL_LINE_WIDTH = 60
-TEXT_ATTRS = 'none'
-TEXT_EMPH_COLOUR = 'green'
-TEXT_WARN_COLOUR = 'red'
+TEXT_ATTRS = "none"
+TEXT_EMPH_COLOUR = "green"
+TEXT_WARN_COLOUR = "red"
 AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Profile specific stuff
-SUPPORTED_PROFILE_TYPES = ['memory', 'mixed', 'time']
-PROFILE_MALFORMED = 'malformed'
+SUPPORTED_PROFILE_TYPES = ["memory", "mixed", "time"]
+PROFILE_MALFORMED = "malformed"
 PROFILE_TYPE_COLOURS = {
-    'time': 'blue',
-    'mixed': 'cyan',
-    'memory': 'white',
-    PROFILE_MALFORMED: 'red'
+    "time": "blue",
+    "mixed": "cyan",
+    "memory": "white",
+    PROFILE_MALFORMED: "red",
 }
-PROFILE_DELIMITER = '|'
+PROFILE_DELIMITER = "|"
 
-HEADER_ATTRS = 'underline'
-HEADER_COMMIT_COLOUR = 'green'
-HEADER_INFO_COLOUR = 'white'
-HEADER_SLASH_COLOUR = 'white'
+HEADER_ATTRS = "underline"
+HEADER_COMMIT_COLOUR = "green"
+HEADER_INFO_COLOUR = "white"
+HEADER_SLASH_COLOUR = "white"
 
-DESC_COMMIT_COLOUR = 'white'
-DESC_COMMIT_ATTRS = 'darkbold'
+DESC_COMMIT_COLOUR = "white"
+DESC_COMMIT_ATTRS = "darkbold"
 
 # Raw output specific thing
-RAW_KEY_COLOUR = 'magenta'
-RAW_ITEM_COLOUR = 'yellow'
-RAW_ATTRS = 'none'
+RAW_KEY_COLOUR = "magenta"
+RAW_ITEM_COLOUR = "yellow"
+RAW_ATTRS = "none"
 
 # Job specific
-COLLECT_PHASE_CMD = 'blue'
-COLLECT_PHASE_WORKLOAD = 'cyan'
-COLLECT_PHASE_COLLECT = 'magenta'
-COLLECT_PHASE_POSTPROCESS = 'yellow'
-COLLECT_PHASE_ERROR = 'red'
-COLLECT_PHASE_ATTRS = 'none'
-COLLECT_PHASE_ATTRS_HIGH = 'none'
+COLLECT_PHASE_CMD = "blue"
+COLLECT_PHASE_WORKLOAD = "cyan"
+COLLECT_PHASE_COLLECT = "magenta"
+COLLECT_PHASE_POSTPROCESS = "yellow"
+COLLECT_PHASE_ERROR = "red"
+COLLECT_PHASE_ATTRS = "none"
+COLLECT_PHASE_ATTRS_HIGH = "none"
 
 # Degradation specific
-CHANGE_CMD_COLOUR = 'magenta'
+CHANGE_CMD_COLOUR = "magenta"
 CHANGE_STRINGS = {
-    PerformanceChange.NotInBaseline: 'Not in Baseline',
-    PerformanceChange.TotalDegradation: 'Total Degradation',
-    PerformanceChange.SevereDegradation: 'Severe Degradation',
-    PerformanceChange.Degradation: 'Degradation',
-    PerformanceChange.MaybeDegradation: 'Maybe Degradation',
-    PerformanceChange.NoChange: 'No Change',
-    PerformanceChange.Unknown: 'Unknown',
-    PerformanceChange.MaybeOptimization: 'Maybe Optimization',
-    PerformanceChange.Optimization: 'Optimization',
-    PerformanceChange.SevereOptimization: 'Severe Optimization',
-    PerformanceChange.TotalOptimization: 'Total Optimization',
-    PerformanceChange.NotInTarget: 'Not in Target',
+    PerformanceChange.NotInBaseline: "Not in Baseline",
+    PerformanceChange.TotalDegradation: "Total Degradation",
+    PerformanceChange.SevereDegradation: "Severe Degradation",
+    PerformanceChange.Degradation: "Degradation",
+    PerformanceChange.MaybeDegradation: "Maybe Degradation",
+    PerformanceChange.NoChange: "No Change",
+    PerformanceChange.Unknown: "Unknown",
+    PerformanceChange.MaybeOptimization: "Maybe Optimization",
+    PerformanceChange.Optimization: "Optimization",
+    PerformanceChange.SevereOptimization: "Severe Optimization",
+    PerformanceChange.TotalOptimization: "Total Optimization",
+    PerformanceChange.NotInTarget: "Not in Target",
 }
 CHANGE_COLOURS = {
-    PerformanceChange.NotInBaseline: 'blue',
-    PerformanceChange.TotalDegradation: 'red',
-    PerformanceChange.SevereDegradation: 'red',
-    PerformanceChange.Degradation: 'red',
-    PerformanceChange.MaybeDegradation: 'yellow',
-    PerformanceChange.NoChange: 'white',
-    PerformanceChange.Unknown: 'grey',
-    PerformanceChange.MaybeOptimization: 'cyan',
-    PerformanceChange.Optimization: 'green',
-    PerformanceChange.SevereOptimization: 'green',
-    PerformanceChange.TotalOptimization: 'green',
-    PerformanceChange.NotInTarget: 'blue',
+    PerformanceChange.NotInBaseline: "blue",
+    PerformanceChange.TotalDegradation: "red",
+    PerformanceChange.SevereDegradation: "red",
+    PerformanceChange.Degradation: "red",
+    PerformanceChange.MaybeDegradation: "yellow",
+    PerformanceChange.NoChange: "white",
+    PerformanceChange.Unknown: "grey",
+    PerformanceChange.MaybeOptimization: "cyan",
+    PerformanceChange.Optimization: "green",
+    PerformanceChange.SevereOptimization: "green",
+    PerformanceChange.TotalOptimization: "green",
+    PerformanceChange.NotInTarget: "blue",
 }
 CHANGE_TYPE_COLOURS = {
-    'time': 'blue',
-    'mixed': 'cyan',
-    'memory': 'white',
+    "time": "blue",
+    "mixed": "cyan",
+    "memory": "white",
 }
-DEGRADATION_ICON = '-'
-OPTIMIZATION_ICON = '+'
+DEGRADATION_ICON = "-"
+OPTIMIZATION_ICON = "+"
 LINE_PARSING_REGEX = re.compile(
     r"(?P<location>.+)\s"
     r"PerformanceChange[.](?P<result>[A-Za-z]+)\s"
@@ -134,18 +134,24 @@ def uid_getter(uid: tuple[str, Any]) -> int:
     :return: the rank of the uid in the ordering
     """
     uid_priority = {
-        'bin': 0,
-        'file': 1, 'source': 1, 'package': 1,
-        'module': 2,
-        'class': 3, 'struct': 3, 'structure': 3,
-        'function': 4, 'func': 4, 'method': 4, 'procedure': 4,
-        'line': 5,
-        'instruction': 6
+        "bin": 0,
+        "file": 1,
+        "source": 1,
+        "package": 1,
+        "module": 2,
+        "class": 3,
+        "struct": 3,
+        "structure": 3,
+        "function": 4,
+        "func": 4,
+        "method": 4,
+        "procedure": 4,
+        "line": 5,
+        "instruction": 6,
     }
     max_value = max(uid_priority.values())
     return uid_priority.get(
-        uid[0],
-        int("".join(map(str, map(lambda x: x+max_value, map(ord, uid[0])))))
+        uid[0], int("".join(map(str, map(lambda x: x + max_value, map(ord, uid[0])))))
     )
 
 
@@ -155,13 +161,14 @@ class SuppressedExceptions:
 
     :ivar list exc: the list of exception classes that should be ignored
     """
+
     def __init__(self, *exception_list: type[Exception]) -> None:
         """
         :param exception_list: the exception classes to ignore
         """
         self.exc = exception_list
 
-    def __enter__(self) -> 'SuppressedExceptions':
+    def __enter__(self) -> "SuppressedExceptions":
         """Context manager entry sentinel, no set up needed
 
         :return object: the context manager class instance, shouldn't be needed
@@ -198,9 +205,7 @@ def format_counter_number(count: int, max_number: int) -> str:
     :param int max_number: the maximal number of counter
     :return:
     """
-    return "{:{decimal_width}d}".format(
-        count, decimal_width=len(str(max_number))
-    )
+    return "{:{decimal_width}d}".format(count, decimal_width=len(str(max_number)))
 
 
 class HandledSignals:
@@ -234,20 +239,21 @@ class HandledSignals:
     :ivar list old_handlers: the list of previous signal handlers
 
     """
+
     def __init__(self, *signals: int, **kwargs: Any) -> None:
         """
         :param signals: the identification of the handled signal, 'signal.SIG_' is recommended
         :param kwargs: additional properties of the context manager
         """
         self.signals = signals
-        self.handler = kwargs.get('handler', default_signal_handler)
-        self.handler_exc = kwargs.get('handler_exception', SignalReceivedException)
-        self.callback = kwargs.get('callback')
-        self.callback_args = kwargs.get('callback_args', [])
+        self.handler = kwargs.get("handler", default_signal_handler)
+        self.handler_exc = kwargs.get("handler_exception", SignalReceivedException)
+        self.callback = kwargs.get("callback")
+        self.callback_args = kwargs.get("callback_args", [])
         self.old_handlers: list[int | None | Callable[[int, Optional[types.FrameType]], Any]] = []
 
-    def __enter__(self) -> 'HandledSignals':
-        """ The CM entry sentinel, register the new signal handlers and store the previous ones.
+    def __enter__(self) -> "HandledSignals":
+        """The CM entry sentinel, register the new signal handlers and store the previous ones.
 
         :return object: the CM instance
         """
@@ -256,7 +262,7 @@ class HandledSignals:
         return self
 
     def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
-        """ The CM exit sentinel, perform the callback and reset the signal handlers.
+        """The CM exit sentinel, perform the callback and reset the signal handlers.
 
         :param type exc_type: the type of the exception
         :param exception exc_val: the value of the exception
@@ -309,11 +315,15 @@ def is_variable_len_dict(list_value: list[dict[Any, Any]]) -> bool:
     :return: true if list_value is variable length dictionary
     """
     return len(list_value) != 0 and all(
-        isinstance(v, dict) and set(v.keys()) == {'name', 'value'} for v in list_value
+        isinstance(v, dict) and set(v.keys()) == {"name", "value"} for v in list_value
     )
 
 
-def get_key_with_aliases(dictionary: dict[str, Any], key_aliases: Iterable[str], default: Optional[Any] = None) -> Any:
+def get_key_with_aliases(
+    dictionary: dict[str, Any],
+    key_aliases: Iterable[str],
+    default: Optional[Any] = None,
+) -> Any:
     """Safely returns the key in the dictionary that has several aliases.
 
     This function assures the backward compatibility with older profiles, after renaming the keys.
@@ -342,8 +352,8 @@ def escape_ansi(line: str) -> str:
     :param str line: line with ansi control characters
     :return: ansi control-free string
     """
-    ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
-    return ansi_escape.sub('', line)
+    ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
+    return ansi_escape.sub("", line)
 
 
 def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None) -> None:
@@ -355,7 +365,7 @@ def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None) -
     :param str touched_filename: filename that will be touched
     :param time times: access times of the file
     """
-    with open(touched_filename, 'a'):
+    with open(touched_filename, "a"):
         os.utime(touched_filename, times)
 
 
@@ -380,8 +390,9 @@ def path_to_subpaths(path: str) -> list[str]:
     :returns list: list of subpaths
     """
     components = path.split(os.sep)
-    return [os.sep + components[0]] + \
-           [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
+    return [os.sep + components[0]] + [
+        os.sep.join(components[:till]) for till in range(2, len(components) + 1)
+    ]
 
 
 def locate_perun_dir_on(path: str) -> str:
@@ -398,7 +409,7 @@ def locate_perun_dir_on(path: str) -> str:
     lookup_paths = path_to_subpaths(path)[::-1]
 
     for tested_path in lookup_paths:
-        if os.path.isdir(tested_path) and '.perun' in os.listdir(tested_path):
+        if os.path.isdir(tested_path) and ".perun" in os.listdir(tested_path):
             return tested_path
     raise NotPerunRepositoryException(path)
 

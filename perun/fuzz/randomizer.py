@@ -15,12 +15,14 @@ def random_repeats(repeats: int) -> Callable[[Any], Any]:
     :param int repeats: the upper bound of number of repeats
     :return: decorator that takes function and repeats its call up to @p repeats times
     """
+
     def inner_wrapper(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         """Inner wrapper
 
         :param function func: wrapped function
         :return: innermost wrapper
         """
+
         def innermost_wrapper(*args: Any, **kwargs: Any) -> None:
             """Innermost wrapper
 
@@ -29,8 +31,10 @@ def random_repeats(repeats: int) -> Callable[[Any], Any]:
             """
             for _ in range(rand_from_range(1, repeats)):
                 func(*args, **kwargs)
+
         innermost_wrapper.__doc__ = func.__doc__
         return innermost_wrapper
+
     return inner_wrapper
 
 
@@ -51,7 +55,7 @@ def rand_index(lst_len: int) -> int:
     :param int lst_len: length of the list
     :return int: random integer that represents valid index of element in list
     """
-    return rand_from_range(0, lst_len-1)
+    return rand_from_range(0, lst_len - 1)
 
 
 def rand_choice(lst: list[Any]) -> Any:
@@ -60,4 +64,4 @@ def rand_choice(lst: list[Any]) -> Any:
     :param list lst: the list from which the element will be selected
     :return: element of list on random index
     """
-    return lst[rand_from_range(0, len(lst)-1)]
+    return lst[rand_from_range(0, len(lst) - 1)]

@@ -30,30 +30,31 @@ def random_regex_replace(lines: list[str], pattern: str, repl: str) -> None:
     # pick random match
     if matches:
         picked_match = randomizer.rand_choice(matches)
-        lines[rand] = lines[rand][:picked_match.start()] + \
-            regex_pattern.sub(repl, lines[rand][picked_match.start():], 1)
+        lines[rand] = lines[rand][: picked_match.start()] + regex_pattern.sub(
+            repl, lines[rand][picked_match.start() :], 1
+        )
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_value(lines: list[str]) -> None:
     """**Rule D.3: Removed attribute value.**
 
-     * **Input**: <book id="bk106" pages="457">
-     * **Mutation**: <book id="bk106" pages="">
-     * **Description**: Removes random value of the attribute in the random line and tag.
-     * **Known Issues**: none
+    * **Input**: <book id="bk106" pages="457">
+    * **Mutation**: <book id="bk106" pages="">
+    * **Description**: Removes random value of the attribute in the random line and tag.
+    * **Known Issues**: none
     """
-    random_regex_replace(lines, r"\"\s*\S+\s*\"", "\"\"")
+    random_regex_replace(lines, r"\"\s*\S+\s*\"", '""')
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_name(lines: list[str]) -> None:
     """**Rule D.2: Remove attribute name.**
 
-     * **Input**: <book id="bk106" pages="457">
-     * **Mutation**: <book id="bk106" "457">
-     * **Description**: Removes name of the attribute in random tag in the random line.
-     * **Known Issues**: none
+    * **Input**: <book id="bk106" pages="457">
+    * **Mutation**: <book id="bk106" "457">
+    * **Description**: Removes name of the attribute in random tag in the random line.
+    * **Known Issues**: none
     """
     random_regex_replace(lines, r"\S*\s*=\s*(?P<quote>[\"|\'])", r"\g<quote>")
 
@@ -62,10 +63,10 @@ def remove_attribute_name(lines: list[str]) -> None:
 def remove_attribute(lines: list[str]) -> None:
     """**Rule D.1: Remove an attribute.**
 
-     * **Input**: <book id="bk106" pages="457">
-     * **Mutation**: <book id="bk106">
-     * **Description**: Selects random tag and removes a random attribute.
-     * **Known Issues**: none
+    * **Input**: <book id="bk106" pages="457">
+    * **Mutation**: <book id="bk106">
+    * **Description**: Selects random tag and removes a random attribute.
+    * **Known Issues**: none
     """
     random_regex_replace(lines, r"\S*\s*=\s*\"\s*\S*\s*\"", "")
 
@@ -74,10 +75,10 @@ def remove_attribute(lines: list[str]) -> None:
 def remove_tag(lines: list[str]) -> None:
     """**Rule D.4: Remove tag.**
 
-     * **Input**: <book id="bk106" pages="457">
-     * **Mutation**:
-     * **Description**: Removes a random tag.
-     * **Known Issues**: none
+    * **Input**: <book id="bk106" pages="457">
+    * **Mutation**:
+    * **Description**: Removes a random tag.
+    * **Known Issues**: none
     """
     random_regex_replace(lines, r"<[^>]*>", "")
 
@@ -86,5 +87,5 @@ FUZZING_METHODS = [
     (remove_attribute_value, "Remove random attribute value"),
     (remove_attribute_name, "Remove random attribute name"),
     (remove_attribute, "Remove random attribute"),
-    (remove_tag, "Remove random tag")
+    (remove_tag, "Remove random tag"),
 ]

@@ -51,6 +51,11 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
     import perun.collect.memory.run as memory_run
     import perun.collect.time.run as time_run
     import perun.collect.trace.run as trace_run
+
     return [
-        bounds_run.bounds, complexity_run.complexity, memory_run.memory, time_run.time, trace_run.trace
+        bounds_run.bounds,
+        complexity_run.complexity,
+        memory_run.memory,
+        time_run.time,
+        trace_run.trace,
     ]

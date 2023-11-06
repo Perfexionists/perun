@@ -36,10 +36,12 @@ class ClassificationMethod(Enum):
     PolynomialRegression = 3
 
 
-np.seterr(divide='ignore', invalid='ignore')
+np.seterr(divide="ignore", invalid="ignore")
 
 
-def create_filter_by_model(model_name: str) -> Callable[[dict[str, Any], dict[str, Any]], bool]:
+def create_filter_by_model(
+    model_name: str,
+) -> Callable[[dict[str, Any], dict[str, Any]], bool]:
     """Creates a filter w.r.t to given model_name
 
     Note this is to be used in get_filtered_best_models_of
@@ -47,6 +49,7 @@ def create_filter_by_model(model_name: str) -> Callable[[dict[str, Any], dict[st
     :param str model_name: name of the model, that will be filtered out
     :return: filter function that retrieves only models of given type
     """
+
     def filter_by_model(_: dict[str, Any], model: dict[str, Any]) -> bool:
         """Filters the models according to the model name
 
@@ -54,7 +57,8 @@ def create_filter_by_model(model_name: str) -> Callable[[dict[str, Any], dict[st
         :param dict model: model of given uid
         :return: true if the given model is of the given type
         """
-        return model['model'] == model_name
+        return model["model"] == model_name
+
     return filter_by_model
 
 
@@ -65,7 +69,7 @@ def filter_by_r_square(model_map: dict[str, Any], model: dict[str, Any]) -> bool
     :param dict model: model of given uid
     :return: filter function that retrieves only the best model w.r.t r_square
     """
-    return model_map[model['uid']].r_square < model['r_square']
+    return model_map[model["uid"]].r_square < model["r_square"]
 
 
 def create_model_record(model: dict[str, Any]) -> ModelRecord:
@@ -76,18 +80,20 @@ def create_model_record(model: dict[str, Any]) -> ModelRecord:
     :return ModelRecord: filled ModelRecord with model items
     """
     return ModelRecord(
-        model['model'], model['r_square'],
-        model['coeffs'][0]['value'] if model.get('coeffs') else model['bucket_stats'],
-        model['coeffs'][1]['value'] if model.get('coeffs') else None,
-        model['coeffs'][2]['value'] if len(model.get('coeffs', [])) == 3 else 0,
-        model['x_start'], model['x_end'],
+        model["model"],
+        model["r_square"],
+        model["coeffs"][0]["value"] if model.get("coeffs") else model["bucket_stats"],
+        model["coeffs"][1]["value"] if model.get("coeffs") else None,
+        model["coeffs"][2]["value"] if len(model.get("coeffs", [])) == 3 else 0,
+        model["x_start"],
+        model["x_end"],
     )
 
 
 def get_filtered_best_models_of(
-        profile: Profile,
-        group: str,
-        model_filter: Optional[Callable[[dict[str, Any], dict[str, Any]], bool]] = filter_by_r_square
+    profile: Profile,
+    group: str,
+    model_filter: Optional[Callable[[dict[str, Any], dict[str, Any]], bool]] = filter_by_r_square,
 ) -> dict[str, ModelRecord]:
     """
     This function filters the models from the given profiles according to the given specification.
@@ -109,16 +115,16 @@ def get_filtered_best_models_of(
     if model_filter is not None:
         best_model_map = {
             uid: ModelRecord("", 0.0, 0.0, 0.0, 0, 0, 0.0)
-            for uid in query.unique_model_values_of(profile, 'uid')
+            for uid in query.unique_model_values_of(profile, "uid")
         }
         for _, model in profile.all_models(group=group):
             if model_filter(best_model_map, model):
-                best_model_map[model['uid']] = create_model_record(model)
+                best_model_map[model["uid"]] = create_model_record(model)
         return {k: v for k, v in best_model_map.items() if v.r_square != 0.0}
 
     best_model_map = {}
     for _, model in profile.all_models(group=group):
-        best_model_map[model['uid'] + model.get('model')] = create_model_record(model)
+        best_model_map[model["uid"] + model.get("model")] = create_model_record(model)
     return best_model_map
 
 
@@ -132,30 +138,38 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
     :returns: np_array (x-coordinates, y-coordinates)
     """
     model_handler = regression_models._MODELS[model.type]
-    plotter = model_handler['transformations']['plot_model']
+    plotter = model_handler["transformations"]["plot_model"]
 
-    array_x_pts = plotter['model_x'](
+    array_x_pts = plotter["model_x"](
         model.x_start, model.x_end, SAMPLES, transform_by=perun.utils.helpers.identity
     )
 
-    if model.type == 'quadratic':
-        array_y_pts = plotter['model_y'](
-            array_x_pts, model.b0, model.b1, model.b2, plotter['formula'],
-            transform_by=perun.utils.helpers.identity
+    if model.type == "quadratic":
+        array_y_pts = plotter["model_y"](
+            array_x_pts,
+            model.b0,
+            model.b1,
+            model.b2,
+            plotter["formula"],
+            transform_by=perun.utils.helpers.identity,
         )
     else:
-        array_y_pts = plotter['model_y'](
-            array_x_pts, model.b0, model.b1, plotter['formula'], model_handler['f_x'],
-            transform_by=perun.utils.helpers.identity
+        array_y_pts = plotter["model_y"](
+            array_x_pts,
+            model.b0,
+            model.b1,
+            plotter["formula"],
+            model_handler["f_x"],
+            transform_by=perun.utils.helpers.identity,
         )
 
     return array_y_pts, array_x_pts
 
 
 def general_detection(
-        baseline_profile: Profile,
-        target_profile: Profile,
-        classification_method: ClassificationMethod = ClassificationMethod.PolynomialRegression
+    baseline_profile: Profile,
+    target_profile: Profile,
+    classification_method: ClassificationMethod = ClassificationMethod.PolynomialRegression,
 ) -> Iterable[DegradationInfo]:
     """The general method, which covers all detection logic. At the begin obtains the pairs
     of the best models from the given profiles and the pairs of the linears models. Subsequently
@@ -172,29 +186,39 @@ def general_detection(
     """
 
     # obtaining the needed models from both profiles
-    best_baseline_models = get_filtered_best_models_of(baseline_profile, group='param')
-    best_target_models = get_filtered_best_models_of(target_profile, group='param')
+    best_baseline_models = get_filtered_best_models_of(baseline_profile, group="param")
+    best_target_models = get_filtered_best_models_of(target_profile, group="param")
     linear_baseline_model = get_filtered_best_models_of(
-        baseline_profile, group='param', model_filter=create_filter_by_model('linear')
+        baseline_profile, group="param", model_filter=create_filter_by_model("linear")
     )
     linear_target_model = get_filtered_best_models_of(
-        target_profile, group='param', model_filter=create_filter_by_model('linear')
+        target_profile, group="param", model_filter=create_filter_by_model("linear")
     )
 
     covered_uids = set.intersection(
-        set(best_baseline_models.keys()), set(best_target_models.keys()),
-        set(linear_baseline_model.keys()), set(linear_target_model.keys())
+        set(best_baseline_models.keys()),
+        set(best_target_models.keys()),
+        set(linear_baseline_model.keys()),
+        set(linear_target_model.keys()),
     )
     models = {
         uid: (
-            best_baseline_models[uid], best_target_models[uid],
-            linear_baseline_model[uid], linear_target_model[uid]
-        ) for uid in covered_uids
+            best_baseline_models[uid],
+            best_target_models[uid],
+            linear_baseline_model[uid],
+            linear_target_model[uid],
+        )
+        for uid in covered_uids
     }
 
     # iterate through all uids and corresponding models
     for uid, model_quadruple in models.items():
-        baseline_model, target_model, baseline_linear_model, target_linear_model = model_quadruple
+        (
+            baseline_model,
+            target_model,
+            baseline_linear_model,
+            target_linear_model,
+        ) = model_quadruple
 
         # obtaining the dependent and independent variables of all models
         baseline_y_pts, baseline_x_pts = get_function_values(baseline_model)
@@ -211,7 +235,7 @@ def general_detection(
 
         # check state, when no change has occurred
         change = PerformanceChange.Unknown
-        change_type = ''
+        change_type = ""
         threshold_b0: float = abs(0.05 * float(baseline_model.b0))
         threshold_b1: float = abs(0.05 * float(baseline_model.b1))
         diff_b0 = float(target_model.b0 - baseline_model.b0)
@@ -225,15 +249,20 @@ def general_detection(
                 )
             elif classification_method == ClassificationMethod.LinearRegression:
                 change_type = linear_regression.exec_linear_regression(
-                    uid, baseline_x_pts, lin_abs_error, 0.05 * np.amax(abs_error),
+                    uid,
+                    baseline_x_pts,
+                    lin_abs_error,
+                    0.05 * np.amax(abs_error),
                     target_linear_model.b1 - baseline_linear_model.b1,
-                    baseline_model, target_model, baseline_profile
+                    baseline_model,
+                    target_model,
+                    baseline_profile,
                 )
             elif classification_method == ClassificationMethod.FastCheck:
                 err_profile = fast_check.exec_fast_check(
                     uid, baseline_profile, baseline_x_pts, abs_error
                 )
-                std_err_model = get_filtered_best_models_of(err_profile, group='param')
+                std_err_model = get_filtered_best_models_of(err_profile, group="param")
                 change_type = std_err_model[uid].type.upper()
 
         # check the relevant degree of changes and its type (negative or positive)
@@ -251,9 +280,11 @@ def general_detection(
 
         best_corresponding_linear_model = best_baseline_models[uid]
         best_corresponding_baseline_model = best_baseline_models[uid]
-        confidence = min(
-            best_corresponding_linear_model.r_square, target_linear_model.r_square
-        ) if best_corresponding_linear_model else 0.0
+        confidence = (
+            min(best_corresponding_linear_model.r_square, target_linear_model.r_square)
+            if best_corresponding_linear_model
+            else 0.0
+        )
 
         yield DegradationInfo(
             res=change,
@@ -262,6 +293,6 @@ def general_detection(
             tt=target_model.type,
             t=change_type,
             rd=rel_error,
-            ct='r_square',
-            cr=confidence
+            ct="r_square",
+            cr=confidence,
         )

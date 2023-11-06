@@ -38,28 +38,28 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
 
     :return: map of ids to generator specifications
     """
-    specifications_from_config = config.gather_key_recursively('generators.workload')
+    specifications_from_config = config.gather_key_recursively("generators.workload")
     spec_map = {}
     warnings = []
-    log.info("Loading workload generator specifications ", end='')
+    log.info("Loading workload generator specifications ", end="")
     for spec in specifications_from_config:
-        if 'id' not in spec.keys() or 'type' not in spec.keys():
+        if "id" not in spec.keys() or "type" not in spec.keys():
             warnings.append("incorrect workload specification: missing 'id' or 'type'")
-            log.info("F", end='')
+            log.info("F", end="")
             continue
-        generator_module = "perun.workload.{}_generator".format(spec['type'].lower())
-        constructor_name = "{}Generator".format(spec['type'].title())
+        generator_module = "perun.workload.{}_generator".format(spec["type"].lower())
+        constructor_name = "{}Generator".format(spec["type"].title())
         try:
             constructor = getattr(utils.get_module(generator_module), constructor_name)
-            spec_map[spec['id']] = GeneratorSpec(constructor, spec)
-            log.info(".", end='')
+            spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
+            log.info(".", end="")
         except (ImportError, AttributeError):
             warnings.append(
                 "incorrect workload generator '{}': '{}' is not valid workload type".format(
-                    spec['id'], spec['type']
+                    spec["id"], spec["type"]
                 )
             )
-            log.info("F", end='')
+            log.info("F", end="")
 
     # Print the warnings and badge
     if warnings:

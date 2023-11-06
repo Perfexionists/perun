@@ -14,12 +14,15 @@ import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.utils.helpers as helpers
-from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
+from perun.utils.exceptions import (
+    NotPerunRepositoryException,
+    UnsupportedModuleException,
+)
 from perun.utils.structs import MinorVersion, ProfileListConfig
 from perun.profile.helpers import ProfileInfo
 
 
-@pytest.mark.usefixtures('cleandir')
+@pytest.mark.usefixtures("cleandir")
 def test_log_not_in_pcs():
     """Test calling 'perun log' when not in the scope of the perun pcs
 
@@ -50,7 +53,7 @@ def test_log_on_no_vcs(pcs_without_vcs):
 
 
 def test_log_short_error(pcs_with_root, capsys, monkeypatch):
-    cfg = config.Config('shared', '', {'format': {'shortlog': '%checksum:6% -> %notexist%'}})
+    cfg = config.Config("shared", "", {"format": {"shortlog": "%checksum:6% -> %notexist%"}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     decorators.remove_from_function_args_cache("lookup_key_recursively")
 
@@ -79,16 +82,16 @@ def test_log_short(pcs_single_prof, capsys):
     # Assert nothing was printed on error stream
     assert len(err) == 0
     # Assert we have one line per each commit + 1 for header
-    assert len(out.split('\n')) - 1 == len(commits) + 1
+    assert len(out.split("\n")) - 1 == len(commits) + 1
 
     for commit in commits:
-        c_binsha = binascii.hexlify(commit.binsha).decode('utf-8')[:6]
+        c_binsha = binascii.hexlify(commit.binsha).decode("utf-8")[:6]
         c_short_msg = commit.message[:60]
 
         assert c_binsha in out
         assert c_short_msg in out
 
-    file = os.path.join(os.getcwd(), 'file3')
+    file = os.path.join(os.getcwd(), "file3")
     helpers.touch_file(file)
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
@@ -99,7 +102,7 @@ def test_log_short(pcs_single_prof, capsys):
     # Assert nothing was printed on error stream
     assert len(err) == 0
     # Assert we have one line per each commit + 1 for header
-    assert len(out.split('\n')) - 1 == len(commits) + 2
+    assert len(out.split("\n")) - 1 == len(commits) + 2
 
 
 def test_log(pcs_single_prof, capsys):
@@ -120,7 +123,7 @@ def test_log(pcs_single_prof, capsys):
     assert len(out) != 0
 
     for commit in commits:
-        c_binsha = binascii.hexlify(commit.binsha).decode('utf-8')
+        c_binsha = binascii.hexlify(commit.binsha).decode("utf-8")
         c_msg = commit.message
         c_author = str(commit.author)
 
@@ -137,44 +140,39 @@ def test_internals(capsys, monkeypatch):
     # Testing incorrect token
     with pytest.raises(SystemExit):
         commands.print_shortlog_token(
-            "%short:9", {}, MinorVersion('', '', '', '', '', []), 0, "%short:9"
+            "%short:9", {}, MinorVersion("", "", "", "", "", []), 0, "%short:9"
         )
     _, err = capsys.readouterr()
-    assert 'incorrect formatting token %short:9' in err
+    assert "incorrect formatting token %short:9" in err
 
     with pytest.raises(SystemExit):
-        commands.print_shortlog_profile_list_header(
-            [('fmt_string', "%short:9")], {}
-        )
+        commands.print_shortlog_profile_list_header([("fmt_string", "%short:9")], {})
     _, err = capsys.readouterr()
-    assert 'incorrect formatting token %short:9' in err
+    assert "incorrect formatting token %short:9" in err
 
     def patched_cwd():
-        return '.'
+        return "."
+
     # This test could be better
     monkeypatch.setattr("os.getcwd", patched_cwd)
     test_profile = {
-        'header': {
-            'type': 'memory', 'cmd': 'cmd', 'args': 'args', 'workload': 'w'
-        },
-        'collector_info': {
-            'name': "n"
-        },
-        'postprocessors': []
+        "header": {"type": "memory", "cmd": "cmd", "args": "args", "workload": "w"},
+        "collector_info": {"name": "n"},
+        "postprocessors": [],
     }
-    pi = ProfileInfo("path", '..', "time", test_profile)
+    pi = ProfileInfo("path", "..", "time", test_profile)
     with pytest.raises(SystemExit):
         commands.print_status_profiles(
-            [('fmt_string', "%short:9")],
+            [("fmt_string", "%short:9")],
             ProfileListConfig("pending", True, []),
             {},
             "%short:9",
-            [pi]
+            [pi],
         )
 
     with pytest.raises(SystemExit):
         commands.adjust_header_length(
-            [('fmt_string', "%short:9")],
+            [("fmt_string", "%short:9")],
             {},
             ProfileListConfig("pending", True, []),
         )

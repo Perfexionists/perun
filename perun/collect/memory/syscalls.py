@@ -29,7 +29,7 @@ def build_demangle_cache(names: set[str]) -> None:
     global demangle_cache
 
     list_of_names = [name for name in names if PATTERN_WORD.match(name)]
-    sys_call = ['c++filt'] + list_of_names
+    sys_call = ["c++filt"] + list_of_names
     output = subprocess.check_output(sys_call).decode("utf-8").strip()
     demangle_cache = dict(zip(list_of_names, output.split("\n")))
 
@@ -55,11 +55,11 @@ def build_address_to_line_cache(addresses: set[tuple[str, str]], binary_name: st
 
     list_of_addresses = [a[0] for a in addresses if PATTERN_HEXADECIMAL.match(a[0])]
 
-    sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
+    sys_call = ["addr2line", "-e", binary_name] + list_of_addresses
     output = subprocess.check_output(sys_call).decode("utf-8").strip()
-    address_to_line_cache = dict(zip(
-        list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
-    ))
+    address_to_line_cache = dict(
+        zip(list_of_addresses, map(lambda x: x.split(":"), output.split("\n")))
+    )
 
 
 def address_to_line(ip: str) -> list[Any]:
@@ -76,19 +76,19 @@ def run(executable: Executable) -> tuple[int, str]:
     :returns int: return code of executed binary
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
-    sys_call = ('LD_PRELOAD="' + pwd + '/malloc.so" ' + str(executable))
+    sys_call = 'LD_PRELOAD="' + pwd + '/malloc.so" ' + str(executable)
 
-    with open('ErrorCollectLog', 'w') as error_log:
+    with open("ErrorCollectLog", "w") as error_log:
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
 
-    with open('ErrorCollectLog', 'r') as error_log:
+    with open("ErrorCollectLog", "r") as error_log:
         errors = error_log.readlines()
 
     return ret, "".join(errors)
 
 
 def init() -> int:
-    """ Initialize the injected library
+    """Initialize the injected library
 
     :returns bool: success of the operation
     """
@@ -101,7 +101,7 @@ def init() -> int:
 
 
 def check_debug_symbols(cmd: str) -> bool:
-    """ Check if binary was compiled with debug symbols
+    """Check if binary was compiled with debug symbols
 
     :param string cmd: binary file to profile
     :returns bool: True if binary was compiled with debug symbols

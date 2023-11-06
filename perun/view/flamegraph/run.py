@@ -9,10 +9,19 @@ from perun.profile.factory import pass_profile, Profile
 
 
 @click.command()
-@click.option('--filename', '-f', default="flame.svg",
-              help="Sets the output file of the resulting flame graph.")
-@click.option('--graph-height', '-h', default=20, type=int,
-              help="Increases the width of the resulting flame graph.")
+@click.option(
+    "--filename",
+    "-f",
+    default="flame.svg",
+    help="Sets the output file of the resulting flame graph.",
+)
+@click.option(
+    "--graph-height",
+    "-h",
+    default=20,
+    type=int,
+    help="Increases the width of the resulting flame graph.",
+)
 @pass_profile
 def flamegraph(profile: Profile, filename: str, graph_height: int, **_: Any) -> None:
     """Flame graph interprets the relative and inclusive presence of the
