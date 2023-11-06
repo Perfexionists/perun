@@ -207,6 +207,7 @@ exclude_also = [
 
     # Not implemented asserst are omitted
     "assert NotImplementedError(.*)",
+]
 
 # Formatting configuration
 # ----------------------
