@@ -22,7 +22,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch: devel
-          bump: minor
+          tag:
 
   build-and-deploy-doc:
     needs: release
@@ -74,7 +74,7 @@ jobs:
         run: |
           # Install and upgrade pip
           python3 -m pip install --upgrade pip
-          # Install dependencies for build and deplo
+          # Install dependencies for build and deploy
           python3 -m pip install setuptools wheel twine
 
       - name: Build python release distribution package
