@@ -1,9 +1,18 @@
 Changelog
 =========
 
-0.21.1 (2023-11-06)
+0.21.3 (2023-11-06)
+-------------------
 
-  -
+  - Add typing information to function
+  - Add github actions (linting, testing, deploying docs and pypi)
+  - Add formatting using `black`.
+  - Fix and reduce dependencies
+  - Fix various small issues (deprecations, tests, etc.)
+  - Remove obsolete information (authorship tags, etc.)
+  - Remove `demandimport`
+  - Speeds up tests
+  - Update build process to `pyproject.toml` and `tox`
 
 0.20.4 (2022-06-28)
 -------------------
