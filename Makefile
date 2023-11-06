@@ -23,7 +23,7 @@ docs-all:
 	$(MAKE) -C docs dirhtml
 	$(MAKE) -C docs latex
 
-docs-release: docs-latex docs
+docs-release: dev docs-latex docs
 	cp ./docs/_build/latex/Perun.pdf ./docs/pdf/perun.pdf
 
 pypi-release:
