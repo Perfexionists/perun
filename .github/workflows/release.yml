@@ -9,7 +9,7 @@ on:
 
 jobs:
   release:
-    if: ${{ github.event.pull_request.merged == true && contains(github.head_ref, 'release'}}
+    if: ${{ github.event.pull_request.merged == true && contains(github.head_ref, 'release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest version

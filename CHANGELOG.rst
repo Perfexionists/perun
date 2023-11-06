@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.21.4 (2023-11-06)
+0.21.6 (2023-11-06)
 -------------------
 
   - Add typing information to function
