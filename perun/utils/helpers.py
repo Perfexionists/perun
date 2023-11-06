@@ -448,3 +448,23 @@ def sanitize_filepart(part: str) -> str:
     """
     invalid_characters = r"# %&{}\<>*?/ $!'\":@"
     return "".join("_" if c in invalid_characters else c for c in str(part))
+
+
+def strtobool(value: str) -> bool:
+    """Convert a string representation of truth to True or False.
+
+    Taken from the source code of the `distutils` package that was deprecated in Python 3.10.
+
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'.
+    False values are 'n', 'no', 'f', 'false', 'off', and '0'.
+
+    :param value: the truth value to convert.
+    :return: True or False depending on whether the value matches one of the truth strings.
+    :raises ValueError: if the value does not match any of the expected strings.
+    """
+    value = value.lower()
+    if value in ('y', 'yes', 't', 'true', 'on', '1'):
+        return True
+    if value in ('n', 'no', 'f', 'false', 'off', '0'):
+        return False
+    raise ValueError(f"invalid truth value {value}")
