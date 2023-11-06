@@ -17,4 +17,5 @@ from __future__ import annotations
 
 import importlib.metadata
 
-__version__ = importlib.metadata.version("perun-toolsuite")
+__package__ = "perun-toolsuite"
+__version__ = importlib.metadata.version(__package__)
