@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.21.7 (2023-11-08)
+-------------------
+
+  - Fix minor issues in README, and various parts of Perun.
+
 0.21.6 (2023-11-06)
 -------------------
 

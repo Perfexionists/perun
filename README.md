@@ -1,32 +1,32 @@
-Perun: Lightweight Performance Version System
-=============================================
+# Perun: Lightweight Performance Version System
 
 [![build status](https://github.com/Perfexionists/perun/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/Perfexionists/perun/actions)
 [![codecov](https://codecov.io/gh/Perfexionists/perun/graph/badge.svg?token=3x4Luodr84)](https://codecov.io/gh/Perfexionists/perun)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a704486b4679442cb2a53173475f79ca)](https://app.codacy.com/gh/Perfexionists/perun/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Maintainability](https://api.codeclimate.com/v1/badges/1e47ad63527d8d2e14c3/maintainability)](https://codeclimate.com/github/Perfexionists/perun/maintainability)
 [![GitHub tag](https://img.shields.io/github/tag/Perfexionists/perun.svg)](https://github.com/Perfexionists/perun)
 
 
 <p align="center">
-  <img src="figs/perun-logo.png">
+  <img src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/perun-logo.png">
 </p>
 
 Perun is an open source light-weight Performance Version System, which works as a wrapper over
-existing Version Control Systems and in parallel manages performance profiles corresponding to
-different versions of projects. Moreover, it offers a tool suite suitable for automation of the
-performance regression test runs, postprocessing of existing profiles or effective interpretation of
-the results.
+projects in Version Control Systems (such as `git`) and (in parallel) tracks performance profiles 
+(i.e., collection of performance metrics) corresponding to different versions of underlying project. 
+Moreover, it offers a wide tool suite that can be used for automation of the performance regression 
+test runs, postprocessing of resulting profiles (e.g., by creating performance models) or 
+effective interpretation of the results.
 
 <p align="center">
-  <img width="460" height="300" src="figs/perun-vs-vcs.svg">
+  <img width="460" height="300" src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/perun-vs-vcs.svg">
 </p>
 
-In particular, Perun has the following advantages over using databases or sole Version Control
+In particular, Perun has the following advantages over, e.g., using databases or sole Version Control
 Systems for the same purpose:
 
   1.  **Preserves Context**---each performance profile is assigned to a concrete
-      minor version adding the functional context (i.e. code changes) of profiles.
+      minor version adding the functional context (i.e., code changes) of profiles.
+      This way, one knows precisely for which code version, the profile was collected.
       
   2.  **Provides Automation**---Perun allows one to easily automate the process
       of profile collection, eventually reducing the whole process to a
@@ -41,21 +41,25 @@ Systems for the same purpose:
       heavily inspired by the git systems aiming at natural use. 
 
 <p align="center">
-  <img src="figs/perun-flow.svg">
+  <img src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/perun-flow.svg">
 </p>
 
-Perun is intented to be used in two ways: (1) for a single developer (or a small team) as a complete
+Perun is intended to be used in two ways: (1) for a single developer (or a small team) as a complete
 solution for automating, storing and interpreting performance of project or (2) as a dedicated store
 for a bigger projects and teams. Its git-like design aims at easy distribution and simple interface
-makes it a good store of profiles along with the context.
+makes it a good store of performance profiles along with the functional (or environmental) context.
 
-Installation
-------------
+## Installation
 
-Note that we are no longer maintaining support for Python 3.8. Perun may work, but we strongly 
-advise to upgrade your Python to newer version.
+Note that we are no longer maintaining support for Python 3.8, nor do we support Python 3.12
+(this is due to some of its dependencies). Perun may work, but we strongly advise to upgrade your 
+Python to one of the supported version between Python 3.9 and Python 3.11.
 
-You can install Perun as follows:
+You can install Perun from pip as follows:
+
+    pip3 install perun-toolsuite
+
+Alternatively you can install Perun from the source code as follows:
 
     git clone https://github.com/Perfexionists/perun.git
     cd perun
@@ -69,12 +73,19 @@ might require root permissions to install Perun.
 
 It is advised to verify that Perun is running correctly in your environment as follows:
 
-    pip install .[test]
+    # You can run this only once: it will initialize the requirements necessary for testing
+    make init-test
+    # Runs all tests using pytest
     make test
 
-or alternatively using Tox (see the [developing section](#developing)).
+or alternatively using Tox if you wish to test for more Python versions 
+(see the [developing section](#developing)).
 
 ### Installing Tracer Dependencies
+
+Perun supports multiple collectors of performance metrics. 
+Our most advanced collector is Tracer (runnable by `perun collect trace`),
+which has additional dependencies.
 
 The standard Perun installation does not automatically install the instrumentation frameworks
 used by Tracer: SystemTap and eBPF. Installing these frameworks is optional when using Perun, 
@@ -410,10 +421,10 @@ This tool as well as the information provided on this web page reflects only the
 ECSEL JU is not responsible for any use that may be made of the information it contains.
 
 <p align="center">
-  <img src="figs/logo-excel.gif">
+  <img src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/logo-excel.gif">
 </p>
 
 <p align="center">
-  <img src="figs/logo-eu.jpg" width="33%">
+  <img src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/logo-eu.jpg" width="33%">
 </p>
  This project is co-funded by the European Union
