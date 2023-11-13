@@ -234,39 +234,48 @@ But, please be understanding, we cannot fix and merge everything immediately.
 
 ## Getting Started with Perun
 
-In order to start managing performance of your project tracked by `git`, go to its directory and run
-the following:
+In order to start managing performance of your project tracked by `git`, 
+go to your project directory and run the following:
 
-    perun init --vcs-type=git --configure
+    perun init --configure
     
-This creates a parallel directory structure for Perun storage (stored in `.perun`), and runs the
-initial configuration of the local project settings in text editor (by default `vim`). There you can
-chose the set of collectors, postprocessors and specify which commands (and with which
-configurations) should be profiled. See [configuration](https://perfexionists.github.io/perun/config.html)
-for more details about perun's configuration.
+This creates a parallel directory structure for Perun storage (stored in `.perun`), 
+and creates initial configuration of the local project settings and opens it in the text editor 
+(by default `vim`). 
+The configuration is well commented and will help you with setting Perun up for your project.
+You can specify, e.g., the set of collectors (such as `time` or `trace`), 
+or postprocessors and specify which commands (and with which arguments and workloads) should be profiled. 
+See [configuration](https://perfexionists.github.io/perun/config.html) for more details about Perun's configuration.
 
-Now start collecting the profiles for current version of your project:
+If you only wish to briefly try Perun out and
+assuming you have opened the configuration file from the previous step  
+(or you can open it from the path `.perun/local.yaml`),
+then we recommend to uncomment keys called `cmds`, `workloads` and `collectors`.
+This will suffice to demonstrate Perun's capabilities.
+
+If you set up the configuration properly you can 
+now start collecting the profiles for the current version of your project using single command:
 
     perun run matrix
     
-This command collects set of profiles, according to the previously set configuration (see
-[specification of job matrix](https://perfexionists.github.io/perun/jobs.html#job-matrix-format) for more
-details). You can then view the list of collected and registered profiles, and visualize the
-profiles (see [visualization overview](https://perfexionists.github.io/perun/views.html)), or check for
+This command collects performance data (resulting into so called profiles), 
+according to the previously set configuration (see [specification of job matrix](https://perfexionists.github.io/perun/jobs.html#job-matrix-format) for more
+details). You can then further manipulate with these profiles: view the list of collected and registered profiles, 
+and visualize the profiles (see [visualization overview](https://perfexionists.github.io/perun/views.html)), or check for
 possible performance changes (see [degradation
 documentation](https://perfexionists.github.io/perun/degradation.html)):
 
     # Show list of profiles
     perun status
     
-    # Show the first generated profile using scatter plot
-    perun show 0@p scatter -v
+    # Show the first generated profile using tabular view
+    perun show 0@p tableof --to-stdout resources
     
     # Register the first generated profile to current minor version
     perun add 0@p
     
-Now anytime one can do code changes, commit them, rerun the collection phase, register new profiles
-and check whether any change in performance can be detected:
+Now anytime your codebase changes, rerun the collection phase, register new profiles
+and you can check whether any change in performance can be detected:
 
     # Rerun the collection
     perun run matrix
