@@ -2,7 +2,7 @@ Contributing
 ============
 
 In case you run in some unexpected behaviour, error or anything suspicious, either contact us
-directly through mail or [create a new Issue](https://github.com/tfiedor/perun/issues/new).
+directly through mail or [create a new Issue](https://github.com/Perfexionists/perun/issues/new).
 
 If you'd like to contribute, please fork the repository and use a new feature branch starting from
 the `develop` the develop branch. Pull requests are warmly welcome! However, please follow these
@@ -13,7 +13,7 @@ guidelines:
   for the format compatible with our documentation.
   
   2. **Test your code** within reasonable code coverage. The tests should be in the
-  <https://github.com/tfiedor/perun/tree/develop/tests> directory and should achieve a suitable
+  <https://github.com/Perfexionists/perun/tree/develop/tests> directory and should achieve a suitable
   amount of codecov coverage.
   
   3. **Follow the project formatting** by utilising [Black](https://github.com/psf/black).
@@ -29,8 +29,8 @@ Before considering a merge of pull requests we want the feature branch to fulfil
   manual confirmation---e.g. the levels of cyclomatic complexity)
 
 If you think your extension could help others, please [send us
-PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case it is
+PR](https://github.com/Perfexionists/perun/pull/new/develop), we will review the code and in case it is
 indeed suitable for wider audience and maintainable, we will include it in our
-[upstream](https://github.com/tfiedor/perun).
+[upstream](https://github.com/Perfexionists/perun).
 
 *But, please be understanding; we cannot fix and merge everything.*

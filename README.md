@@ -57,13 +57,13 @@ advise to upgrade your Python to newer version.
 
 You can install Perun as follows:
 
-    git clone https://github.com/tfiedor/perun.git
+    git clone https://github.com/Perfexionists/perun.git
     cd perun
     make install
 
 These commands install Perun to your system as a runnable python package. You can then run Perun
 safely from the command line using the `perun` command. Run either `perun --help` or see the [cli
-documentation](https://tfiedor.github.io/perun/cli.html) for more information about running Perun
+documentation](https://perfexionists.github.io/perun/cli.html) for more information about running Perun
 commands from command line. Note that depending on your OS and the location of Python libraries, you
 might require root permissions to install Perun.
 
@@ -185,7 +185,7 @@ Developing
 
 Alternatively you can install Perun in development mode:
 
-    git clone https://github.com/tfiedor/perun.git
+    git clone https://github.com/Perfexionists/perun.git
     cd perun
     make dev
 
@@ -215,8 +215,8 @@ consequently, the supported Python versions), run:
 
 If you are interested in contributing to Perun project, please refer to
 [contributing](CONTRIBUTING) section. If you think your results could help others, please [send us
-PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case it is
-suitable for wider audience, we will include it in our [upstream](https://github.com/tfiedor/perun).
+PR](https://github.com/Perfexionists/perun/pull/new/develop), we will review the code and in case it is
+suitable for wider audience, we will include it in our [upstream](https://github.com/Perfexionists/perun).
 
 But, please be understanding, we cannot fix and merge everything.
 
@@ -231,7 +231,7 @@ the following:
 This creates a parallel directory structure for Perun storage (stored in `.perun`), and runs the
 initial configuration of the local project settings in text editor (by default `vim`). There you can
 chose the set of collectors, postprocessors and specify which commands (and with which
-configurations) should be profiled. See [configuration](https://tfiedor.github.io/perun/config.html)
+configurations) should be profiled. See [configuration](https://perfexionists.github.io/perun/config.html)
 for more details about perun's configuration.
 
 Now start collecting the profiles for current version of your project:
@@ -239,11 +239,11 @@ Now start collecting the profiles for current version of your project:
     perun run matrix
     
 This command collects set of profiles, according to the previously set configuration (see
-[specification of job matrix](https://tfiedor.github.io/perun/jobs.html#job-matrix-format) for more
+[specification of job matrix](https://perfexionists.github.io/perun/jobs.html#job-matrix-format) for more
 details). You can then view the list of collected and registered profiles, and visualize the
-profiles (see [visualization overview](https://tfiedor.github.io/perun/views.html)), or check for
+profiles (see [visualization overview](https://perfexionists.github.io/perun/views.html)), or check for
 possible performance changes (see [degradation
-documentation](https://tfiedor.github.io/perun/degradation.html)):
+documentation](https://perfexionists.github.io/perun/degradation.html)):
 
     # Show list of profiles
     perun status
@@ -288,7 +288,7 @@ In the following, we list the foremost features and advantages of Perun:
       
   -   **Regression Analysis**---Perun's suite contains a postprocessing module for regression
   analysis of profiles (see [regression analysis
-  documentation](https://tfiedor.github.io/perun/postprocessors.html#module-perun.postprocess.regression_analysis)),
+  documentation](https://perfexionists.github.io/perun/postprocessors.html#module-perun.postprocess.regression_analysis)),
   which supports several different strategies for finding the best predicting model for given data
   (such as linear, quadratic, or constant model).
       
@@ -300,8 +300,8 @@ In the following, we list the foremost features and advantages of Perun:
   profiles in external applications ---we have API for executing simple queries over the resources
   or other parts of the profiles, or convert and transform the profiles to different representations
   (e.g. pandas data frame). See [conversion
-  api](https://tfiedor.github.io/perun/profile.html#module-perun.profile.convert) and [query
-  api](https://tfiedor.github.io/perun/profile.html#module-perun.profile.query) for overview.
+  api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.convert) and [query
+  api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.query) for overview.
       
   -   **Automatic Detection of Performance Degradation**---we are currently exploring effective
   heuristics for automatic detection of performance degradation between two project versions (e.g.
@@ -323,7 +323,7 @@ the project:
   automatic detection of degradation and efficient storage.
       
 For more information about Perun's feature, please refer to our [extensive list of
-features](https://tfiedor.github.io/perun/overview.html#list-of-features)!
+features](https://perfexionists.github.io/perun/overview.html#list-of-features)!
 
 Contributing
 ------------
@@ -332,35 +332,35 @@ If you'd like to contribute, please fork the repository and use a feature branch
 warmly welcome.
 
 In case you run in some unexpected behaviour, error or anything suspicious, either contact us
-directly through mail or [create a new Issue](https://github.com/tfiedor/perun/issues/new).
+directly through mail or [create a new Issue](https://github.com/Perfexionists/perun/issues/new).
 
 The architecture of Perun allows easy extension. In case you are interested in extending our tool
 suite with new kinds of collectors, postprocessors or visualization methods, please refer to
 appropriate sections in Perun's documentation (i.e. Create your own
-[collector](https://tfiedor.github.io/perun/collectors.html#creating-your-own-collector),
-[postprocessor](https://tfiedor.github.io/perun/postprocessors.html#creating-your-own-postprocessor) 
-or [visualization](https://tfiedor.github.io/perun/views.html#creating-your-own-visualization)).
+[collector](https://perfexionists.github.io/perun/collectors.html#creating-your-own-collector),
+[postprocessor](https://perfexionists.github.io/perun/postprocessors.html#creating-your-own-postprocessor) 
+or [visualization](https://perfexionists.github.io/perun/views.html#creating-your-own-visualization)).
 
 If you are interested in contributing to Perun project, please first refer to
 [contributing](Contributing.md) section. If you think your custom module could help others, please
-[send us PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case
+[send us PR](https://github.com/Perfexionists/perun/pull/new/develop), we will review the code and in case
 it is suitable for wider audience, we will include it in our
-[upstream](https://github.com/tfiedor/perun).
+[upstream](https://github.com/Perfexionists/perun).
 
 But, please be understanding, we cannot fix and merge everything.
 
 Links
 -----
 
-   -   Project repository : <https://github.com/tfiedor/perun>
-   -   Issue tracker: <https://github.com/tfiedor/perun/issues>
+   -   Project repository : <https://github.com/Perfexionists/perun>
+   -   Issue tracker: <https://github.com/Perfexionists/perun/issues>
        - In case of sensitive bugs like security vulnerabilities, please contact
        :   <TomasFiedor@gmail.com> directly instead of using issue tracker. We
            value your effort to improve the security and privacy of
            this project!
    -   Project documentation:
-       - Online: <https://tfiedor.github.io/perun/>
-       - Latest Typeset: <https://github.com/tfiedor/perun/blob/devel/docs/pdf/perun.pdf>
+       - Online: <https://perfexionists.github.io/perun/>
+       - Latest Typeset: <https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf>
      
 Unrelated links:
 

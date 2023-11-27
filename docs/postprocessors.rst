@@ -452,5 +452,5 @@ You can register your new postprocessor as follows:
 
     8. If you think your postprocessor could help others, please, consider making `Pull Request`_.
 
-.. _Pull Request: https://github.com/tfiedor/perun/pull/new/develop
+.. _Pull Request: https://github.com/Perfexionists/perun/pull/new/develop
 .. _Click: http://click.pocoo.org/5/
