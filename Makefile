@@ -33,3 +33,4 @@ pypi-release:
 	python3 -m build
 
 .PHONY: init test docs install dev run-gui gh-pages docs-latex docs-release docs-all
+
