@@ -91,11 +91,10 @@ jobs:
           # Install and upgrade pip
           python3 -m pip install --upgrade pip
           # Install dependencies for build and deploy
-          python3 -m pip install wheel twine
+          python3 -m pip install build wheel twine
 
       - name: Build python release distribution package
         run: |
-          pip3 install -q build
           make release
 
       - name: Upload to TestPypi
