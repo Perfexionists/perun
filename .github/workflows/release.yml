@@ -96,7 +96,7 @@ jobs:
       - name: Build python release distribution package
         run: |
           pip3 install -q build
-          make pypi-release
+          make release
 
       - name: Upload to TestPypi
         run: |
