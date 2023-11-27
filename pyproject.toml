@@ -55,10 +55,30 @@ dependencies = [
     # Transitive dependencies that we need to limit for some reason
     "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
 ]
-# (1) Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
-# dependency and its version constraints specified only once to avoid inconsistencies.
-dynamic = ["optional-dependencies"]
 
+[project.optional-dependencies]
+docs = [
+    # Sphinx 7.2 dropped support for Python 3.8
+    "Sphinx>=7.1",
+    "sphinx-click>=5.0",
+]
+lint = [
+    "black>=22.1.0",
+    "pylint>=2.17",
+]
+test = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "tox>=4.9.0",
+]
+typing = [
+    "mypy>=1.5",
+    "mypy-extensions>=1.0",
+    "typing-extensions>=4.7",
+    "types-tabulate>=0.9",
+    "pandas-stubs>=2.0",
+    "nptyping>=2.5.0",
+]
 
 [project.urls]
 Repository = "https://github.com/Perfexionists/perun.git"

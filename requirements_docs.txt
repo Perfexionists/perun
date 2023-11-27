@@ -1,3 +1,0 @@
-# Sphinx 7.2 dropped support for Python 3.8
-Sphinx>=7.1
-sphinx-click>= 5.0
