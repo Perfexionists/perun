@@ -1,0 +1,11 @@
+perun_vcs_dir = perun_dir / 'vcs'
+
+perun_vcs_files = files(
+    '__init__.py',
+    'git.py',
+)
+
+py3.install_sources(
+    perun_vcs_files,
+    subdir: perun_vcs_dir
+)

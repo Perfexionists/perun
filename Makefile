@@ -1,7 +1,9 @@
-# Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
-# simple "dev" optional dependency
+# Base build requirements are not installed automatically.
+# Inspired by https://meson-python.readthedocs.io/en/latest/how-to-guides/editable-installs.html
 dev:
-	pip3 install -e .[typing,lint,test,docs]
+	$(info [INFO] Make sure you're using a virtual environment for development)
+	python3 -m pip install meson-python meson ninja
+	python3 -m pip install --no-build-isolation --config-settings=editable-verbose=true --config-settings=setup-args=-Dbuildtype=debug --editable .[test,typing,lint,docs]
 
 install:
 	pip3 install .
