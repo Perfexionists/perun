@@ -61,9 +61,9 @@ dynamic = ["optional-dependencies"]
 
 
 [project.urls]
-Repository = "https://github.com/tfiedor/perun.git"
+Repository = "https://github.com/Perfexionists/perun.git"
 Demonstration = "https://www.fit.vutbr.cz/research/groups/verifit/tools/perun-demo/"
-Changelog = "https://github.com/tfiedor/perun/blob/master/CHANGELOG.rst"
+Changelog = "https://github.com/Perfexionists/perun/blob/master/CHANGELOG.rst"
 
 [project.scripts]
 perun = "perun.cli:launch_cli"

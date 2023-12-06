@@ -104,7 +104,7 @@ You can register support for your own version control system as follows:
 
     4. If you think your wrapper could help others, please, consider making `Pull Request`_.
 
-.. _Pull Request: https://github.com/tfiedor/perun/pull/new/develop
+.. _Pull Request: https://github.com/Perfexionists/perun/pull/new/develop
 .. _pytest: https://docs.pytest.org/en/latest/
 
 .. _internals-store:
