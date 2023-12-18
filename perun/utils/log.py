@@ -16,7 +16,7 @@ from types import TracebackType
 
 import numpy as np
 
-from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, cast
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -33,6 +33,8 @@ from perun.utils.helpers import (
     OPTIMIZATION_ICON,
     CHANGE_CMD_COLOUR,
     CHANGE_TYPE_COLOURS,
+    AttrChoiceType,
+    ColorChoiceType,
 )
 from perun.utils.structs import PerformanceChange, DegradationInfo, MinorVersion
 
@@ -173,7 +175,7 @@ def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
 
 
 def print_current_stack(
-    colour: str = "red", raised_exception: Optional[BaseException] = None
+    colour: ColorChoiceType = "red", raised_exception: Optional[BaseException] = None
 ) -> None:
     """Prints the information about stack track leading to an event
 
@@ -233,7 +235,7 @@ def warn(msg: str, end: str = "\n") -> None:
         print(f"warning: {msg}", end=end)
 
 
-def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: str) -> None:
+def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoiceType) -> None:
     """Print helper coloured message for the current phase
 
     :param str phase_msg: message that will be printed to the output
@@ -254,7 +256,9 @@ def print_job_progress(overall_jobs: int) -> None:
     print_job_progress.current_job += 1
 
 
-def cprint(string: str, colour: str, attrs: str = "none", flush: bool = True) -> None:
+def cprint(
+    string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceType] = None, flush: bool = True
+) -> None:
     """Wrapper over coloured print without adding new line
 
     :param str string: string that is printed with colours
@@ -265,7 +269,7 @@ def cprint(string: str, colour: str, attrs: str = "none", flush: bool = True) ->
     print(in_color(string, colour, attrs), end="", flush=flush)
 
 
-def cprintln(string: str, colour: str, attrs: str = "none") -> None:
+def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceType] = None) -> None:
     """Wrapper over coloured print with added new line or other ending
 
     :param str string: string that is printed with colours and newline
@@ -281,7 +285,7 @@ def done(ending: str = "\n") -> None:
     :param str ending: end of the string, by default new line
     """
     print("[", end="")
-    cprint("DONE", "green", attrs="bold")
+    cprint("DONE", "green", attrs=["bold"])
     print("]", end=ending)
 
 
@@ -290,7 +294,7 @@ def failed(ending: str = "\n") -> None:
     :param str ending: end of the string, by default new line
     """
     print("[", end="")
-    cprint("FAILED", "red", attrs="bold")
+    cprint("FAILED", "red", attrs=["bold"])
     print("]", end=ending)
 
 
@@ -299,7 +303,7 @@ def yes(ending: str = "\n") -> None:
     :param str ending: end of the string, by default new line
     """
     print("[", end="")
-    cprint("\u2714", "green", attrs="bold")
+    cprint("\u2714", "green", attrs=["bold"])
     print("]", end=ending)
 
 
@@ -308,7 +312,7 @@ def no(ending: str = "\n") -> None:
     :param str ending: end of the string, by default new line
     """
     print("[", end="")
-    cprint("\u2717", "red", attrs="bold")
+    cprint("\u2717", "red", attrs=["bold"])
     print("]", end=ending)
 
 
@@ -319,7 +323,9 @@ def newline() -> None:
     print("")
 
 
-def in_color(output: str, color: str = "white", attribute_style: str = "none") -> str:
+def in_color(
+    output: str, color: ColorChoiceType = "white", attribute_style: Optional[AttrChoiceType] = None
+) -> str:
     """Transforms the output to colored version.
 
     :param str output: the output text that should be colored
@@ -328,14 +334,8 @@ def in_color(output: str, color: str = "white", attribute_style: str = "none") -
 
     :return str: the new colored output (if enabled)
     """
-    attrs: list[str] = {
-        "none": cast(list[str], []),
-        "bold": ["bold"],
-        "underline": ["underline"],
-    }.get(attribute_style, [])
-
     if COLOR_OUTPUT:
-        return termcolor.colored(output, color, attrs=attrs, force_color=True)
+        return termcolor.colored(output, color, attrs=attribute_style, force_color=True)
     else:
         return output
 
@@ -358,7 +358,7 @@ def count_degradations_per_group(
 
 def get_degradation_change_colours(
     degradation_result: PerformanceChange,
-) -> tuple[str, str]:
+) -> tuple[ColorChoiceType, ColorChoiceType]:
     """Returns the tuple of two colours w.r.t degradation results.
 
     If the change was optimization (or possible optimization) then we print the first model as
@@ -370,7 +370,7 @@ def get_degradation_change_colours(
     :param PerformanceChange degradation_result: change of the performance
     :returns: tuple of (from model string colour, to model string colour)
     """
-    colour = "yellow", "yellow"
+    colour: tuple[ColorChoiceType, ColorChoiceType] = "yellow", "yellow"
     if degradation_result in (
         PerformanceChange.TotalOptimization,
         PerformanceChange.SevereOptimization,
@@ -422,12 +422,12 @@ def change_counts_to_string(counts: dict[str, int], width: int = 0) -> str:
     change_str = in_color(
         str(OPTIMIZATION_ICON * counts.get("Optimization", 0)),
         CHANGE_COLOURS[PerformanceChange.Optimization],
-        "bold",
+        ["bold"],
     )
     change_str += in_color(
         str(DEGRADATION_ICON * counts.get("Degradation", 0)),
         CHANGE_COLOURS[PerformanceChange.Degradation],
-        "bold",
+        ["bold"],
     )
     return change_str + width * " "
 
@@ -469,10 +469,10 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
 
     def print_models_kinds(
         baseline_str: str,
-        baseline_colour: str,
+        baseline_colour: ColorChoiceType,
         target_str: str,
-        target_colour: str,
-        attrs: str,
+        target_colour: ColorChoiceType,
+        attrs: AttrChoiceType,
     ) -> None:
         """
         The function format the given parameters to required format at output.
@@ -491,16 +491,16 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
 
     if model_strategy == "best-param":
-        print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, "bold")
+        print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, ["bold"])
     elif model_strategy in ("best-nonparam", "best-model", "best-both"):
-        print_models_kinds(" base: ", "blue", " targ: ", "blue", "bold")
+        print_models_kinds(" base: ", "blue", " targ: ", "blue", ["bold"])
     elif model_strategy in ("all-nonparam", "all-param", "all-models"):
         print(" model: ", end="")
-        cprint(f"{deg_info.from_baseline}", colour="blue", attrs="bold")
+        cprint(f"{deg_info.from_baseline}", colour="blue", attrs=["bold"])
 
     if deg_info.confidence_type != "no":
         print(" (with confidence ", end="")
-        cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", "bold")
+        cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", ["bold"])
         print(")", end="")
 
 
@@ -556,7 +556,7 @@ def print_list_of_degradations(
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
         print("at", end="")
-        cprint(f" {location}", "white", attrs="bold")
+        cprint(f" {location}", "white", attrs=["bold"])
         print(":")
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
@@ -568,24 +568,24 @@ def print_list_of_degradations(
                         round(deg_info.rate_degradation_relative, 2),
                     ),
                     "white",
-                    "bold",
+                    ["bold"],
                 )
             else:
-                cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", "bold")
+                cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", ["bold"])
             print(": ", end="")
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, "white"))
             print(" ", end="")
             cprint(
                 f"{CHANGE_STRINGS[deg_info.result]}",
                 CHANGE_COLOURS[deg_info.result],
-                "bold",
+                ["bold"],
             )
             if deg_info.result != PerformanceChange.NoChange:
                 _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
             print(" (", end="")
-            cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, "bold")
+            cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, ["bold"])
             print(")")
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
@@ -614,7 +614,7 @@ def aggregate_intervals(
 
         - <0, 2>: Degradation; <2, 3>: Optimization; <3, 5>: MaybeOptimization
 
-    :param np.ndarray intervals: the array of partial intervals with tuples of required information
+    :param np.ndarray input_intervals: the array of partial intervals with tuples of required information
     :return list: list of the aggregated partial intervals to print
     """
     # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
@@ -688,8 +688,8 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         print(
             "[!] {} [{}] in {} [!]".format(
                 (func.phase_name if hasattr(func, "phase_name") else func.__name__).title(),
-                in_color("DONE", "green", "bold"),
-                in_color("{:0.2f}s".format(elapsed), "white", "bold"),
+                in_color("DONE", "green", ["bold"]),
+                in_color("{:0.2f}s".format(elapsed), "white", ["bold"]),
             )
         )
         return results
@@ -757,7 +757,9 @@ class History:
         :ivar str prev: the child of the edge, i.e. the not yet processed sha
         """
 
-        def __init__(self, n: str, colour: str = "white", prev: Optional[str] = None) -> None:
+        def __init__(
+            self, n: str, colour: ColorChoiceType = "white", prev: Optional[str] = None
+        ) -> None:
             """Initiates one edge of the history
 
             :param str n: the next sha that will be processed
@@ -774,7 +776,7 @@ class History:
             :param str char: string that represents the edge
             :return: string representing the edge in ascii
             """
-            return char if self.colour == "white" else in_color(char, self.colour, "bold")
+            return char if self.colour == "white" else in_color(char, self.colour, ["bold"])
 
     def __init__(self, head: str) -> None:
         """Creates a with wrapper, which keeps and prints the context of the current vcs

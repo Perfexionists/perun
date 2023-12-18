@@ -678,7 +678,7 @@ def remove_from_index(
         result_string = perun_log.in_color(
             "{}".format(helpers.str_to_plural(removed_profile_number, "profile")),
             "white",
-            "bold",
+            ["bold"],
         )
         perun_log.info(
             "successfully deregistered {} from {} index".format(

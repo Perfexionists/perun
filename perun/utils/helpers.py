@@ -8,26 +8,49 @@ import signal
 import traceback
 import types
 
-from typing import Optional, Any, Iterable, Callable
+from typing import Optional, Any, Iterable, Callable, Literal
 
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
+# Types
+ColorChoiceType = Literal[
+    "black",
+    "grey",
+    "red",
+    "green",
+    "yellow",
+    "blue",
+    "magenta",
+    "cyan",
+    "light_grey",
+    "dark_grey",
+    "light_red",
+    "light_green",
+    "light_yellow",
+    "light_blue",
+    "light_magenta",
+    "light_cyan",
+    "white",
+]
+AttrChoiceType = Iterable[Literal["bold", "dark", "underline", "blink", "reverse", "concealed"]]
 
 # File system specific
 READ_CHUNK_SIZE = 1024
 
 # Other constants
 MAXIMAL_LINE_WIDTH = 60
-TEXT_ATTRS = "none"
-TEXT_EMPH_COLOUR = "green"
-TEXT_WARN_COLOUR = "red"
+TEXT_ATTRS: Optional[AttrChoiceType] = None
+TEXT_EMPH_COLOUR: ColorChoiceType = "green"
+TEXT_WARN_COLOUR: ColorChoiceType = "red"
 AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Profile specific stuff
 SUPPORTED_PROFILE_TYPES = ["memory", "mixed", "time"]
+PROFILE_TRACKED: ColorChoiceType = "white"
+PROFILE_UNTRACKED: ColorChoiceType = "red"
 PROFILE_MALFORMED = "malformed"
-PROFILE_TYPE_COLOURS = {
+PROFILE_TYPE_COLOURS: dict[str, ColorChoiceType] = {
     "time": "blue",
     "mixed": "cyan",
     "memory": "white",
@@ -35,31 +58,31 @@ PROFILE_TYPE_COLOURS = {
 }
 PROFILE_DELIMITER = "|"
 
-HEADER_ATTRS = "underline"
-HEADER_COMMIT_COLOUR = "green"
-HEADER_INFO_COLOUR = "white"
-HEADER_SLASH_COLOUR = "white"
+HEADER_ATTRS: AttrChoiceType = ["underline"]
+HEADER_COMMIT_COLOUR: ColorChoiceType = "green"
+HEADER_INFO_COLOUR: ColorChoiceType = "white"
+HEADER_SLASH_COLOUR: ColorChoiceType = "white"
 
-DESC_COMMIT_COLOUR = "white"
-DESC_COMMIT_ATTRS = "darkbold"
+DESC_COMMIT_COLOUR: ColorChoiceType = "white"
+DESC_COMMIT_ATTRS: AttrChoiceType = ["dark", "bold"]
 
 # Raw output specific thing
-RAW_KEY_COLOUR = "magenta"
-RAW_ITEM_COLOUR = "yellow"
-RAW_ATTRS = "none"
+RAW_KEY_COLOUR: ColorChoiceType = "magenta"
+RAW_ITEM_COLOUR: ColorChoiceType = "yellow"
+RAW_ATTRS = None
 
 # Job specific
-COLLECT_PHASE_CMD = "blue"
-COLLECT_PHASE_WORKLOAD = "cyan"
-COLLECT_PHASE_COLLECT = "magenta"
-COLLECT_PHASE_POSTPROCESS = "yellow"
-COLLECT_PHASE_ERROR = "red"
-COLLECT_PHASE_ATTRS = "none"
-COLLECT_PHASE_ATTRS_HIGH = "none"
+COLLECT_PHASE_CMD: ColorChoiceType = "blue"
+COLLECT_PHASE_WORKLOAD: ColorChoiceType = "cyan"
+COLLECT_PHASE_COLLECT: ColorChoiceType = "magenta"
+COLLECT_PHASE_POSTPROCESS: ColorChoiceType = "yellow"
+COLLECT_PHASE_ERROR: ColorChoiceType = "red"
+COLLECT_PHASE_ATTRS: Optional[AttrChoiceType] = None
+COLLECT_PHASE_ATTRS_HIGH: Optional[AttrChoiceType] = None
 
 # Degradation specific
-CHANGE_CMD_COLOUR = "magenta"
-CHANGE_STRINGS = {
+CHANGE_CMD_COLOUR: ColorChoiceType = "magenta"
+CHANGE_STRINGS: dict[PerformanceChange, str] = {
     PerformanceChange.NotInBaseline: "Not in Baseline",
     PerformanceChange.TotalDegradation: "Total Degradation",
     PerformanceChange.SevereDegradation: "Severe Degradation",
@@ -73,7 +96,7 @@ CHANGE_STRINGS = {
     PerformanceChange.TotalOptimization: "Total Optimization",
     PerformanceChange.NotInTarget: "Not in Target",
 }
-CHANGE_COLOURS = {
+CHANGE_COLOURS: dict[PerformanceChange, ColorChoiceType] = {
     PerformanceChange.NotInBaseline: "blue",
     PerformanceChange.TotalDegradation: "red",
     PerformanceChange.SevereDegradation: "red",
@@ -87,7 +110,7 @@ CHANGE_COLOURS = {
     PerformanceChange.TotalOptimization: "green",
     PerformanceChange.NotInTarget: "blue",
 }
-CHANGE_TYPE_COLOURS = {
+CHANGE_TYPE_COLOURS: dict[str, ColorChoiceType] = {
     "time": "blue",
     "mixed": "cyan",
     "memory": "white",

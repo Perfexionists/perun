@@ -47,6 +47,7 @@ from perun.utils.helpers import (
     COLLECT_PHASE_CMD,
     COLLECT_PHASE_WORKLOAD,
     HandledSignals,
+    ColorChoiceType,
 )
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.utils.exceptions import SignalReceivedException
@@ -452,7 +453,7 @@ def run_postprocessor_on_profile(
 
 @log.print_elapsed_time
 @decorators.phase_function("prerun")
-def run_prephase_commands(phase: str, phase_colour: str = "white") -> None:
+def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -> None:
     """Runs the phase before the actual collection of the methods
 
     This command first retrieves the phase from the configuration, and runs

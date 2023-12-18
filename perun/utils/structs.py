@@ -9,6 +9,7 @@ from dataclasses import dataclass
 
 from enum import Enum
 from typing import Optional, Any, TYPE_CHECKING, cast
+from perun.utils.helpers import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -395,7 +396,9 @@ class ProfileListConfig:
         :param bool short: true if the list should be short
         :param list profile_list: list of profiles
         """
-        self.colour = "white" if list_type == "tracked" else "red"
+        self.colour: ColorChoiceType = (
+            PROFILE_UNTRACKED if list_type == "tracked" else PROFILE_TRACKED
+        )
         self.ending = ":\n\n" if not short else "\n"
         self.list_len = len(profile_list)
         self.id_char = "i" if list_type == "tracked" else "p"

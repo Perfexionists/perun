@@ -44,6 +44,7 @@ from perun.utils.helpers import (
     HEADER_INFO_COLOUR,
     HEADER_SLASH_COLOUR,
     PROFILE_DELIMITER,
+    ColorChoiceType,
 )
 from perun.utils.log import cprint, cprintln
 from perun.utils.structs import ProfileListConfig, MinorVersion
@@ -318,7 +319,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
         result_string = perun_log.in_color(
             "{}".format(helpers.str_to_plural(removed_profile_number, "profile")),
             "white",
-            "bold",
+            ["bold"],
         )
         perun_log.info("successfully removed {} from pending jobs".format(result_string))
 
@@ -773,7 +774,7 @@ def print_other_formatting_string(
     info_object: ProfileInfo | MinorVersion,
     info_attr: str,
     size_limit: int,
-    colour: str = "white",
+    colour: ColorChoiceType = "white",
     value_fill: str = " ",
 ) -> None:
     """Prints the token from the fmt_string, according to the values stored in info_object
