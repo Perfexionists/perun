@@ -34,6 +34,36 @@ class PerformanceChange(Enum):
     NotInTarget = 5
 
 
+CHANGE_STRINGS: dict[PerformanceChange, str] = {
+    PerformanceChange.NotInBaseline: "Not in Baseline",
+    PerformanceChange.TotalDegradation: "Total Degradation",
+    PerformanceChange.SevereDegradation: "Severe Degradation",
+    PerformanceChange.Degradation: "Degradation",
+    PerformanceChange.MaybeDegradation: "Maybe Degradation",
+    PerformanceChange.NoChange: "No Change",
+    PerformanceChange.Unknown: "Unknown",
+    PerformanceChange.MaybeOptimization: "Maybe Optimization",
+    PerformanceChange.Optimization: "Optimization",
+    PerformanceChange.SevereOptimization: "Severe Optimization",
+    PerformanceChange.TotalOptimization: "Total Optimization",
+    PerformanceChange.NotInTarget: "Not in Target",
+}
+CHANGE_COLOURS: dict[PerformanceChange, ColorChoiceType] = {
+    PerformanceChange.NotInBaseline: "blue",
+    PerformanceChange.TotalDegradation: "red",
+    PerformanceChange.SevereDegradation: "red",
+    PerformanceChange.Degradation: "red",
+    PerformanceChange.MaybeDegradation: "yellow",
+    PerformanceChange.NoChange: "white",
+    PerformanceChange.Unknown: "grey",
+    PerformanceChange.MaybeOptimization: "cyan",
+    PerformanceChange.Optimization: "green",
+    PerformanceChange.SevereOptimization: "green",
+    PerformanceChange.TotalOptimization: "green",
+    PerformanceChange.NotInTarget: "blue",
+}
+
+
 class CollectStatus(Enum):
     """Simple enumeration for statuses of the collectors"""
 

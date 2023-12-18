@@ -27,8 +27,6 @@ from perun.utils.helpers import first_index_of_attr, str_to_plural, identity
 from perun.utils.decorators import static_variables
 from perun.utils.helpers import (
     COLLECT_PHASE_ATTRS,
-    CHANGE_COLOURS,
-    CHANGE_STRINGS,
     DEGRADATION_ICON,
     OPTIMIZATION_ICON,
     CHANGE_CMD_COLOUR,
@@ -36,7 +34,13 @@ from perun.utils.helpers import (
     AttrChoiceType,
     ColorChoiceType,
 )
-from perun.utils.structs import PerformanceChange, DegradationInfo, MinorVersion
+from perun.utils.structs import (
+    PerformanceChange,
+    DegradationInfo,
+    MinorVersion,
+    CHANGE_COLOURS,
+    CHANGE_STRINGS,
+)
 
 
 VERBOSITY = 0

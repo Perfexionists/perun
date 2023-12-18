@@ -10,7 +10,6 @@ import types
 
 from typing import Optional, Any, Iterable, Callable, Literal
 
-from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
 # Types
@@ -82,34 +81,6 @@ COLLECT_PHASE_ATTRS_HIGH: Optional[AttrChoiceType] = None
 
 # Degradation specific
 CHANGE_CMD_COLOUR: ColorChoiceType = "magenta"
-CHANGE_STRINGS: dict[PerformanceChange, str] = {
-    PerformanceChange.NotInBaseline: "Not in Baseline",
-    PerformanceChange.TotalDegradation: "Total Degradation",
-    PerformanceChange.SevereDegradation: "Severe Degradation",
-    PerformanceChange.Degradation: "Degradation",
-    PerformanceChange.MaybeDegradation: "Maybe Degradation",
-    PerformanceChange.NoChange: "No Change",
-    PerformanceChange.Unknown: "Unknown",
-    PerformanceChange.MaybeOptimization: "Maybe Optimization",
-    PerformanceChange.Optimization: "Optimization",
-    PerformanceChange.SevereOptimization: "Severe Optimization",
-    PerformanceChange.TotalOptimization: "Total Optimization",
-    PerformanceChange.NotInTarget: "Not in Target",
-}
-CHANGE_COLOURS: dict[PerformanceChange, ColorChoiceType] = {
-    PerformanceChange.NotInBaseline: "blue",
-    PerformanceChange.TotalDegradation: "red",
-    PerformanceChange.SevereDegradation: "red",
-    PerformanceChange.Degradation: "red",
-    PerformanceChange.MaybeDegradation: "yellow",
-    PerformanceChange.NoChange: "white",
-    PerformanceChange.Unknown: "grey",
-    PerformanceChange.MaybeOptimization: "cyan",
-    PerformanceChange.Optimization: "green",
-    PerformanceChange.SevereOptimization: "green",
-    PerformanceChange.TotalOptimization: "green",
-    PerformanceChange.NotInTarget: "blue",
-}
 CHANGE_TYPE_COLOURS: dict[str, ColorChoiceType] = {
     "time": "blue",
     "mixed": "cyan",
