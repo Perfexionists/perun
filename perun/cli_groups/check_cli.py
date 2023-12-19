@@ -115,8 +115,8 @@ def check_group(**_: Any) -> None:
     if should_precollect:
         print(
             "{} is set to {}. ".format(
-                log.in_color("degradation.collect_before_check", "white", "bold"),
-                log.in_color("true", "green", "bold"),
+                log.in_color("degradation.collect_before_check", "white", ["bold"]),
+                log.in_color("true", "green", ["bold"]),
             ),
             end="",
         )
@@ -125,13 +125,13 @@ def check_group(**_: Any) -> None:
         if precollect_to_log:
             print(
                 "The progress of the pre-collect phase will be stored in logs at {}.".format(
-                    log.in_color(pcs.get_log_directory(), "white", "bold")
+                    log.in_color(pcs.get_log_directory(), "white", ["bold"])
                 )
             )
         else:
             print(
                 "The progress of the pre-collect phase will be redirected to {}.".format(
-                    log.in_color("black hole", "white", "bold")
+                    log.in_color("black hole", "white", ["bold"])
                 )
             )
 
