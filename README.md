@@ -358,18 +358,19 @@ features](https://perfexionists.github.io/perun/overview.html#list-of-features)!
 Contributing
 ------------
 
-If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are
-warmly welcome.
+If you'd like to contribute, please first fork our repository and create a dedicated feature branch. Pull requests are
+warmly welcome. We will review the contribution (possibly request some changes).
 
-In case you run in some unexpected behaviour, error or anything suspicious, either contact us
+In case you run into some unexpected behaviour, error or anything suspicious, either contact us
 directly through mail or [create a new Issue](https://github.com/Perfexionists/perun/issues/new).
 
-The architecture of Perun allows easy extension. In case you are interested in extending our tool
+We build Perun so it is easily extensible. In case you are interested in extending our tool
 suite with new kinds of collectors, postprocessors or visualization methods, please refer to
 appropriate sections in Perun's documentation (i.e. Create your own
 [collector](https://perfexionists.github.io/perun/collectors.html#creating-your-own-collector),
 [postprocessor](https://perfexionists.github.io/perun/postprocessors.html#creating-your-own-postprocessor) 
 or [visualization](https://perfexionists.github.io/perun/views.html#creating-your-own-visualization)).
+Do not hesitate to contact us, if you run into any problems.
 
 If you are interested in contributing to Perun project, please first refer to
 [contributing](Contributing.md) section. If you think your custom module could help others, please
@@ -382,26 +383,24 @@ But, please be understanding, we cannot fix and merge everything.
 Links
 -----
 
-   -   Project repository : <https://github.com/Perfexionists/perun>
-   -   Issue tracker: <https://github.com/Perfexionists/perun/issues>
-       - In case of sensitive bugs like security vulnerabilities, please contact
-       :   <TomasFiedor@gmail.com> directly instead of using issue tracker. We
-           value your effort to improve the security and privacy of
-           this project!
-   -   Project documentation:
-       - Online: <https://perfexionists.github.io/perun/>
-       - Latest Typeset: <https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf>
-     
+- GitHub repository : [https://github.com/Perfexionists/perun](https://github.com/Perfexionists/perun)
+- Issue tracker: [https://github.com/Perfexionists/perun/issues](https://github.com/Perfexionists/perun/issues)
+    - In case of sensitive bugs like security vulnerabilities, please
+      contact [Tomas Fiedor](mailto:TomasFiedor@gmail.com) or [Jirka Pavela](mailto:JirkaPavela@gmail.com) directly
+      instead of using issue tracker. We value your effort to improve the security and privacy of our project!
+- Project documentation:
+    - Online: [https://perfexionists.github.io/perun/](https://perfexionists.github.io/perun/)
+    - Latest Typeset: [https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf](https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf)
+
 Unrelated links:
 
-   -   Check out our research group focusing on program analysis, static and dynamic analysis,
-   formal methods, verification and many more:
-   <http://www.fit.vutbr.cz/research/groups/verifit/index.php.en>
+- Check out our research group focusing on program analysis, static and dynamic analysis, formal methods, verification
+  and many more: [VeriFIT](http://www.fit.vutbr.cz/research/groups/verifit/index.php.en)
 
 Licensing
 ---------
 
-The code in this project is licensed under GNU GPLv3 license.
+The code in this project is licensed under [GNU GPLv3 license](https://github.com/Perfexionists/perun/blob/devel/LICENSE).
 
 Acknowledgements
 ----------------
@@ -416,19 +415,20 @@ contributions:
 
   -   **Jan Fiedor** (Honeywell)---for feedback, and technical
       discussions;
-  -   **Jirka Hladky** and his team (RedHat)---for technical discussions;
-  -   **Martin Hruska** (BUT FIT)---for feedback, and technical
+  -   **Jirka Hladký** and his team (RedHat)---for technical discussions and cooperation;
+  -   **Martin Hruška** (BUT FIT)---for feedback, and technical
       discussions;
+  -   **Viktor Malík** (RedHat)---for feedback and support;
   -   **Petr Müller** (SAP)---for nice discussion about the project;
   -   **Michal Kotoun** (BUT FIT)---for feedback, and having faith in
       this repo;
-  -   **Hanka Pluhackova** (BUT FIT)---for awesome logo, theoretical
+  -   **Hanka Pluháčková** (BUT FIT)---for awesome logo, theoretical
       discussions about statistics, feedback, and lots of ideas;
   -   **Adam Rogalewicz** (BUT FIT)---for support, theoretical
       discussions, feedback;
-  -   **Tomas Vojnar** (BUT FIT)---for support, theoretical discussions,
+  -   **Tomáš Vojnar** (BUT FIT)---for support, theoretical discussions,
       feedback;
-  -   **Jan Zeleny** (Red Hat)---for awesome support, and feedback.
+  -   **Jan Zelený** (Red Hat)---for awesome support, and feedback.
 
 Development of this tool has been supported by AQUAS project (Aggregated Quality Assurance for
 Systems, https://aquas-project.eu/). This project has received funding from the Electronic Component
@@ -446,4 +446,5 @@ ECSEL JU is not responsible for any use that may be made of the information it c
 <p align="center">
   <img src="https://raw.githubusercontent.com/Perfexionists/perun/devel/figs/logo-eu.jpg" width="33%">
 </p>
- This project is co-funded by the European Union
+
+This project is co-funded by the European Union
