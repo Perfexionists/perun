@@ -1,13 +1,19 @@
-# Perun
+# Perun / Perun specific
 .perun/
+tests/sources/fuzz_examples/hang-init/hang
+tests/sources/fuzz_examples/hang-test/hang
+tests/sources/fuzz_examples/sigabrt-init/sigabrt
+tests/sources/fuzz_examples/sigabrt-test/sigabrt
+tests/sources/fuzz_examples/tail/tail
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+*.py[cod~]
 *$py.class
 
-# C extensions
+# C/C++ extensions
 *.so
+*.o
 
 # Distribution / packaging
 .Python
@@ -53,6 +59,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+*.gcda
+*.gcno
+*.gcov
 
 # Translations
 *.mo
@@ -181,3 +190,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Profiling
+prof/
