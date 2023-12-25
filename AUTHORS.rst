@@ -5,7 +5,7 @@ Main Developers
 
 The following lists the authors (active ones are bold)
 
-  * **Tomas Fiedor** |tfiedor-github| <TomasFiedor@gmail.com> (founder)
+  * **Tomas Fiedor** `|tfiedor-github|`_ <TomasFiedor@gmail.com> (founder)
   * **Jiri Pavela** <Jirka.Pavela@gmail.com>
   * Radim Podola <rpodola@gmail.com>
   * Simon Stupinsky <simondestupinsky@gmail.com>
