@@ -278,19 +278,19 @@ But, please be understanding, we cannot fix and merge everything.
 Links
 -----
 
-- GitHub repository : [https://github.com/Perfexionists/perun](https://github.com/Perfexionists/perun)
-- Issue tracker: [https://github.com/Perfexionists/perun/issues](https://github.com/Perfexionists/perun/issues)
-    - In case of sensitive bugs like security vulnerabilities, please
-      contact [Tomas Fiedor](mailto:TomasFiedor@gmail.com) or [Jirka Pavela](mailto:JirkaPavela@gmail.com) directly
-      instead of using issue tracker. We value your effort to improve the security and privacy of our project!
-- Project documentation:
-    - Online: [https://perfexionists.github.io/perun/](https://perfexionists.github.io/perun/)
-    - Latest Typeset: [https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf](https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf)
+-   GitHub repository : [https://github.com/Perfexionists/perun](https://github.com/Perfexionists/perun)
+-   Issue tracker: [https://github.com/Perfexionists/perun/issues](https://github.com/Perfexionists/perun/issues)
+    -   In case of sensitive bugs like security vulnerabilities, please
+        contact [Tomas Fiedor](mailto:TomasFiedor@gmail.com) or [Jirka Pavela](mailto:JirkaPavela@gmail.com) directly
+        instead of using issue tracker. We value your effort to improve the security and privacy of our project!
+-   Project documentation:
+    -   Online: [https://perfexionists.github.io/perun/](https://perfexionists.github.io/perun/)
+    -   Latest Typeset: [https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf](https://github.com/Perfexionists/perun/blob/devel/docs/pdf/perun.pdf)
 
 Unrelated links:
 
-- Check out our research group focusing on program analysis, static and dynamic analysis, formal methods, verification
-  and many more: [VeriFIT](http://www.fit.vutbr.cz/research/groups/verifit/index.php.en)
+-   Check out our research group focusing on program analysis, static and dynamic analysis, formal methods, verification
+    and many more: [VeriFIT](http://www.fit.vutbr.cz/research/groups/verifit/index.php.en)
 
 Licensing
 ---------
