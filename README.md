@@ -309,22 +309,22 @@ Further we would like to thank the following individuals (in the
 alphabetic order) for their (sometimes even just a little)
 contributions:
 
-  -   **Jan Fiedor** (Honeywell)---for feedback, and technical
-      discussions;
-  -   **Jirka Hladký** and his team (RedHat)---for technical discussions and cooperation;
-  -   **Martin Hruška** (BUT FIT)---for feedback, and technical
-      discussions;
-  -   **Viktor Malík** (RedHat)---for feedback and support;
-  -   **Petr Müller** (SAP)---for nice discussion about the project;
-  -   **Michal Kotoun** (BUT FIT)---for feedback, and having faith in
-      this repo;
-  -   **Hanka Pluháčková** (BUT FIT)---for awesome logo, theoretical
-      discussions about statistics, feedback, and lots of ideas;
-  -   **Adam Rogalewicz** (BUT FIT)---for support, theoretical
-      discussions, feedback;
-  -   **Tomáš Vojnar** (BUT FIT)---for support, theoretical discussions,
-      feedback;
-  -   **Jan Zelený** (Red Hat)---for awesome support, and feedback.
+-   **Jan Fiedor** (Honeywell)---for feedback, and technical
+  discussions;
+-   **Jirka Hladký** and his team (RedHat)---for technical discussions and cooperation;
+-   **Martin Hruška** (BUT FIT)---for feedback, and technical
+  discussions;
+-   **Viktor Malík** (RedHat)---for feedback and support;
+-   **Petr Müller** (SAP)---for nice discussion about the project;
+-   **Michal Kotoun** (BUT FIT)---for feedback, and having faith in
+  this repo;
+-   **Hanka Pluháčková** (BUT FIT)---for awesome logo, theoretical
+  discussions about statistics, feedback, and lots of ideas;
+-   **Adam Rogalewicz** (BUT FIT)---for support, theoretical
+  discussions, feedback;
+-   **Tomáš Vojnar** (BUT FIT)---for support, theoretical discussions,
+  feedback;
+-   **Jan Zelený** (Red Hat)---for awesome support, and feedback.
 
 Development of this tool has been supported by AQUAS project (Aggregated Quality Assurance for
 Systems, https://aquas-project.eu/). This project has received funding from the Electronic Component
