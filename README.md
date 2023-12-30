@@ -186,67 +186,66 @@ and you can check whether any change in performance can be detected:
 
 In the following, we list the foremost features and advantages of using Perun:
 
-- **Unified performance profile format**: our format of performance profiles is baed on
-  [JSON](https://www.json.org/); JSON is easily parsable by other programs and languages and provide
-  human-readable format. The downside is, however, its storage size and potentially slow processing.
+-   **Unified performance profile format**: our format of performance profiles is baed on
+    [JSON](https://www.json.org/); JSON is easily parsable by other programs and languages and provide
+    human-readable format. The downside is, however, its storage size and potentially slow processing.
 
-- **Natural specification of profiling runs**---we allow users to specify how to execute
-  regular or more complex profiling workflows (the so-called jobs) in [Yaml](http://yaml.org/) format;
-  YAML is widely used in CI/CD and other approaches, and is supported by many programs and languages.
+-   **Natural specification of profiling runs**---we allow users to specify how to execute
+    regular or more complex profiling workflows (the so-called jobs) in [Yaml](http://yaml.org/) format;
+    YAML is widely used in CI/CD and other approaches, and is supported by many programs and languages.
 
-- **Git-inspired Interface**---we provide command line interface for our tool suite; the commands are inspired by git
-  version control systems e.g. `perun add`, `perun remove`, `perun status`, or `perun log`. This allows users to quickly
-  adapt to using Perun and its tool suite.
+-   **Git-inspired Interface**---we provide command line interface for our tool suite; the commands are inspired by git
+    version control systems e.g. `perun add`, `perun remove`, `perun status`, or `perun log`. This allows users to 
+    quickly adapt to using Perun and its tool suite.
 
-- **Efficient storage**---performance profiles are stored compressed in the storage in parallel
-  to versions of the profiled project inspired by git. Note, that the resulting profiles can still be huge; we are
-  working on compressing and reducing the resulting profiles even further.
+-   **Efficient storage**---performance profiles are stored compressed in the storage in parallel
+    to versions of the profiled project inspired by git. Note, that the resulting profiles can still be huge; we are
+    working on compressing and reducing the resulting profiles even further.
 
-- **Performance modeling**---Perun's suite contains a postprocessing module for regression
-  analysis of profiles that construct mathematical models of dependent variables (e.g. runtime) wrt given independent
-  variable (see [regression analysis
-  documentation](https://perfexionists.github.io/perun/postprocessors.html#module-perun.postprocess.regression_analysis)),
-  which supports several different strategies for finding the best predicting model for given data
-  (such as linear, quadratic, or constant model). We also support more advanced modeling using, e.g. kernel regression
-  methods; these, however, require more domain specific knowledge.
+-   **Performance modeling**---Perun's suite contains a postprocessing module for regression
+    analysis of profiles that construct mathematical models of dependent variables (e.g. runtime) wrt given independent
+    variable (see [regression analysis documentation](https://perfexionists.github.io/perun/postprocessors.html#module-perun.postprocess.regression_analysis)),
+    which supports several different strategies for finding the best predicting model for given data
+    (such as linear, quadratic, or constant model). We also support more advanced modeling using, e.g. kernel regression
+    methods; these, however, require more domain specific knowledge.
 
-- **Interactive Visualizations**---Perun's tool suite includes support for visualization of the results,
-  some of them based on [holoviews](https://holoviews.org/) visualization library, which
-  provides nice and interactive plots. However, Perun also supports classical output to console as well.
+-   **Interactive Visualizations**---Perun's tool suite includes support for visualization of the results,
+    some of them based on [holoviews](https://holoviews.org/) visualization library, which
+    provides nice and interactive plots. However, Perun also supports classical output to console as well.
 
-- **API for profile manipulation**---Perun provides modules for working with
-  profiles in external applications---ranging for executing simple queries over the resources
-  or other parts of the profiles, to converting or transforming the profiles to different representations
-  (e.g. pandas data frame). We particularly recommend using this API in the Python REPL. See [conversion
-  api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.convert) and [query
-  api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.query) for overview.
+-   **API for profile manipulation**---Perun provides modules for working with
+    profiles in external applications---ranging for executing simple queries over the resources
+    or other parts of the profiles, to converting or transforming the profiles to different representations
+    (e.g. pandas data frame). We particularly recommend using this API in the Python REPL. 
+    See [conversion api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.convert) 
+    and [query api](https://perfexionists.github.io/perun/profile.html#module-perun.profile.query) for overview.
 
-- **Automatic Detection of Performance Degradation**---Perun offers several
-  heuristics for automatic detection of performance degradation between two project versions (e.g.
-  between two commits). This can be used either in Continuous Integrations, in debugging sessions or as parts of some
-  precomming hooks.
+-   **Automatic Detection of Performance Degradation**---Perun offers several
+    heuristics for automatic detection of performance degradation between two project versions (e.g.
+    between two commits). This can be used either in Continuous Integrations, in debugging sessions or as parts of some
+    precomming hooks.
 
-- **Performance Fuzz-testing**---Perun offers a performance oriented fuzz testing ---i.e. modifying inputs in
-  order to force error or, in our case, a performance change. This allows users to generate new time-consuming inputs
-  for theirs projects.
+-   **Performance Fuzz-testing**---Perun offers a performance oriented fuzz testing ---i.e. modifying inputs in
+    order to force error or, in our case, a performance change. This allows users to generate new time-consuming inputs
+    for theirs projects.
 
 As a sneak peek, we are currently working and exploring the following featurues in near future of
 the project:
 
-- **Automatic Hooks**---a range of automatic hooks, that will allow to automate the runs of job matrix,
-  automatic detection of degradation and efficient storage.
+-   **Automatic Hooks**---a range of automatic hooks, that will allow to automate the runs of job matrix,
+    automatic detection of degradation and efficient storage.
 
-- **Support for more languages**---we are currently working on support for profiling more programming languages. In
-  particular, we wish to explore profiling languages such as C#, Python, Go or TypeScript. Moreover, we wish to support
-  some well known profilers such as valgrind toolsuite or perf in our workflow.
+-   **Support for more languages**---we are currently working on support for profiling more programming languages. In
+    particular, we wish to explore profiling languages such as C#, Python, Go or TypeScript. Moreover, we wish to support
+    some well known profilers such as valgrind toolsuite or perf in our workflow.
 
-- **Optimization of profiling process**---in our ongoing work we are trying to optimize the runtime and the resulting
-  storage space of the profiling process while keeping the precision of the results. Some of our optimizations are
-  already merged in the upstream, however, we are currently enhancing our methods.
+-   **Optimization of profiling process**---in our ongoing work we are trying to optimize the runtime and the resulting
+    storage space of the profiling process while keeping the precision of the results. Some of our optimizations are
+    already merged in the upstream, however, we are currently enhancing our methods.
 
-- **Optimal selection of versions**---currently we automatically only support the comparison of two latest versions in
-  git history. Alternatively, one can select two particular profiles to compare. We currently, exploring differt ways
-  how to select version in history for comparison for some given version.
+-   **Optimal selection of versions**---currently we automatically only support the comparison of two latest versions in
+    git history. Alternatively, one can select two particular profiles to compare. We currently, exploring differt ways
+    how to select version in history for comparison for some given version.
 
 For more information about Perun's feature, please refer to our [extensive list of
 features](https://perfexionists.github.io/perun/overview.html#list-of-features)!
