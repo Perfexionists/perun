@@ -1061,8 +1061,7 @@ def test_reg_analysis_correct(pcs_single_prof):
     pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     complex_file = os.path.join(pool_path, "log2.perf")
     result = runner.invoke(
-        cli.postprocessby,
-        ["{}".format(complex_file), "regression-analysis", "-m", "bisection"],
+        cli.postprocessby, [f"{complex_file}", "regression-analysis", "-m", "bisection"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
@@ -1353,10 +1352,10 @@ def test_cli_outside_pcs():
     dst_dir = os.getcwd()
     valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
     added_profile = test_utils.prepare_profile(dst_dir, valid_profile, "")
-    result = runner.invoke(cli.add, ["--keep-profile", "{}".format(added_profile)])
+    result = runner.invoke(cli.add, ["--keep-profile", f"{added_profile}"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
-    result = runner.invoke(cli.remove, ["{}".format(added_profile)])
+    result = runner.invoke(cli.remove, [f"{added_profile}"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
     result = runner.invoke(cli.log, [])
@@ -2048,7 +2047,7 @@ def test_run(pcs_with_root, monkeypatch):
             "param: key",
             "--collector-params",
             "time",
-            "{}".format(job_config_file),
+            f"{job_config_file}",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)

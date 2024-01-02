@@ -47,15 +47,14 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         module = utils.get_module(module_name)
         for must_have_function_name in must_have_function_names:
-            assert hasattr(module, must_have_function_name) and "Missing {} in module {}".format(
-                must_have_function_name, module_name
+            assert (
+                hasattr(module, must_have_function_name)
+                and f"Missing {must_have_function_name} in module {module_name}"
             )
 
         # Each module has to be registered in get_supported_module_names
         unit_name = module_name.split(".")[-1]
-        assert unit_name in registered_modules and "{} was not registered properly".format(
-            module_name
-        )
+        assert unit_name in registered_modules and f"{module_name} was not registered properly"
 
 
 def assert_all_registered_cli_units(package_name, package, must_have_function_names):
@@ -75,28 +74,25 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
         module = utils.get_module(module_name)
-        assert hasattr(module, "run") and "Missing module run.py in the '{}' module".format(
-            package_name
-        )
+        assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
         run_module = utils.get_module(".".join([module_name, "run"]))
         for must_have_function_name in must_have_function_names:
             assert (
                 not must_have_function_name
                 or hasattr(run_module, must_have_function_name)
-                and "run.py is missing '{}' function".format(must_have_function_name)
+                and f"run.py is missing '{must_have_function_name}' function"
             )
 
         # Each module has to have CLI interface function of the same name
         unit_name = module_name.split(".")[-1]
-        assert hasattr(run_module, unit_name) and "{} is missing CLI function point".format(
-            unit_name
-        )
+        assert hasattr(run_module, unit_name) and f"{unit_name} is missing CLI function point"
 
         # Each module has to be registered in get_supported_module_names
         # Note: As of Click 7.0 we have to (de)sanitize _ and -
-        assert Unit.desanitize_unit_name(
-            unit_name
-        ) in registered_modules and "{} was not registered properly".format(module_name)
+        assert (
+            Unit.desanitize_unit_name(unit_name) in registered_modules
+            and f"{module_name} was not registered properly"
+        )
 
 
 def test_get_supported_modules():

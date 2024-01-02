@@ -50,7 +50,7 @@ def test_table_cli(pcs_full):
     added = test_utils.prepare_profile(
         pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
     )
-    result = runner.invoke(cli.add, ["--keep-profile", "{}".format(added)])
+    result = runner.invoke(cli.add, ["--keep-profile", f"{added}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     result = runner.invoke(cli.show, ["0@p", "tableof", "--to-stdout", "models"])

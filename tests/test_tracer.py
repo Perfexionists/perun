@@ -237,7 +237,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
         [
             "-vv",
             "collect",
-            "-c{}".format(target),
+            f"-c{target}",
             "trace",
             "-f", "main",
             "-f", "main#2",
@@ -265,7 +265,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(os.path.join("invalid", "executable", "path")),
+            f"-c{os.path.join('invalid', 'executable', 'path')}",
             "trace",
             "-f",
             "main",
@@ -276,7 +276,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
 
     # Test that non-elf files are not accepted
     not_elf = os.path.join(target_dir, "job.yml")
-    result = runner.invoke(cli.collect, ["-c{}".format(not_elf), "trace", "-f", "main"])
+    result = runner.invoke(cli.collect, [f"-c{not_elf}", "trace", "-f", "main"])
     assert result.exit_code == 1
     assert "Supplied binary" in result.output
 
@@ -303,11 +303,11 @@ def test_collect_trace_utils(pcs_with_root):
     runner = CliRunner()
     target = os.path.join(target_dir, "tst")
     locks_dir = temp.temp_path(os.path.join("trace", "locks"))
-    lock_file = "{}:{}{}".format("tst", 1, ".b_lock")
+    lock_file = f"tst:1.b_lock"
 
     temp.touch_temp_dir(locks_dir)
     temp.touch_temp_file(os.path.join(locks_dir, lock_file), protect=True)
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-f", "main", "-w"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-f", "main", "-w"])
     assert result.exit_code == 0
 
 
@@ -323,14 +323,14 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     job_params = trace_collect_job[5]["collector_params"]["trace"]
 
     # Test loading the trace parameters
-    func = ["-f{}".format(func) for func in job_params["func"]]
-    usdt = ["-u{}".format(usdt) for usdt in job_params["usdt"]]
-    binary = ["-b{}".format(target)]
+    func = [f"-f{func}" for func in job_params["func"]]
+    usdt = [f"-u{usdt}" for usdt in job_params["usdt"]]
+    binary = [f"-b{target}"]
 
     # Test the suppress output handling and that missing stap actually terminates the collection
     result = runner.invoke(
         cli.collect,
-        ["-c{}".format(target), "trace", "-o", "suppress"] + func + usdt + binary,
+        [f"-c{target}", "trace", "-o", "suppress"] + func + usdt + binary,
     )
 
     if not shutil.which("stap"):
@@ -355,7 +355,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     # Test running the job from the params using the yaml string
     result = runner.invoke(
         cli.collect,
-        ["-c{}".format(target), '-p"global_sampling: 2"', "trace"] + func + usdt + binary,
+        [f"-c{target}", '-p"global_sampling: 2"', "trace"] + func + usdt + binary,
     )
     assert result.exit_code == 0
 
@@ -365,7 +365,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
         [
             "-ot",
             "%collector%-profile",
-            "-c{}".format(target),
+            f"-c{target}",
             '-p"method: custom"',
             "trace",
         ]
@@ -383,7 +383,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(target),
+            f"-c{target}",
             "trace",
             "-f", "main",
             "-f", "main",
@@ -401,7 +401,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
         + binary,
     )  # fmt: skip
     assert result.exit_code == 0
-    print("TRACE OUTPUT: {}".format(result.stdout))
+    print(f"TRACE OUTPUT: {result.output}")
     # Compare the created script with the correct one
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "cmp_script.txt")
@@ -411,7 +411,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     # Also test that watchdog and quiet works
     result = runner.invoke(
         cli.collect,
-        ["-c{}".format(target), "trace", "-g", "-2", "-w", "-q", "-k"] + binary + func,
+        [f"-c{target}", "trace", "-g", "-2", "-w", "-q", "-k"] + binary + func,
     )
     log_path = os.path.join(get_log_directory(), "trace")
     logs = glob.glob(os.path.join(log_path, "trace_*.txt"))
@@ -427,9 +427,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     assert len(archives) == 1
     assert result.exit_code == 0
     # Try it the other way around
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-o", "capture", "-k"] + func
-    )
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-o", "capture", "-k"] + func)
     files_path = os.path.join(get_tmp_directory(), "trace", "files")
     capture = glob.glob(os.path.join(files_path, "collect_capture_*.txt"))
     # Two previous tests and this one kept the capture files
@@ -458,27 +456,25 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     target = os.path.join(target_dir, "tst")
 
     # Test simple userspace strategy without external modification or sampling
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "userspace", "-k"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "userspace", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy1_script.txt")
     )
     # Test simple u_sampled strategy without external modification
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "u_sampled", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy2_script.txt")
     )
     # Test simple all strategy without external modification or sampling
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "all", "-k"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "all", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy3_script.txt")
     )
     # Test simple a_sampled strategy with verbose trace and without external modification
-    result = runner.invoke(
-        cli.collect, ["-c{}".format(target), "trace", "-s", "a_sampled", "-vt", "-k"]
-    )
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "a_sampled", "-vt", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy4_script.txt")
@@ -490,7 +486,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(target),
+            f"-c{target}".format(target),
             "trace",
             "-s", "userspace",
             "--no-usdt",
@@ -507,7 +503,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(target),
+            f"-c{target}",
             "trace",
             "-s", "u_sampled",
             "--no-usdt",
@@ -523,7 +519,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(target),
+            f"-c{target}",
             "trace",
             "-s", "userspace",
             "-f", "main#4",
@@ -540,7 +536,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(target),
+            f"-c{target}",
             "trace",
             "-s", "userspace",
             "--no-usdt",
@@ -554,7 +550,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     )
     # Test u_sampled strategy with more static probes to check correct pairing
     monkeypatch.setattr(stap, "_extract_usdt_probes", _mocked_stap_extraction2)
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "u_sampled", "-k"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "u_sampled", "-k"])
     assert result.exit_code == 0
     assert _compare_collect_scripts(
         _get_latest_collect_script(), os.path.join(target_dir, "strategy8_script.txt")
@@ -581,24 +577,24 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
     assert result.exit_code == 1
     assert "does not exist or is not an executable ELF file" in result.output
     # Try missing probe points
-    result = runner.invoke(cli.collect, ["trace", "-b{}".format(target)])
+    result = runner.invoke(cli.collect, ["trace", f"-b{target}"])
     assert result.exit_code == 1
     assert "No profiling probes created" in result.output
 
     # Try invalid parameter --strategy
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-sinvalid", "-b", target])
+    result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-sinvalid", "-b", target])
     assert result.exit_code == 2
 
     # Try binary parameter that is actually not executable ELF
     invalid_target = os.path.join(target_dir, "cpp_sources", "tst.cpp")
-    result = runner.invoke(cli.collect, ["-c{}".format(invalid_target), "trace"])
+    result = runner.invoke(cli.collect, [f"-c{invalid_target}", "trace"])
     assert result.exit_code == 1
     assert "is not an executable ELF file." in result.output
 
     monkeypatch.setattr(stap.SystemTapEngine, "collect", _mocked_stap2)
     # Test malformed file that ends in unexpected way
     _mocked_stap_file = "record_malformed.txt"
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 1", "trace", "-s", "userspace"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "-w 1", "trace", "-s", "userspace"])
     # However, the collector should still be able to correctly process it
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -608,7 +604,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that ends in another unexpected way
     _mocked_stap_file = "record_malformed2.txt"
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 2", "trace", "-s", "userspace"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "-w 2", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -617,7 +613,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that has corrupted record
     _mocked_stap_file = "record_malformed3.txt"
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 3", "trace", "-s", "userspace"])
+    result = runner.invoke(cli.collect, [f"-c{target}", "-w 3", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -627,7 +623,9 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that has misplaced data chunk
     _mocked_stap_file = "record_malformed4.txt"
-    result = runner.invoke(cli.collect, ["-c{}".format(target), "-w 4", "trace", "-s", "userspace"])
+    result = runner.invoke(
+        cli.collect, [f"-c{target}".format(target), "-w 4", "trace", "-s", "userspace"]
+    )
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
@@ -636,7 +634,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Simulate the failure of the systemTap
     _mocked_stap_code = 1
-    runner.invoke(cli.collect, ["-c{}".format(target), "trace", "-s", "userspace"])
+    runner.invoke(cli.collect, [f"-c{target}", "trace", "-s", "userspace"])
     # Assert that nothing was added
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count == after_object_count

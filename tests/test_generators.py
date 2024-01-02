@@ -169,7 +169,7 @@ def _generate_temp_files(temp_dir, num):
     """
     store.touch_dir(temp_dir)
     for i in range(num):
-        temp_file = os.path.join(temp_dir, "tmp{}_{}".format(num, num * 10))
+        temp_file = os.path.join(temp_dir, f"tmp{num}_{num * 10}")
         with open(temp_file, "w") as tmp_handle:
             tmp_handle.write(("." * num * 10 + "\n") * num)
 
