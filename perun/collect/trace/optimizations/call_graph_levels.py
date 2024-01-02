@@ -283,7 +283,6 @@ def _find_backedges_for(vertex, successors, idom):
     while dom[-1] != dom[-2]:
         dom.append(idom[dom[-1]])
     dom = set(dom)
-    # print('{}: {}'.format(vertex, ', '.join(dom)))
 
     vertex_backedges = set()
     for succ in successors:

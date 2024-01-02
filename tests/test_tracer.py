@@ -486,7 +486,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     result = runner.invoke(
         cli.collect,
         [
-            f"-c{target}".format(target),
+            f"-c{target}",
             "trace",
             "-s", "userspace",
             "--no-usdt",
@@ -623,9 +623,7 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
 
     # Test malformed file that has misplaced data chunk
     _mocked_stap_file = "record_malformed4.txt"
-    result = runner.invoke(
-        cli.collect, [f"-c{target}".format(target), "-w 4", "trace", "-s", "userspace"]
-    )
+    result = runner.invoke(cli.collect, [f"-c{target}", "-w 4", "trace", "-s", "userspace"])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
     after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]

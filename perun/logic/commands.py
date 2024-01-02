@@ -122,12 +122,9 @@ def config_reset(store_type: str, config_template: str) -> None:
         vcs_url, vcs_type = pcs.get_vcs_type_and_url()
         vcs_config = {"vcs": {"url": vcs_url, "type": vcs_type}}
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
-    perun_log.info(
-        "{} configuration reset{}".format(
-            "global" if is_shared_config else "local",
-            f" to {config_template}" if not is_shared_config else "",
-        )
-    )
+    perun_log.info(f"{'global' if is_shared_config else 'local'} configuration reset")
+    if not is_shared_config:
+        perun_log.info(f" to {config_template}")
 
 
 def init_perun_at(
@@ -743,7 +740,9 @@ def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) 
     :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
-    perun_log.info("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
+    perun_log.info(
+        f"Author: {head_minor_version.author} <{head_minor_version.email}> {head_minor_version.date}"
+    )
     for parent in head_minor_version.parents:
         perun_log.info(f"Parent: {parent}")
     perun_log.info("")
@@ -1094,13 +1093,12 @@ def status(short: bool = False, **_: Any) -> None:
 
     # Print the status of major head.
     perun_log.info(
-        "On major version {} ".format(perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)),
-        end="",
+        f"On major version {perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)} ", end=""
     )
 
     # Print the index of the current head
     perun_log.info(
-        "(minor version: {})".format(perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS))
+        f"(minor version: {perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)})"
     )
 
     # Print in long format, the additional information about head commit, by default print
@@ -1228,7 +1226,7 @@ def print_formatted_temp_files(
         # Print the size of each file
         if show_size:
             perun_log.info(
-                "{}".format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
+                f"{perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)}",
                 end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
             )
         # Print the protection level of each file
@@ -1240,7 +1238,7 @@ def print_formatted_temp_files(
                 )
             else:
                 perun_log.info(
-                    "{}  ".format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                    f"{perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)}  ",
                     end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
                 )
 
@@ -1249,7 +1247,7 @@ def print_formatted_temp_files(
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            perun_log.info("{}".format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end="")
+            perun_log.info(f"{perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)}", end="")
         perun_log.info(f"{os.path.basename(file_name)}")
 
 
@@ -1276,9 +1274,7 @@ def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) 
         # The supplied path does not exist, inform the user so they can correct the path
         else:
             perun_log.warn(
-                "The supplied path '{}' does not exist, no files deleted".format(
-                    temp.temp_path(path)
-                )
+                f"The supplied path '{temp.temp_path(path)}' does not exist, no files deleted"
             )
     except (InvalidTempPathException, ProtectedTempException) as exc:
         # Invalid path or protected files encountered
@@ -1367,9 +1363,8 @@ def _print_total_size(total_size: int, enabled: bool) -> None:
     if enabled:
         formated_total_size = utils.format_file_size(total_size)
         perun_log.info(
-            "Total size of all the displayed files / directories: {}".format(
-                perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)
-            )
+            f"Total size of all the displayed files / directories: "
+            f"{perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)}"
         )
 
 
