@@ -351,13 +351,12 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
     index_version = store.read_int_from_handle(index_handle)
     number_of_entries = store.read_int_from_handle(index_handle)
 
-    print(
-        f"{index_prefix.decode('utf-8')}, index version {index_version} with"
-        f" {number_of_entries} entries\n"
+    perun_log.info(
+        f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n"
     )
 
     for entry in walk_index(index_handle):
-        print(str(entry))
+        perun_log.info(str(entry))
 
 
 def touch_index(index_path: str) -> None:
@@ -447,7 +446,7 @@ def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry) -> None:
                     and looked_up_entry.time == file_entry.time
                 ):
                     perun_log.warn(
-                        "{file_entry.path} ({file_entry.time}) already registered in {index_file}",
+                        f"{file_entry.path} ({file_entry.time}) already registered in {index_file}",
                     )
                     return
                 offset_in_file = looked_up_entry.offset

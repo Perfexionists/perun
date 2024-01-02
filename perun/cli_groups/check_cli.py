@@ -173,7 +173,9 @@ def check_all(minor_head: str = "HEAD") -> None:
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
-    print("[!] Running the degradation checks on the whole VCS history. This might take a while!\n")
+    log.info(
+        "[!] Running the degradation checks on the whole VCS history. This might take a while!\n"
+    )
     check.degradation_in_history(minor_head)
 
 

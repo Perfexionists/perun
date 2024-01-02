@@ -53,7 +53,7 @@ from perun.utils.helpers import SuppressedExceptions
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
     """Prints current version of Perun and ends"""
     if value:
-        print(f"Perun {perun.__version__}")
+        log.info(f"Perun {perun.__version__}")
         exit(0)
 
 

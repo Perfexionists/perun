@@ -318,10 +318,10 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
     :raise subprocess.CalledProcessError: when there is an error in any of the commands
     """
     for cmd in cmd_list:
-        print(">", cmd)
+        log.info(">", cmd)
         out, err = run_safely_external_command(cmd)
         if out:
-            print(out.decode("utf-8"), end="")
+            log.info(out.decode("utf-8"), end="")
         if err:
             cprint(err.decode("utf-8"), "red")
 

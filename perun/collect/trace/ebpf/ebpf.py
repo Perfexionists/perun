@@ -12,6 +12,7 @@ from perun.utils import nonblocking_subprocess
 from perun.collect.trace.optimizations.structs import Optimizations, Parameters
 from perun.collect.trace.threads import TimeoutThread, PeriodicThread
 import perun.logic.temp as temp
+import perun.utils.log as log
 
 
 class BpfContext:
@@ -238,7 +239,7 @@ def ebpf_runner():
         if poll_duration * 1000 > _BPF_POLL_SLEEP * 0.25:
             break
     time.sleep(_BPF_SLEEP)
-    print("Lost: {BPF_CTX.lost} records")
+    log.info(f"Lost: {BPF_CTX.lost} records")
     BPF_CTX.data.close()
     temp.store_temp("ebpf:profiled_command.json", profiled_time, json_format=True)
 
