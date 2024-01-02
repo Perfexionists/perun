@@ -96,7 +96,7 @@ def average_amount_threshold(
                 res=change,
                 t=resource_type,
                 loc=target_uid,
-                fb="{}{}".format(round(baseline_average, 2), unit),
-                tt="{}{}".format(round(target_average, 2), unit),
+                fb=f"{round(baseline_average, 2)}{unit}",
+                tt=f"{round(target_average, 2)}{unit}",
                 rd=difference_ratio,
             )

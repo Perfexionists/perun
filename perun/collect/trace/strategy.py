@@ -39,9 +39,7 @@ def extract_configuration(engine, probes):
     # Do some strategy specific actions (e.g. extracting symbols)
     extracted_func, extracted_usdt = _extract_strategy_specifics(engine, probes)
     WATCH_DOG.debug(
-        "Number of extracted function probes: '{}', usdt probes: '{}'".format(
-            len(extracted_func), len(extracted_usdt)
-        )
+        f"Number of extracted function probes: '{len(extracted_func)}', usdt probes: '{len(extracted_usdt)}'"
     )
 
     # Create one dictionary of function probes specification
@@ -317,7 +315,7 @@ def _extract_functions(targets, strategy, global_sampling):
                     func, ProbeType.FUNC, lib=target, pair=func, sample=global_sampling
                 )
         if not func_count:
-            WATCH_DOG.info("No function symbols found in '{}'".format(target))
+            WATCH_DOG.info(f"No function symbols found in '{target}'")
     return probes
 
 
@@ -351,7 +349,7 @@ def _load_function_names(binary, only_user):
     # Extract user function symbols from the supplied binary
     awk_filter = '$2 == "T" || $2 == "t"' if only_user else '$2 == "T" || $2 == "W"'
     output, _ = utils.run_safely_external_command(
-        "nm -P {bin} | awk '{filt} {{print $1}}'".format(bin=binary, filt=awk_filter)
+        f"nm -P {binary} | awk '{awk_filter} {{print $1}}'"
     )
     return output.decode("utf-8")
 

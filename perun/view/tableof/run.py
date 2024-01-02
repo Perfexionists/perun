@@ -81,7 +81,7 @@ def create_table_from(
         groups = [(k, list(v)) for (k, v) in groupby(filter_by, operator.itemgetter(0))]
         filter_query = " & ".join(
             '@dataframe.get("{0}") in [{1}]'.format(
-                key, ", ".join('"{}"'.format(v[1]) for v in list(value))
+                key, ", ".join(f'"{v[1]}"' for v in list(value))
             )
             for (key, value) in groups
         )

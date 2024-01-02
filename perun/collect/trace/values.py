@@ -64,9 +64,7 @@ class Zipper:
         """
         if self.__enabled:
             self.pack = ZipFile(self.pack_name, "w", compression=ZIP_LZMA).__enter__()
-            WATCH_DOG.info(
-                "Packing the temporary files into an archive '{}'.".format(self.pack_name)
-            )
+            WATCH_DOG.info(f"Packing the temporary files into an archive '{self.pack_name}'.")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -88,7 +86,7 @@ class Zipper:
         """
         if self.__enabled and file is not None:
             self.pack.write(file, arcname=arcname)
-            WATCH_DOG.debug("Temporary file '{}' packed as '{}'.".format(file, arcname))
+            WATCH_DOG.debug(f"Temporary file '{file}' packed as '{arcname}'.")
 
 
 class FileSize(IntEnum):
@@ -141,10 +139,10 @@ def check(dependencies):
     Otherwise an exception is raised.
     """
     # Check that all the dependencies are present
-    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(dependencies))
+    WATCH_DOG.debug(f"Checking that all the dependencies '{dependencies}' are present")
     for dependency in dependencies:
         if not shutil.which(dependency):
-            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
+            WATCH_DOG.debug(f"Missing dependency command '{dependency}' detected")
             raise MissingDependencyException(dependency)
     WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 

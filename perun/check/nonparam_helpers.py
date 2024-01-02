@@ -80,9 +80,8 @@ def unify_buckets_in_regressogram(
     baseline_coeff_len = baseline_model_record.coeff_size()
     target_coeff_len = target_model_record.coeff_size()
     log.warn(
-        "{0}: {1} models with different length ({2} != {3}) are slicing".format(
-            uid, baseline_model_record.type, baseline_coeff_len, target_coeff_len
-        ),
+        f"{uid}: {baseline_model_record.type} models with different length "
+        f"({baseline_coeff_len} != {target_coeff_len}) will be sliced accordingly",
         end=": ",
     )
     log.cprint("Target regressogram model will be post-processed again.\n", "yellow")
@@ -166,9 +165,8 @@ def preprocess_nonparam_models(
         target_y_pts_len = len(target_y_pts)
         if baseline_y_pts_len != target_y_pts_len:
             log.warn(
-                "{0}: {1} models with different length ({2} != {3}) are slicing".format(
-                    uid, baseline_model.type, baseline_y_pts_len, target_y_pts_len
-                )
+                f"{uid}: {baseline_model.type} models with different length "
+                f"({baseline_y_pts_len} != {target_y_pts_len}) will be sliced"
             )
             return (
                 baseline_x_pts[: min(baseline_x_pts_len, target_x_pts_len)],

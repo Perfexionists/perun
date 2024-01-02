@@ -57,9 +57,7 @@ class WorkloadGenerator:
             # Update the workload: the executed one (workload) and config one (origin_workload)
             self.job.executable.workload = str(workload)
             self.job.executable.origin_workload = (
-                "{}_{}".format(self.generator_name, str(workload))
-                if self.for_each
-                else self.generator_name
+                f"{self.generator_name}_{workload}" if self.for_each else self.generator_name
             )
             c_status, prof = collect_function(self.job.collector, self.job)
             if self.for_each:

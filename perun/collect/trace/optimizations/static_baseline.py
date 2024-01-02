@@ -37,10 +37,7 @@ def _get_complexity_classes(sources):
         get_module("perun.collect.bounds.run"), "collector", {"sources": sources}
     )
     if not collection_report.is_ok():
-        log.error(
-            "static bounds analysis failed: {}".format(collection_report.message),
-            recoverable=True,
-        )
+        log.error(f"static bounds analysis failed: {collection_report.message}", recoverable=True)
         return {}
 
     # parse the collector output and store the local and total bounds

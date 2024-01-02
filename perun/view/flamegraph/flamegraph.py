@@ -27,12 +27,12 @@ def draw_flame_graph(profile: profiles.Profile, output_file: str, height: int) -
 
     header = profile["header"]
     profile_type = header["type"]
-    title = "{} consumption of {} {} {}".format(
-        profile_type,
+    cmd, args, workload = (
         header["cmd"],
         helpers.get_key_with_aliases(header, ("args", "params")),
         header["workload"],
     )
+    title = f"{profile_type} consumption of {cmd} {args} {workload}"
     units = header["units"][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))

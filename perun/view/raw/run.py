@@ -26,14 +26,11 @@ def show(profile: Profile, **kwargs: Any) -> None:
     header = profile["header"]
     for header_item in ["type", "cmd", "args", "workload"]:
         if header_item in header.keys():
-            print(
-                "{}: {}".format(
-                    log.in_color(header_item, RAW_KEY_COLOUR),
-                    log.in_color(header[header_item], RAW_ITEM_COLOUR),
-                )
+            log.info(
+                f"{log.in_color(header_item, RAW_KEY_COLOUR)}: {log.in_color(header[header_item], RAW_ITEM_COLOUR)}"
             )
 
-    print("")
+    log.info("")
 
     # Construct the collector info
     if "collector_info" in profile.keys():
@@ -41,7 +38,7 @@ def show(profile: Profile, **kwargs: Any) -> None:
         collector_info = profile["collector_info"]
         for collector_item in ["name", "params"]:
             if collector_item in collector_info.keys():
-                print(
+                log.info(
                     int(raw_indent) * 1 * " "
                     + "- {}: {}".format(
                         log.in_color(collector_item, RAW_KEY_COLOUR),

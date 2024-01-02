@@ -119,7 +119,7 @@ def config_get(ctx: click.Context, key: str) -> None:
     try:
         commands.config_get(ctx.obj["store_type"], key)
     except MissingConfigSectionException as mcs_err:
-        perun_log.error("error while getting key '{}': {}".format(key, str(mcs_err)))
+        perun_log.error(f"error while getting key '{key}': {mcs_err}")
 
 
 @config.command("set")
@@ -178,7 +178,7 @@ def config_edit(ctx: click.Context) -> None:
         ExternalEditorErrorException,
         MissingConfigSectionException,
     ) as editor_exception:
-        perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
+        perun_log.error(f"could not invoke external editor: {editor_exception}")
 
 
 @config.command("reset")
@@ -208,6 +208,4 @@ def config_reset(ctx: click.Context, config_template: str) -> None:
     try:
         commands.config_reset(ctx.obj["store_type"], config_template)
     except NotPerunRepositoryException as npre:
-        perun_log.error(
-            "could not reset the {} configuration: {}".format(ctx.obj["store_type"], str(npre))
-        )
+        perun_log.error(f"could not reset the {ctx.obj['store_type']} configuration: {npre}")

@@ -369,7 +369,7 @@ def delete_version_dirs(
                 removed_versions.append(version)
         except OSError as exc:
             # Failed to delete some object, log and skip
-            perun_log.msg_to_file("Stats object deletion info: {}".format(str(exc)), 0)
+            perun_log.msg_to_file(f"Stats object deletion info: {exc}", 0)
 
     # Update the index to reflect the removed version directories
     _remove_versions_from_index(removed_versions)
@@ -445,7 +445,7 @@ def _delete_stats_objects(dirs: Iterable[str], files: Iterable[str]) -> None:
                 delete_func(item)  # type: ignore
             except OSError as exc:
                 # Possibly already deleted files or restricted permission etc., log and skip
-                perun_log.msg_to_file("Stats object deletion error: {}".format(str(exc)), 0)
+                perun_log.msg_to_file(f"Stats object deletion error: {exc}", 0)
 
 
 def _delete_empty_dir(directory_path: str) -> bool:

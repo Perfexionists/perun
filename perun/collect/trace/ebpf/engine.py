@@ -84,15 +84,12 @@ class BpfEngine(engine.CollectEngine):
 
         WATCH_DOG.info("Starting up the eBPF collection process.")
         # Run the new ebpf process with sudo privileges
+        current_interpreter = utils.get_current_interpreter("3.6+")
         with utils.nonblocking_subprocess(
-            "sudo {} {} {}".format(
-                utils.get_current_interpreter("3.6+"),
-                _get_ebpf_file(),
-                self.runtime_conf,
-            ),
+            f"sudo {current_interpreter} {_get_ebpf_file()} {self.runtime_conf}",
             {},
         ) as ebpf_proc:
-            WATCH_DOG.info("The eBPF process is running, pid {}.".format(ebpf_proc.pid))
+            WATCH_DOG.info(f"The eBPF process is running, pid {ebpf_proc.pid}.")
             self.ebpf_process = ebpf_proc
             # Wait for the process to finish
             ebpf_proc.wait()

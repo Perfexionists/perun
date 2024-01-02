@@ -141,7 +141,7 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     :param Configuration config: the configuration parameters
     :param Probes probes: the probes specification
     """
-    WATCH_DOG.info("Attempting to assembly the SystemTap script '{}'".format(script_file))
+    WATCH_DOG.info(f"Attempting to assembly the SystemTap script '{script_file}'")
 
     # Add unique probe and sampling ID to the probes
     probes.add_probe_ids()
@@ -212,7 +212,7 @@ probe process("{binary}").end
             type=int(RecordType.PROCESS_END), timestamp=STOPWATCH_NAME
         ),
         timed_sampling=(
-            "global {} = 1".format(TIMED_SWITCH) if timed_sampling else "# Timed Sampling omitted"
+            f"global {TIMED_SWITCH} = 1" if timed_sampling else "# Timed Sampling omitted"
         ),
     )
     handle.write(script_init)
@@ -359,7 +359,7 @@ def _build_array_declaration(probes, verbose_trace, max_threads):
     recursion_arrays = "# Recursion arrays omitted"
     # Verbose mode controls the ID array
     if not verbose_trace:
-        id_array = "global {}[{}]".format(ARRAY_PROBE_ID, probes.total_probes_len())
+        id_array = f"global {ARRAY_PROBE_ID}[{probes.total_probes_len()}]"
     # Sampled probes control the presence of sampling arrays
     if probes.sampled_probes_len() > 0:
         array_size = probes.sampled_probes_len()
@@ -422,7 +422,7 @@ def _build_probe_body(probe_type, verbose_trace):
     """
     # Set how the probe will be identified in the output and how we obtain the identification
     # based on the trace verbosity
-    id_t, id_get = ("%s", "pname") if verbose_trace else ("%d", "{}[pname]".format(ARRAY_PROBE_ID))
+    id_t, id_get = ("%s", "pname") if verbose_trace else ("%d", f"{ARRAY_PROBE_ID}[pname]")
     # Format the template for the required probe type
     return HANDLER_TEMPLATE.format(
         type=int(probe_type), id_type=id_t, id_get=id_get, timestamp=STOPWATCH_NAME
@@ -440,7 +440,7 @@ def _build_func_events(probe_iter, timed_sampling):
     """
 
     def timed_switch(func_name):
-        return " if ({})".format(TIMED_SWITCH) if timed_sampling and func_name != "main" else ""
+        return f" if ({TIMED_SWITCH})" if timed_sampling and func_name != "main" else ""
 
     return ",\n      ".join(
         FUNC_EVENT_TEMPLATE.format(

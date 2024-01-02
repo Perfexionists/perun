@@ -298,7 +298,7 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
         UnsupportedModuleException,
         UnsupportedModuleFunctionException,
     ) as unsup_module_exp:
-        perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
+        perun_log.error(f"while initializing perun: {str(unsup_module_exp)}")
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
@@ -413,7 +413,7 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
         if not kwargs["force"] or click.confirm(warning_message):
             commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
-        perun_log.error("error while adding profile:{}".format(str(exception)))
+        perun_log.error(f"error while adding profile: {str(exception)}")
 
 
 @cli.command("rm")
@@ -493,7 +493,7 @@ def remove(
         commands.remove_from_index(from_index_generator, minor)
         commands.remove_from_pending(from_jobs_generator)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
-        perun_log.error("could not remove profiles: {}".format(str(exception)))
+        perun_log.error(f"could not remove profiles: {str(exception)}")
 
 
 @cli.command()
@@ -529,7 +529,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     try:
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
-        perun_log.error("could not print the repository history: {}".format(str(exception)))
+        perun_log.error(f"could not print the repository history: {str(exception)}")
 
 
 @cli.command()
@@ -590,7 +590,7 @@ def status(**kwargs: Any) -> None:
         UnsupportedModuleException,
         MissingConfigSectionException,
     ) as exception:
-        perun_log.error("could not print status of repository: {}".format(str(exception)))
+        perun_log.error(f"could not print status of repository: {str(exception)}")
 
 
 @cli.group()
@@ -1242,7 +1242,7 @@ def launch_cli_safely() -> None:
         error_name = error_module + catched_exception.__class__.__name__
 
         reported_error = error_name + ": " + str(catched_exception)
-        perun_log.error("Unexpected error: {}".format(reported_error), recoverable=True)
+        perun_log.error(f"unexpected error: {reported_error}", recoverable=True)
         with helpers.SuppressedExceptions(Exception):
             cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 

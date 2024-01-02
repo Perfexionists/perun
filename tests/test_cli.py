@@ -2517,7 +2517,7 @@ def test_safe_cli(monkeypatch, capsys):
     monkeypatch.setattr("faulthandler.enable", lambda: None)
     cli.launch_cli()
     out, err = capsys.readouterr()
-    assert "Unexpected error: Exception: Something happened" in err
+    assert "unexpected error: Exception: Something happened" in err
     assert "Saved dump" in out
 
     cli.DEV_MODE = True

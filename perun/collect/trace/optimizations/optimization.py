@@ -610,4 +610,4 @@ def build_stats_names(config, cg_type=CallGraphTypes.STATIC):
         cg_prefix = "dcg"
     elif cg_type == CallGraphTypes.MIXED:
         cg_prefix = "mcg"
-    return "{}--{}".format(cg_prefix, binaries), "ds--" + "--".join([binaries, binaries_param])
+    return f"{cg_prefix}--{binaries}", "ds--" + "--".join([binaries, binaries_param])

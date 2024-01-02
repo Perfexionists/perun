@@ -141,16 +141,14 @@ def _init_cmake(cmake_file: TextIO) -> None:
     cc_flags += " -no-pie"
     # Sets the cmake version, paths and compiler config
     cmake_file.write(
-        "cmake_minimum_required(VERSION {0})\n\n"
-        "project(complexity)\n"
-        "# set the paths\n"
-        "set(CMAKE_BINARY_DIR ${{CMAKE_SOURCE_DIR}}/{1})\n"
-        "set(EXECUTABLE_OUTPUT_PATH ${{CMAKE_BINARY_DIR}})\n\n"
-        "# set the compiler\n"
-        'set(CMAKE_CXX_COMPILER "g++")\n'
-        'set(CMAKE_CXX_FLAGS "${{CMAKE_CXX_FLAGS}} {2}")\n\n'.format(
-            CMAKE_VERSION, CMAKE_BIN_TARGET, cc_flags
-        )
+        f"cmake_minimum_required(VERSION {CMAKE_VERSION})\n\n"
+        f"project(complexity)\n"
+        f"# set the paths\n"
+        f"set(CMAKE_BINARY_DIR ${{CMAKE_SOURCE_DIR}}/{CMAKE_BIN_TARGET})\n"
+        f"set(EXECUTABLE_OUTPUT_PATH ${{CMAKE_BINARY_DIR}})\n\n"
+        f"# set the compiler\n"
+        f'set(CMAKE_CXX_COMPILER "g++")\n'
+        f'set(CMAKE_CXX_FLAGS "${{CMAKE_CXX_FLAGS}} {cc_flags}")\n\n'
     )
 
 
@@ -169,10 +167,8 @@ def _add_profile_instructions(cmake_file: TextIO, exclude_list: list[str]) -> No
     if exclude_list:
         # Create 'sym,sym,sym...' string list from excluded names
         exclude_string = ",".join(exclude_list)
-        cmake_file.write(
-            ' -finstrument-functions-exclude-function-list={0}")'.format(exclude_string)
-        )
-    cmake_file.write("\n\n")
+        cmake_file.write(f" -finstrument-functions-exclude-function-list={exclude_string}")
+    cmake_file.write('")\n\n')
 
 
 def _add_build_data(cmake_file: TextIO, target_name: str, source_files: list[str]) -> None:
@@ -204,7 +200,7 @@ def _find_library(cmake_file: TextIO, lib_name: str, lib_path: str) -> str:
     :return str: the cmake variable representing the library
     """
     # Create the library variable name
-    library_var = "LIB_{}".format(lib_name)
+    library_var = f"LIB_{lib_name}"
     # Create instruction to find the library
     cmake_file.write(
         f'\n# Find the library\nfind_library({library_var} {lib_name} PATHS "{lib_path}")\n'
@@ -220,7 +216,7 @@ def _link_libraries(cmake_file: TextIO, library_vars: list[str], target_name: st
     :param str target_name: build target to be linked with
     """
     # Create the string list of all libraries
-    libraries = " ".join("${{{0}}}".format(lib) for lib in library_vars)
+    libraries = " ".join(f"${{{lib}}}" for lib in library_vars)
     # Create the target
     cmake_file.write(
         f"\n# Link the libraries to the target\ntarget_link_libraries({target_name} {libraries})\n"

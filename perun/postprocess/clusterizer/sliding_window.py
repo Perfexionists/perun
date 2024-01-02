@@ -77,9 +77,9 @@ def clusterize(
     :param _: rest of the keyword arguments, not used in the function
     """
     if width_measure not in ("absolute", "relative"):
-        log.error("'{}' is not supported window width measure".format(width_measure))
+        log.error(f"'{width_measure}' is not supported window width measure")
     if height_measure not in ("absolute", "relative"):
-        log.error("'{}' is not supported window width measure".format(height_measure))
+        log.error(f"'{height_measure}' is not supported window width measure")
 
     # Initialize the cluster and width
     resource_number = len(sorted_resources)
@@ -91,7 +91,7 @@ def clusterize(
     current_height = compute_window_height(
         sorted_resources[0]["amount"], window_height, height_measure
     )
-    log.info("clustering with window of ({}, {})".format(current_width, current_height))
+    log.info(f"clustering with window of ({current_width}, {current_height})")
 
     # Iterate through all of the resources
     for resource in sorted_resources:
@@ -102,7 +102,7 @@ def clusterize(
             current_height = compute_window_height(resource_height, window_height, height_measure)
             current_cluster += 1
             resource_width = 0
-            log.info("creating new cluster of ({}, {})".format(current_width, current_height))
+            log.info(f"creating new cluster of ({current_width}, {current_height})")
 
         # Update the cluster of the resource
         resource_width += 1

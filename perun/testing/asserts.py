@@ -62,6 +62,6 @@ def invalid_param_choice(
     :param str file: name of the file that should not be created (optional)
     """
     predicate_from_cli(cli_result, cli_result.exit_code == 1)
-    predicate_from_cli(cli_result, "Invalid value '{}'".format(choice) in cli_result.output)
+    predicate_from_cli(cli_result, f"Invalid value '{choice}'" in cli_result.output)
     if file:
         assert file not in os.listdir(os.getcwd())

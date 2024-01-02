@@ -29,9 +29,7 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
     pwd = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile(os.path.join(pwd, _lib_name)):
         log.warn(
-            "Missing compiled dynamic library 'lib{}'. Compiling from sources: ".format(
-                os.path.splitext(_lib_name)[0]
-            ),
+            f"Missing compiled dynamic library 'lib{os.path.splitext(_lib_name)[0]}'. Compiling from sources: ",
             end="",
         )
         result = syscalls.init()
@@ -111,7 +109,7 @@ def after(
         log.failed()
         return (
             CollectStatus.ERROR,
-            "Problems while parsing log file: {}".format(str(parse_err)),
+            f"Problems while parsing log file: {parse_err}",
             {},
         )
     log.done()

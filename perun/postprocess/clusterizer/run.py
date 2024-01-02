@@ -57,12 +57,9 @@ def print_groups(resources: list[dict[str, Any]]) -> None:
     """
     groups = itertools.groupby(resources, resource_group_key)
     for group, members in groups:
-        log.info("--- {} ---".format(group))
+        log.info(f"--- {group} ---")
         for member in members:
-            log.info(
-                " -> {}[{}]".format(member["amount"], member.get("cluster", "?")),
-                end="",
-            )
+            log.info(f" -> {member['amount']}[{member.get('cluster', '?')}]", end="")
         log.newline()
 
 
@@ -91,7 +88,7 @@ def postprocess(
     for group, members in groups:
         log.info(
             "clusterizing group {}{}@{}".format(
-                group[0], "({})".format(group[1]) if group[1] else "", group[2]
+                group[0], f"({group[1]})" if group[1] else "", group[2]
             )
         )
         utils.dynamic_module_function_call(

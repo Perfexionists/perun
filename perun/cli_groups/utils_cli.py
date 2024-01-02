@@ -82,7 +82,7 @@ def create(template_type: str, **kwargs: Any) -> None:
     try:
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
-        perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
+        perun_log.error(f"while invoking external editor: {editor_exception}")
 
 
 @utils_group.group("temp")

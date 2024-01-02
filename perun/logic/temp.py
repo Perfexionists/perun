@@ -136,7 +136,7 @@ def temp_path(path: str) -> str:
     # The resulting path might end up out of tmp/ for both absolute or relative paths
     if not path.startswith(tmp_location):
         raise exceptions.InvalidTempPathException(
-            "The resulting path '{}' is not located in the perun tmp/ directory.".format(path)
+            f"The resulting path '{path}' is not located in the perun tmp/ directory."
         )
     return path
 
@@ -222,7 +222,7 @@ def create_new_temp(
     file_path = temp_path(file_path)
     if os.path.exists(file_path):
         raise exceptions.InvalidTempPathException(
-            "The temporary file '{}' already exists.".format(file_path)
+            f"The temporary file '{file_path}' already exists."
         )
     # Make sure that the directory hierarchy for the file exists
     touch_temp_dir(os.path.dirname(file_path))
@@ -281,7 +281,7 @@ def read_temp(file_path: str) -> Any:
         return content
     # Handle possible errors
     except (OSError, ValueError, zlib.error) as exc:
-        perun_log.msg_to_file("Error reading temporary file: {}".format(str(exc)), 0)
+        perun_log.msg_to_file(f"Error reading temporary file: {exc}", 0)
         return {}
 
 

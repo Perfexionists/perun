@@ -141,7 +141,7 @@ def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INF
     Helper function for the log_msg, prints the @p msg to the stdout,
     if the @p msg_verbosity is smaller or equal to actual verbosity.
     """
-    _log_msg(lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level)
+    _log_msg(lambda lvl, msg: print(f"{msg}"), message, msg_verbosity, log_level)
 
 
 def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
@@ -567,10 +567,7 @@ def print_list_of_degradations(
             print("\u2514 ", end="")
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
                 cprint(
-                    "{}ms ({}%)".format(
-                        round(deg_info.rate_degradation, 2),
-                        round(deg_info.rate_degradation_relative, 2),
-                    ),
+                    f"{round(deg_info.rate_degradation, 2)}ms ({round(deg_info.rate_degradation_relative, 2)}%)",
                     "white",
                     ["bold"],
                 )
@@ -693,7 +690,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
             "[!] {} [{}] in {} [!]".format(
                 (func.phase_name if hasattr(func, "phase_name") else func.__name__).title(),
                 in_color("DONE", "green", ["bold"]),
-                in_color("{:0.2f}s".format(elapsed), "white", ["bold"]),
+                in_color(f"{elapsed:0.2f}s", "white", ["bold"]),
             )
         )
         return results
@@ -896,7 +893,7 @@ class History:
             for p in self.unresolved_edges
         )
         print(minor_str, end="")
-        cprint(" {}".format(minor_version_info.checksum[:6]), "yellow")
+        cprint(f" {minor_version_info.checksum[:6]}", "yellow")
         print(": {} | ".format(minor_version_info.desc.split("\n")[0].strip()), end="")
 
     def progress_to_next_minor_version(self, minor_version_info: MinorVersion) -> None:

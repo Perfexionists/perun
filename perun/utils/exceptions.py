@@ -244,8 +244,10 @@ class DictionaryKeysValidationFailed(Exception):
         self.dictionary = dictionary
         self.missing_keys = missing_keys or []
         self.excess_keys = excess_keys or []
-        self.msg = "Invalid dictionary {} with forbidden keys ({}) and missing keys ({}).".format(
-            self.dictionary, ", ".join(self.excess_keys), ", ".join(self.missing_keys)
+        self.msg = (
+            f"Invalid dictionary {self.dictionary} "
+            f"with forbidden keys ({', '.join(self.excess_keys)})"
+            f" and missing keys ({', '.join(self.missing_keys)})."
         )
 
     def __str__(self) -> str:

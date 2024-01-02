@@ -143,9 +143,7 @@ class ExternalGenerator(WorkloadGenerator):
             utils.run_safely_external_command(self.generator, check_results=True)
         except subprocess.CalledProcessError as error:
             log.warn(
-                "External workload generator '{}' returned failed with: {}".format(
-                    self.generator, str(error)
-                )
+                f"External workload generator '{self.generator}' returned failed with: {error}"
             )
 
         for workload in os.listdir(self.output_dir):
@@ -155,8 +153,6 @@ class ExternalGenerator(WorkloadGenerator):
                 yield path_to_workload, {key: value for (key, value) in zip(self.keys, values)}
             else:
                 log.warn(
-                    "Could not match format '{}' for workload file '{}'".format(
-                        self.file_format, workload
-                    )
+                    f"Could not match format '{self.file_format}' for workload file '{workload}'"
                 )
                 yield path_to_workload, {}

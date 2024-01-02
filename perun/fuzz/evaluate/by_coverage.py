@@ -83,7 +83,7 @@ def baseline_testing(
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
     log.info("Detected gcov version ", end="")
-    log.cprint("{}".format(config.coverage.gcov_version), "white")
+    log.cprint(f"{config.coverage.gcov_version}", "white")
     log.info("")
 
     return get_initial_coverage(executable, workloads, config.hang_timeout, config)

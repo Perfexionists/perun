@@ -38,7 +38,7 @@ def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: Te
     :param File file_handle: file, where the anomalies are written
     """
     if anomalies:
-        file_handle.write("{}s:\n".format(anomaly_type.capitalize()))
+        file_handle.write(f"{anomaly_type.capitalize()}s:\n")
         for anomaly in anomalies:
             file_handle.write(anomaly.path + " " + str(anomaly.history) + "\n")
             log.info(".")

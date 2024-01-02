@@ -113,27 +113,21 @@ def check_group(**_: Any) -> None:
         str(perun_config.lookup_key_recursively("degradation.log_collect", "false"))
     )
     if should_precollect:
-        print(
-            "{} is set to {}. ".format(
-                log.in_color("degradation.collect_before_check", "white", ["bold"]),
-                log.in_color("true", "green", ["bold"]),
-            ),
-            end="",
+        collect_before_check = log.in_color("degradation.collect_before_check", "white", ["bold"])
+        true = log.in_color("true", "green", ["bold"])
+        log.info(f"{collect_before_check} is set to {true}. ", end="")
+        log.info("Missing profiles will be freshly collected with respect to the ", end="")
+        log.info(
+            "nearest job matrix (run `perun config edit` to modify the underlying job matrix)."
         )
-        print("Missing profiles will be freshly collected with respect to the ", end="")
-        print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
-            print(
-                "The progress of the pre-collect phase will be stored in logs at {}.".format(
-                    log.in_color(pcs.get_log_directory(), "white", ["bold"])
-                )
+            log_directory = log.in_color(pcs.get_log_directory(), "white", ["bold"])
+            log.info(
+                f"The progress of the pre-collect phase will be stored in logs at {log_directory}."
             )
         else:
-            print(
-                "The progress of the pre-collect phase will be redirected to {}.".format(
-                    log.in_color("black hole", "white", ["bold"])
-                )
-            )
+            black_hole = log.in_color("black hole", "white", ["bold"])
+            log.info(f"The progress of the pre-collect phase will be redirected to {black_hole}.")
 
 
 @check_group.command("head")

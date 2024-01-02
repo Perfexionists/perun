@@ -100,9 +100,7 @@ class BasicIndexEntry:
         """
         if BasicIndexEntry.version.value < index_version.value:
             perun_log.error(
-                "internal error: called read_from() for BasicIndexEntry {}".format(
-                    index_version.value
-                )
+                f"internal error: called read_from() for BasicIndexEntry {index_version.value}"
             )
         file_offset = index_handle.tell()
         file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
@@ -128,7 +126,7 @@ class BasicIndexEntry:
 
         :return:  string representation of the entry
         """
-        return " @{3} {2} -> {1} ({0})".format(self.time, self.checksum, self.path, self.offset)
+        return f" @{self.offset} {self.path} -> {self.checksum} ({self.time})"
 
 
 class ExtendedIndexEntry(BasicIndexEntry):
@@ -448,11 +446,8 @@ def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry) -> None:
                     looked_up_entry.path == file_entry.path
                     and looked_up_entry.time == file_entry.time
                 ):
-                    perun_log.msg_to_stdout(
-                        "{0.path} ({0.time}) already registered in {1}".format(
-                            file_entry, index_file
-                        ),
-                        0,
+                    perun_log.warn(
+                        "{file_entry.path} ({file_entry.time}) already registered in {index_file}",
                     )
                     return
                 offset_in_file = looked_up_entry.offset
@@ -676,7 +671,7 @@ def remove_from_index(
         index_handle.truncate()
     if removed_profile_number:
         result_string = perun_log.in_color(
-            "{}".format(helpers.str_to_plural(removed_profile_number, "profile")),
+            f"{helpers.str_to_plural(removed_profile_number, 'profile')}",
             "white",
             ["bold"],
         )
