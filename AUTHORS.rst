@@ -7,7 +7,7 @@ The following lists the authors (active ones are bold) that contributed to upstr
 
   * **Tomas Fiedor**: |github| `tfiedor <https://github.com/tfiedor>`_ |email| `TomasFiedor@gmail.com <mailto: TomasFiedor@gmail.com>`_ (founder), core
   * **Jiri Pavela**: |github| `JiriPavela <https://github.com/JiriPavela>`_ |email| `JirkaPavela@gmail.com <mailto: JirkaPavela@gmail.com>`_ tracer, core
-  * **Ondrej Michal**: |github| `HarryMichal <https://github.com/HarryMichal>`_ energy profiler
+  * **Ondrej Michal**: |github| `HarryMichal <https://github.com/HarryMichal>`_ [energy profiler](https://gitlab.com/martymichal/sysrapl)
   * **Peter Mocary**: |github| `PeterMocary <https://github.com/PeterMocary>`_ tracer
   * Martina Grzybowska: GUI
   * Vojtech Hajek: C# profiler
