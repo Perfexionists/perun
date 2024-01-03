@@ -10,7 +10,7 @@
 """
 from __future__ import annotations
 
-import collections
+import dataclasses
 
 import perun.utils.helpers as helpers
 import perun.utils.exceptions as exceptions
@@ -20,13 +20,25 @@ import perun.utils as utils
 _SYMTABLE_NAME_COLUMN = 8
 _SYMTABLE_ADDR_COLUMN = 2
 
-# The named tuple collection for storage of decomposed function prototypes
-PrototypeParts = collections.namedtuple(
-    "PrototypeParts",
-    ["identifier", "args", "scoped_body", "scoped_args", "full_body", "full_args"],
-)
-# The named tuple collection serving as a key for include list
-RuleKey = collections.namedtuple("RuleKey", ["mangled_name", "rule"])
+
+@dataclasses.dataclass(frozen=True)
+class PrototypeParts:
+    __slots__ = ["identifier", "args", "scoped_body", "scoped_args", "full_body", "full_args"]
+
+    identifier: str
+    args: str
+    scoped_body: str
+    scoped_args: str
+    full_body: str
+    full_args: str
+
+
+@dataclasses.dataclass(frozen=True)
+class RuleKey:
+    __slots__ = ["mangled_name", "rule"]
+
+    mangled_name: str
+    rule: str
 
 
 def extract_symbols(executable_path: str) -> list[str]:
