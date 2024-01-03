@@ -189,15 +189,15 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
 
             # Get the first and last record timestamps to determine the profiling time
-            profile_end = record.timestamp
+            profile_end = int(record.timestamp)
             if is_first_line:
                 is_first_line = False
-                profile_start = record.timestamp
+                profile_start = int(record.timestamp)
 
     # Update the profile dictionary
     kwargs["profile"] = {
         "global": {
-            "time": str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + "s",
+            "time": f"{(profile_end - profile_start) / _MICRO_TO_SECONDS}s",
             "resources": resources,
         }
     }
