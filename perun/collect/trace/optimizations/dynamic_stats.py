@@ -14,13 +14,21 @@
 
 import array
 import collections
+import dataclasses
+
 import numpy as np
 
 # The quartiles
 _Q1, _Q2, _Q3 = 25, 50, 75
 
+
 # Remember the thread PID and duration
-_Thread = collections.namedtuple("_Thread", ["pid", "duration"])
+@dataclasses.dataclass
+class _Thread:
+    __slots__ = ["pid", "duration"]
+
+    pid: int
+    duration: int
 
 
 class DynamicStats:
