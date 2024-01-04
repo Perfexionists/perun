@@ -1,16 +1,30 @@
 """Collection of helpers structures for fuzzing"""
 from __future__ import annotations
 
+import dataclasses
 import os
-from collections import namedtuple
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
 import perun.utils as utils
 from perun.utils.decorators import always_singleton
 
 
-TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
-RuleSet = namedtuple("RuleSet", "rules hits")
+@dataclasses.dataclass
+class TimeSeries:
+    __slots__ = ["x_axis", "y_axis"]
+
+    x_axis: list[int]
+    y_axis: list[int]
+
+
+@dataclasses.dataclass
+class RuleSet:
+    __slots__ = ["rules", "hits"]
+
+    rules: list[tuple[Callable[[], str], str]]
+    hits: list[int]
+
+
 GCOV_VERSION_W_INTER_FORMAT = 4.9
 GCOV_VERSION_W_JSON_FORMAT = 9.0
 

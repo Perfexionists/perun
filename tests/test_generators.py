@@ -110,7 +110,7 @@ def test_loading_generators_from_config(monkeypatch, pcs_with_root):
     assert "gen_almost_correct" not in spec_map.keys()
 
     # Now test that the generators really work :P
-    constructor, params = spec_map["gen1"]
+    constructor, params = spec_map["gen1"].constructor, spec_map["gen1"].params
     for c_status, profile in constructor(integer_job, **params).generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile

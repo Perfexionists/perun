@@ -1,14 +1,14 @@
 """List of helper and globally used structures and named tuples"""
 from __future__ import annotations
 
-import collections
+import dataclasses
 import enum
 import shlex
 import types
 from dataclasses import dataclass
 
 from enum import Enum
-from typing import Optional, Any, TYPE_CHECKING, cast
+from typing import Optional, Any, TYPE_CHECKING, cast, Callable
 from perun.utils.helpers import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
 
 if TYPE_CHECKING:
@@ -16,7 +16,12 @@ if TYPE_CHECKING:
     import numpy
 
 
-GeneratorSpec = collections.namedtuple("GeneratorSpec", "constructor params")
+@dataclasses.dataclass
+class GeneratorSpec:
+    __slots__ = ["constructor", "params"]
+
+    constructor: Callable[..., Any]
+    params: dict[str, Any]
 
 
 class PerformanceChange(Enum):
