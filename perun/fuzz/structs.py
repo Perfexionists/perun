@@ -13,15 +13,15 @@ from perun.utils.decorators import always_singleton
 class TimeSeries:
     __slots__ = ["x_axis", "y_axis"]
 
-    x_axis: list[int]
-    y_axis: list[int]
+    x_axis: list[float | int]
+    y_axis: list[float | int]
 
 
 @dataclasses.dataclass
 class RuleSet:
     __slots__ = ["rules", "hits"]
 
-    rules: list[tuple[Callable[[], str], str]]
+    rules: list[tuple[Callable[[list[str] | list[bytes]], None], str]]
     hits: list[int]
 
 

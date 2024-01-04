@@ -4,7 +4,7 @@ from __future__ import annotations
 import mimetypes
 import re
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 import perun.fuzz.randomizer as randomizer
 
@@ -16,7 +16,7 @@ from perun.fuzz.structs import RuleSet
 
 def custom_rules(
     regex_rules: dict[str, str],
-    fuzzing_methods: list[tuple[Callable[[list[str]], None], str]],
+    fuzzing_methods: list[tuple[Callable[[list[Any]], None], str]],
 ) -> None:
     """Adds custom rules specified by regexps, and read from the file in YAML format.
     Format:
@@ -64,7 +64,7 @@ def choose_ruleset(file: str, regex_rules: dict[str, str]) -> RuleSet:
     :param dict regex_rules: dict of custom regex rules
     :return list: list of tuples fuzz_method_function, description
     """
-    fuzzing_methods: list[tuple[Callable[[list[str]], None], str]] = []
+    fuzzing_methods: list[tuple[Callable[[list[str] | list[bytes]], None], str]] = []
     if regex_rules:
         custom_rules(regex_rules, fuzzing_methods)
 
