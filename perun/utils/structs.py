@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     import numpy
 
 
-@dataclasses.dataclass
+@dataclass
 class GeneratorSpec:
     __slots__ = ["constructor", "params"]
 
@@ -163,6 +163,8 @@ class Executable:
         names of the generators.
     """
 
+    __slots__ = ["cmd", "args", "workload", "origin_workload"]
+
     def __init__(self, cmd: str, args: str = "", workload: str = "") -> None:
         """Initializes the executable
 
@@ -202,6 +204,8 @@ class Unit:
     :ivar str name: name of the unit
     :ivar dict params: parameters for the unit
     """
+
+    __slots__ = ["name", "params"]
 
     def __init__(self, name: str, params: dict[str, Any]) -> None:
         """Constructs the unit, with name being sanitized
@@ -255,6 +259,19 @@ class DegradationInfo:
     :ivar float confidence_rate: value of the confidence we have in the detected degradation
     :ivar float rate_degradation_relative: relative rate of the degradation
     """
+
+    __slots__ = [
+        "result",
+        "type",
+        "location",
+        "from_baseline",
+        "to_target",
+        "rate_degradation",
+        "confidence_type",
+        "confidence_rate",
+        "partial_intervals",
+        "rate_degradation_relative",
+    ]
 
     def __init__(
         self,
@@ -321,6 +338,7 @@ class DegradationInfo:
         )
 
 
+@dataclass
 class Job:
     """Represents one profiling task in the Perun
 
@@ -329,15 +347,11 @@ class Job:
     :ivar Executable executable: System Under Profiling (SUP)
     """
 
-    def __init__(self, collector: Unit, postprocessors: list[Unit], executable: Executable) -> None:
-        """
-        :param Unit collector: collection unit used to collect the SUP
-        :param list postprocessors: list of postprocessing units applied after the collection
-        :param Executable executable: System Under Profiling (SUP)
-        """
-        self.collector = collector
-        self.postprocessors = postprocessors
-        self.executable = executable
+    __slots__ = ["collector", "postprocessors", "executable"]
+
+    collector: Unit
+    postprocessors: list[Unit]
+    executable: Executable
 
     def _asdict(self) -> dict[str, Any]:
         """
@@ -424,6 +438,8 @@ class ProfileListConfig:
     :ivar int header_width: overall width of the profile list
     """
 
+    __slots__ = ["colour", "ending", "list_len", "id_char", "id_width", "header_width"]
+
     def __init__(self, list_type: str, short: bool, profile_list: list[Any]) -> None:
         """Initializes the configuration for the profile list.
 
@@ -453,6 +469,8 @@ class MinorVersion:
     :ivar str desc: description of the changes commited in the minor version
     :ivar list parents: list of parents of the minor version (empty if root)
     """
+
+    __slots__ = ["date", "author", "email", "checksum", "desc", "parents"]
 
     date: str
     author: Optional[str]
@@ -491,6 +509,8 @@ class MajorVersion:
     :ivar str head: sha checksum of the corresponding head minor version
     """
 
+    __slots__ = ["name", "head"]
+
     name: str
     head: str
 
@@ -508,6 +528,8 @@ class ModelRecord:
     :ivar int x_start: start of the interval, where the model holds
     :ivar int x_end: end of the interval, where the model holds
     """
+
+    __slots__ = ["type", "r_square", "b0", "b1", "b2", "x_start", "x_end"]
 
     type: str
     r_square: float
