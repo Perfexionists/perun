@@ -29,6 +29,7 @@ GCOV_VERSION_W_INTER_FORMAT = 4.9
 GCOV_VERSION_W_JSON_FORMAT = 9.0
 
 
+@dataclasses.dataclass
 class Mutation:
     """
     :ivar str path: path to the workload
@@ -38,6 +39,8 @@ class Mutation:
     :ivar float deg_ratio: achieved degradation ration
     :ivar float fitness: fitness of the mutation
     """
+
+    __slots__ = ["path", "history", "predecessor", "cov", "deg_ratio", "fitness"]
 
     def __init__(
         self,
@@ -83,6 +86,8 @@ class CoverageConfiguration:
     :ivar list gcov_files: list of gcov files
     :ivar list source_files: list of source files
     """
+
+    __slots__ = ["gcno_path", "source_path", "gcov_version", "gcov_files", "source_files"]
 
     def __init__(self, **kwargs: Any) -> None:
         """
@@ -135,6 +140,24 @@ class FuzzingConfiguration:
         or only using perun
     """
 
+    __slots__ = [
+        "timeout",
+        "hang_timeout",
+        "output_dir",
+        "workloads_filter",
+        "regex_rules",
+        "max_size",
+        "max_size_ratio",
+        "max_size_gain",
+        "exec_limit",
+        "precollect_limit",
+        "mutations_per_rule",
+        "no_plotting",
+        "cov_rate",
+        "coverage_testing",
+        "coverage",
+    ]
+
     def __init__(self, **kwargs: Any) -> None:
         """
         :param dict kwargs: set of keyword configurations
@@ -180,6 +203,18 @@ class FuzzingProgress:
     :ivar int timeout: timeout of the fuzzing
     :ivar dict stats: additional stats of fuzz testing
     """
+
+    __slots__ = [
+        "faults",
+        "hangs",
+        "interesting_workloads",
+        "parents",
+        "final_results",
+        "deg_time_series",
+        "cov_time_series",
+        "base_cov",
+        "stats",
+    ]
 
     def __init__(self) -> None:
         """ """

@@ -43,6 +43,8 @@ class StringGenerator(WorkloadGenerator):
     :ivar int step_len: increment of the lengths
     """
 
+    __slots__ = ["min_len", "max_len", "step_len"]
+
     def __init__(
         self, job: Job, min_len: int, max_len: int, step_len: int = 1, **kwargs: Any
     ) -> None:

@@ -39,6 +39,8 @@ class IntegerGenerator(WorkloadGenerator):
     :ivar int step: the step of the integer generation
     """
 
+    __slots__ = ["min_range", "max_range", "step"]
+
     def __init__(self, job: Job, min_range: int, max_range: int, step: int = 1, **kwargs: Any):
         """Initializes the generator of integer workload
 

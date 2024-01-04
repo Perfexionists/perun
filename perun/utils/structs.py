@@ -105,6 +105,18 @@ class RunnerReport:
         "collector": CollectStatus.ERROR,
         "postprocessor": PostprocessStatus.ERROR,
     }
+    __slots__ = [
+        "ok_status",
+        "error_status",
+        "runner",
+        "runner_type",
+        "status",
+        "stat_code",
+        "phase",
+        "exception",
+        "message",
+        "kwargs",
+    ]
 
     def __init__(self, runner: types.ModuleType, runner_type: str, kwargs: Any) -> None:
         """

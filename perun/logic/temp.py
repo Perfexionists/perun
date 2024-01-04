@@ -92,6 +92,8 @@ class TempFile:
     :ivar str abspath: the absolute path to the temporary file
     """
 
+    __slots__ = ["filename", "abspath"]
+
     def __init__(self, filename: str) -> None:
         """
         :param str filename: the name of the temporary file

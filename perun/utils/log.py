@@ -750,6 +750,8 @@ class History:
         and is restored when leaving the history
     """
 
+    __slots__ = ["unresolved_edges", "auto_flush_with_border", "_original_stdout", "_saved_print"]
+
     class Edge:
         """Represents one edge of the history
 
@@ -757,6 +759,8 @@ class History:
         :ivar str colour: colour of the edge (red for deg, yellow for deg+opt, green for opt)
         :ivar str prev: the child of the edge, i.e. the not yet processed sha
         """
+
+        __slots__ = ["next", "colour", "prev"]
 
         def __init__(
             self, n: str, colour: ColorChoiceType = "white", prev: Optional[str] = None
@@ -1080,6 +1084,8 @@ class Logger(TextIO):
     :ivar object original: original stream
     :ivar StringIO log: log saving the stream
     """
+
+    __slots__ = ["original", "log"]
 
     def __init__(self, stream: TextIO) -> None:
         self.original = stream

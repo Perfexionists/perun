@@ -22,6 +22,8 @@ class MetricsManager:
     :ivar dict records: stores the metrics
     """
 
+    __slots__ = ["enabled", "id_base", "metrics_id", "metrics_filename", "timers", "records"]
+
     def __init__(self) -> None:
         """Initializes the manager. Unless configure is called, the metrics are not recorded."""
         self.enabled: bool = False

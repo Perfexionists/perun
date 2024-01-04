@@ -8,6 +8,8 @@ from typing import Any
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
 
+    __slots__ = ["parameter", "value", "choices_msg"]
+
     def __init__(self, parameter: str, parameter_value: Any, choices_msg: str = "") -> None:
         """
         :param str parameter: name of the parameter that is invalid
@@ -28,6 +30,8 @@ class InvalidParameterException(Exception):
 class MissingConfigSectionException(Exception):
     """Raised when the section in config is missing"""
 
+    __slots__ = ["section_key"]
+
     def __init__(self, section_key: str) -> None:
         super().__init__("")
         self.section_key = section_key
@@ -41,6 +45,8 @@ class MissingConfigSectionException(Exception):
 
 class TagOutOfRangeException(Exception):
     """Raised when the requested profile tag is out of range."""
+
+    __slots__ = ["pos", "total", "tag"]
 
     def __init__(self, position: int, total: int, tag_source: str) -> None:
         super().__init__("")
@@ -58,6 +64,8 @@ class TagOutOfRangeException(Exception):
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
 
+    __slots__ = ["editor", "reason"]
+
     def __init__(self, editor: str, reason: str) -> None:
         """
         :param str editor: name of the invoked editor
@@ -74,6 +82,8 @@ class ExternalEditorErrorException(Exception):
 class MalformedIndexFileException(Exception):
     """Raised when the read index is malformed"""
 
+    __slots__ = ["reason"]
+
     def __init__(self, reason: str) -> None:
         """
         :param str reason: the reason that the index is considered to be malformed
@@ -87,6 +97,8 @@ class MalformedIndexFileException(Exception):
 
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
+
+    __slots__ = ["entry", "cause"]
 
     def __init__(self, entry: str, cause: str = "") -> None:
         """
@@ -104,6 +116,8 @@ class EntryNotFoundException(Exception):
 class IndexNotFoundException(Exception):
     """Raised when the index file for the minor version does not exist"""
 
+    __slots__ = ["minor_version"]
+
     def __init__(self, minor_version: str) -> None:
         """
         :param str minor_version: the minor version that was supposed to have an index file
@@ -117,6 +131,8 @@ class IndexNotFoundException(Exception):
 
 class StatsFileNotFoundException(Exception):
     """Raised when the looked up stats file does not exist"""
+
+    __slots__ = ["path", "msg"]
 
     def __init__(self, filename: str) -> None:
         super().__init__("")
@@ -132,6 +148,8 @@ class InvalidTempPathException(Exception):
     path is of invalid type for the given operation (file path for directory operation etc.)
     """
 
+    __slots__ = ["msg"]
+
     def __init__(self, msg: str) -> None:
         super().__init__("")
         self.msg = msg
@@ -142,6 +160,8 @@ class InvalidTempPathException(Exception):
 
 class ProtectedTempException(Exception):
     """Raised when an attempt to delete protected temp file is made."""
+
+    __slots__ = ["msg"]
 
     def __init__(self, msg: str) -> None:
         super().__init__("")
@@ -156,6 +176,8 @@ class VersionControlSystemException(Exception):
 
     For example, when there is incorrect sha-1 specification of the minor version.
     """
+
+    __slots__ = ["msg", "args"]
 
     def __init__(self, msg: str, *args: Any) -> None:
         """
@@ -173,6 +195,8 @@ class VersionControlSystemException(Exception):
 class IncorrectProfileFormatException(Exception):
     """Raised when the file is missing or the given format is not in the unified json format"""
 
+    __slots__ = ["filename", "msg"]
+
     def __init__(self, filename: str, msg: str) -> None:
         """
         :param str filename: filename of the profile in the wrong format
@@ -189,6 +213,8 @@ class IncorrectProfileFormatException(Exception):
 class NotPerunRepositoryException(Exception):
     """Raised when command is not called from within the scope of any Perun repository"""
 
+    __slots__ = ["path"]
+
     def __init__(self, path: str) -> None:
         super().__init__("")
         self.path = path
@@ -199,6 +225,8 @@ class NotPerunRepositoryException(Exception):
 
 class UnsupportedModuleException(Exception):
     """Raised when dynamically loading a module, that is not supported by the perun"""
+
+    __slots__ = ["module"]
 
     def __init__(self, module: str) -> None:
         super().__init__("")
@@ -214,6 +242,8 @@ class UnsupportedModuleFunctionException(Exception):
     I.e. there is no implementation of the given function.
     """
 
+    __slots__ = ["module", "func"]
+
     def __init__(self, module: str, func: str) -> None:
         """
         :param str module: name of the module that does not support the given function
@@ -228,6 +258,8 @@ class UnsupportedModuleFunctionException(Exception):
 
 class DictionaryKeysValidationFailed(Exception):
     """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
+
+    __slots__ = ["dictionary", "missing_keys", "excess_keys", "msg"]
 
     def __init__(
         self,
@@ -263,6 +295,8 @@ class GenericRegressionExceptionBase(Exception):
 
     """
 
+    __slots__ = ["msg"]
+
     def __init__(self, msg: str) -> None:
         """Base constructor with exception message"""
         super().__init__("")
@@ -272,6 +306,8 @@ class GenericRegressionExceptionBase(Exception):
 class InvalidPointsException(GenericRegressionExceptionBase):
     """Raised when regression data points count is too low or
     the x and y coordinates count is different"""
+
+    __slots__ = ["x_len", "y_len", "threshold", "too_few", "msg"]
 
     def __init__(self, x_len: int, y_len: int, threshold: int) -> None:
         super().__init__("")
@@ -290,6 +326,8 @@ class InvalidPointsException(GenericRegressionExceptionBase):
 class InvalidSequenceSplitException(GenericRegressionExceptionBase):
     """Raised when the sequence split would produce too few points to use in regression analysis"""
 
+    __slots__ = ["parts", "ratio", "msg"]
+
     def __init__(self, parts: float, ratio: float) -> None:
         super().__init__("")
         self.parts = parts
@@ -306,6 +344,8 @@ class InvalidSequenceSplitException(GenericRegressionExceptionBase):
 class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is requested"""
 
+    __slots__ = ["model", "msg"]
+
     def __init__(self, model: str) -> None:
         super().__init__("")
         self.model = model
@@ -317,6 +357,8 @@ class InvalidModelException(GenericRegressionExceptionBase):
 
 class InvalidTransformationException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown model transformation is requested"""
+
+    __slots__ = ["model", "transformation", "msg"]
 
     def __init__(self, model: str, transformation: str) -> None:
         super().__init__("")
@@ -332,6 +374,8 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
 
 class InvalidBinaryException(Exception):
     """Raised when collector parameter 'binary' is not actually executable ELF file"""
+
+    __slots__ = ["binary", "msg"]
 
     def __init__(self, binary: str) -> None:
         """
@@ -350,6 +394,8 @@ class InvalidBinaryException(Exception):
 
 class SystemTapScriptCompilationException(Exception):
     """Raised when an error is encountered during the compilation of a SystemTap script"""
+
+    __slots__ = ["logfile", "code"]
 
     def __init__(self, logfile: str, code: int) -> None:
         """
@@ -370,6 +416,8 @@ class SystemTapScriptCompilationException(Exception):
 class SystemTapStartupException(Exception):
     """Raised when a SystemTap error is encountered during its startup"""
 
+    __slots__ = ["logfile"]
+
     def __init__(self, logfile: str) -> None:
         """
         :param str logfile: log file that contains more details regarding the error
@@ -383,6 +431,8 @@ class SystemTapStartupException(Exception):
 
 class ResourceLockedException(Exception):
     """Raised when certain trace collector resource is already being used by another process"""
+
+    __slots__ = ["resource", "pid"]
 
     def __init__(self, resource: str, pid: int) -> None:
         super().__init__()
@@ -399,6 +449,8 @@ class ResourceLockedException(Exception):
 class MissingDependencyException(Exception):
     """Raised when some dependency is missing on a system"""
 
+    __slots__ = ["dependency"]
+
     def __init__(self, dependency: str) -> None:
         super().__init__()
         self.dependency = dependency
@@ -409,6 +461,8 @@ class MissingDependencyException(Exception):
 
 class UnexpectedPrototypeSyntaxError(Exception):
     """Raised when the function prototype syntax is somehow different than expected"""
+
+    __slots__ = ["prototype_name", "cause"]
 
     def __init__(self, prototype_name: str, syntax_error: str = "unknown cause") -> None:
         """
@@ -425,6 +479,8 @@ class UnexpectedPrototypeSyntaxError(Exception):
 class SignalReceivedException(BaseException):
     """Raised when a handled signal is encountered. BaseException used to avoid collision with
     other exception handlers that catch 'Exception' classes."""
+
+    __slots__ = ["signum", "frame"]
 
     def __init__(self, signum: int, frame: traceback.StackSummary) -> None:
         """

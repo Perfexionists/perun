@@ -9,6 +9,7 @@ containing formats and options for one execution of perun command.
 """
 from __future__ import annotations
 
+import dataclasses
 import os
 import re
 import sys
@@ -53,6 +54,7 @@ def are_valid_keys(keys: Iterable[str]) -> bool:
     return all(valid_key_pattern.match(key) is not None for key in keys)
 
 
+@dataclasses.dataclass
 class Config:
     """Config represents one instance of configuration of given type.
 
@@ -74,16 +76,11 @@ class Config:
     during the run.
     """
 
-    def __init__(self, config_type: str, path: str, config_initial_data: dict[str, Any]) -> None:
-        """
-        :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
-        :param str path: path leading to the configuration (if stored internally)
-        :param dict config_initial_data: dictionary representation of the stored config, can either
-            be empty for some configuration, or loaded from the filesystem
-        """
-        self.type = config_type
-        self.path = path
-        self.data = config_initial_data
+    __slots__ = ["type", "path", "data"]
+
+    type: str
+    path: str
+    data: dict[str, Any]
 
     @decorators.validate_arguments(["key"], is_valid_key)
     def set(self, key: str, value: Any) -> None:

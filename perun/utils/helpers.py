@@ -156,6 +156,8 @@ class SuppressedExceptions:
     :ivar list exc: the list of exception classes that should be ignored
     """
 
+    __slots__ = ["exc"]
+
     def __init__(self, *exception_list: type[Exception]) -> None:
         """
         :param exception_list: the exception classes to ignore
@@ -233,6 +235,8 @@ class HandledSignals:
     :ivar list old_handlers: the list of previous signal handlers
 
     """
+
+    __slots__ = ["signals", "handler", "handler_exc", "callback", "callback_args", "old_handlers"]
 
     def __init__(self, *signals: int, **kwargs: Any) -> None:
         """

@@ -138,6 +138,8 @@ class DiffProfile:
     :ivar df: the difference profile as specified above
     """
 
+    __slots__ = ["location_filter", "cut_off", "df"]
+
     def __init__(self, baseline_profile: Profile, target_profile: Profile) -> None:
         """Constructor.
 

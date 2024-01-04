@@ -30,6 +30,8 @@ class WorkloadGenerator:
         for each workload, otherwise the workload will be merged into one single profile
     """
 
+    __slots__ = ["job", "generator_name", "for_each"]
+
     def __init__(self, job: Job, profile_for_each_workload: bool = False, **_: Any) -> None:
         """Initializes the job of the generator
 
