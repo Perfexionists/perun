@@ -20,8 +20,7 @@ from perun.profile.factory import Profile
 from perun.utils.structs import (
     DegradationInfo,
     ModelRecord,
-    DetectionChangeResult,
-    PerformanceChange,
+    DetectionChangeResult
 )
 
 # minimum count of points in the interval in which are computed statistics

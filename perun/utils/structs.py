@@ -1,7 +1,6 @@
 """List of helper and globally used structures and named tuples"""
 from __future__ import annotations
 
-import dataclasses
 import enum
 import shlex
 import types
