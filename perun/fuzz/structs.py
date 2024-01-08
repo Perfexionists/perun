@@ -230,18 +230,46 @@ class FuzzingProgress:
 
         self.base_cov: int = 1
 
-        self.stats: dict[str, Any] = {
-            "start_time": 0.0,
-            "end_time": 0.0,
-            "cov_execs": 0,
-            "perun_execs": 0,
-            "degradations": 0,
-            "max_cov": 1.0,
-            "worst_case": None,
-            "hangs": 0,
-            "faults": 0,
-        }
+        self.stats: FuzzingStats = FuzzingStats()
 
     def update_max_coverage(self) -> None:
         """Updates the maximal achieved coverage according to the parent fitness values"""
-        self.stats["max_cov"] = self.parents[-1].cov / self.base_cov
+        self.stats.max_cov = self.parents[-1].cov / self.base_cov
+
+
+class FuzzingStats:
+    """Statistics of the fuzz testing process
+
+    :ivar start_time: time when the fuzzing started
+    :ivar end_time: time when the fuzzing was finished
+    :ivar cov_execs: number of coverage testing executions
+    :ivar perun_execs: number of perun testing executions
+    :ivar degradations: number of found degradation
+    :ivar max_cov: maximal coverage that was covered
+    :ivar worst_case: worst case mutation
+    :ivar hangs: number of hangs (i.e. timeouts)
+    :ivar faults: number of faulty executions (errors, etc.)
+    """
+
+    __slots__ = [
+        "start_time",
+        "end_time",
+        "cov_execs",
+        "perun_execs",
+        "degradations",
+        "max_cov",
+        "worst_case",
+        "hangs",
+        "faults",
+    ]
+
+    def __init__(self):
+        self.start_time = 0.0
+        self.end_time = 0.0
+        self.cov_execs = 0
+        self.perun_execs = 0
+        self.degradations = 0
+        self.max_cov = 1.0
+        self.worst_case = None
+        self.hangs = 0
+        self.faults = 0

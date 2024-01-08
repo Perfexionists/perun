@@ -29,9 +29,10 @@ import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 
 from perun.utils.structs import Executable, MinorVersion
 from perun.fuzz.structs import (
-    FuzzingProgress,
     Mutation,
     FuzzingConfiguration,
+    FuzzingProgress,
+    FuzzingStats,
     RuleSet,
     TimeSeries,
 )
@@ -200,7 +201,7 @@ def print_legend(rule_set: RuleSet) -> None:
 
 
 def print_results(
-    fuzzing_report: dict[str, Any],
+    fuzzing_report: FuzzingStats,
     fuzzing_config: FuzzingConfiguration,
     rule_set: RuleSet,
 ) -> None:
@@ -212,21 +213,19 @@ def print_results(
     """
     log.info("Fuzzing: ", end="")
     log.done("\n")
-    log.info(f"Fuzzing time: {fuzzing_report['end_time'] - fuzzing_report['start_time']:.2f}s")
+    log.info(f"Fuzzing time: {fuzzing_report.end_time - fuzzing_report.start_time:.2f}s")
     log.info(f"Coverage testing: {fuzzing_config.coverage_testing}")
     if fuzzing_config.coverage_testing:
-        log.info(f"Program executions for coverage testing: {fuzzing_report['cov_execs']}")
-        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
-        log.info(
-            f"Total program tests: {fuzzing_report['perun_execs'] + fuzzing_report['cov_execs']}"
-        )
-        log.info(f"Maximum coverage ratio: {fuzzing_report['max_cov']}")
+        log.info(f"Program executions for coverage testing: {fuzzing_report.cov_execs}")
+        log.info(f"Program executions for performance testing: {fuzzing_report.perun_execs}")
+        log.info(f"Total program tests: {fuzzing_report.perun_execs + fuzzing_report.cov_execs}")
+        log.info(f"Maximum coverage ratio: {fuzzing_report.max_cov}")
     else:
-        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
-    log.info(f"Founded degradation mutations: {(fuzzing_report['degradations'])}")
-    log.info(f"Hangs: {fuzzing_report['hangs']}")
-    log.info(f"Faults: {fuzzing_report['faults']}")
-    log.info(f"Worst-case mutation: {fuzzing_report['worst_case']}")
+        log.info(f"Program executions for performance testing: {fuzzing_report.perun_execs}")
+    log.info(f"Founded degradation mutations: {fuzzing_report.degradations}")
+    log.info(f"Hangs: {fuzzing_report.hangs}")
+    log.info(f"Faults: {fuzzing_report.faults}")
+    log.info(f"Worst-case mutation: {fuzzing_report.worst_case}")
     print_legend(rule_set)
 
 
@@ -377,8 +376,8 @@ def teardown(
     # Clean-up remaining mutations
     filesystem.del_temp_files(parents, fuzz_progress, config.output_dir)
 
-    fuzz_progress.stats["end_time"] = time.time()
-    fuzz_progress.stats["worst_case"] = fuzz_progress.parents[-1].path
+    fuzz_progress.stats.end_time = time.time()
+    fuzz_progress.stats.worst_case = fuzz_progress.parents[-1].path
     print_results(fuzz_progress.stats, config, rule_set)
     log.done()
     sys.exit(0)
@@ -413,7 +412,7 @@ def process_successful_mutation(
 
     # appending to final results
     fuzz_progress.final_results.append(mutation)
-    fuzz_progress.stats["degradations"] += 1
+    fuzz_progress.stats.degradations += 1
 
 
 def save_state(fuzz_progress: FuzzingProgress) -> None:
@@ -421,8 +420,8 @@ def save_state(fuzz_progress: FuzzingProgress) -> None:
 
     :param FuzzingProgress fuzz_progress:
     """
-    save_fuzz_state(fuzz_progress.deg_time_series, fuzz_progress.stats["degradations"])
-    save_fuzz_state(fuzz_progress.cov_time_series, fuzz_progress.stats["max_cov"])
+    save_fuzz_state(fuzz_progress.deg_time_series, fuzz_progress.stats.degradations)
+    save_fuzz_state(fuzz_progress.cov_time_series, fuzz_progress.stats.max_cov)
 
     timer = threading.Timer(
         SAMPLING,
@@ -517,7 +516,7 @@ def run_fuzzing_for_command(
     log.done()
 
     save_state(fuzz_progress)
-    fuzz_progress.stats["start_time"] = time.time()
+    fuzz_progress.stats.start_time = time.time()
 
     # SIGINT (CTRL-C) signal handler
     def signal_handler(sig: int, _: Optional[types.FrameType]) -> None:
@@ -527,7 +526,7 @@ def run_fuzzing_for_command(
     signal.signal(signal.SIGINT, signal_handler)
 
     # MAIN LOOP
-    while (time.time() - fuzz_progress.stats["start_time"]) < config.timeout:
+    while (time.time() - fuzz_progress.stats.start_time) < config.timeout:
         # Gathering interesting workloads
         if config.coverage_testing:
             log.info("Gathering interesting workloads using coverage based testing")
@@ -540,7 +539,7 @@ def run_fuzzing_for_command(
                 for mutation in mutations:
                     try:
                         execs -= 1
-                        fuzz_progress.stats["cov_execs"] += 1
+                        fuzz_progress.stats.cov_execs += 1
                         # testing for coverage
                         result = evaluate_workloads_by_coverage.target_testing(
                             executable,
@@ -552,7 +551,7 @@ def run_fuzzing_for_command(
                         )
                     # error occurred
                     except CalledProcessError:
-                        fuzz_progress.stats["faults"] += 1
+                        fuzz_progress.stats.faults += 1
                         mutation.path = filesystem.move_file_to(
                             mutation.path, output_dirs["faults"]
                         )
@@ -560,7 +559,7 @@ def run_fuzzing_for_command(
                         result = True
                     # timeout expired
                     except TimeoutExpired:
-                        fuzz_progress.stats["hangs"] += 1
+                        fuzz_progress.stats.hangs += 1
                         log.warn(
                             f"Timeout ({config.hang_timeout}s) reached when testing. See {output_dirs['hangs']}."
                         )
@@ -599,7 +598,7 @@ def run_fuzzing_for_command(
             # testing with perun
             successful_result = False
             try:
-                fuzz_progress.stats["perun_execs"] += 1
+                fuzz_progress.stats.perun_execs += 1
                 successful_result = evaluate_workloads_by_perun.target_testing(
                     executable,
                     mutation,
@@ -624,6 +623,6 @@ def run_fuzzing_for_command(
         del fuzz_progress.interesting_workloads[:]
 
     # get end time
-    fuzz_progress.stats["end_time"] = time.time()
+    fuzz_progress.stats.end_time = time.time()
 
     teardown(fuzz_progress, output_dirs, parents, rule_set, config)
