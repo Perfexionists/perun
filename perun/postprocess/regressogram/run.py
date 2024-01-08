@@ -32,7 +32,7 @@ def postprocess(
     """
     # Perform the non-parametric analysis using the regressogram method
     regressogram_models = methods.compute_regressogram(
-        data_provider.data_provider_mapper(profile, **configuration), configuration
+        data_provider.generic_profile_provider(profile, **configuration), configuration
     )
 
     # Return the profile after the execution of regressogram method

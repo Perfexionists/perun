@@ -33,7 +33,7 @@ def postprocess(
 
     # Perform the regression analysis
     analysis = methods.compute(
-        data_provider.data_provider_mapper(profile, **configuration),
+        data_provider.generic_profile_provider(profile, **configuration),
         configuration["method"],
         configuration["regression_models"],
         steps=configuration["steps"],

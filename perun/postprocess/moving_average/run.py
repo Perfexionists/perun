@@ -53,7 +53,7 @@ def postprocess(
     """
     # Perform the non-parametric analysis using the moving average methods
     moving_average_models = methods.compute_moving_average(
-        data_provider.data_provider_mapper(profile, **configuration), configuration
+        data_provider.generic_profile_provider(profile, **configuration), configuration
     )
 
     # Return the profile after the execution of moving average method

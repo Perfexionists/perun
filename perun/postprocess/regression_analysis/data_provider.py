@@ -9,20 +9,6 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-def data_provider_mapper(
-    profile: Profile, **kwargs: Any
-) -> Iterator[tuple[list[float], list[float], str]]:
-    """Unified data provider for various profile types.
-
-    :param dict profile: the loaded profile dictionary
-    :param dict kwargs: additional parameters for data provider
-    :returns generator: generator object created by specific provider function
-    """
-    profile_type = profile["header"]["type"]
-    data_provider = _PROFILE_MAPPER.get(profile_type, generic_profile_provider)
-    return data_provider(profile, **kwargs)
-
-
 def resource_sort_key(resource: dict[str, Any]) -> str:
     """Extracts the key from resource used for sorting
 
@@ -68,12 +54,3 @@ def generic_profile_provider(
     # End of resources, yield the current lists
     if x_points_list:
         yield x_points_list, y_points_list, function_name
-
-
-# profile types : data provider functions mapping dictionary
-# to add new profile type - simply add new keyword and specific provider function with signature:
-#  - return value: generator object that produces required profile data
-#  - parameter: profile dictionary
-_PROFILE_MAPPER: dict[str, Callable[..., Iterator[tuple[list[float], list[float], str]]]] = {
-    "default": generic_profile_provider
-}

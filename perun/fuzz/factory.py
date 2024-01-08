@@ -479,9 +479,7 @@ def run_fuzzing_for_command(
     fuzz_progress = FuzzingProgress()
     config = FuzzingConfiguration(**kwargs)
 
-    output_dirs = filesystem.make_output_dirs(
-        config.output_dir, ["hangs", "faults", "diffs", "logs", "graphs"]
-    )
+    output_dirs = filesystem.make_output_dirs(config.output_dir)
 
     # getting workload corpus
     parents = filesystem.get_corpus(input_sample, config.workloads_filter)

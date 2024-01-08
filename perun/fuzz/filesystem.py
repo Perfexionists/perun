@@ -53,15 +53,14 @@ def move_file_to(filename: str, directory: str) -> str:
     return os.path.join(directory, file)
 
 
-def make_output_dirs(output_dir: str, new_dirs: list[str]) -> dict[str, str]:
+def make_output_dirs(output_dir: str) -> dict[str, str]:
     """Creates special output directories for diffs and mutations causing fault or hang.
 
     :param str output_dir: path to user-specified output directory
-    :param list new_dirs: names of new directories
     :return list: paths to newly created directories
     """
     dirs_dict = {}
-    for dir_name in new_dirs:
+    for dir_name in ["hangs", "faults", "diffs", "logs", "graphs"]:
         os.makedirs(os.path.join(output_dir, dir_name), exist_ok=True)
         dirs_dict[dir_name] = os.path.join(output_dir, dir_name)
     return dirs_dict
