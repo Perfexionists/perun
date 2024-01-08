@@ -157,7 +157,7 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
 # - f_b: function that modifies b1 (b) coefficient in model computation according to formulae
 # - data_gen: function that generates intermediate values from points for model computation
 # - computation: core function that controls the model computation
-# - func_list: functions that are applied to the 'data_gen'erated values
+# - func_list: functions that are applied to the generated values
 # -------------------------------------------------------------------------------------
 # Transformations: section for extensions and transformations of the resulting models
 # - plot_model: section for transformations of model properties to points which can be plotted

@@ -276,7 +276,7 @@ class DetectionChangeResult:
     ):
         self.result: PerformanceChange = res
         self.relative_rate: float = rdr
-        self.partial_intervals: list[tuple[PerformanceChange, float, float, float]] = (
+        self.partial_intervals: Optional[list[tuple[PerformanceChange, float, float, float]]] = (
             pi if pi is not None else []
         )
 
