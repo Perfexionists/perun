@@ -15,7 +15,7 @@ import perun.postprocess.regression_analysis.regression_models as regression_mod
 import perun.postprocess.regression_analysis.tools as tools
 
 from perun.profile.factory import Profile
-from perun.utils.structs import DegradationInfo, ModelRecord
+from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state
@@ -72,7 +72,7 @@ def execute_analysis(
     target_model: ModelRecord,
     target_profile: Profile,
     **_: Any,
-) -> dict[str, Any]:
+) -> DetectionChangeResult:
     """
     A method performs the primary analysis for pair of models.
 
@@ -86,7 +86,7 @@ def execute_analysis(
     :param ModelRecord baseline_model: dictionary of baseline model with its required properties
     :param ModelRecord target_model: dictionary of target_model with its required properties
     :param Profile target_profile: target profile for the analysis
-    :param dict kwargs: unification with remaining detection methods (i.e. Integral Comparison)
+    :param dict _: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
@@ -115,10 +115,7 @@ def execute_analysis(
         _INTEGRATE_DIFF_CHANGE,
     )
 
-    return {
-        "change_info": change_info,
-        "rel_error": round(rel_error if np.isfinite(rel_error) else 0, 2),
-    }
+    return DetectionChangeResult(change_info, round(rel_error if np.isfinite(rel_error) else 0, 2))
 
 
 def integral_comparison(

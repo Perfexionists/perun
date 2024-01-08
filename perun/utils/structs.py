@@ -256,6 +256,31 @@ class Unit:
         return unit_name.replace("-", "_")
 
 
+@dataclass
+class DetectionChangeResult:
+    """
+
+    :ivar result: result of the performance change,
+        either can be optimization, degradation, no change, or certain type of unknown
+    :ivar relative_rate: relative rate of the degradation
+    :ivar partial_intervals: finer specification of the change, i.e. in which intervals it occured
+    """
+
+    __slots__ = ["result", "relative_rate", "partial_intervals"]
+
+    def __init__(
+        self,
+        res: PerformanceChange,
+        rdr: float,
+        pi: Optional[list[tuple[PerformanceChange, float, float, float]]] = None,
+    ):
+        self.result: PerformanceChange = res
+        self.relative_rate: float = rdr
+        self.partial_intervals: list[tuple[PerformanceChange, float, float, float]] = (
+            pi if pi is not None else []
+        )
+
+
 class DegradationInfo:
     """The returned results for performance check methods
 

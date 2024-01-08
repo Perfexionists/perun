@@ -12,6 +12,7 @@ import distutils.util as dutils
 from typing import Any, Iterable, Protocol
 
 from perun.utils.structs import (
+    DetectionChangeResult,
     DegradationInfo,
     PerformanceChange,
     MinorVersion,
@@ -46,7 +47,7 @@ class CallableDetectionMethod(Protocol):
         target_model: ModelRecord,
         target_profile: Profile,
         **kwargs: Any,
-    ) -> dict[str, Any]:
+    ) -> DetectionChangeResult:
         pass
 
 
@@ -447,12 +448,12 @@ def _run_detection_for_models(
             )
 
             yield DegradationInfo(
-                res=change_result.get("change_info", PerformanceChange.Unknown),
+                res=change_result.result,
                 loc=re.sub(baseline_model.type + "$", "", uid) if uid_flag else uid,
                 fb=baseline_model.type,
                 tt=target_model.type,
-                rd=change_result.get("rel_error", 0.0),
+                rd=change_result.relative_rate,
                 ct="r_square",
                 cr=round(min(baseline_model.r_square, target_model.r_square), 2),
-                pi=change_result.get("partial_intervals"),
+                pi=change_result.partial_intervals,
             )
