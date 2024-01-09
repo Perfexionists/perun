@@ -9,6 +9,8 @@ import scipy.integrate as integrate
 
 from typing import Any, Iterable, TYPE_CHECKING
 
+import perun.utils.helpers as helpers
+
 if TYPE_CHECKING:
     import numpy.typing as npt
 
@@ -17,11 +19,7 @@ import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.tools as tools
 
 from perun.profile.factory import Profile
-from perun.utils.structs import (
-    DegradationInfo,
-    ModelRecord,
-    DetectionChangeResult
-)
+from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2
@@ -239,12 +237,12 @@ def execute_analysis(
     partial_intervals = list(np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T)
 
     change_info_enum = nparam_helpers.classify_change(
-        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
+        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE,
         _STATS_DIFF_CHANGE,
     )
     relative_error = round(
-        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
+        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
     )
 
     return DetectionChangeResult(change_info_enum, relative_error, partial_intervals)

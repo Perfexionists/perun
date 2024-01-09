@@ -135,19 +135,6 @@ def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.flo
     return x_pts
 
 
-def safe_division(dividend: float, divisor: float) -> float:
-    """Safe division of divident by operand
-
-    :param number dividend: upper operand of the division
-    :param number divisor: lower operand of the division, may be zero
-    :return: safe value after division of approximated zero
-    """
-    try:
-        return dividend / divisor
-    except (ZeroDivisionError, ValueError):
-        return dividend / APPROX_ZERO
-
-
 def as_plot_x_dict(plot_x: Any) -> dict[str, Any]:
     """Returns the argument as dictionary with given key
 

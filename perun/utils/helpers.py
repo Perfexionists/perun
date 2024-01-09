@@ -10,6 +10,7 @@ import types
 
 from typing import Optional, Any, Iterable, Callable, Literal
 
+from perun.postprocess.regression_analysis.tools import APPROX_ZERO
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
 # Types
@@ -457,3 +458,16 @@ def sanitize_filepart(part: str) -> str:
     """
     invalid_characters = r"# %&{}\<>*?/ $!'\":@"
     return "".join("_" if c in invalid_characters else c for c in str(part))
+
+
+def safe_division(dividend: float, divisor: float) -> float:
+    """Safe division of divident by operand
+
+    :param number dividend: upper operand of the division
+    :param number divisor: lower operand of the division, may be zero
+    :return: safe value after division of approximated zero
+    """
+    try:
+        return dividend / divisor
+    except (ZeroDivisionError, ValueError):
+        return dividend / APPROX_ZERO
