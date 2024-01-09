@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import click
 
-import perun.logic.runner as runner
 import perun.logic.config as perun_config
+import perun.logic.runner as runner
 import perun.utils as utils
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
@@ -85,7 +85,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     the `job matrix` and subsequently runs the jobs collecting list of
     profiles. Each profile is then stored in ``.perun/jobs`` directory and
     moreover is annotated using by setting :preg:`origin` key to current
-    ``HEAD``. This serves as check to not assing such profiles to different
+    ``HEAD``. This serves as check to not assign such profiles to different
     minor versions.
 
     The job matrix is defined in the yaml format and consists of specification

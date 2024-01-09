@@ -7,15 +7,16 @@ from __future__ import annotations
 
 import click
 
+from typing import Any
+
 import perun.logic.commands as commands
-import perun.logic.temp as temp
 import perun.logic.stats as stats
-import perun.utils.script_helpers as scripts
+import perun.logic.temp as temp
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
-from perun.utils.exceptions import ExternalEditorErrorException
+import perun.utils.script_helpers as scripts
 
-from typing import Any
+from perun.utils.exceptions import ExternalEditorErrorException
 
 
 @click.group("utils")
@@ -77,7 +78,7 @@ def create(template_type: str, **kwargs: Any) -> None:
     Unless ``--no-edit`` is set, after the successful creation of the files, an external editor,
     which is specified by :ckey:`general.editor` configuration key.
 
-    .. _jinja: http://jinja2.pocoo.org/
+    .. _jinja: https://jinja2.pocoo.org/
     """
     try:
         scripts.create_unit_from_template(template_type, **kwargs)
