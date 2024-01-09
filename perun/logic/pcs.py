@@ -10,8 +10,8 @@ import os
 
 import perun.logic.config as config
 import perun.utils.helpers as helpers
+import perun.utils.decorators as decorators
 
-from perun.utils.decorators import singleton_with_args, singleton
 from perun.utils.exceptions import NotPerunRepositoryException
 
 
@@ -28,7 +28,7 @@ def get_safe_path(default: str) -> str:
         return default
 
 
-@singleton
+@decorators.singleton
 def get_path() -> str:
     """Locates the instance of the perun starting from the current working directory
 
@@ -40,7 +40,7 @@ def get_path() -> str:
     return os.path.join(helpers.locate_perun_dir_on(os.getcwd()), ".perun")
 
 
-@singleton
+@decorators.singleton
 def get_vcs_type_and_url() -> tuple[str, str]:
     """Returns the type and url of the wrapped version control system
 
@@ -51,7 +51,7 @@ def get_vcs_type_and_url() -> tuple[str, str]:
     return vcs_type, os.path.abspath(os.path.join(get_path(), vcs_url))
 
 
-@singleton
+@decorators.singleton
 def get_vcs_path() -> str:
     """Returns the path to the wrapped version control system
 
@@ -61,7 +61,7 @@ def get_vcs_path() -> str:
     return os.path.abspath(os.path.join(get_path(), config.local(get_path()).get("vcs.url")))
 
 
-@singleton
+@decorators.singleton
 def local_config() -> config.Config:
     """Get local config for the current Perun context
 
@@ -70,7 +70,7 @@ def local_config() -> config.Config:
     return config.local(get_path())
 
 
-@singleton
+@decorators.singleton
 def global_config() -> config.Config:
     """Get global config for the current Perun context
 
@@ -79,7 +79,7 @@ def global_config() -> config.Config:
     return config.shared()
 
 
-@singleton
+@decorators.singleton
 def get_object_directory() -> str:
     """Returns the name of the directory, where objects are stored
 
@@ -90,7 +90,7 @@ def get_object_directory() -> str:
     return object_directory
 
 
-@singleton
+@decorators.singleton
 def get_log_directory() -> str:
     """Returns the name of the directory, where logs are stored
 
@@ -101,7 +101,7 @@ def get_log_directory() -> str:
     return logs_directory
 
 
-@singleton
+@decorators.singleton
 def get_job_directory() -> str:
     """Returns the name of the directory, where pending profiles are stored
 
@@ -112,7 +112,7 @@ def get_job_directory() -> str:
     return jobs_directory
 
 
-@singleton
+@decorators.singleton
 def get_job_index() -> str:
     """Returns the name of the index, where pending profiles are registered
 
@@ -122,7 +122,7 @@ def get_job_index() -> str:
     return os.path.join(jobs_directory, ".index")
 
 
-@singleton
+@decorators.singleton
 def get_stats_directory() -> str:
     """Returns the name of the directory where statistics are stored
 
@@ -133,7 +133,7 @@ def get_stats_directory() -> str:
     return stats_directory
 
 
-@singleton
+@decorators.singleton
 def get_stats_index() -> str:
     """Returns the path to the index file in stats directory where records about minor versions
     with stats files are stored
@@ -143,7 +143,7 @@ def get_stats_index() -> str:
     return os.path.join(get_stats_directory(), ".index")
 
 
-@singleton
+@decorators.singleton
 def get_tmp_directory() -> str:
     """Returns the name of the directory, where various or temporary files are stored
 
@@ -154,7 +154,7 @@ def get_tmp_directory() -> str:
     return tmp_directory
 
 
-@singleton
+@decorators.singleton
 def get_tmp_index() -> str:
     """Returns the path to the index file in tmp directory, where details about some tmp files
     are stored
@@ -165,7 +165,7 @@ def get_tmp_index() -> str:
     return os.path.join(tmp_directory, ".index")
 
 
-@singleton_with_args
+@decorators.singleton_with_args
 def get_config_file(config_type: str) -> str:
     """Returns the config file for the given config type
 

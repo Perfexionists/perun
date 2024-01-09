@@ -29,7 +29,7 @@ Paths:
 The interface functions that take a path argument accept either absolute or relative paths. The
 relative paths are transformed to absolute ones, where the root/working directory is considered to
 be the .perun/tmp/ directory. All resulting paths are checked so that no temporary file or
-directory would be created outside of the .perun/tmp/ directory.
+directory would be created outside the .perun/tmp/ directory.
 
 The transformation works as follows:
 - absolute path located in the .perun/tmp/ directory: no change
@@ -49,19 +49,19 @@ mechanism to delete them if the need for complete cleanup arises.
 Deletion:
 ---------------------------------------------------
 When using this interface, the files are not automatically cleaned up when they are no longer used.
-Thus the user should take care to delete them appropriately to save some memory.
+Thus, the user should take care to delete them appropriately to save some memory.
 """
 from __future__ import annotations
 
-import os
 import json
+import os
 import zlib
 
 from typing import Optional, Any, cast, BinaryIO
 
+import perun.logic.index as index
 import perun.logic.pcs as pcs
 import perun.logic.store as store
-import perun.logic.index as index
 import perun.utils.exceptions as exceptions
 import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
@@ -114,7 +114,7 @@ class TempFile:
 
         :param type exc_type: the type of the exception
         :param exception exc_val: the value of the exception
-        :param traceback exc_tb: the exception traceback
+        :param traceback exc_tb: the traceback of the exception
         """
         delete_temp_file(self.filename, force=True)
 
@@ -460,7 +460,7 @@ def delete_all_temps(
 def synchronize_index() -> None:
     """Synchronizes the index file with the content of the tmp/ directory.
 
-    Namely removes index entries that are not needed or refer to no longer existing files
+    Namely, removes index entries that are not needed or refer to no longer existing files
     """
     index_entries = index.load_custom_index(pcs.get_tmp_index())
     tmp_files = list_all_temps()

@@ -23,16 +23,17 @@ their resources against each other.
 from __future__ import annotations
 
 import os
+
 from enum import Enum
 from typing import Optional
 
-from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
-
 import perun.logic.temp as temp
 import perun.utils as utils
-from perun.utils.helpers import SuppressedExceptions
+
+from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.utils.exceptions import ResourceLockedException, InvalidTempPathException
+from perun.utils.helpers import SuppressedExceptions
 
 
 class LockType(Enum):

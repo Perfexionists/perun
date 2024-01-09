@@ -1,56 +1,55 @@
 """Collection of functions for running collectors and postprocessors"""
 from __future__ import annotations
 
-import os
-import subprocess
-import signal
-import types
-
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, Type
-
-import distutils.util as dutils
-
 import click
+import distutils.util as dutils
+import os
+import signal
+import subprocess
 
-import perun.vcs as vcs
-import perun.logic.pcs as pcs
-import perun.logic.config as config
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
+
+
+import perun.collect.trace.optimizations.optimization as optimizations
 import perun.logic.commands as commands
+import perun.logic.config as config
 import perun.logic.index as index
+import perun.logic.pcs as pcs
 import perun.profile.helpers as profile
 import perun.utils as utils
-import perun.utils.streams as streams
-import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.utils.helpers as helpers
+import perun.utils.log as log
+import perun.utils.streams as streams
+import perun.vcs as vcs
 import perun.workload as workloads
-import perun.collect.trace.optimizations.optimization as optimizations
 
-if TYPE_CHECKING:
-    from perun.profile.factory import Profile
-    from perun.workload.generator import WorkloadGenerator
-
-from perun.utils import get_module
-from perun.utils.structs import (
-    GeneratorSpec,
-    Unit,
-    Executable,
-    RunnerReport,
-    CollectStatus,
-    PostprocessStatus,
-    Job,
-    MinorVersion,
-)
+from perun.utils.exceptions import SignalReceivedException
 from perun.utils.helpers import (
+    COLLECT_PHASE_CMD,
     COLLECT_PHASE_COLLECT,
     COLLECT_PHASE_POSTPROCESS,
-    COLLECT_PHASE_CMD,
     COLLECT_PHASE_WORKLOAD,
-    HandledSignals,
     ColorChoiceType,
+    HandledSignals,
+)
+from perun.utils.structs import (
+    CollectStatus,
+    Executable,
+    GeneratorSpec,
+    Job,
+    MinorVersion,
+    PostprocessStatus,
+    RunnerReport,
+    Unit,
 )
 from perun.workload.singleton_generator import SingletonGenerator
-from perun.utils.exceptions import SignalReceivedException
+
+
+if TYPE_CHECKING:
+    import types
+
+    from perun.profile.factory import Profile
 
 
 def construct_job_matrix(
@@ -252,7 +251,7 @@ def run_all_phases_for(
     """Run all the phases (before, runner_type, after) for given params.
 
     Runs three of the phases before, runner_type and after for the given runner params
-    with runner (collector or postprocesser). During each phase, either error occurs,
+    with runner (collector or postprocessor). During each phase, either error occurs,
     with given error message or updated params, that are used in next phase. This
     way the phases can pass the information.
 
@@ -306,7 +305,7 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
 
     try:
-        collector_module = get_module(f"perun.collect.{collector.name}.run")
+        collector_module = utils.get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
         log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
@@ -374,7 +373,7 @@ def run_postprocessor(
     )
 
     try:
-        postprocessor_module = get_module(f"perun.postprocess.{postprocessor.name}.run")
+        postprocessor_module = utils.get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
         log.error(
             f"{postprocessor.name} postprocessor does not exist",
@@ -398,7 +397,7 @@ def run_postprocessor(
 
 
 def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str] = None) -> None:
-    """Stores the generated profile in the pending jobs directory.
+    """Stores the generated profile in the pending jobs' directory.
 
     :param Profile prof: profile that we are storing in the repository
     :param Job job: job with additional information about generated profiles
@@ -414,6 +413,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get("origin", vcs.get_minor_head())
+        # FIXME: consider removing this
         commands.add([full_profile_path], dst, keep_profile=False)
     else:
         # Else we register the profile in pending index
@@ -435,7 +435,7 @@ def run_postprocessor_on_profile(
     :param dict prof: dictionary with profile information
     :param str postprocessor_name: name of the postprocessor that we are using
     :param dict postprocessor_params: parameters for the postprocessor
-    :param bool skip_store: if set to true, then the profil will not be stored
+    :param bool skip_store: if set to true, then the profile will not be stored
     :returns (PostprocessStatus, dict): status how the postprocessing went and the postprocessed
         profile
     """
@@ -588,7 +588,7 @@ def generate_profiles_for(
     """Helper generator, that takes job specification and continuously generates profiles
 
     This is mainly used for fuzzing, which requires to handle the profiles without any storage,
-    since the generated profiles are not futher used.
+    since the generated profiles are not further used.
 
     :param list cmd: list of commands that will be run
     :param list args: lists of additional arguments to the job
