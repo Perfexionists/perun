@@ -581,3 +581,9 @@ class ModelRecord:
         :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
         """
         return len(self.b0) if hasattr(self.b0, "__len__") else 1 + self.b1 != 0.0 + self.b2 != 0.0
+
+
+class ClassificationMethod(Enum):
+    FastCheck = 1
+    LinearRegression = 2
+    PolynomialRegression = 3

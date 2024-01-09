@@ -12,11 +12,10 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
-
+from perun.utils.structs import DegradationInfo, ClassificationMethod
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
-    from perun.utils.structs import DegradationInfo
 
 
 def fast_check(
@@ -31,7 +30,7 @@ def fast_check(
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
     return detect.general_detection(
-        baseline_profile, target_profile, detect.ClassificationMethod.FastCheck
+        baseline_profile, target_profile, ClassificationMethod.FastCheck
     )
 
 

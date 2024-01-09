@@ -11,11 +11,12 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.check.general_detection as detect
 
+from perun.utils.structs import DegradationInfo, ClassificationMethod
+
 if TYPE_CHECKING:
     import numpy.typing as npt
 
     from perun.profile.factory import Profile
-    from perun.utils.structs import DegradationInfo
 
 THRESHOLD = 100000000
 
@@ -35,7 +36,7 @@ def polynomial_regression(
     return detect.general_detection(
         baseline_profile,
         target_profile,
-        detect.ClassificationMethod.PolynomialRegression,
+        ClassificationMethod.PolynomialRegression,
     )
 
 

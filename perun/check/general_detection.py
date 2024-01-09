@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from enum import Enum
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
 
 import perun.check.fast_check as fast_check
@@ -21,20 +20,18 @@ import perun.postprocess.regression_analysis.regression_models as regression_mod
 import perun.profile.query as query
 import perun.utils.helpers as helpers
 
-from perun.utils.structs import PerformanceChange, DegradationInfo, ModelRecord
+from perun.utils.structs import (
+    PerformanceChange,
+    DegradationInfo,
+    ModelRecord,
+    ClassificationMethod,
+)
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
 SAMPLES: int = 1000
-
-
-class ClassificationMethod(Enum):
-    FastCheck = 1
-    LinearRegression = 2
-    PolynomialRegression = 3
-
 
 np.seterr(divide="ignore", invalid="ignore")
 

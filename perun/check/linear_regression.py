@@ -14,13 +14,13 @@ import perun.check.fast_check as fast_check
 import perun.check.general_detection as detect
 import perun.utils as utils
 
+from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 
 if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt
 
     from perun.profile.factory import Profile
-    from perun.utils.structs import DegradationInfo, ModelRecord
 
 
 def linear_regression(
@@ -36,7 +36,7 @@ def linear_regression(
     """
 
     return detect.general_detection(
-        baseline_profile, target_profile, detect.ClassificationMethod.LinearRegression
+        baseline_profile, target_profile, ClassificationMethod.LinearRegression
     )
 
 
