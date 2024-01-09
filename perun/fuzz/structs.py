@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import dataclasses
 import os
-from typing import Any, Optional, Callable
+
+from typing import Any, Optional
 
 import perun.utils as utils
+
 from perun.utils.decorators import always_singleton
 
 
@@ -118,7 +120,7 @@ class CoverageConfiguration:
 class FuzzingConfiguration:
     """Collection of (mostly persistent) configuration of the fuzzing process
 
-    This encapsulates all of the possibly used configurations to be passed around functions, in
+    This encapsulates all possibly used configurations to be passed around functions, in
     order to reduce the number of local variables and parameters.
 
     :ivar int timeout: specifies how long the fuzzing should be running

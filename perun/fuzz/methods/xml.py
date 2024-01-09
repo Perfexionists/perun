@@ -2,7 +2,7 @@
 Exploiting more domain-specific knowledge about the workload we
 devised specific rules for concrete formats. We propose rules for
 removing tags, attributes, names or values of attributes used in XML
-based files (i.e. . ``xml``, ``.svg``, ``.xhtml``, ``.xul``).
+based files (i.e. ``.xml``, ``.svg``, ``.xhtml``, ``.xul``).
 For example, we can assume a situation, when fuzzer removes closing tag,
 which will increase the nesting. Then a recursively implemented parser
 will fail to find one or more of closing brackets (representing recursion

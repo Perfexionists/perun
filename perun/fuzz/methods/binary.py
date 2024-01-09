@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import os
 
-import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
+import perun.fuzz.randomizer as randomizer
 
 
 RULE_ITERATIONS = 10

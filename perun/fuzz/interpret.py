@@ -1,18 +1,19 @@
 """ Module contains a set of functions for fuzzing results interpretation."""
 from __future__ import annotations
 
-import os.path as path
 import difflib
-import scipy.stats.mstats as stats
 import matplotlib.pyplot as plt
+import os
+import scipy.stats.mstats as stats
 
-from typing import TextIO, Optional
+from typing import TextIO, Optional, TYPE_CHECKING
 
-import perun.utils.streams as streams
-import perun.utils.log as log
 import perun.fuzz.filesystem as filesystem
+import perun.utils.log as log
+import perun.utils.streams as streams
 
-from perun.fuzz.structs import Mutation, TimeSeries, FuzzingProgress
+if TYPE_CHECKING:
+    from perun.fuzz.structs import Mutation, TimeSeries, FuzzingProgress
 
 
 MATPLOT_LIB_INITIALIZED = False
@@ -121,22 +122,22 @@ def lazy_initialize_matplotlib() -> None:
 
 
 def plot_fuzz_time_series(
-    time_series: TimeSeries, filename: str, title: str, xlabel: str, ylabel: str
+    time_series: TimeSeries, filename: str, title: str, x_label: str, y_label: str
 ) -> None:
     """Plots the measured values to time series graph.
 
     :param TimeSeries time_series: measured values (x and y-axis)
     :param str filename: name of the output .pdf file
     :param str title: title of graph
-    :param str xlabel: name of x-axis
-    :param str ylabel: name of y-axis
+    :param str x_label: name of x-axis
+    :param str y_label: name of y-axis
     """
     lazy_initialize_matplotlib()
     _, axis = plt.subplots(figsize=(PLOT_SIZE_X, PLOT_SIZE_Y))
 
     axis.set_title(title)
-    axis.set_xlabel(xlabel)
-    axis.set_ylabel(ylabel)
+    axis.set_xlabel(x_label)
+    axis.set_ylabel(y_label)
 
     axis.spines["top"].set_visible(False)
     axis.spines["right"].set_visible(False)
@@ -269,8 +270,8 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
                 delta = difflib.unified_diff(pred, result, lineterm="")
 
                 # split the file to name and extension
-                _, file = path.split(res.path)
-                file, _ = path.splitext(file)
+                _, file = os.path.split(res.path)
+                file, _ = os.path.splitext(file)
 
                 diff_file_name = file + "-diff.html"
 

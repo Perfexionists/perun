@@ -1,8 +1,9 @@
 """Collects fuzzing rules specific for text files."""
 from __future__ import annotations
 
-import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
+import perun.fuzz.randomizer as randomizer
+
 from perun.utils.helpers import SuppressedExceptions
 
 
@@ -51,7 +52,7 @@ def insert_whitespace(lines: list[str]) -> None:
       line. There are several intuitions behind this rule: (1) some trimming regular expressions
       can induce the excessive number of backtracking, and (2) some structures, such as hash
       tables, can have bad properties and lead to a singly-linked list when induced with lots of
-      words (e.g. when one chooses wrong size of the table or bad hash-function.
+      words (e.g. when one chooses wrong size of the table or bad hash-function).
     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
@@ -131,7 +132,7 @@ def prepend_whitespace(lines: list[str]) -> None:
      * **Description**: The rule prepends random number of whitespaces at random line.
      * **Known Issues**:
 
-       1. StackOverflow_ regular expression with quadratic number of backtrackings.
+       1. StackOverflow_ regular expression with quadratic number of backtracking.
 
     .. _StackOverflow: https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016
     """

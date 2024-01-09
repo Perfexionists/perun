@@ -6,11 +6,11 @@ import re
 
 from typing import Callable, Optional, Any
 
+import perun.fuzz.methods.binary as binary
+import perun.fuzz.methods.textfile as textfile
+import perun.fuzz.methods.xml as xml
 import perun.fuzz.randomizer as randomizer
 
-import perun.fuzz.methods.binary as binary
-import perun.fuzz.methods.xml as xml
-import perun.fuzz.methods.textfile as textfile
 from perun.fuzz.structs import RuleSet
 
 

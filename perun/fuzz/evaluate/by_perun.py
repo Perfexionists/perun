@@ -5,19 +5,20 @@ profile comparing with baseline profile.
 """
 from __future__ import annotations
 
-import perun.check.factory as check
-import perun.logic.runner as run
-from perun.utils.structs import PerformanceChange
-
 from typing import TYPE_CHECKING, Iterable, Any
 
+import perun.check.factory as check
+import perun.logic.runner as run
+
+from perun.utils.structs import PerformanceChange
+
 if TYPE_CHECKING:
-    from perun.utils.structs import Executable, MinorVersion, CollectStatus
     from perun.fuzz.structs import Mutation
     from perun.profile.factory import Profile
+    from perun.utils.structs import Executable, MinorVersion, CollectStatus
 
 
-DEGRADATION_RATIO_TRESHOLD = 0.0
+DEGRADATION_RATIO_THRESHOLD = 0.0
 
 
 def baseline_testing(
@@ -67,7 +68,7 @@ def baseline_testing(
         )
 
         file.deg_ratio = check_for_change(base_pg, target_pg)
-        if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
+        if file.deg_ratio > DEGRADATION_RATIO_THRESHOLD:
             base_pg = target_pg
     return base_pg
 
@@ -106,9 +107,8 @@ def target_testing(
         )
     )
 
-    # check
     workload.deg_ratio = check_for_change(base_result, target_pg)
-    return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
+    return workload.deg_ratio > DEGRADATION_RATIO_THRESHOLD
 
 
 def check_for_change(

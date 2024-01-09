@@ -40,7 +40,7 @@ def random_repeats(repeats: int) -> Callable[[Any], Any]:
 
 def rand_from_range(start: int, stop: int) -> int:
     """Basic function that randomly choose an integer from range bounded by `start` and `stop`
-    parameters. Matematically expressed as `start` <= random_number <= `stop`.
+    parameters. Mathematically expressed as `start` <= random_number <= `stop`.
 
     :param int start: lower bound of the interval
     :param int stop: upper limit of the interval

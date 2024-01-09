@@ -4,19 +4,17 @@ from __future__ import annotations
 import copy
 import filecmp
 import itertools
+import numpy as np
 import os
-import os.path as path
 import signal
 import sys
-import time
-import threading
-import types
-from subprocess import CalledProcessError, TimeoutExpired
-from uuid import uuid4
-import numpy as np
 import tabulate
+import threading
+import time
 
-from typing import Optional, Any, cast
+from subprocess import CalledProcessError, TimeoutExpired
+from typing import Optional, Any, cast, TYPE_CHECKING
+from uuid import uuid4
 
 import perun.utils.decorators as decorators
 import perun.utils.log as log
@@ -27,7 +25,6 @@ import perun.fuzz.randomizer as randomizer
 import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
 import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 
-from perun.utils.structs import Executable, MinorVersion
 from perun.fuzz.structs import (
     Mutation,
     FuzzingConfiguration,
@@ -37,6 +34,10 @@ from perun.fuzz.structs import (
     TimeSeries,
 )
 
+if TYPE_CHECKING:
+    import types
+
+    from perun.utils.structs import Executable, MinorVersion
 
 # to ignore numpy division warnings
 np.seterr(divide="ignore", invalid="ignore")
@@ -78,7 +79,7 @@ def get_max_size(
                  (percentage portion, adding constant size)
     """
     # gets the largest seed's size
-    seed_max = max(path.getsize(seed.path) for seed in seeds)
+    seed_max = max(os.path.getsize(seed.path) for seed in seeds)
 
     # --max option was not specified
     if max_size is None:
@@ -152,8 +153,8 @@ def fuzz(
         return []
 
     # split the file to name and extension
-    _, file = path.split(parent.path)
-    file, ext = path.splitext(file)
+    _, file = os.path.split(parent.path)
+    file, ext = os.path.splitext(file)
 
     # fuzzing
     for i, method in enumerate(rule_set.rules):
@@ -300,20 +301,20 @@ def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
 
     triangle_num = (num_intervals * num_intervals + num_intervals) / 2
     bottom = 0
-    tresh = int(num_of_parents / num_intervals)
-    top = tresh
+    thresh = int(num_of_parents / num_intervals)
+    top = thresh
     intervals = []
     weights = []
 
     # creates borders of intervals
     for i in range(num_intervals):
         # remainder
-        if num_of_parents - top < tresh:
+        if num_of_parents - top < thresh:
             top = num_of_parents
         intervals.append((bottom, top))
         weights.append((i + 1) / triangle_num)
         bottom = top
-        top += tresh
+        top += thresh
 
     # choose an interval
     interval_idx = np.random.choice(range(num_intervals), replace=False, p=weights)
