@@ -14,8 +14,9 @@ complex queries and statistical tests over the profiles.
 """
 from __future__ import annotations
 
-import operator
 import numbers
+import operator
+
 import perun.utils.helpers as helpers
 
 from typing import Any, TYPE_CHECKING, Iterable
@@ -63,10 +64,10 @@ def flattened_values(root_key: Any, root_value: Any) -> Iterable[tuple[str, str 
 
 
 def all_items_of(resource: dict[str, Any]) -> Iterable[tuple[str, str | float]]:
-    """Generator for iterating through all of the flattened items contained
+    """Generator for iterating through the flattened items contained
     inside the resource w.r.t :pkey:`resources` specification.
 
-    Generator iterates through all of the items contained in the `resource` in
+    Generator iterates through the items contained in the `resource` in
     flattened form (i.e. it does not contain nested dictionaries). Resources
     should be w.r.t :pkey:`resources` specification.
 
@@ -111,7 +112,8 @@ def all_model_fields_of(profile: Profile) -> Iterable[str]:
     E.g. considering the example profiles from :ref:`postprocessors-regression-analysis`, the function
     yields the following model keys:
 
-        model_keys = ['coeffs:b1', 'coeffs:b0', 'coeffs', 'r_square', 'x_interval_end', 'model', 'method', 'uid', 'x_interval_start', 'coeffs:b2']
+        model_keys = ['coeffs:b1', 'coeffs:b0', 'coeffs', 'r_square', 'x_interval_end', 'model', 'method', 'uid',
+            'x_interval_start', 'coeffs:b2']
         memory_resource_fields = [
             'type', 'address', 'amount', 'uid:function', 'uid:source',
             'uid:line', 'uid', 'trace', 'subtype'
@@ -142,7 +144,7 @@ def _all_fields_of(item_generator: Iterable[tuple[int, dict[str, Any]]]) -> Iter
 
 def all_numerical_resource_fields_of(profile: Profile) -> Iterable[str]:
     """Generator for iterating through all the fields (both flattened and
-    original) that are occuring in the resources and takes as domain integer
+    original) that are occurring in the resources and takes as domain integer
     values.
 
     Generator iterates through all the resources and checks their flattened
@@ -213,13 +215,13 @@ def all_key_values_of(resource: dict[str, Any], resource_key: str) -> Iterable[A
     """Generator of all (not essentially unique) key values in resource, w.r.t
     :pkey:`resources` specification of resources.
 
-    Iterates through all of the values of given ``resource_key`` and yields
+    Iterates through the values of given ``resource_key`` and yields
     every value it finds. Note that the key can contain ':' symbol indicating
     another level of dictionary hierarchy or '::' for specifying keys in list
     or set level, e.g. in case of `traces` one uses ``trace::function``.
 
     E.g. considering the example profiles from :pkey:`resources` and the
-    resources ``mres`` from the profile of `memory` type, we can obtain all of
+    resources ``mres`` from the profile of `memory` type, we can obtain
     the values of ``trace::function`` key as follows::
 
         >>> query.all_key_values_of(mres, 'trace::function')
@@ -258,17 +260,17 @@ def unique_model_values_of(profile: Profile, model_key: str) -> Iterable[Any]:
     """Generator of all unique key values occurring in the models in the
     resources of given performance profile w.r.t. :ref:`profile-spec`.
 
-    Iterates through all of the values of given ``resource_keys`` and yields
+    Iterates through the values of given ``resource_keys`` and yields
     only unique values. Note that the key can contain ':' symbol indicating
     another level of dictionary hierarchy or '::' for specifying keys in list
     or set level, e.g. in case of `traces` one uses ``trace::function``.  For
     more details about the specification of models refer to :pkey:`models` or
-    :ref:`postprocessors-regression-analysis`).
+    :ref:`postprocessors-regression-analysis`.
 
     E.g. given some trace profile ``complexity_prof``, we can obtain
     unique values of keys from `models` as follows:
 
-        >>> list(query.unique_model_values_of('model')
+        >>> list(query.unique_model_values_of('model'))
         ['constant', 'exponential', 'linear', 'logarithmic', 'quadratic']
         >>> list(query.unique_model_values_of('r_square'))
         [0.0, 0.007076437903106431, 0.0017560012128507133,
@@ -292,7 +294,7 @@ def _unique_values_generator(key: str, blocks_gen: Iterable[tuple[Any, dict[str,
     :param iterable blocks_gen: the data blocks generator (e.g. all_resources of Profile)
     :returns iterable: stream of unique key values
     """
-    # value can be dict, list, set etc and not only simple type, thus the list
+    # value can be dict, list, set etc. and not only simple type, thus the list
     unique_values = list()
     for _, resource in blocks_gen:
         # Get all values the key contains

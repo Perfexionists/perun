@@ -14,27 +14,27 @@ complex queries and statistical tests over the profiles.
 """
 from __future__ import annotations
 
-import operator
 import array
+import numpy
+import operator
+import pandas
 
 from typing import TYPE_CHECKING, Any
 
+import perun.postprocess.regression_analysis.transform as transform
+import perun.profile.query as query
+import perun.utils.helpers as helpers
+
+
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
-
-import perun.utils.helpers as helpers
-import perun.profile.query as query
-import perun.postprocess.regression_analysis.transform as transform
-
-import numpy
-import pandas
 
 
 def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """Converts the profile (w.r.t :ref:`profile-spec`) to format supported by
     `pandas`_ library.
 
-    Queries through all of the resources in the `profile`, and flattens each
+    Queries through the resources in the `profile`, and flattens each
     key and value to the tabular representation. Refer to `pandas`_ library for
     more possibilities how to work with the tabular representation of collected
     resources.
@@ -61,7 +61,7 @@ def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     :returns: converted profile to ``pandas.DataFramelist`` with resources
         flattened as a pandas dataframe
     """
-    # Since some keys may be missing in the resources, we consider all of the possible fields
+    # Since some keys may be missing in the resources, we consider the possible fields
     resource_keys = list(profile.all_resource_fields())
     values: dict[str, list[Any] | array.array[float] | array.array[int]] = {
         key: [] for key in resource_keys
@@ -88,7 +88,7 @@ def models_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
     :returns: converted models of profile to ``pandas.DataFramelist``
     """
-    # Note that we need to to this inefficiently, because some keys can be missing in resources
+    # Note that we need to this inefficiently, because some keys can be missing in resources
     model_keys = list(query.all_model_fields_of(profile))
     values: dict[str, list[Any]] = {key: [] for key in model_keys}
 
@@ -104,7 +104,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     """Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the
     format supported by perl script of Brendan Gregg.
 
-    .. _Brendan Gregg's homepage: http://www.brendangregg.com/index.html
+    .. _Brendan Gregg's homepage: https://www.brendangregg.com/index.html
 
     :ref:`views-flame-graph` can be used to visualize the inclusive consumption
     of resources w.r.t. the call trace of the resource. It is useful for fast
@@ -122,7 +122,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
 
     Each line corresponds to some collected resource (in this case amount of
     allocated memory) preceeded by its trace (i.e. functions or other unique
-    identifiers joined using ``;`` character.
+    identifiers joined using ``;`` character).
 
     :param Profile profile: the memory profile
     :returns: list of lines, each representing one allocation call stack
