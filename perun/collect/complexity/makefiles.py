@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 import os
+
 from subprocess import DEVNULL, CalledProcessError
 from typing import TextIO
 
-import perun.utils.log as log
 import perun.utils as utils
+import perun.utils.log as log
 
 # Cmake constants that may be changed
 CMAKE_VERSION = "3.15.0"

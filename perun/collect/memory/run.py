@@ -1,9 +1,8 @@
 """This module contains methods needed by Perun logic"""
 from __future__ import annotations
 
-import os
-
 import click
+import os
 
 from typing import Any
 
@@ -12,6 +11,7 @@ import perun.collect.memory.parsing as parser
 import perun.collect.memory.syscalls as syscalls
 import perun.logic.runner as runner
 import perun.utils.log as log
+
 from perun.utils.structs import CollectStatus, Executable
 
 

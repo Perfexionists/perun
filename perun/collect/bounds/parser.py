@@ -1,4 +1,4 @@
-"""Parse parses the result of the loopus analyzer.
+"""Parse parses the result of the Loopus analyzer.
 
 The example of the format is as follows:
 --------------------------------------
@@ -71,7 +71,7 @@ def partition_list(source_list: list[str], pred: Callable[[str], bool]) -> list[
 def parse_file(file_info: str, source_map: dict[str, str]) -> list[dict[str, Any]]:
     """Parses the result of analysis of single file
 
-    Each file consist of several functions which are preceeded by keyword Function and the function
+    Each file consist of several functions which are preceded by keyword Function and the function
     name. Then a list of individual bounds for each cycle in the function is listed.
 
     :param str file_info: result of analysis of one single file
@@ -116,16 +116,16 @@ def parse_function(func_info: list[str], file_name: str) -> list[dict[str, Any]]
     Each function consists of several bounds, for each cycle in the function (since non-cycles has
     constant bounds).
 
-    Each results is one of the following forms:
+    Each result is one of the following forms:
 
-      1. The bounds were successfully analysed. Then loopus returns bound (i.e. ranking function)
+      1. The bounds were successfully analysed. Then Loopus returns bound (i.e. ranking function)
          and complexity class of the cycle (i.e. the highest polynom, such as n^2, etc.)
         line <row> / <col>
         <bound>
         O(<class>)
 
       2. The bounds could not be inferred. This is usually caused by either non-determinism, or
-         conditions that are not modelled in loopus, such as those involving heap or data fields.
+         conditions that are not modelled in Loopus, such as those involving heap or data fields.
 
         line <row> / <col>
         FAILED to compute RF  ( RFComputationFailed)

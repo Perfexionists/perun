@@ -11,7 +11,7 @@ Perun can collect profiling data in two ways:
 
     2. By **Using job specification** either as a single run of batch of
        profiling jobs using ``perun run job`` or according to the specification
-       of the so called job matrix using ``perun run matrix`` command.
+       of the so-called job matrix using ``perun run matrix`` command.
 
 The format of resulting profiles is w.r.t. :ref:`profile-spec`. The
 :preg:`origin` is set to the current ``HEAD`` of the wrapped repository.
@@ -19,7 +19,7 @@ However, note that uncommited changes may skew the resulting profile and Perun
 cannot guard your project against this. Further, :preg:`collector_info` is
 filled with configuration of the run collector.
 
-All of the automatically generated profiles are stored in the ``.perun/jobs/``
+All  automatically generated profiles are stored in the ``.perun/jobs/``
 directory as a file with the ``.perf`` extension. The filename is by default
 automatically generated according to the following template::
 

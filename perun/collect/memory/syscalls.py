@@ -5,10 +5,12 @@ import os
 import re
 import subprocess
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from perun.utils.helpers import SuppressedExceptions
-from perun.utils.structs import Executable
+
+if TYPE_CHECKING:
+    from perun.utils.structs import Executable
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")

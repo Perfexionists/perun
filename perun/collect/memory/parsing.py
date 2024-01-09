@@ -5,14 +5,14 @@ import collections
 import re
 
 from decimal import Decimal
+from typing import Any, TYPE_CHECKING
 
-from typing import Any
-
-import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
+import perun.profile.convert as convert
 import perun.utils.helpers as helpers
 
-from perun.utils.structs import Executable
+if TYPE_CHECKING:
+    from perun.utils.structs import Executable
 
 
 PATTERN_WORD: re.Pattern[str] = re.compile(r"(\w+|[?])")

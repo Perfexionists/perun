@@ -5,16 +5,17 @@ several warm-up executions, followed by the actual timing.
 """
 from __future__ import annotations
 
+import click
 import sys
 import time as systime
-import click
 
 from typing import Any
 
-import perun.utils.log as log
 import perun.logic.runner as runner
 import perun.utils as utils
 import perun.utils.helpers as helpers
+import perun.utils.log as log
+
 from perun.utils.structs import CollectStatus, Executable
 
 
@@ -27,10 +28,10 @@ def collect(
     """Times the runtime of the given command, with stated repeats.
 
     :param Executable executable: executed command, with arguments and workloads
-    :param int warmup: number of warm-up pahses, i.e. number of times the binary will be run, but
+    :param int warmup: number of warm-up phases, i.e. number of times the binary will be run, but
         the resulting collection will not be stored
-    :param int repeat: number of repeats of the the timing, by default 10
-    :param dict kwargs: dictionary with key, value options
+    :param int repeat: number of repeats of the timing, by default 10
+    :param dict _: dictionary with key, value options
     :return:
     """
     log.info("Executing the warmup-phase ", end="")
@@ -118,7 +119,7 @@ def time(ctx: click.Context, **kwargs: Any) -> None:
       * **Dependencies**: `none`
       * **Default units**: `s`
 
-    This is a wrapper over the ``time`` linux unitility and captures resources
+    This is a wrapper over the ``time`` linux utility and captures resources
     in the following form:
 
     .. code-block:: json

@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import dataclasses
 
-import perun.utils.helpers as helpers
-import perun.utils.exceptions as exceptions
 import perun.utils as utils
+import perun.utils.exceptions as exceptions
+import perun.utils.helpers as helpers
 
 # Symbol table columns constants
 _SYMTABLE_NAME_COLUMN = 8
