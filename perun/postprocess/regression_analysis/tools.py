@@ -3,17 +3,17 @@
 """
 from __future__ import annotations
 
-from random import shuffle
-from operator import itemgetter
 import numpy as np
+import random
 
+from operator import itemgetter
 from typing import Any, Iterable, TYPE_CHECKING
+
+import perun.utils.exceptions as exceptions
 
 if TYPE_CHECKING:
     import numpy.typing as npt
     import perun.profile.factory as profiles
-
-import perun.utils.exceptions as exceptions
 
 
 # Minimum points count to perform the regression
@@ -96,7 +96,7 @@ def shuffle_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float],
     # Build one list to ensure the coordinates are paired after the shuffle
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
     points = list(zip(x_pts, y_pts))
-    shuffle(points)
+    random.shuffle(points)
     res_x_pts, res_y_pts = zip(*points)
     return list(res_x_pts), list(res_y_pts)
 
@@ -159,7 +159,7 @@ def add_models_to_profile(
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
-    :param Profile profile: profile to add the analysis
+    :param Profile profile: profile to add the results to
     :param list models: analysis executed by the individual postprocessor
     :return: method has no return value
     """

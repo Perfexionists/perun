@@ -9,16 +9,18 @@ from __future__ import annotations
 
 import click.exceptions as click_exp
 import numpy as np
-import numpy.typing as npt
-from sklearn import metrics, base as sklearn
 import sklearn.metrics.pairwise as kernels
 import statsmodels.nonparametric.api as nparam
 
-from perun.postprocess.regression_analysis import tools
-import perun.thirdparty.pyqt_fit_port as pyqt_fit
+from sklearn import metrics, base as sklearn
 from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator, cast
 
+import perun.thirdparty.pyqt_fit_port as pyqt_fit
+
+from perun.postprocess.regression_analysis import tools
+
 if TYPE_CHECKING:
+    import numpy.typing as npt
     import click
 
 
@@ -378,11 +380,11 @@ def execute_kernel_regression(
     """
     This method serves to call the individual computing methods of a kernel regression.
 
-    At the begin method ensures sorting of points (x and y coordinates) and creates
+    At the beginning method ensures sorting of points (x and y coordinates) and creates
     the initial resulting dictionary with common items for all kernel regression modes.
-    In the case when both lists of coordinates contains more resources than one,
+    In the case when both lists of coordinates contain more resources than one,
     then is calling the relevant method, that ensures the computing according to
-    the selected mode. If the coordinates lists contains only one resources then
+    the selected mode. If the list of coordinates contains only one resources then
     no calculation is made.
 
     :param list x_pts: the list of x points coordinates
@@ -400,7 +402,7 @@ def execute_kernel_regression(
         "per_key": config["per_key"],
     }
 
-    # If the coordinates lists contain only one resource, then the computation will be not executing
+    # If the list of coordinates contain only one resource, then the computation will be not executing
     # - It is protection before the failure of the method to determine tha optimal kernel bandwidth
     # -- It is useless executing the kernel regression over the one pair of points
     if len(x_pts) < _MIN_POINTS_COUNT and len(y_pts) < _MIN_POINTS_COUNT:
@@ -483,7 +485,7 @@ def valid_step_size(step: float, step_range: tuple[float, float]) -> bool:
         )
 
 
-# dictionary contains the required keys to check before the access to this keys
+# dictionary contains the required keys to check before the access to these keys
 # - required keys are divided according to individual supported modes of this postprocessor
 _MODES_REQUIRED_KEYS = {
     "estimator-settings": [

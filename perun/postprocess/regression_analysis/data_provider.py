@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from operator import itemgetter
 from typing import Iterator, Any, Callable, TYPE_CHECKING
+
 import perun.profile.convert as convert
 
 if TYPE_CHECKING:

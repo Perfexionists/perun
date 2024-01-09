@@ -11,14 +11,14 @@ Perun can postprocess such profiling data in two ways:
 
     2. By **Using job specification** either as a single run of batch of
        profiling jobs using ``perun run job`` or according to the specification
-       of the so called job matrix using ``perun run matrix`` command.
+       of the so-called job matrix using ``perun run matrix`` command.
 
 The format of input and resulting profiles has to be w.r.t.
-:ref:`profile-spec`. By default new profiles are created. The :preg:`origin`
+:ref:`profile-spec`. By default, new profiles are created. The :preg:`origin`
 set to the origin of the original profile. Further, :preg:`postprocessors` is
 extended with configuration of the run postprocessor (appended at the end).
 
-All of the postprocessed profiles are stored in the ``.perun/jobs/`` directory
+All postprocessed profiles are stored in the ``.perun/jobs/`` directory
 as a file with the ``.perf`` extension. The filename is by default
 automatically generated according to the following template::
 

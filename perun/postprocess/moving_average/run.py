@@ -3,8 +3,8 @@ Postprocessor module with non-parametric analysis using the moving average metho
 """
 from __future__ import annotations
 
-import functools
 import click
+import functools
 
 from typing import Callable, TYPE_CHECKING, Any
 
@@ -13,6 +13,7 @@ import perun.postprocess.moving_average.methods as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
+
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:
@@ -162,7 +163,7 @@ def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
     """**Simple Moving Median**
 
     The second representative of Simple Moving Average methods is the Simple Moving **Median**.
-    For this method are applicable to the same rules like in the first described method, except
+    For this method are applicable to the same rules as in the first described method, except
     for the option for choosing the window type, which do not make sense in this approach. The
     only difference between these two methods are the way of computation the values in the
     individual sub-intervals. Simple Moving **Median** is not based on the computation of
@@ -191,7 +192,7 @@ def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
 def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     """**Exponential Moving Average**
 
-    This method is a type of moving average methods, also know as **Exponential** Weighted
+    This method is a type of moving average methods, also known as **Exponential** Weighted
     Moving Average, that places a greater weight and significance on the most recent data
     points. The weighting for each far x-coordinate decreases exponentially and never reaching
     zero. This approach of moving average reacts more significantly to recent changes than a
@@ -253,16 +254,16 @@ def moving_average(ctx: click.Context, **_: Any) -> None:
     Moving average methods are the natural generalizations of regressogram method. This
     method uses the local averages/medians of y-coordinates (`<of_resource_key>`), but
     the estimate in the x-point (`<per_key>`) is based on the centered surroundings of
-    this points, more precisely:
+    these points, more precisely:
 
         **Moving Average**: is a widely used estimator in the technical analysis, that helps
-        smooth the dataset by filtering out the 'noise'. Among the basic properties of this
+        smooth the dataset by filtering out the 'noise'. Among the basic properties of these
         methods belongs the ability to reduce the effect of temporary variations in data, better
-        improvement of the fitness of data to a line, so called smoothing, to show the data's
+        improvement of the fitness of data to a line, so-called smoothing, to show the data's
         trend more clearly and highlight any value below or above the trend. The most important
         task with this type of non-parametric approach is the choice of the `<window-width>`.
         If the user does not choose it, we try approximate this value by using the value of
-        `coefficient of determination` (:math:`R^2`). At the begin of the analysis is set the
+        `coefficient of determination` (:math:`R^2`). At the beginning, of the analysis is set the
         initial value of window width and then follows the interleaving of the current dataset,
         which runs until the value of `coefficient of determination` will not reach the required
         level. By this way is guaranteed the desired smoothness of the resulting models. The two

@@ -7,14 +7,14 @@ from typing import Any
 
 import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.cli_helpers as cli_helpers
 import perun.postprocess.regression_analysis.methods as methods
 import perun.postprocess.regression_analysis.regression_models as reg_models
+import perun.postprocess.regression_analysis.tools as tools
+import perun.utils.cli_helpers as cli_helpers
+import perun.utils.metrics as metrics
 
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
-import perun.utils.metrics as metrics
 
 
 _DEFAULT_STEPS = 3
@@ -145,7 +145,7 @@ def regression_analysis(profile: Profile, **kwargs: Any) -> None:
 
     The following strategies are currently available:
 
-        1. **Full Computation** uses all of the data points to obtain the best
+        1. **Full Computation** uses data points to obtain the best
            fitting model for each type of model from the database (unless
            ``--regression_models``/``-r`` restrict the set of models)
 
@@ -158,7 +158,7 @@ def regression_analysis(profile: Profile, **kwargs: Any) -> None:
            of data to estimate which model would be best fitting. Given model
            is then fully computed.
 
-        4. **Interval Analysis** uses more finer set of intervals of data and
+        4. **Interval Analysis** uses finer set of intervals of data and
            estimates models for each interval providing more precise modeling
            of the profile.
 
@@ -167,8 +167,8 @@ def regression_analysis(profile: Profile, **kwargs: Any) -> None:
            them. If the best fitting models changed for sub intervals, then we
            continue with the splitting.
 
-    Currently we support **linear**, **quadratic**, **power**, **logaritmic**
-    and **constant** models and use the `coeficient of determination`
+    Currently, we support **linear**, **quadratic**, **power**, **logarithmic**
+    and **constant** models and use the `coefficient of determination`
     (:math:`R^2`) to measure the fitness of model. The models are stored as
     follows:
 

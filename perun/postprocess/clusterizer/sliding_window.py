@@ -43,7 +43,7 @@ def compute_window_height(resource_amount: int, window_height: int, height_measu
     computes the height as the percentage of the resource amount.
 
     :param int resource_amount: resource for which we are computing the height
-    :param int window_height: height of the sliding window
+    :param int window_height: constant height of the sliding window
     :param str height_measure: type of the height measure (absolute or relative)
     :return: computed height for new sliding window
     """
@@ -93,7 +93,7 @@ def clusterize(
     )
     log.info(f"clustering with window of ({current_width}, {current_height})")
 
-    # Iterate through all of the resources
+    # Iterate through the resources
     for resource in sorted_resources:
         resource_height = resource["amount"]
         # If we are out of the window, we recompute the width and height and move to next cluster

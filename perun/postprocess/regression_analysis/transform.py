@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import perun.postprocess.regression_analysis.tools as tools
 import perun.postprocess.regression_analysis.regression_models as regression_models
+import perun.postprocess.regression_analysis.tools as tools
 
 
 def coefficients_to_points(

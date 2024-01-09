@@ -11,10 +11,10 @@ import math
 
 from typing import Callable, Iterable, Any, cast
 
-import perun.postprocess.regression_analysis.generic as generic
-import perun.postprocess.regression_analysis.specific as specific
 import perun.postprocess.regression_analysis.derived as derived
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
+import perun.postprocess.regression_analysis.generic as generic
+import perun.postprocess.regression_analysis.specific as specific
 import perun.utils.exceptions as exceptions
 
 
@@ -52,7 +52,7 @@ def get_supported_transformations(model_key: str) -> list[str]:
 def get_transformation_data_for(regression_model: str, transformation: str) -> dict[str, Any]:
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
-    :param str regression_model: the regression model in which to search for transformation
+    :param str regression_model: the regression model in which to search for transformation function
     :param str transformation: transformation name (key in _MODELS transformation, e.g. plot_model)
         that identify the desired transformation dictionary
     :returns dict: the transformation dictionary
