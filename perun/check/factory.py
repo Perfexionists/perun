@@ -4,12 +4,21 @@ Collection of global methods for detection of performance changes
 from __future__ import annotations
 
 import contextlib
+import distutils.util as dutils
 import os
 import re
 
-import distutils.util as dutils
+from typing import Any, Iterable, Protocol, TYPE_CHECKING
 
-from typing import Any, Iterable, Protocol
+import perun.logic.config as config
+import perun.logic.pcs as pcs
+import perun.logic.runner as runner
+import perun.logic.store as store
+import perun.profile.helpers as profiles
+import perun.utils as utils
+import perun.utils.decorators as decorators
+import perun.utils.log as log
+import perun.vcs as vcs
 
 from perun.utils.structs import (
     DetectionChangeResult,
@@ -18,23 +27,13 @@ from perun.utils.structs import (
     MinorVersion,
     ModelRecord,
 )
-from perun.profile.helpers import ProfileInfo
-from perun.profile.factory import Profile
 
-import perun.utils.log as log
-import perun.profile.helpers as profiles
-import perun.profile.factory as profile_factory
-import perun.logic.runner as runner
-import perun.logic.config as config
-import perun.logic.pcs as pcs
-import perun.logic.store as store
-import perun.utils as utils
-import perun.utils.decorators as decorators
-import perun.vcs as vcs
-
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+    from perun.profile.helpers import ProfileInfo
 
 # Minimal confidence rate from both models to perform the detection
-_MIN_CONFIDANCE_RATE = 0.15
+_MIN_CONFIDENCE_RATE = 0.15
 
 
 class CallableDetectionMethod(Protocol):
@@ -213,7 +212,7 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
 def degradation_between_profiles(
     baseline_profile: Profile, target_profile: Profile, models_strategy: str
 ) -> Iterable[DegradationInfo]:
-    """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
+    """Checks between a pair of (baseline, target) profiles, whether there can be degradation detected
 
     We first find the suitable strategy for the profile configuration and then call the appropriate
     wrapper function.
@@ -223,7 +222,7 @@ def degradation_between_profiles(
     :param str models_strategy: name of detection models strategy to obtains relevant model kinds
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    # We run all of the degradation methods suitable for the given configuration of profile
+    # We run all degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
         yield from utils.dynamic_module_function_call(
             "perun.check",
@@ -238,13 +237,13 @@ def degradation_between_profiles(
 @log.print_elapsed_time
 @decorators.phase_function("check two profiles")
 def degradation_between_files(
-    baseline_file: profile_factory.Profile,
-    target_file: profile_factory.Profile,
+    baseline_file: Profile,
+    target_file: Profile,
     minor_version: str,
     models_strategy: str,
     force: bool = False,
 ) -> None:
-    """Checks between pair of files (baseline, target) whether there are any changes in performance.
+    """Checks between a pair of files (baseline, target) whether there are any changes in performance.
 
     :param dict baseline_file: baseline profile we are checking against
     :param dict target_file: target profile we are testing
@@ -343,7 +342,7 @@ def get_strategies_for(profile: Profile) -> Iterable[str]:
     # Retrieve the application strategy
     application_strategy = config.lookup_key_recursively("degradation.apply", default="all")
 
-    # Retrieve all of the strategies from configuration
+    # Retrieve all strategies from configuration
     strategies = config.gather_key_recursively("degradation.strategies")
     already_applied_strategies = []
     first_applied = False
@@ -362,8 +361,8 @@ def get_strategies_for(profile: Profile) -> Iterable[str]:
 
 def run_detection_with_strategy(
     detection_method: CallableDetectionMethod,
-    baseline_profile: profile_factory.Profile,
-    target_profile: profile_factory.Profile,
+    baseline_profile: Profile,
+    target_profile: Profile,
     models_strategy: str,
 ) -> Iterable[DegradationInfo]:
     """
@@ -407,9 +406,9 @@ def run_detection_with_strategy(
 
 def _run_detection_for_models(
     detection_method: CallableDetectionMethod,
-    baseline_profile: profile_factory.Profile,
+    baseline_profile: Profile,
     baseline_models: dict[str, ModelRecord],
-    target_profile: profile_factory.Profile,
+    target_profile: Profile,
     target_models: dict[str, ModelRecord],
     **kwargs: Any,
 ) -> Iterable[DegradationInfo]:
@@ -437,7 +436,7 @@ def _run_detection_for_models(
         if (
             baseline_model
             and round(min(baseline_model.r_square, target_model.r_square), 2)
-            >= _MIN_CONFIDANCE_RATE
+            >= _MIN_CONFIDENCE_RATE
         ):
             change_result = detection_method(
                 uid,

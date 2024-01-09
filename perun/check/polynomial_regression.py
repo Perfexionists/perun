@@ -1,21 +1,21 @@
 """The module contains the method for detection with using polynomial regression.
 
-This module contains method for classification the perfomance change between two profiles
+This module contains method for classification the performance change between two profiles
 according to computed metrics and models from these profiles, based on the polynomial regression.
 """
 from __future__ import annotations
 
 import numpy as np
-import numpy.typing as npt
 
 from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.check.general_detection as detect
 
-from perun.utils.structs import DegradationInfo
-
 if TYPE_CHECKING:
+    import numpy.typing as npt
+
     from perun.profile.factory import Profile
+    from perun.utils.structs import DegradationInfo
 
 THRESHOLD = 100000000
 

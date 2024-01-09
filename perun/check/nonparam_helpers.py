@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import numpy as np
 import re
 
-import numpy as np
+from typing import TYPE_CHECKING
 
 import perun.check.general_detection as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regressogram.methods as rg_methods
 import perun.utils.log as log
 
-from perun.profile.factory import Profile
 from perun.utils.structs import PerformanceChange, ModelRecord
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 def classify_change(
@@ -123,7 +126,7 @@ def preprocess_nonparam_models(
 
     :param str uid: unique identification of both analysed models
     :param ModelRecord baseline_model: baseline model with its parameters for processing
-    :param Profile target_profile: target profile against which contains the given target model
+    :param Profile target_profile: target profile
     :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """

@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
-import perun.postprocess.regression_analysis.tools as tools
 
 from perun.profile.factory import Profile
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
@@ -205,7 +204,7 @@ def execute_analysis(
     **__: Any,
 ) -> DetectionChangeResult:
     """
-    A method performs the primary analysis for pair of models.
+    A method performs the primary analysis for a pair of models.
 
     The method executes the analysis between the pair of models. In the beginning, the method checks
     the length of both models. Subsequently, it computes the individual statistics from both given
@@ -218,7 +217,7 @@ def execute_analysis(
     :param dict baseline_model: baseline model with all its parameters for comparison
     :param dict target_model: target model with all its parameters for comparison
     :param Profile target_profile: target model for the comparison
-    :param dict kwargs: dictionary with baseline and target profiles
+    :param dict __: dictionary with baseline and target profiles
     :return:
     """
     (

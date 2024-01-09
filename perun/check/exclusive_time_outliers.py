@@ -65,20 +65,19 @@ reported as the IQR multiple of `110.46`.
 """
 from __future__ import annotations
 
-from typing import Optional, Iterable, Any
-from difflib import get_close_matches
-
-import pandas as pd
+import difflib
 import numpy as np
-from scipy import stats
+import pandas as pd
+import scipy.stats as stats
 
-from perun.utils.structs import DegradationInfo
-from perun.profile import convert
+from typing import Optional, Iterable, Any, TYPE_CHECKING
+
 from perun.logic import config
+from perun.profile import convert
+from perun.utils.structs import DegradationInfo, PerformanceChange
 
-from perun.utils.structs import PerformanceChange
-from perun.profile.factory import Profile
-
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 OldLocMap = dict[str, str]
 NewLocMap = dict[str, str]
@@ -350,7 +349,7 @@ class DiffProfile:
 
         Namely:
         1) keep only the 'uid' (function name), 'exclusive' (time) and 'location' columns
-        2) sum all of the individual exclusive time records
+        2) sum all individual exclusive time records
         3) filter the location based on the supplied regex
 
         :param profile: standard perun representation of a profile
@@ -451,10 +450,10 @@ def _map_similar_names(
     """
     renames_old, renames_new = {}, {}
     for old_name in strings_old:
-        matching_name = get_close_matches(old_name, strings_new, n=1)
+        matching_name = difflib.get_close_matches(old_name, strings_new, n=1)
         # If no match was found, no rename will be done
         if matching_name:
-            # We found a match and now we want to find the longest common prefix
+            # We found a match, and now we want to find the longest common prefix
             match = str(matching_name[0])
             new_name = _longest_common_prefix(old_name, match)
             # Update the rename map
@@ -466,7 +465,7 @@ def _map_similar_names(
 
 
 def _longest_common_prefix(string1: str, string2: str) -> str:
-    """Find longest common prefix of two strings.
+    """Find the longest common prefix of two strings.
 
     :param string1: the first string
     :param string2: the second string
