@@ -6,18 +6,19 @@ formatting and visualization techniques at all.
 from __future__ import annotations
 
 import click
-import perun.utils.log as log
 
 from typing import Any
 
+import perun.profile.factory as profile_factory
+import perun.utils.log as log
+
 from perun.utils.helpers import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
-from perun.profile.factory import pass_profile, Profile
 
 
-def show(profile: Profile, **kwargs: Any) -> None:
+def show(profile: profile_factory.Profile, **kwargs: Any) -> None:
     """
     :param dict profile: dictionary profile
-    :param dict _: additional keyword for the non coloured show
+    :param dict kwargs: additional keyword for the non-coloured show
     :returns str: string representation of the profile
     """
     raw_indent = kwargs.get("indent", 4)
@@ -57,7 +58,7 @@ def show(profile: Profile, **kwargs: Any) -> None:
     default=4,
     help="Sets indent to <INT>.",
 )
-@pass_profile
-def raw(profile: Profile, **kwargs: Any) -> None:
-    """Raw display of the profile, without formating, as JSON object."""
+@profile_factory.pass_profile
+def raw(profile: profile_factory.Profile, **kwargs: Any) -> None:
+    """Raw display of the profile, without formatting, as JSON object."""
     show(profile, **kwargs)

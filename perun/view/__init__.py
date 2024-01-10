@@ -17,7 +17,7 @@ Perun can can interpret the profiling data in several ways:
        e.g. using pandas_.
 
 The format of input profiles has to be w.r.t. :ref:`profile-spec`, in
-particular the intepreted profiles should contain the :pkey:`resources` region
+particular the interpreted profiles should contain the :pkey:`resources` region
 with data.
 
 Automatically generated profiles are stored in the ``.perun/jobs/``
@@ -44,6 +44,7 @@ for easy specification of visualized profiles.
 .. _pandas: https://pandas.pydata.org/
 """
 from __future__ import annotations
+
 from typing import Callable, Any
 
 

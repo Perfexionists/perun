@@ -5,10 +5,10 @@ import click
 
 from typing import Any
 
-from perun.utils.helpers import sanitize_filepart
+import perun.profile.factory as profile_factory
 import perun.view.scatter.factory as scatter_factory
-from perun.profile.factory import pass_profile, Profile
-from perun.utils import cli_helpers, view_helpers
+
+from perun.utils import cli_helpers, view_helpers, helpers
 
 
 def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
@@ -95,8 +95,10 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     is_flag=True,
     help="Will show the graph in browser.",
 )
-@pass_profile
-def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
+@profile_factory.pass_profile
+def scatter(
+    profile: profile_factory.Profile, filename: str, view_in_browser: bool, **kwargs: Any
+) -> None:
     """Interactive visualization of resources and models in scatter plot format.
 
     Scatter plot shows resources as points according to the given parameters.
@@ -146,5 +148,5 @@ def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: An
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
     for uid, graph in graphs:
-        filename_uid = f"{filename}_{sanitize_filepart(uid)}.html"
+        filename_uid = f"{filename}_{helpers.sanitize_filepart(uid)}.html"
         view_helpers.save_view_graph(graph, filename_uid, view_in_browser)

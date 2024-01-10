@@ -4,18 +4,21 @@ from __future__ import annotations
 import os
 import subprocess
 
+from typing import TYPE_CHECKING
+
 import perun.profile.convert as converter
-import perun.profile.factory as profiles
 import perun.utils.helpers as helpers
 
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 _SCRIPT_FILENAME = "./flamegraph.pl"
 
 
-def draw_flame_graph(profile: profiles.Profile, output_file: str, height: int) -> None:
+def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     """Draw Flame graph from profile.
 
-        To create Flame graphs it's uses perl script created by Brendan Gregg.
+        To create Flame graphs we use perl script created by Brendan Gregg.
         https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
 
     :param dict profile: the memory profile

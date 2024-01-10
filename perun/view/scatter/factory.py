@@ -1,23 +1,24 @@
 """ Module with graphs creation and configuration functions. """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-from collections.abc import Iterator
-
-from operator import itemgetter
-
-import numpy as np
-import numpy.typing as npt
 import holoviews as hv
-from bokeh import palettes
+import numpy as np
 
-from perun.utils import view_helpers
-from perun.profile import query, convert
+from bokeh import palettes
+from collections.abc import Iterator
+from operator import itemgetter
+from typing import TYPE_CHECKING, Any
+
 from perun.postprocess.regression_analysis import data_provider
+from perun.profile import query, convert
+from perun.utils import view_helpers
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    import numpy.typing as npt
     import pandas as pd
+
+    from perun.profile.factory import Profile
+
 
 ProfileModel = dict[str, Any]
 ProfileModels = list[ProfileModel]

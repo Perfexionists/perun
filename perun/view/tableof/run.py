@@ -1,18 +1,17 @@
 """Table interpretation of the profile"""
 from __future__ import annotations
 
-import os
+import click
 import operator
+import os
+import pandas
+import tabulate
+
 from itertools import groupby
 from typing import Callable, Any
-import click
-import tabulate
-import pandas
 
-import perun.utils.log as log
-import perun.profile.convert as convert
-import perun.profile.query as query
-import perun.profile.helpers as profiles
+from perun.utils import log
+from perun.profile import convert, query, helpers
 
 from perun.profile.factory import Profile
 
@@ -59,13 +58,13 @@ def create_table_from(
 ) -> str:
     """Using the tabulate package, transforms the profile into table.
 
-    Currently, the representation contains all of the possible keys.
+    Currently, the representation contains all possible keys.
 
     :param dict profile: profile transformed into the table
     :param function conversion_function: function that converts profile to table
     :param list headers: list of headers of the table
     :param str sort_by: key for which we will sort
-    :param list filter_by list of keys that will be potentially filtered
+    :param filter_by list of keys that will be potentially filtered
     :param str tablefmt: format of the table
     :param str filter_by: key by which we filter
     :return: tabular representation of the profile in string
@@ -172,7 +171,7 @@ def process_output_file(ctx: click.Context, _: click.Option, value: str) -> str:
     if value:
         return value
     else:
-        prof_name = profiles.generate_profile_name(ctx.parent.params["profile"])
+        prof_name = helpers.generate_profile_name(ctx.parent.params["profile"])
         return (
             (ctx.command.name or "<MISSING_COMMAND_NAME>") + "_of_" + os.path.splitext(prof_name)[0]
         )
@@ -262,7 +261,7 @@ def tableof(*_: Any, **__: Any) -> None:
     callback=process_headers,
     help=(
         "Sets the headers that will be displayed in the table. If none are stated "
-        "then all of the headers will be outputed"
+        "then all of the headers will be output"
     ),
 )
 @click.option(
@@ -327,7 +326,7 @@ def resources(
     callback=process_headers,
     help=(
         "Sets the headers that will be displayed in the table. If none are stated "
-        "then all of the headers will be outputed"
+        "then all of the headers will be output"
     ),
 )
 @click.option(
@@ -349,7 +348,7 @@ def resources(
     help=(
         "Filters the table to rows, where <key> == <value>. If the `--filter` is set"
         " several times, then rows satisfying all rules will be selected for different"
-        " keys; and the rows satisfying some rule will be sellected for same key."
+        " keys; and the rows satisfying some rule will be selected for same key."
     ),
 )
 def models(
