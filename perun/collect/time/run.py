@@ -13,8 +13,8 @@ from typing import Any
 
 import perun.logic.runner as runner
 import perun.utils as utils
-import perun.utils.helpers as helpers
-import perun.utils.log as log
+
+from perun.utils import helpers, log
 
 from perun.utils.structs import CollectStatus, Executable
 

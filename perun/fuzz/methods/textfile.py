@@ -1,8 +1,7 @@
 """Collects fuzzing rules specific for text files."""
 from __future__ import annotations
 
-import perun.fuzz.helpers as helpers
-import perun.fuzz.randomizer as randomizer
+from perun.fuzz import helpers, randomizer
 
 from perun.utils.helpers import SuppressedExceptions
 

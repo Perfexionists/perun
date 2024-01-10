@@ -9,12 +9,8 @@ import click
 
 from typing import Any
 
-import perun.logic.commands as commands
-import perun.logic.stats as stats
-import perun.logic.temp as temp
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as perun_log
-import perun.utils.script_helpers as scripts
+from perun.logic import commands, stats, temp
+from perun.utils import cli_helpers, log as perun_log, script_helpers as scripts
 
 from perun.utils.exceptions import ExternalEditorErrorException
 

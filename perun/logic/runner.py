@@ -11,18 +11,13 @@ from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
 
 
 import perun.collect.trace.optimizations.optimization as optimizations
-import perun.logic.commands as commands
-import perun.logic.config as config
-import perun.logic.index as index
-import perun.logic.pcs as pcs
 import perun.profile.helpers as profile
 import perun.utils as utils
-import perun.utils.decorators as decorators
-import perun.utils.helpers as helpers
-import perun.utils.log as log
-import perun.utils.streams as streams
 import perun.vcs as vcs
 import perun.workload as workloads
+
+from perun.logic import commands, config, index, pcs
+from perun.utils import decorators, helpers, log, streams
 
 from perun.utils.exceptions import SignalReceivedException
 from perun.utils.helpers import (

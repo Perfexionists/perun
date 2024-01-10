@@ -5,10 +5,8 @@ import shutil
 
 from typing import Iterable, Callable, BinaryIO, Any, TYPE_CHECKING
 
-import perun.logic.index as index
-import perun.logic.store as store
-import perun.utils.decorators as decorators
-import perun.utils.streams as streams
+from perun.logic import index, store
+from perun.utils import decorators, streams
 
 if TYPE_CHECKING:
     from perun.logic.index import BasicIndexEntry

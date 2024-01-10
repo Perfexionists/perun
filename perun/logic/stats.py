@@ -44,15 +44,12 @@ import zlib
 
 from typing import Optional, Iterable, BinaryIO, Callable, Any
 
-import perun.logic.index as index
-import perun.logic.pcs as pcs
-import perun.logic.store as store
 import perun.profile.helpers as helpers
 import perun.utils as utils
-import perun.utils.exceptions as exceptions
-import perun.utils.helpers as utils_helpers
-import perun.utils.log as perun_log
 import perun.vcs as vcs
+
+from perun.logic import index, pcs, store
+from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
 
 from perun.utils.helpers import SuppressedExceptions
 

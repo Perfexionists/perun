@@ -17,12 +17,12 @@ from collections.abc import MutableMapping
 from typing import Any, Iterator, Iterable, TYPE_CHECKING
 
 import perun.logic.config as config
-import perun.profile.convert as convert
-import perun.profile.query as query
 import perun.utils.log as log
 import perun.check.general_detection as detection
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.postprocess.regressogram.methods as nparam_methods
+
+from perun.profile import convert, query
 
 if TYPE_CHECKING:
     from perun.utils.structs import ModelRecord

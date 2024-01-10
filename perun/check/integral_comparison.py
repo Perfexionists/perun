@@ -9,10 +9,10 @@ import scipy.integrate as integrate
 
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.check.factory as factory
-import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.utils.helpers as helpers
+
+from perun.check import factory, nonparam_helpers as nparam_helpers
 
 
 if TYPE_CHECKING:

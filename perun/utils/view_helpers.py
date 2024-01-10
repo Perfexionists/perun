@@ -10,8 +10,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any
 
 import perun.profile.helpers as profiles
-import perun.utils.decorators as decorators
-import perun.utils.log as log
+
+from perun.utils import decorators, log
 
 if TYPE_CHECKING:
     import pandas as pd

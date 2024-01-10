@@ -21,19 +21,11 @@ from collections import defaultdict
 from typing import Optional, Callable, Any, TYPE_CHECKING
 
 import perun
-import perun.profile.helpers as profiles
-import perun.profile.query as query
-import perun.logic.commands as commands
-import perun.logic.store as store
-import perun.logic.stats as stats
-import perun.logic.config as config
-import perun.logic.pcs as pcs
-import perun.utils.helpers as helpers
-import perun.utils.streams as streams
-import perun.utils.timestamps as timestamps
-import perun.utils.log as log
 import perun.vcs as vcs
-import perun.utils.metrics as metrics
+
+from perun.profile import helpers as profile_helpers, query
+from perun.logic import commands, store, stats, config, pcs
+from perun.utils import helpers, streams, timestamps, log, metrics
 
 from perun.collect.trace.optimizations.optimization import Optimization
 from perun.collect.trace.optimizations.structs import CallGraphTypes
@@ -284,7 +276,7 @@ def lookup_nth_pending_filename(position: int) -> str:
     :returns str: pending profile at given position
     """
     pending = commands.get_untracked_profiles()
-    profiles.sort_profiles(pending)
+    profile_helpers.sort_profiles(pending)
     if 0 <= position < len(pending):
         return pending[position].realpath
     else:
@@ -356,7 +348,7 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
         :param int index: index we are looking up and registering to massaged values
         """
         try:
-            index_filename = profiles.get_nth_profile_of(index, ctx.params["minor"])
+            index_filename = profile_helpers.get_nth_profile_of(index, ctx.params["minor"])
             start = index_filename.rfind("objects") + len("objects")
             # Remove the .perun/objects/... prefix and merge the directory and file to sha
             ctx.params["from_index_generator"].add("".join(index_filename[start:].split("/")))
@@ -474,7 +466,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
         try:
-            index_profile = profiles.get_nth_profile_of(int(index_tag_match.group(1)), rev)
+            index_profile = profile_helpers.get_nth_profile_of(int(index_tag_match.group(1)), rev)
             return store.load_profile_from_file(index_profile, is_raw_profile=False)
         except TagOutOfRangeException as exc:
             raise click.BadParameter(str(exc))

@@ -10,9 +10,9 @@ from typing import Callable, TYPE_CHECKING, Any
 
 import perun.logic.runner as runner
 import perun.postprocess.moving_average.methods as methods
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
+
+from perun.postprocess.regression_analysis import data_provider, tools
 
 from perun.utils.structs import PostprocessStatus
 

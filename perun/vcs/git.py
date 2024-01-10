@@ -13,9 +13,7 @@ from git.repo.base import Repo
 from gitdb.exc import BadName
 from typing import Optional, Iterator, Callable, Any
 
-import perun.utils.decorators as decorators
-import perun.utils.log as perun_log
-import perun.utils.timestamps as timestamps
+from perun.utils import decorators, log as perun_log, timestamps
 
 from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.structs import MinorVersion, MajorVersion

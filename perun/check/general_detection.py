@@ -13,12 +13,11 @@ import numpy as np
 
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
 
-import perun.check.fast_check as fast_check
-import perun.check.linear_regression as linear_regression
-import perun.check.polynomial_regression as polynomial_regression
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query
 import perun.utils.helpers as helpers
+
+from perun.check import fast_check, linear_regression, polynomial_regression
 
 from perun.utils.structs import (
     PerformanceChange,

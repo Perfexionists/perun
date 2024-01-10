@@ -10,15 +10,12 @@ import re
 
 from typing import Any, Iterable, Protocol, TYPE_CHECKING
 
-import perun.logic.config as config
-import perun.logic.pcs as pcs
-import perun.logic.runner as runner
-import perun.logic.store as store
 import perun.profile.helpers as profiles
 import perun.utils as utils
-import perun.utils.decorators as decorators
-import perun.utils.log as log
 import perun.vcs as vcs
+
+from perun.logic import config, pcs, runner, store
+from perun.utils import decorators, log
 
 from perun.utils.structs import (
     DetectionChangeResult,

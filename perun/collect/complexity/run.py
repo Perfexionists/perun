@@ -14,13 +14,11 @@ import shutil
 from subprocess import CalledProcessError
 from typing import Any
 
-import perun.collect.complexity.configurator as configurator
-import perun.collect.complexity.makefiles as makefiles
-import perun.collect.complexity.symbols as symbols
 import perun.logic.runner as runner
 import perun.utils as utils
-import perun.utils.exceptions as exceptions
-import perun.utils.log as log
+
+from perun.collect.complexity import configurator, makefiles, symbols
+from perun.utils import exceptions, log
 
 from perun.utils.structs import Executable, CollectStatus
 

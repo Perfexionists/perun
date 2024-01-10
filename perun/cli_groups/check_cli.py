@@ -5,10 +5,9 @@ import click
 import distutils.util as dutils
 
 import perun.check.factory as check
-import perun.logic.config as perun_config
-import perun.logic.pcs as pcs
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as log
+
+from perun.logic import pcs, config as perun_config
+from perun.utils import cli_helpers, log
 
 from typing import Any, TYPE_CHECKING, Optional
 

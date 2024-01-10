@@ -15,8 +15,7 @@ import zlib
 
 from typing import BinaryIO, Optional
 
-import perun.utils.log as log
-import perun.utils.helpers as helpers
+from perun.utils import log, helpers
 
 from perun.profile.factory import Profile
 from perun.utils.exceptions import IncorrectProfileFormatException

@@ -5,8 +5,7 @@ from __future__ import annotations
 import os
 import re
 
-import perun.utils.helpers as helpers
-import perun.utils.log as log
+from perun.utils import helpers, log
 
 from perun.fuzz.structs import Mutation, FuzzingProgress
 

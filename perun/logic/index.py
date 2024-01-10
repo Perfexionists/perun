@@ -14,11 +14,8 @@ import zlib
 from enum import Enum
 from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
 
-import perun.logic.pcs as pcs
-import perun.logic.store as store
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
-import perun.utils.timestamps as timestamps
+from perun.logic import pcs, store
+from perun.utils import helpers, log as perun_log, timestamps
 
 from perun.utils.exceptions import (
     EntryNotFoundException,

@@ -23,16 +23,11 @@ import time
 
 from typing import Any, TYPE_CHECKING
 
-import perun.logic.config as config
-import perun.logic.index as index
-import perun.logic.pcs as pcs
-import perun.logic.store as store
-import perun.profile.factory as profiles
-import perun.profile.query as query
-import perun.utils.decorators as decorators
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
 import perun.vcs as vcs
+
+from perun.logic import config, index, pcs, store
+from perun.profile import factory as profiles, query
+from perun.utils import decorators, helpers, log as perun_log
 
 from perun.utils import get_module
 from perun.utils.exceptions import (

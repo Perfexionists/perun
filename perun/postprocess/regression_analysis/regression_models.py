@@ -11,10 +11,10 @@ import math
 
 from typing import Callable, Iterable, Any, cast
 
-import perun.postprocess.regression_analysis.derived as derived
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
-import perun.postprocess.regression_analysis.generic as generic
-import perun.postprocess.regression_analysis.specific as specific
+
+from perun.postprocess.regression_analysis import derived, generic, specific
+
 import perun.utils.exceptions as exceptions
 
 

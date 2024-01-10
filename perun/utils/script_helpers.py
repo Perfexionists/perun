@@ -8,8 +8,8 @@ from typing import Any
 
 import perun.logic.config as config
 import perun.utils as utils
-import perun.utils.helpers as helpers
-import perun.utils.log as log
+
+from perun.utils import helpers, log
 
 from perun.utils.exceptions import ExternalEditorErrorException
 

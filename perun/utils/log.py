@@ -17,8 +17,7 @@ import traceback
 
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type
 
-import perun.utils.helpers as helpers
-import perun.utils.decorators as decorators
+from perun.utils import helpers, decorators
 
 
 from perun.utils.helpers import (

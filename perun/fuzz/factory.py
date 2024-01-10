@@ -16,14 +16,11 @@ from subprocess import CalledProcessError, TimeoutExpired
 from typing import Optional, Any, cast, TYPE_CHECKING
 from uuid import uuid4
 
-import perun.utils.decorators as decorators
-import perun.utils.log as log
-import perun.fuzz.interpret as interpret
-import perun.fuzz.filesystem as filesystem
-import perun.fuzz.filetype as filetype
-import perun.fuzz.randomizer as randomizer
 import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
 import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
+
+from perun.utils import decorators, log
+from perun.fuzz import interpret, filesystem, filetype, randomizer
 
 from perun.fuzz.structs import (
     Mutation,

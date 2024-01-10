@@ -15,8 +15,8 @@ from typing import Callable, Any, Iterator, TYPE_CHECKING, Optional
 
 import perun.logic.pcs as pcs
 import perun.utils as utils
-import perun.utils.decorators as decorators
-import perun.utils.log as perun_log
+
+from perun.utils import decorators, log as perun_log
 
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion, MajorVersion

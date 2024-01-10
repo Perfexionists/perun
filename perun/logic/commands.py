@@ -13,18 +13,12 @@ import re
 from operator import itemgetter
 from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
 
-import perun.logic.pcs as pcs
-import perun.logic.config as perun_config
-import perun.logic.store as store
-import perun.logic.index as index
 import perun.profile.helpers as profile
 import perun.utils as utils
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
-import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
-import perun.logic.temp as temp
-import perun.logic.stats as stats
+
+from perun.logic import pcs, config as perun_config, store, index, temp, stats
+from perun.utils import helpers, log as perun_log, timestamps
 
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
@@ -1056,7 +1050,7 @@ def get_untracked_profiles() -> list[ProfileInfo]:
     #   extract the info and register it in the index
     for untracked_path in untracked_list:
         real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+        time = timestamps.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Load the data from JSON, which contains additional information about profile
         # We know, that the real_path exists, since we obtained it above from listdir

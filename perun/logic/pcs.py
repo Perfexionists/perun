@@ -9,8 +9,8 @@ from __future__ import annotations
 import os
 
 import perun.logic.config as config
-import perun.utils.helpers as helpers
-import perun.utils.decorators as decorators
+
+from perun.utils import helpers, decorators
 
 from perun.utils.exceptions import NotPerunRepositoryException
 

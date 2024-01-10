@@ -9,8 +9,8 @@ import scipy.stats.mstats as stats
 from typing import TextIO, Optional, TYPE_CHECKING
 
 import perun.fuzz.filesystem as filesystem
-import perun.utils.log as log
-import perun.utils.streams as streams
+
+from perun.utils import log, streams
 
 if TYPE_CHECKING:
     from perun.fuzz.structs import Mutation, TimeSeries, FuzzingProgress

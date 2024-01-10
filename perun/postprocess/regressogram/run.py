@@ -6,10 +6,10 @@ from __future__ import annotations
 import click
 
 import perun.logic.runner as runner
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regression_analysis.tools as tools
 import perun.postprocess.regressogram.methods as methods
 import perun.utils.cli_helpers as cli_helpers
+
+from perun.postprocess.regression_analysis import data_provider, tools
 
 from typing import Any
 

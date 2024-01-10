@@ -12,6 +12,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
+
 from perun.utils.structs import DegradationInfo, ClassificationMethod
 
 if TYPE_CHECKING:

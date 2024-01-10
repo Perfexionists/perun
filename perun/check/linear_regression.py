@@ -10,9 +10,9 @@ import scipy.stats as stats
 
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.check.fast_check as fast_check
-import perun.check.general_detection as detect
 import perun.utils as utils
+
+from perun.check import fast_check, general_detection as detect
 
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 

@@ -3,11 +3,10 @@ from __future__ import annotations
 
 import click
 
-import perun.logic.config as perun_config
-import perun.logic.runner as runner
 import perun.utils as utils
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as perun_log
+
+from perun.logic import config as perun_config, runner
+from perun.utils import cli_helpers, log as perun_log
 
 from typing import Any
 

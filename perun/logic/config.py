@@ -19,11 +19,8 @@ from ruamel.yaml import YAML, scanner
 from typing import Any, Iterable, Optional
 
 import perun.logic.config_templates as templates
-import perun.utils.decorators as decorators
-import perun.utils.exceptions as exceptions
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
-import perun.utils.streams as streams
+
+from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
 
 from perun.utils.helpers import SuppressedExceptions
 
