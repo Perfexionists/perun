@@ -5,22 +5,20 @@ with version control systems.
 """
 from __future__ import annotations
 
-import os
 import git
-from git.repo.base import Repo
+import os
 
 from git.exc import NoSuchPathError, InvalidGitRepositoryError, GitCommandError
+from git.repo.base import Repo
 from gitdb.exc import BadName
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Callable, Any
 
+import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
-import perun.utils.decorators as decorators
+
 from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.structs import MinorVersion, MajorVersion
-
-
-from typing import Callable, Any
 
 
 def contains_git_repo(path: str) -> bool:
