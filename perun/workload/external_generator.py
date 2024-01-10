@@ -35,14 +35,15 @@ from __future__ import annotations
 import os
 import subprocess
 
-from typing import Any, Iterable
+from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.utils as utils
-import perun.utils.log as log
-import perun.utils.helpers as helpers
 
+from perun.utils import log, helpers
 from perun.workload.generator import WorkloadGenerator
-from perun.utils.structs import Job
+
+if TYPE_CHECKING:
+    from perun.utils.structs import Job
 
 
 class ExternalGenerator(WorkloadGenerator):

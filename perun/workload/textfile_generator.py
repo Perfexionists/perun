@@ -23,26 +23,26 @@ The TextFile Generator can be configured by following options:
 
   * ``min_lines``: the minimal number of lines in the file that shall be generated.
   * ``max_lines``: the maximal number of lines in the file that shall be generated.
-  * ``step``: the step (or increment) of the range. By default set to 1.
-  * ``min_chars``: the minimal number of characters on one line. By default set to 5.
-  * ``max_chars``: the maximal number of characters on one line. By default set to 80.
+  * ``step``: the step (or increment) of the range. By default, set to 1.
+  * ``min_chars``: the minimal number of characters on one line. By default, set to 5.
+  * ``max_chars``: the maximal number of characters on one line. By default, set to 80.
   * ``randomize_rows``: by default set to True, the rows in the file have then randomized length
-    from interval (``min_chars``, ``max_chars``). Otherwise (if set to false), the lines will always
+    from interval (``min_chars``, ``max_chars``). Otherwise, (if set to false), the lines will always
     be of maximal length (``max_chars``).
 
 """
 from __future__ import annotations
 
 import distutils.util as dutils
-import os
-import tempfile
-import random
 import faker
+import os
+import random
+import tempfile
 
 from typing import Any, Iterable
 
-from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
+from perun.workload.generator import WorkloadGenerator
 
 
 class TextfileGenerator(WorkloadGenerator):
@@ -54,7 +54,7 @@ class TextfileGenerator(WorkloadGenerator):
     :ivar int min_chars: minimal number of rows/chars on one line in the text file
     :ivar int max_chars: maximal number of rows/chars on one line in the text file
     :ivar bool randomize_rows: if set to true, then the lines in the file will be
-        randomized. Otherwise they will always be maximal.
+        randomized. Otherwise, they will always be maximal.
     """
 
     __slots__ = [
@@ -87,7 +87,7 @@ class TextfileGenerator(WorkloadGenerator):
         :param int min_rows: minimal number of rows/chars on one line in the text file
         :param int max_rows: maximal number of rows/chars on one line in the text file
         :param bool randomize_rows: if set to true, then the lines in the file will be
-            randomized. Otherwise they will always be maximal.
+            randomized. Otherwise, they will always be maximal.
         :param dict kwargs: additional keyword arguments
         """
         super().__init__(job, **kwargs)
@@ -120,7 +120,7 @@ class TextfileGenerator(WorkloadGenerator):
     def _get_file_content(self, file_len: int) -> str:
         """Generates text file content for the file of given length
 
-        :param int file_len: length of the generated file contents
+        :param int file_len: length of the generated file
         :return: content to be used in randomly generated file
         """
         return "\n".join(self._get_line() for _ in range(file_len))

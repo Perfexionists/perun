@@ -4,7 +4,7 @@ and internally Perun either merges the resources into one single profile or grad
 profile for each workload.
 
 The generators are specified by :ckey:`generators.workload` section. These specifications are
-collected through all of the configurations in the hierarchy.
+collected through all configurations in the hierarchy.
 
 You can use some basic generators specified in shared configurations called ``basic_strings``
 (which generates strings of lengths from interval (8, 128) with increment of 8), ``basic_integers``
@@ -15,10 +15,9 @@ You can use some basic generators specified in shared configurations called ``ba
 from __future__ import annotations
 
 import perun.logic.config as config
-import perun.utils.log as log
 import perun.utils as utils
-import perun.utils.decorators as decorators
 
+from perun.utils import log, decorators
 from perun.utils.structs import GeneratorSpec
 
 

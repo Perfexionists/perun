@@ -27,8 +27,8 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
+from perun.workload.generator import WorkloadGenerator
 
 
 class IntegerGenerator(WorkloadGenerator):

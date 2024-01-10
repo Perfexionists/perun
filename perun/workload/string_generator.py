@@ -31,8 +31,8 @@ import string
 
 from typing import Any, Iterable
 
-from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
+from perun.workload.generator import WorkloadGenerator
 
 
 class StringGenerator(WorkloadGenerator):

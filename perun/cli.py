@@ -3,7 +3,7 @@ command interface inspired by git.
 
 The Command Line Interface is implemented using the Click_ library, which
 allows both effective definition of new commands and finer parsing of the
-command line arguments. The intefrace can be broken into several groups:
+command line arguments. The interface can be broken into several groups:
 
     1. **Core commands**: namely ``init``, ``config``, ``add``, ``rm``,
     ``status``, ``log``, ``run`` commands (which consists of commands ``run
@@ -36,35 +36,26 @@ command line arguments. The intefrace can be broken into several groups:
 Graphical User Interface is currently in development and hopefully will extend
 the flexibility of Perun's usage.
 
-.. _Click: http://click.pocoo.org/5/
+.. _Click: https://click.pocoo.org/5/
 """
 from __future__ import annotations
 
-import os
-import pkgutil
-import sys
-
 import click
+import os
+import sys
 
 from typing import Optional, Any
 
 import perun.collect
-import perun.postprocess
-import perun.view
-
 import perun.fuzz.factory as fuzz
-import perun.logic.commands as commands
-import perun.logic.pcs as pcs
-import perun.logic.config as perun_config
+import perun.postprocess
 import perun.profile.helpers as profiles
 import perun.utils as utils
-import perun.utils.helpers as helpers
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as perun_log
-import perun.cli_groups.check_cli as check_cli
-import perun.cli_groups.config_cli as config_cli
-import perun.cli_groups.run_cli as run_cli
-import perun.cli_groups.utils_cli as utils_cli
+import perun.view
+
+from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
+from perun.logic import commands, pcs, config as perun_config
+from perun.utils import helpers, cli_helpers, log as perun_log
 
 from perun.collect.trace.optimizations.structs import (
     Pipeline,
@@ -72,6 +63,7 @@ from perun.collect.trace.optimizations.structs import (
     CallGraphTypes,
 )
 from perun.collect.trace.optimizations.structs import Parameters
+from perun.profile.factory import Profile
 from perun.utils.exceptions import (
     UnsupportedModuleException,
     UnsupportedModuleFunctionException,
@@ -82,7 +74,6 @@ from perun.utils.exceptions import (
     ExternalEditorErrorException,
 )
 from perun.utils.structs import Executable
-from perun.profile.factory import Profile
 
 
 DEV_MODE = False
@@ -279,10 +270,9 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
     performance versioning system, the infrastructure is only reinitialized.
 
     By default, a control system is initialized as well. This can be changed
-    by setting the ``--vcs-type`` parameter (currently we support ``git`` and
-    ``tagit``---a lightweight git-based wrapped based on tags). Additional
-    parameters can be passed to the wrapped control system initialization using
-    the ``--vcs-params``.
+    by setting the ``--vcs-type`` parameter (currently we support ``git``).
+    Additional parameters can be passed to the wrapped control system initialization
+    using the ``--vcs-params``.
     """
     try:
         commands.init(dst, config_template, **kwargs)
@@ -359,7 +349,7 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
            different minor versions.
 
         2. The :preg:`origin` is removed and contents of <profile> are
-           compresed using `zlib` compression method.
+           compressed using `zlib` compression method.
 
         3. Binary header for the profile is constructed.
 
@@ -384,7 +374,7 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     will be added; when ``j``; when ``j`` is bigger than the number of
     pending profiles, then all the non-existing pending profiles will
     be obviously skipped.
-    Run ``perun status`` to see the `tag` anotation of pending profiles.
+    Run ``perun status`` to see the `tag` annotation of pending profiles.
     Tags consider the sorted order as specified by the following option
     :ckey:`format.sort_profiles_by`.
 
@@ -509,8 +499,8 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     """Shows history of versions and associated profiles.
 
     Shows the history of the wrapped version control system and all the
-    associated profiles starting from the <hash> point, outputing the
-    information about number of profiles, about descriptions ofconcrete minor
+    associated profiles starting from the <hash> point, outputting the
+    information about number of profiles, about descriptions of concrete minor
     versions, their parents, parents etc.
 
     If ``perun log --short`` is issued, the shorter version of the ``log`` is
@@ -616,7 +606,7 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     Looks up the given profile and interprets it using the selected
     visualization technique. Some of the techniques outputs either to
     terminal (using ``ncurses``) or generates HTML files, which can be
-    browseable in the web browser (using ``bokeh`` library). Refer to concrete
+    browsable in the web browser (using ``bokeh`` library). Refer to concrete
     techniques for concrete options and limitations.
 
     The shown <profile> will be looked up in the following steps:
@@ -694,7 +684,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
 
     Runs the single postprocessor unit on given looked-up profile. The
     postprocessed file will be then stored in ``.perun/jobs/`` directory as a
-    file, by default with filanem in form of::
+    file, by default with filename in form of::
 
         bin-collector-workload-timestamp.perf
 
@@ -729,7 +719,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
         perun postprocessby ./echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
 
     Example 2. The following command will postprocess the second profile stored
-    in index of commit preceeding the current head using interval regression
+    in index of commit preceding the current head using interval regression
     analysis::
 
         perun postprocessby -m HEAD~1 1@i regression-analysis --method=interval
@@ -800,7 +790,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     required=False,
     multiple=True,
     default=[""],
-    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workloadfor ``ls`` command.",
+    help="Inputs for <cmd>. E.g. ``./subdir`` is possible workload for ``ls`` command.",
 )
 @click.option(
     "--params",
@@ -882,7 +872,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     """Generates performance profile using selected collector.
 
     Runs the single collector unit (registered in Perun) on given profiled
-    command (optionaly with given arguments and workloads) and generates
+    command (optionally with given arguments and workloads) and generates
     performance profile. The generated profile is then stored in
     ``.perun/jobs/`` directory as a file, by default with filename in form of::
 
