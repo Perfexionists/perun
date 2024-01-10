@@ -27,11 +27,11 @@ from perun.collect.trace.values import (
 
 import perun.utils as utils
 import perun.utils.metrics as metrics
-from perun.utils.helpers import SuppressedExceptions
 from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
 from perun.utils.exceptions import (
     SystemTapStartupException,
     SystemTapScriptCompilationException,
+    SuppressedExceptions,
 )
 
 

@@ -7,8 +7,7 @@ and loading call graphs from previous project versions.
 
 import perun.logic.temp as temp
 import perun.logic.stats as stats
-from perun.utils.helpers import SuppressedExceptions
-from perun.utils.exceptions import StatsFileNotFoundException
+from perun.utils.exceptions import StatsFileNotFoundException, SuppressedExceptions
 
 
 def extract(stats_name, exclude_self, vcs_version, **_):

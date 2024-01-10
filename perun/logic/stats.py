@@ -51,8 +51,7 @@ import perun.vcs as vcs
 from perun.logic import index, pcs, store
 from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
 
-from perun.utils.helpers import SuppressedExceptions
-
+from perun.utils.exceptions import SuppressedExceptions
 
 # Match the timestamp format of the profile names
 PROFILE_TIMESTAMP_REGEX = re.compile(r"(-?\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})")

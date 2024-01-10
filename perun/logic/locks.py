@@ -32,8 +32,11 @@ import perun.utils as utils
 
 from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.utils.exceptions import ResourceLockedException, InvalidTempPathException
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import (
+    ResourceLockedException,
+    InvalidTempPathException,
+    SuppressedExceptions,
+)
 
 
 class LockType(Enum):

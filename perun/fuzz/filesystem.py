@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import re
 
-from perun.utils import helpers, log
+from perun.utils import exceptions, log
 
 from perun.fuzz.structs import Mutation, FuzzingProgress
 
@@ -83,7 +83,7 @@ def del_temp_files(
             and mutation.path.startswith(output_dir)
             and os.path.isfile(mutation.path)
         ):
-            with helpers.SuppressedExceptions(FileNotFoundError):
+            with exceptions.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
                 log.info(".")
         log.info("-")

@@ -55,7 +55,7 @@ import perun.view
 
 from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
 from perun.logic import commands, pcs, config as perun_config
-from perun.utils import helpers, cli_helpers, log as perun_log
+from perun.utils import exceptions, cli_helpers, log as perun_log
 
 from perun.collect.trace.optimizations.structs import (
     Pipeline,
@@ -1233,7 +1233,7 @@ def launch_cli_safely() -> None:
 
         reported_error = error_name + ": " + str(catched_exception)
         perun_log.error(f"unexpected error: {reported_error}", recoverable=True)
-        with helpers.SuppressedExceptions(Exception):
+        with exceptions.SuppressedExceptions(Exception):
             cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 

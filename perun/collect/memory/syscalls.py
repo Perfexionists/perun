@@ -7,7 +7,7 @@ import subprocess
 
 from typing import Any, TYPE_CHECKING
 
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import SuppressedExceptions
 
 if TYPE_CHECKING:
     from perun.utils.structs import Executable

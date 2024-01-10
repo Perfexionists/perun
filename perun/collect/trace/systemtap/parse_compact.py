@@ -18,8 +18,11 @@ import perun.collect.trace.values as vals
 from perun.collect.trace.optimizations.call_graph import CallGraphResource
 from perun.collect.trace.optimizations.optimization import build_stats_names
 from perun.utils import chunkify
-from perun.utils.exceptions import SignalReceivedException, StatsFileNotFoundException
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import (
+    SignalReceivedException,
+    StatsFileNotFoundException,
+    SuppressedExceptions,
+)
 
 
 class ThreadContext:

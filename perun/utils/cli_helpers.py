@@ -25,7 +25,7 @@ import perun.vcs as vcs
 
 from perun.profile import helpers as profile_helpers, query
 from perun.logic import commands, store, stats, config, pcs
-from perun.utils import helpers, streams, timestamps, log, metrics
+from perun.utils import exceptions, helpers, streams, timestamps, log, metrics
 
 from perun.collect.trace.optimizations.optimization import Optimization
 from perun.collect.trace.optimizations.structs import CallGraphTypes
@@ -369,7 +369,7 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
 
     massaged_values = set()
     for single_value in value:
-        with helpers.SuppressedExceptions(NotPerunRepositoryException):
+        with exceptions.SuppressedExceptions(NotPerunRepositoryException):
             index_match = store.INDEX_TAG_REGEX.match(single_value)
             index_range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
             pending_match = store.PENDING_TAG_REGEX.match(single_value)

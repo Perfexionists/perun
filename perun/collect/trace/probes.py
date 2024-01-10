@@ -4,7 +4,7 @@
 from enum import Enum
 
 from perun.collect.trace.values import Strategy, DEFAULT_SAMPLE
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import SuppressedExceptions
 from perun.utils import partition_list
 
 

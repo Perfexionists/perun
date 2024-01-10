@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from perun.fuzz import helpers, randomizer
 
-from perun.utils.helpers import SuppressedExceptions
-
+from perun.utils.exceptions import SuppressedExceptions
 
 RULE_ITERATIONS = 10
 WS_MIN = 100

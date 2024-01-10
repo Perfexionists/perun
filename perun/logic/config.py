@@ -22,7 +22,7 @@ import perun.logic.config_templates as templates
 
 from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
 
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import SuppressedExceptions
 
 
 def is_valid_key(key: str) -> bool:

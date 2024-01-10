@@ -15,7 +15,7 @@ from typing import Any, TYPE_CHECKING
 import perun.utils as utils
 import perun.utils.log as log
 
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import SuppressedExceptions
 
 if TYPE_CHECKING:
     from perun.fuzz.structs import (
