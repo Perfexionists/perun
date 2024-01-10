@@ -1,15 +1,15 @@
 """Contains helper scripts for creating units from templates."""
 from __future__ import annotations
 
-import os
 import jinja2
+import os
 
 from typing import Any
 
+import perun.logic.config as config
 import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.log as log
-import perun.logic.config as config
 
 from perun.utils.exceptions import ExternalEditorErrorException
 

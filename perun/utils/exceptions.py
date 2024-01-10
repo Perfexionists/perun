@@ -1,8 +1,11 @@
 """Collection of helper exception classes"""
 from __future__ import annotations
 
-import traceback
-from typing import Any
+
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import traceback
 
 
 class InvalidParameterException(Exception):
@@ -460,7 +463,7 @@ class MissingDependencyException(Exception):
 
 
 class UnexpectedPrototypeSyntaxError(Exception):
-    """Raised when the function prototype syntax is somehow different than expected"""
+    """Raised when the function prototype syntax is somehow different from expected"""
 
     __slots__ = ["prototype_name", "cause"]
 

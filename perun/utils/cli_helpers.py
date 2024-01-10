@@ -5,23 +5,20 @@ and returning default values.
 """
 from __future__ import annotations
 
-import time
-import functools
-import os
-import sys
-import re
-import platform
-import traceback
-import json
 import click
-import jinja2
+import functools
 import importlib.metadata as metadata
+import jinja2
+import json
+import os
+import platform
+import re
+import sys
+import time
+import traceback
 
 from collections import defaultdict
 from typing import Optional, Callable, Any, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from perun.utils.structs import MinorVersion
 
 import perun
 import perun.profile.helpers as profiles
@@ -47,7 +44,9 @@ from perun.utils.exceptions import (
     StatsFileNotFoundException,
     NotPerunRepositoryException,
 )
-from perun.utils.helpers import SuppressedExceptions
+
+if TYPE_CHECKING:
+    from perun.utils.structs import MinorVersion
 
 
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
@@ -67,8 +66,8 @@ def process_bokeh_axis_title(
     we either use 'per_key' or 'of_key'.
 
     :param click.Context ctx: called context of the process
-    :param click.Option param: called option (either x or y axis)
-    :param object value: given value for the the option param
+    :param click.Option param: called option (either x or y-axis)
+    :param object value: given value for the option param
     :returns object: either value (if it is non-None) or default legend for given axis
     """
     if not value and param.human_readable_name.startswith("x"):
@@ -115,7 +114,7 @@ def process_continuous_key(
 ) -> Optional[str]:
     """Helper function for processing the continuous key for the param.
 
-    Continuous keys are used in the continuous graphs (do'h!) on the x axis, i.e. they have to be
+    Continuous keys are used in the continuous graphs (do'h!) on the x-axis, i.e. they have to be
     numeric. We check all keys in the resources.
 
     :param click.Context ctx: called context of the process
@@ -197,7 +196,7 @@ def single_yaml_param_callback(_: click.Context, __: click.Option, value: str) -
     """
     unit_to_params = {}
     for yaml_file in value:
-        # First check if this is file
+        # First check if this is a file
         unit_to_params.update(streams.safely_load_yaml(yaml_file))
     return unit_to_params
 
@@ -228,7 +227,7 @@ def unsupported_option_callback(_: click.Option, param: click.Option, value: Any
     """Processes the currently unsupported option or argument.
 
     :param click.Context _: called context of the parameter
-    :param click.Option param: parameter we are processing
+    :param click.Option param: option or parameter we are processing
     :param Object value: value of the parameter we are trying to set
     """
     if value:
@@ -378,7 +377,7 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
 
     massaged_values = set()
     for single_value in value:
-        with SuppressedExceptions(NotPerunRepositoryException):
+        with helpers.SuppressedExceptions(NotPerunRepositoryException):
             index_match = store.INDEX_TAG_REGEX.match(single_value)
             index_range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
             pending_match = store.PENDING_TAG_REGEX.match(single_value)
@@ -407,8 +406,8 @@ def lookup_removed_profile_callback(ctx: click.Context, _: click.Option, value: 
 def lookup_profile_in_filesystem(profile_name: str) -> str:
     """Helper function for looking up the profile in the filesystem
 
-    First we check if the file is an absolute path, otherwise we lookup within the pending profile,
-    i.e. in the .perun/jobs directory. If we still have not find the profile, we then iteratively
+    First we check if the file is an absolute path, otherwise we look up within the pending profile,
+    i.e. in the .perun/jobs directory. If we still have not found the profile, we then iteratively
     explore the subfolders starting from current directory and look for a potential match.
 
     :param str profile_name: value that is being read from the commandline
@@ -419,7 +418,7 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
         return profile_name
 
     log.info(f"file '{profile_name}' does not exist. Checking pending jobs...")
-    # 2) if it does not exists check pending
+    # 2) if it does not exist check pending
     job_dir = pcs.get_job_directory()
     job_path = os.path.join(job_dir, profile_name)
     if os.path.exists(job_path):
@@ -459,7 +458,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     """Callback for looking up any profile, i.e. anywhere (in index, in pending, etc.)
 
     :param _: context
-    :param __): param
+    :param __: param
     :param value: value of the profile parameter
     """
     # TODO: only temporary

@@ -5,10 +5,11 @@ the functions. Or various checker function, that checks given parameters of the 
 """
 from __future__ import annotations
 
-import inspect
 import functools
+import inspect
 
 from typing import Callable, Any
+
 from perun.utils.exceptions import InvalidParameterException
 
 
@@ -16,10 +17,10 @@ def _singleton_core(
     func: Callable[[], Any], is_always_singleton: bool, allow_manual_reset: bool = False
 ) -> Callable[[], Any]:
     """
-    Wraps the function @p func so it will always return the same result,
+    Wraps the function @p func, so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
 
-    :param func: function that will be decorated
+    :param func: any function that takes no parameters and returns single value
     :returns: decorated function that will be run only once
     """
     func.instance = None  # type: ignore
@@ -85,9 +86,9 @@ def arguments_to_key(func: Callable[..., Any], *args: Any, **kwargs: Any) -> tup
 def singleton_with_args(func: Callable[..., Any]) -> Callable[..., Any]:
     """
     Wraps the function @p func, so it will always return the same result,
-    as givn by the first call with given positional and keyword arguments.
+    as given by the first call with given positional and keyword arguments.
 
-    :param function func: function that will be decorated
+    :param function func: any function that takes parameters and returns value
     :returns func: decorated function that will be run only once for give parameters
     """
     func_args_cache[func.__name__] = {}
@@ -167,7 +168,7 @@ def static_variables(**kwargs: Any) -> Callable[..., Any]:
 def phase_function(phase_name: str) -> Callable[..., Any]:
     """Sets the phase name for the given function
 
-    The phase name is outputed when the elapsed time is printed.
+    The phase name is output when the elapsed time is printed.
 
     :param str phase_name: name of the phase to which the given function corresponds
     :return: decorated function with new phase name

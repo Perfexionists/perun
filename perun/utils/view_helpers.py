@@ -1,29 +1,29 @@
 """Collection of helper functions for working with bokeh graphs"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-from types import ModuleType
-from collections.abc import MutableMapping, Iterable
-
-from enum import Enum
-
-import bokeh.plotting as bk_plot
 import bokeh.palettes as bk_palettes
+import bokeh.plotting as bk_plot
 import bokeh.themes.theme as bk_theme
 import holoviews as hv
 
-import perun.utils.decorators as decorators
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
 import perun.profile.helpers as profiles
-from perun.utils import log
+import perun.utils.decorators as decorators
+import perun.utils.log as log
 
 if TYPE_CHECKING:
     import pandas as pd
+
+    from collections.abc import MutableMapping, Iterable
+    from types import ModuleType
     from perun.profile.factory import Profile
 
 
-GRAPH_LR_PADDING = 0
-GRAPH_B_PADDING = 100
-GRAPH_T_PADDING = 50
+GRAPH_LR_PADDING: int = 0
+GRAPH_B_PADDING: int = 100
+GRAPH_T_PADDING: int = 50
 
 
 class ColourSort(Enum):

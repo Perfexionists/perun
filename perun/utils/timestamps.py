@@ -34,7 +34,7 @@ def read_timestamp_from_file(file_handle: BinaryIO) -> float:
 def timestamp_to_str(timestamp: float) -> str:
     """
     :param int timestamp: timestamp, that will be converted to string
-    :returns str: string representation of the timestamp in format %Y-%m-%d %H:%M:%S
+    :returns str: representation of the timestamp in format %Y-%m-%d %H:%M:%S
     """
     return datetime.datetime.fromtimestamp(round(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 

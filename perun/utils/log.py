@@ -3,28 +3,24 @@ from __future__ import annotations
 
 import builtins
 import collections
-import operator
-import logging
-import sys
-import itertools
-import io
-import pydoc
 import functools
-import traceback
-import time
-from types import TracebackType
-
+import io
+import itertools
+import logging
 import numpy as np
+import operator
+import pydoc
+import sys
+import termcolor
+import time
+import traceback
 
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type
 
-if TYPE_CHECKING:
-    import numpy.typing as npt
+import perun.utils.helpers as helpers
+import perun.utils.decorators as decorators
 
-import termcolor
 
-from perun.utils.helpers import first_index_of_attr, str_to_plural, identity
-from perun.utils.decorators import static_variables
 from perun.utils.helpers import (
     COLLECT_PHASE_ATTRS,
     DEGRADATION_ICON,
@@ -42,20 +38,21 @@ from perun.utils.structs import (
     CHANGE_STRINGS,
 )
 
+if TYPE_CHECKING:
+    import types
+    import numpy.typing as npt
 
-VERBOSITY = 0
-COLOR_OUTPUT = True
+
+VERBOSITY: int = 0
+COLOR_OUTPUT: bool = True
 
 # Enum of verbosity levels
-VERBOSE_DEBUG = 2
-VERBOSE_INFO = 1
-VERBOSE_RELEASE = 0
+VERBOSE_DEBUG: int = 2
+VERBOSE_INFO: int = 1
+VERBOSE_RELEASE: int = 0
 
-SUPPRESS_WARNINGS = False
-SUPPRESS_PAGING = True
-
-# set the logging for the perun
-logging.basicConfig(filename="perun.log", level=logging.DEBUG)
+SUPPRESS_WARNINGS: bool = False
+SUPPRESS_PAGING: bool = True
 
 
 def is_verbose_enough(verbosity_peak: int) -> bool:
@@ -199,7 +196,7 @@ def print_current_stack(
     for frame in trace:
         frame_file, frame_name = extract_stack_frame_info(frame)
         filtering_conditions = [
-            # We filter frames that are outside of perun's scope
+            # We filter frames that are not in perun's scope
             "perun" not in frame_file,
             # We filter the first load entry of the module
             frame_name == "<module>",
@@ -249,7 +246,7 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoi
     print(in_color(phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS))
 
 
-@static_variables(current_job=1)
+@decorators.static_variables(current_job=1)
 def print_job_progress(overall_jobs: int) -> None:
     """Print the tag with the percent of the jobs currently done
 
@@ -265,7 +262,7 @@ def cprint(
 ) -> None:
     """Wrapper over coloured print without adding new line
 
-    :param str string: string that is printed with colours
+    :param str string: a printed coloured string
     :param str colour: colour that will be used to colour the string
     :param str attrs: name of additional attributes for the colouring
     :param bool flush: set True to immediately perform print operation
@@ -277,7 +274,7 @@ def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceTyp
     """Wrapper over coloured print with added new line or other ending
 
     :param str string: string that is printed with colours and newline
-    :param str colour: colour that will be used to colour the stirng
+    :param str colour: colour that will be used to colour the string
     :param str attrs: name of additional attributes for the colouring
     """
     print(in_color(string, colour, attrs))
@@ -368,7 +365,7 @@ def get_degradation_change_colours(
     If the change was optimization (or possible optimization) then we print the first model as
     red and the other by green (since we went from better to worse model). On the other hand if the
     change was degradation, then we print the first one green (was better) and the other as red
-    (is now worse). Otherwise (for Unknown and no change) we keep the stuff yellow, though this
+    (is now worse). Otherwise, (for Unknown and no change) we keep the stuff yellow, though this
     is not used at all
 
     :param PerformanceChange degradation_result: change of the performance
@@ -405,11 +402,11 @@ def print_short_summary_of_degradations(
     counts = count_degradations_per_group(degradation_list)
 
     print_short_change_string(counts)
-    optimization_count = str_to_plural(
+    optimization_count = helpers.str_to_plural(
         counts.get("Optimization", 0) + counts.get("SevereOptimization", 0),
         "optimization",
     )
-    degradation_count = str_to_plural(
+    degradation_count = helpers.str_to_plural(
         counts.get("Degradation", 0) + counts.get("SevereDegradation", 0), "degradation"
     )
     print(f"{optimization_count}({OPTIMIZATION_ICON}), {degradation_count}({DEGRADATION_ICON})")
@@ -448,7 +445,7 @@ def print_short_change_string(counts: dict[str, int]) -> None:
     :param dict counts: dictionary mapping found string changes into their counts
     """
     overall_changes = sum(counts.values())
-    print(str_to_plural(overall_changes, "change"), end="")
+    print(helpers.str_to_plural(overall_changes, "change"), end="")
     if overall_changes > 0:
         change_string = change_counts_to_string(counts)
         print(f" | {change_string}", end="")
@@ -460,8 +457,8 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     The function prints information about both models from detection.
 
     This function prints available information about models at which
-    was detected change, according to the applied models strategy.
-    Depends on the applied strategy it can logging the type of
+    was detected change, according to the applied strategy.
+    Depends on the applied strategy it can log the type of
     parametric model (e.g. constant, linear, etc.) or kind of
     models (e.g. regressogram, constant, etc.). The function also
     prints information about confidence at detection, i.e. confidence
@@ -562,7 +559,7 @@ def print_list_of_degradations(
         print("at", end="")
         cprint(f" {location}", "white", attrs=["bold"])
         print(":")
-        # Iterate and print all of the infos
+        # Iterate and print everything
         for deg_info, cmd, __ in changes:
             print("\u2514 ", end="")
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
@@ -672,7 +669,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
     Takes the timestamp before the execution of the function and after the execution and prints
     the elapsed time to the standard output.
 
-    :param function func: wrapped function
+    :param function func: function accepting any parameters and returning anything
     :return: function for which we will print the elapsed time
     """
 
@@ -701,7 +698,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
 def scan_formatting_string(
     fmt: str,
     default_fmt_callback: Callable[[str], str],
-    callback: Callable[[str], str] = identity,
+    callback: Callable[[str], str] = helpers.identity,
     sep: str = "%",
 ) -> list[tuple[str, str]]:
     """Scans the string, parses delimited formatting tokens and transforms them w.r.t callbacks
@@ -862,11 +859,11 @@ class History:
 
             [p1, p2, p3, p2, p4, p2]
 
-        End we merge the parent p2, the we will obtain the following:
+        End we merge the parent p2, then we will obtain the following:
 
             [p1, p2, p3, p4]
 
-        This is used, when we are outputing the parent p2, and first we merged the branches, print
+        This is used, when we are output the parent p2, and first we merged the branches, print
         the information about p2 and then actualize the unresolved parents with parents of p2.
 
         :param str merged_parent: sha of the parent that is going to be merged in the unresolved
@@ -887,7 +884,7 @@ class History:
 
          | * | {sha:6} {desc}
 
-        I.e. all of the unresolved parents are output as | and the printed parent is output as *.
+        I.e. all unresolved parents are output as | and the printed parent is output as *.
         The further we print first six character of minor version checksum and first line of desc
 
         :param MinorVersion minor_version_info: printed minor version
@@ -905,7 +902,7 @@ class History:
 
         This flushes the current caught buffer, resolves the fork points (i.e. when we forked the
         history from the minor_version), prints the information about minor version and the resolves
-        the merges (i.e. when the minor_version is spawned from the merge). Finally this updates the
+        the merges (i.e. when the minor_version is spawned from the merge). Finally, this updates the
         unresolved parents with parents of minor_version.
 
         Prints the following:
@@ -938,7 +935,7 @@ class History:
         """
         # Update the unresolved parents
         minor_sha = minor_version_info.checksum
-        version_index = first_index_of_attr(self.unresolved_edges, "next", minor_sha)
+        version_index = helpers.first_index_of_attr(self.unresolved_edges, "next", minor_sha)
         self.unresolved_edges[version_index : version_index + 1] = [
             History.Edge(p, "white", minor_sha) for p in minor_version_info.parents
         ]
@@ -957,7 +954,7 @@ class History:
         :param bool with_border: if true, then every line is printed with the border of unresolved
             parents
         """
-        # Unreadable stdouts are skipped, since we are probably in silent mode
+        # Unreadable stdout are skipped, since we are probably in silent mode
         if sys.stdout.readable():
             # flush the stdout
             sys.stdout.seek(0)
@@ -989,7 +986,7 @@ class History:
             elif deg.result.name == "Optimization":
                 fixes.add(baseline)
 
-        # At last we colour the edges; edges that contain both optimizations and degradations
+        # At last, we colour the edges; edges that contain both optimizations and degradations
         # are coloured yellow
         for edge in self.unresolved_edges:
             if edge.prev == target:
@@ -1057,7 +1054,7 @@ class History:
         :param str fork_point: sha of the point, where we are forking
         """
         ulen = len(self.unresolved_edges)
-        forked_index = first_index_of_attr(self.unresolved_edges, "next", fork_point)
+        forked_index = helpers.first_index_of_attr(self.unresolved_edges, "next", fork_point)
         src_index_map = list(range(0, ulen))
         tgt_index_map = [
             forked_index if self.unresolved_edges[i].next == fork_point else i
@@ -1154,7 +1151,7 @@ class Logger(TextIO):
         self,
         __t: Type[BaseException] | None,
         __value: BaseException | None,
-        __traceback: TracebackType | None,
+        __traceback: types.TracebackType | None,
     ) -> None:
         assert NotImplementedError("Function not supported in wrapper Logger")
 

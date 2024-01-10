@@ -3,14 +3,16 @@ from __future__ import annotations
 
 import enum
 import shlex
-import types
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Any, TYPE_CHECKING, cast, Callable
+
 from perun.utils.helpers import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
 
 if TYPE_CHECKING:
+    import types
+
     import numpy.typing as npt
     import numpy
 
@@ -169,7 +171,7 @@ class Executable:
     :ivar str cmd: command to be executed (i.e. script, binary, etc.)
     :ivar str args: optional arguments of the command (such as -q, --pretty=no, etc.)
     :ivar str workload: optional workloads (or inputs) of the command (i.e. files, whatever)
-    :ivar str original_workload: workload that was used as an origin (stated from the configration,
+    :ivar str original_workload: workload that was used as an origin (stated from the configuration),
         note that this is to differentiate between actually generated workloads from generators and
         names of the generators.
     """
@@ -229,7 +231,7 @@ class Unit:
 
     @classmethod
     def desanitize_unit_name(cls, unit_name: str) -> str:
-        """Replace the underscors in the unit name so it is CLI compatible.
+        """Replace the underscores in the unit name in order for it to be CLI compatible.
 
         In Click 7.0 all subcommands have automatically replaced underscores (_) with dashes (-).
         We have to sanitize/desanitize the unit name through the Perun.
@@ -241,7 +243,7 @@ class Unit:
 
     @classmethod
     def sanitize_unit_name(cls, unit_name: str) -> str:
-        """Sanitizes module name so it is usable and uniform in the perun.
+        """Sanitizes module name in order for it to be usable and uniform in the perun.
 
         As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).
         While this is surely nice feature, Perun works with the Python function names that actually
@@ -401,8 +403,8 @@ class Job:
 
 
 class OrderedEnum(Enum):
-    """An ordered enumeration structure that ranks the elements so that they can be compared in
-    regards of their order. Taken from:
+    """An ordered enumeration structure that ranks the elements so that they can be compared
+    wrt their order. Taken from:
         https://stackoverflow.com/questions/42369749/use-definition-order-of-enum-as-natural-order
 
     :ivar int order: the order of the new element
@@ -578,7 +580,7 @@ class ModelRecord:
     def coeff_size(self) -> int:
         """Counts the number of coefficients in the model
 
-        :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
+        :return: length of the bins if the model is bin-like, else number of non-zero coefficients
         """
         return len(self.b0) if hasattr(self.b0, "__len__") else 1 + self.b1 != 0.0 + self.b2 != 0.0
 

@@ -1,14 +1,15 @@
 """Functions for loading and working with streams (e.g. yaml)
 
 Some of the stuff are stored in the stream, like e.g. yaml and are reused in several places.
-This module encapulates such functions, so they can be used in CLI, in tests, in configs.
+This module encapsulates such functions, so they can be used in CLI, in tests, in configs.
 """
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
-import io
+
 from ruamel.yaml import YAML
 
 from typing import TextIO, Any
