@@ -57,6 +57,16 @@ class TextfileGenerator(WorkloadGenerator):
         randomized. Otherwise they will always be maximal.
     """
 
+    __slots__ = [
+        "min_lines",
+        "max_lines",
+        "step",
+        "min_chars",
+        "max_chars",
+        "randomize_rows",
+        "faker",
+    ]
+
     def __init__(
         self,
         job: Job,

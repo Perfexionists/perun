@@ -17,7 +17,11 @@ import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.tools as tools
 
 from perun.profile.factory import Profile
-from perun.utils.structs import DegradationInfo, ModelRecord
+from perun.utils.structs import (
+    DegradationInfo,
+    ModelRecord,
+    DetectionChangeResult
+)
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2
@@ -201,7 +205,7 @@ def execute_analysis(
     target_model: ModelRecord,
     target_profile: Profile,
     **__: Any,
-) -> dict[str, Any]:
+) -> DetectionChangeResult:
     """
     A method performs the primary analysis for pair of models.
 
@@ -232,22 +236,18 @@ def execute_analysis(
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
     x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
     x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0].round(2)
-    partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
+    partial_intervals = list(np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T)
 
     change_info_enum = nparam_helpers.classify_change(
         tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE,
         _STATS_DIFF_CHANGE,
     )
+    relative_error = round(
+        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
+    )
 
-    return {
-        "change_info": change_info_enum,
-        "rel_error": round(
-            tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
-            2,
-        ),
-        "partial_intervals": partial_intervals,
-    }
+    return DetectionChangeResult(change_info_enum, relative_error, partial_intervals)
 
 
 def local_statistics(

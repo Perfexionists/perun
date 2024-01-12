@@ -69,7 +69,7 @@ def postprocess(
     """
     # Perform the non-parametric analysis using the kernel regression
     kernel_models = methods.compute_kernel_regression(
-        data_provider.data_provider_mapper(profile, **configuration), configuration
+        data_provider.generic_profile_provider(profile, **configuration), configuration
     )
 
     # Return the profile after the execution of kernel regression

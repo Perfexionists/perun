@@ -24,6 +24,8 @@ class SingletonGenerator(WorkloadGenerator):
     :ivar object value: singleton value used as workload
     """
 
+    __slots__ = ["value"]
+
     def __init__(self, job: Job, value: Any, **kwargs: Any) -> None:
         """Initializes the generator of singleton workload
 

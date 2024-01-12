@@ -36,6 +36,13 @@ class Profile(MutableMapping[str, Any]):
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
 
+    __slots__ = [
+        "_storage",
+        "_tuple_to_resource_type_map",
+        "_resource_type_to_flattened_resources_map",
+        "_uid_counter",
+    ]
+
     collectable = {
         "amount",
         "structure-unit-size",

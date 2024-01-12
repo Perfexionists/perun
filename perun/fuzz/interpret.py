@@ -95,7 +95,9 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     results_data_file.close()
 
 
-def get_time_for_value(value: int, time_data: list[int], data: list[int]) -> Optional[int]:
+def get_time_for_value(
+    value: int, time_data: list[int | float], data: list[int | float]
+) -> int | float:
     """Function gets time value according to measured value.
 
     :param numeric value: selected y-axis value

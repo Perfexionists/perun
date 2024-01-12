@@ -1,7 +1,7 @@
 """ The values module contains various utility classes, enums and constants that are used in
 multiple other modules across the whole trace collector.
 """
-
+import dataclasses
 import re
 import collections
 import shutil
@@ -147,10 +147,17 @@ def check(dependencies):
     WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 
 
-# The trace record template
-TraceRecord = collections.namedtuple(
-    "TraceRecord", ["type", "offset", "name", "timestamp", "thread", "sequence"]
-)
+@dataclasses.dataclass
+class TraceRecord:
+    __slots__ = ["type", "offset", "name", "timestamp", "thread", "sequence"]
+
+    type: RecordType
+    offset: int
+    name: str
+    timestamp: int
+    thread: int
+    sequence: int
+
 
 # The list of required dependencies
 GLOBAL_DEPENDENCIES = ["ps", "grep", "awk", "nm"]

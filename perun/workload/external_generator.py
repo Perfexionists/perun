@@ -61,6 +61,8 @@ class ExternalGenerator(WorkloadGenerator):
     :ivar list key: list of keys for extracted resources
     """
 
+    __slots__ = ["generator", "output_dir", "file_format", "delimiters", "splits", "keys"]
+
     def __init__(
         self,
         job: Job,

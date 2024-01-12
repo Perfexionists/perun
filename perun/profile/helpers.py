@@ -526,6 +526,21 @@ class ProfileInfo:
     the command line interface
     """
 
+    __slots__ = [
+        "_is_raw_profile",
+        "source",
+        "realpath",
+        "time",
+        "type",
+        "cmd",
+        "args",
+        "workload",
+        "collector",
+        "postprocessors",
+        "checksum",
+        "config_tuple",
+    ]
+
     def __init__(
         self,
         path: str,

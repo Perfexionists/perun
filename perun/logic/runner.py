@@ -504,11 +504,10 @@ def generate_jobs_on_current_working_dir(
         for workload, jobs_per_workload in workloads_per_cmd.items():
             log.print_current_phase(" = processing generator {}", workload, COLLECT_PHASE_WORKLOAD)
             # Prepare the specification
-            generator: Type[WorkloadGenerator]
-            params: dict[str, Any]
-            generator, params = workload_generators_specs.get(
+            generator_spec = workload_generators_specs.get(
                 workload, GeneratorSpec(SingletonGenerator, {"value": workload})
             )
+            generator, params = generator_spec.constructor, generator_spec.params
             for job in jobs_per_workload:
                 log.print_job_progress(number_of_jobs)
                 for c_status, prof in generator(job, **params).generate(run_collector):

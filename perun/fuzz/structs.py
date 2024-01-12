@@ -1,20 +1,35 @@
 """Collection of helpers structures for fuzzing"""
 from __future__ import annotations
 
+import dataclasses
 import os
-from collections import namedtuple
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
 import perun.utils as utils
 from perun.utils.decorators import always_singleton
 
 
-TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
-RuleSet = namedtuple("RuleSet", "rules hits")
+@dataclasses.dataclass
+class TimeSeries:
+    __slots__ = ["x_axis", "y_axis"]
+
+    x_axis: list[float | int]
+    y_axis: list[float | int]
+
+
+@dataclasses.dataclass
+class RuleSet:
+    __slots__ = ["rules", "hits"]
+
+    rules: list[tuple[Callable[[list[str] | list[bytes]], None], str]]
+    hits: list[int]
+
+
 GCOV_VERSION_W_INTER_FORMAT = 4.9
 GCOV_VERSION_W_JSON_FORMAT = 9.0
 
 
+@dataclasses.dataclass
 class Mutation:
     """
     :ivar str path: path to the workload
@@ -24,6 +39,8 @@ class Mutation:
     :ivar float deg_ratio: achieved degradation ration
     :ivar float fitness: fitness of the mutation
     """
+
+    __slots__ = ["path", "history", "predecessor", "cov", "deg_ratio", "fitness"]
 
     def __init__(
         self,
@@ -69,6 +86,8 @@ class CoverageConfiguration:
     :ivar list gcov_files: list of gcov files
     :ivar list source_files: list of source files
     """
+
+    __slots__ = ["gcno_path", "source_path", "gcov_version", "gcov_files", "source_files"]
 
     def __init__(self, **kwargs: Any) -> None:
         """
@@ -121,6 +140,24 @@ class FuzzingConfiguration:
         or only using perun
     """
 
+    __slots__ = [
+        "timeout",
+        "hang_timeout",
+        "output_dir",
+        "workloads_filter",
+        "regex_rules",
+        "max_size",
+        "max_size_ratio",
+        "max_size_gain",
+        "exec_limit",
+        "precollect_limit",
+        "mutations_per_rule",
+        "no_plotting",
+        "cov_rate",
+        "coverage_testing",
+        "coverage",
+    ]
+
     def __init__(self, **kwargs: Any) -> None:
         """
         :param dict kwargs: set of keyword configurations
@@ -167,6 +204,18 @@ class FuzzingProgress:
     :ivar dict stats: additional stats of fuzz testing
     """
 
+    __slots__ = [
+        "faults",
+        "hangs",
+        "interesting_workloads",
+        "parents",
+        "final_results",
+        "deg_time_series",
+        "cov_time_series",
+        "base_cov",
+        "stats",
+    ]
+
     def __init__(self) -> None:
         """ """
         self.faults: list[Mutation] = []
@@ -181,18 +230,46 @@ class FuzzingProgress:
 
         self.base_cov: int = 1
 
-        self.stats: dict[str, Any] = {
-            "start_time": 0.0,
-            "end_time": 0.0,
-            "cov_execs": 0,
-            "perun_execs": 0,
-            "degradations": 0,
-            "max_cov": 1.0,
-            "worst_case": None,
-            "hangs": 0,
-            "faults": 0,
-        }
+        self.stats: FuzzingStats = FuzzingStats()
 
     def update_max_coverage(self) -> None:
         """Updates the maximal achieved coverage according to the parent fitness values"""
-        self.stats["max_cov"] = self.parents[-1].cov / self.base_cov
+        self.stats.max_cov = self.parents[-1].cov / self.base_cov
+
+
+class FuzzingStats:
+    """Statistics of the fuzz testing process
+
+    :ivar start_time: time when the fuzzing started
+    :ivar end_time: time when the fuzzing was finished
+    :ivar cov_execs: number of coverage testing executions
+    :ivar perun_execs: number of perun testing executions
+    :ivar degradations: number of found degradation
+    :ivar max_cov: maximal coverage that was covered
+    :ivar worst_case: worst case mutation
+    :ivar hangs: number of hangs (i.e. timeouts)
+    :ivar faults: number of faulty executions (errors, etc.)
+    """
+
+    __slots__ = [
+        "start_time",
+        "end_time",
+        "cov_execs",
+        "perun_execs",
+        "degradations",
+        "max_cov",
+        "worst_case",
+        "hangs",
+        "faults",
+    ]
+
+    def __init__(self):
+        self.start_time = 0.0
+        self.end_time = 0.0
+        self.cov_execs = 0
+        self.perun_execs = 0
+        self.degradations = 0
+        self.max_cov = 1.0
+        self.worst_case = None
+        self.hangs = 0
+        self.faults = 0

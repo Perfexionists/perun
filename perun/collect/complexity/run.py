@@ -6,7 +6,7 @@ collection and postprocessing of collection data.
 """
 from __future__ import annotations
 
-import collections
+import dataclasses
 import os
 import shutil
 
@@ -27,7 +27,24 @@ from perun.utils.structs import Executable, CollectStatus
 
 
 # The profiling record template
-_ProfileRecord = collections.namedtuple("_ProfileRecord", ["action", "func", "timestamp", "size"])
+@dataclasses.dataclass
+class ProfileRecord:
+    """
+    ProfileRecord corresponds to format written in the intermediate format collected by `complexity` collector.
+
+    action: corresponds to either "i" (call/in function) or "o" (return/out function)
+    func: corresponds an address of the recorded functions (this needs to be translated)
+    timestamp: corresponds to recorded timestamp of the call/return of the function
+    size: corresponds to the size of the underlying data structure in the function
+    """
+
+    __slots__ = ["action", "func", "timestamp", "size"]
+
+    action: str
+    func: str
+    timestamp: str
+    size: str
+
 
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {
@@ -151,14 +168,14 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
     resources: list[dict[str, Any]] = []
-    call_stack: list[_ProfileRecord] = []
+    call_stack: list[ProfileRecord] = []
     profile_start, profile_end = 0, 0
 
     with open(data_path, "r") as profile:
         is_first_line = True
         for line in profile:
             # Split the line into action, function name, timestamp and size
-            record = _ProfileRecord(*line.split())
+            record = ProfileRecord(*line.split())
 
             # Process the record
             if _process_file_record(record, call_stack, resources, address_map) != 0:
@@ -172,15 +189,15 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
 
             # Get the first and last record timestamps to determine the profiling time
-            profile_end = record.timestamp
+            profile_end = int(record.timestamp)
             if is_first_line:
                 is_first_line = False
-                profile_start = record.timestamp
+                profile_start = int(record.timestamp)
 
     # Update the profile dictionary
     kwargs["profile"] = {
         "global": {
-            "time": str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + "s",
+            "time": f"{(profile_end - profile_start) / _MICRO_TO_SECONDS}s",
             "resources": resources,
         }
     }
@@ -189,14 +206,14 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
 
 
 def _process_file_record(
-    record: _ProfileRecord,
-    call_stack: list[_ProfileRecord],
+    record: ProfileRecord,
+    call_stack: list[ProfileRecord],
     resources: list[dict[str, Any]],
     address_map: dict[str, str],
 ) -> int:
     """Processes the next profile record and tries to pair it with stack record if possible
 
-    :param _ProfileRecord record: the _ProfileRecord tuple containing the record data
+    :param ProfileRecord record: the ProfileRecord tuple containing the record data
     :param list call_stack: the call stack with file records
     :param list resources: the list of resource dictionaries
     :param dict address_map: the 'function address : demangled name' map

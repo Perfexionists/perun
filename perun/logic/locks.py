@@ -70,6 +70,8 @@ class ResourceLock:
     :ivar str file: the full path of the resulting lock file
     """
 
+    __slots__ = ["name", "type", "pid", "locks_dir", "file"]
+
     def __init__(
         self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str
     ) -> None:

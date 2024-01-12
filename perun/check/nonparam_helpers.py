@@ -97,7 +97,7 @@ def unify_buckets_in_regressogram(
     config.update(mapper_keys)
     # compute new regressogram models with the new parameters needed to unification
     new_regressogram_models = rg_methods.compute_regressogram(
-        data_provider.data_provider_mapper(target_profile, **mapper_keys), config
+        data_provider.generic_profile_provider(target_profile, **mapper_keys), config
     )
 
     # match the regressogram model with the right 'uid'

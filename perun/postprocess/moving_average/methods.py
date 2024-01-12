@@ -17,6 +17,7 @@ import perun.postprocess.regression_analysis.tools as tools
 
 @dataclass()
 class DecayParamInfo:
+    __slots__ = ["condition", "err_msg"]
     condition: Callable[[float], bool]
     err_msg: str
 

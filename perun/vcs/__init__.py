@@ -249,6 +249,8 @@ class CleanState:
     different version) and then collect correctly the data. The previous state is then restored
     """
 
+    __slots__ = ["saved_state", "last_head"]
+
     def __init__(self) -> None:
         """Creates a with wrapper for a corresponding VCS"""
         self.saved_state: bool = False

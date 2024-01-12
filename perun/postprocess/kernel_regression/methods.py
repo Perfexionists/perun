@@ -51,6 +51,8 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
     :param sklearn.base.RegressorMixin: mixin class for all regression estimators in scikit-learn
     """
 
+    __slots__ = ["x_pts", "y_pts", "kernel", "gamma"]
+
     def __init__(self, gamma: Optional[npt.NDArray[np.float64] | float] = None) -> None:
         """
         Initialization method for `KernelRidge` class.

@@ -202,7 +202,7 @@ def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[h
     }
     legend = _build_model_legend(model)
     # Obtain the x-coordinates with the required uid to pair with current model
-    for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
+    for x_pts, _, uid in data_provider.generic_profile_provider(profile, **params):
         if uid == model["uid"]:
             # Build the model
             yield hv.Curve(

@@ -121,7 +121,7 @@ def _walk_major_versions(git_repo: Repo) -> Iterator[MajorVersion]:
 def _parse_commit(commit: git.objects.Commit) -> MinorVersion:
     """
     :param git.Commit commit: commit object
-    :returns MinorVersion: namedtuple of minor version (date author email checksum desc parents)
+    :returns MinorVersion: minor version (date author email checksum desc parents)
     """
     checksum = str(commit)
     if checksum not in _parse_commit.commit_cache.keys():
@@ -147,7 +147,7 @@ def _get_minor_version_info(git_repo: Repo, minor_version: str) -> MinorVersion:
     """
     :param Repo git_repo: wrapped repository of the perun
     :param str minor_version: identification of minor_version
-    :returns MinorVersion: namedtuple of minor version (date author email checksum desc parents)
+    :returns MinorVersion: minor version (date author email checksum desc parents)
     """
     minor_version_commit = git_repo.commit(minor_version)
     return _parse_commit(minor_version_commit)
