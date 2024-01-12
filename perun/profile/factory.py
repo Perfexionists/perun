@@ -174,7 +174,7 @@ class Profile(MutableMapping[str, Any]):
         property_key = str(convert.flatten(persistent_properties))
         uid_key = convert.flatten(uid)
         if property_key not in self._tuple_to_resource_type_map.keys():
-            new_type = "{}#{}".format(uid_key, self._uid_counter[uid_key])
+            new_type = f"{uid_key}#{self._uid_counter[uid_key]}"
             self._tuple_to_resource_type_map[property_key] = new_type
             self._uid_counter[uid_key] += 1
             self._storage["resource_type_map"][new_type] = {

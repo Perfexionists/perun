@@ -175,7 +175,7 @@ def generate_profile_name(profile: profiles.Profile) -> str:
     tokens, rest = fmt_parser.scan(template)
     if rest:
         perun_log.error(
-            "formatting string '{}' could not be parsed\n\n".format(template)
+            f"formatting string '{template}' could not be parsed\n\n"
             + "Run perun config to modify the formatting pattern. "
             "Refer to documentation for more information about formatting patterns"
         )
@@ -400,7 +400,7 @@ def is_key_aggregatable_by(profile: profiles.Profile, func: str, key: str, keyna
     valid_keys = set(query.all_numerical_resource_fields_of(profile))
     if key not in valid_keys:
         choices = "(choose either count/nunique as aggregation function;"
-        choices += " or from the following keys: {})".format(", ".join(map(str, valid_keys)))
+        choices += f" or from the following keys: {', '.join(map(str, valid_keys))})"
         raise InvalidParameterException(keyname, key, choices)
     return True
 
@@ -432,21 +432,17 @@ def sort_profiles(profile_list: list["ProfileInfo"], reverse_profiles: bool = Tr
         # If the stored key is invalid, we use the default time as well
         if sort_order not in ProfileInfo.valid_attributes:
             perun_log.warn(
-                "invalid sort key '{}'".format(sort_order)
-                + " Profiles will be sorted by '{}'\n\n".format(sort_order)
-                + "Please set sort key in config or cli to one of ({}".format(
-                    ", ".join(ProfileInfo.valid_attributes)
-                )
-                + ")"
+                f"invalid sort key '{sort_order}'"
+                + f" Profiles will be sorted by '{sort_order}'\n\n"
+                + f"Please set sort key in config or cli to one of ({', '.join(ProfileInfo.valid_attributes)})"
             )
             sort_order = DEFAULT_SORT_KEY
     except MissingConfigSectionException:
         perun_log.warn(
             "missing set option 'format.sort_profiles_by'!"
-            " Profiles will be sorted by '{}'\n\n".format(sort_order)
+            f" Profiles will be sorted by '{sort_order}'\n\n"
             + "Please run 'perun config edit' and set 'format.sort_profiles_by' to one"
-            " of ({}".format(", ".join(ProfileInfo.valid_attributes))
-            + ")"
+            f" of ({', '.join(ProfileInfo.valid_attributes)})"
         )
 
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
@@ -500,9 +496,7 @@ def _get_default_variable(profile: profiles.Profile, supported_variables: list[s
         return candidates[0]
     else:
         perun_log.error(
-            "Profile does not contain (in)dependent variable. Has to be one of: {}".format(
-                "(" + ", ".join(supported_variables) + ")"
-            )
+            f"Profile does not contain (in)dependent variable. Has to be one of: ({', '.join(supported_variables)})"
         )
         return ""
 

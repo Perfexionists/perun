@@ -67,7 +67,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
 
         summary_record = func_summary.setdefault(record["uid"], {})
         summary_record[record["model"]] = record["r_square"]
-    metrics.save_separate("details/{}.json".format(metrics.Metrics.metrics_id), func_summary)
+    metrics.save_separate(f"details/{metrics.Metrics.metrics_id}.json", func_summary)
 
     # Count the number of respective models
     models = {model: 0 for model in reg_models.get_supported_models() if model != "all"}

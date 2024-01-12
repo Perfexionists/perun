@@ -34,7 +34,7 @@ def safely_load_yaml_from_file(yaml_file: str) -> dict[Any, Any]:
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
     """
     if not os.path.exists(yaml_file):
-        log.warn("yaml source file '{}' does not exist".format(yaml_file))
+        log.warn(f"yaml source file '{yaml_file}' does not exist")
         return {}
 
     with open(yaml_file, "r") as yaml_handle:
@@ -53,7 +53,7 @@ def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict[Any, Any]:
         loaded_yaml = YAML().load(yaml_stream)
         return loaded_yaml or {}
     except Exception as exc:
-        log.warn("malformed yaml stream: {}".format(str(exc)))
+        log.warn(f"malformed yaml stream: {exc}")
         return {}
 
 
@@ -91,5 +91,5 @@ def safely_load_file(filename: str) -> list[str]:
         try:
             return file_handle.readlines()
         except UnicodeDecodeError as ude:
-            log.warn("Could not decode '{}': {}".format(filename, str(ude)))
+            log.warn(f"Could not decode '{filename}': {ude}")
             return []

@@ -51,4 +51,4 @@ def store(stats_name, call_graph, cache, **_):
         "minor_version": call_graph.minor,
     }
     stats.add_stats(stats_name, ["perun_cg"], [serialized])
-    temp.store_temp("optimization/{}.json".format(stats_name), serialized, json_format=True)
+    temp.store_temp(f"optimization/{stats_name}.json", serialized, json_format=True)

@@ -115,7 +115,7 @@ def _write_config_to(
         internal_conf["sampling"] = sampling
 
     # Serializes the configuration dictionary to the proper circ format
-    config_handle.write("CIRC = {0}".format(json.dumps(internal_conf, sort_keys=True, indent=2)))
+    config_handle.write(f"CIRC = {json.dumps(internal_conf, sort_keys=True, indent=2)}")
 
 
 def _create_sample_from(

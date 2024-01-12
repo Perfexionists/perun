@@ -53,7 +53,7 @@ from perun.utils.helpers import SuppressedExceptions
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
     """Prints current version of Perun and ends"""
     if value:
-        print(f"Perun {perun.__version__}")
+        log.info(f"Perun {perun.__version__}")
         exit(0)
 
 
@@ -290,9 +290,7 @@ def lookup_nth_pending_filename(position: int) -> str:
         return pending[position].realpath
     else:
         raise click.BadParameter(
-            "invalid tag '{}' (choose from interval <{}, {}>)".format(
-                "{}@p".format(position), "0@p", "{}@p".format(len(pending) - 1)
-            )
+            f"invalid tag '{position}@p' (choose from interval <0@p, {len(pending) - 1}@p>)"
         )
 
 
@@ -721,13 +719,8 @@ def generate_cli_dump(
     reqs = {split_requirement(req) for req in metadata.requires("perun-toolsuite") or []}
 
     dump_directory = pcs.get_safe_path(os.getcwd())
-    dump_file = os.path.join(
-        dump_directory,
-        "dump-{}".format(
-            timestamps.timestamp_to_str(time.time()).replace(" ", "-").replace(":", "-")
-        )
-        + ".rst",
-    )
+    dump_timestamp = timestamps.timestamp_to_str(time.time()).replace(" ", "-").replace(":", "-")
+    dump_file = os.path.join(dump_directory, f"dump-{dump_timestamp}.rst")
 
     stdout.log.seek(0)
     stderr.log.seek(0)

@@ -215,11 +215,11 @@ def _massage_parameter(git_repo: Repo, parameter: str, parameter_type: Optional[
     :raises  VersionControlSystemException: when there is an error while rev-parsing the parameter
     """
     try:
-        parameter += "^{{{0}}}".format(parameter_type) if parameter_type else ""
+        parameter += f"^{{{parameter_type}}}" if parameter_type else ""
         return str(git_repo.rev_parse(parameter))
     except BadName as bo_exception:
         raise VersionControlSystemException(
-            "parameter '{}' could not be found: {}".format(parameter, str(bo_exception))
+            f"parameter '{parameter}' could not be found: {bo_exception}"
         )
     except (IndentationError, ValueError) as ve_exception:
         raise VersionControlSystemException(

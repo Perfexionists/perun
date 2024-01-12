@@ -38,7 +38,7 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
         _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
     )
     cmd = " ".join([clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
-    log.info("Compiling source codes: {}".format(",".join(sources)))
+    log.info(f"Compiling source codes: {','.join(sources)}")
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
@@ -65,7 +65,7 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
 
-    log.info("Running Loopus on compiled source codes: {}".format(" ".join(source_filenames)))
+    log.info(f"Running Loopus on compiled source codes: {' '.join(source_filenames)}")
 
     before_analysis = systime.time()
     try:
@@ -83,7 +83,7 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
 
     # Parse the out, but first fix the one file analysis, which has different format
     if len(sources) == 1:
-        out = "file {}\n".format(source_filenames[0]) + out
+        out = f"file {source_filenames[0]}\n" + out
     source_map = {bc: src for (bc, src) in zip(source_filenames, sources)}
     resources = parser.parse_output(out, source_map)
 

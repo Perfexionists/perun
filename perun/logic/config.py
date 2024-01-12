@@ -173,7 +173,6 @@ def write_config_to(path: str, config_data: dict[str, Any]) -> None:
     :param str path: path where the config will be stored to
     :param dict config_data: dictionary with contents of the configuration
     """
-    perun_log.msg_to_stdout("Writing config '{}' at {}".format(config_data, path), 2)
     with open(path, "w") as yaml_file:
         YAML().dump(config_data, yaml_file)
 
@@ -189,7 +188,7 @@ def read_config_from(path: str) -> dict[str, Any]:
         return streams.safely_load_yaml_from_file(path)
     except scanner.ScannerError as scanner_error:
         perun_log.error(
-            "corrupted configuration file '{}': {}\n".format(path, str(scanner_error))
+            f"corrupted configuration file '{path}': {scanner_error}\n"
             + "\nPerhaps you did not escape strings with special characters in quotes?"
         )
         return {}
@@ -276,7 +275,7 @@ def init_config_at(path: str, config_type: str) -> bool:
     :param str config_type: type of the config (either shared or local)
     :returns: true if the config file was successfully created
     """
-    init_function_name = "init_{}_config_at".format(config_type)
+    init_function_name = f"init_{config_type}_config_at"
     return getattr(sys.modules[__name__], init_function_name)(path)
 
 
@@ -357,7 +356,7 @@ def lookup_shared_config_dir() -> str:
     elif sys.platform == "linux":
         perun_config_dir = os.path.join(home_directory, ".config", "perun")
     else:
-        err_msg = "{} platform is currently unsupported.\n\n".format(sys.platform)
+        err_msg = f"{sys.platform} platform is currently unsupported.\n\n"
         err_msg += (
             "Set `PERUN_CONFIG_DIR` environment variable to a valid directory,"
             "where the global config will be stored and rerun the command."
@@ -390,7 +389,7 @@ def local(path: str) -> Config:
     if os.path.isdir(path):
         return load_config(path, "local")
 
-    warn_msg = "local configuration file at {} does not exist.\n\n".format(path)
+    warn_msg = f"local configuration file at {path} does not exist.\n\n"
     warn_msg += (
         "Creating an empty configuration. Run ``perun config --local --edit``"
         " to initialized or modify the local configuration in text editor."

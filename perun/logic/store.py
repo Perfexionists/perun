@@ -292,7 +292,7 @@ def load_degradation_list_for(
             degradation_list.append(parsed_triple)
         except ValueError:
             if not warned_about_error:
-                log.warn("Malformed changelog line in {}".format(minor_storage_file))
+                log.warn(f"Malformed changelog line in {minor_storage_file}")
                 warned_about_error = True
     return degradation_list
 
@@ -354,5 +354,5 @@ def load_profile_from_handle(
         return Profile(json.loads(body))
     except ValueError:
         raise IncorrectProfileFormatException(
-            file_name, "profile '{}' is not in profile format".format(file_name)
+            file_name, f"profile '{file_name}' is not in profile format"
         )

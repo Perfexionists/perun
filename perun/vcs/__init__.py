@@ -66,7 +66,7 @@ def get_minor_head() -> str:
         vcs_type, vcs_url = pcs.get_vcs_type_and_url()
         return dynamic_module_function_call("perun.vcs", vcs_type, "_get_minor_head", vcs_url)
     except ValueError as value_error:
-        perun_log.error("while fetching head minor version: {}".format(value_error))
+        perun_log.error(f"while fetching head minor version: {value_error}")
         return ""
 
 
@@ -84,9 +84,7 @@ def init(vcs_init_params: dict[str, Any]) -> bool:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(
-        "Initializing {} version control params {} and {}".format(
-            vcs_type, vcs_path, vcs_init_params
-        ),
+        f"Initializing {vcs_type} version control params {vcs_path} and {vcs_init_params}",
         1,
     )
     return dynamic_module_function_call("perun.vcs", vcs_type, "_init", vcs_path, vcs_init_params)
@@ -107,7 +105,7 @@ def walk_minor_versions(head_minor_version: str) -> Iterator[MinorVersion]:
     :returns: iterable stream of minor version representation
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    perun_log.msg_to_stdout("Walking minor versions of type {}".format(vcs_type), 1)
+    perun_log.msg_to_stdout(f"Walking minor versions of type {vcs_type}", 1)
     return dynamic_module_function_call(
         "perun.vcs", vcs_type, "_walk_minor_versions", vcs_path, head_minor_version
     )
@@ -121,7 +119,7 @@ def walk_major_versions() -> Iterator[MajorVersion]:
     :returns: iterable stream of major version representation
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    perun_log.msg_to_stdout("Walking major versions of type {}".format(vcs_type), 1)
+    perun_log.msg_to_stdout(f"Walking major versions of type {vcs_type}", 1)
     return dynamic_module_function_call("perun.vcs", vcs_type, "_walk_major_versions", vcs_path)
 
 
@@ -143,9 +141,7 @@ def get_minor_version_info(minor_version: str) -> MinorVersion:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(
-        "Getting minor version info of type {} and args {}, {}".format(
-            vcs_type, vcs_path, minor_version
-        ),
+        f"Getting minor version info of type {vcs_type} and args {vcs_path}, {minor_version}",
         1,
     )
     return dynamic_module_function_call(
@@ -161,9 +157,8 @@ def minor_versions_diff(baseline_minor_version: str, target_minor_version: str) 
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(
-        "Showing minor version diff of type {} and args {}, {}:{}".format(
-            vcs_type, vcs_path, baseline_minor_version, target_minor_version
-        ),
+        f"Showing minor version diff of type {vcs_type} and args {vcs_path}, "
+        f"{baseline_minor_version}:{target_minor_version}",
         1,
     )
     return dynamic_module_function_call(
@@ -186,7 +181,7 @@ def get_head_major_version() -> str:
     :returns: string representation of the major version
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    perun_log.msg_to_stdout("Getting head major version of type {}".format(vcs_type), 1)
+    perun_log.msg_to_stdout(f"Getting head major version of type {vcs_type}", 1)
     return dynamic_module_function_call("perun.vcs", vcs_type, "_get_head_major_version", vcs_path)
 
 

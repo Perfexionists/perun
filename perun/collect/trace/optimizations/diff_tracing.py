@@ -56,30 +56,26 @@ def _build_registers_set():
 
     # Create Rrr, Err, rr, rL, rH variants
     for reg in reg_classes["full"]:
-        registers |= {"{}{}".format(pre, reg) for pre in reg_classes["prefix"]}
-        registers |= {"{}{}".format(reg[:1], post) for post in reg_classes["postfix"]}
+        registers |= {f"{pre}{reg}" for pre in reg_classes["prefix"]}
+        registers |= {f"{reg[:1]}{post}" for post in reg_classes["postfix"]}
 
     # Create Rrr, Err, rr, rrL variants
     for reg in reg_classes["partial"]:
-        registers |= {"{}{}".format(pre, reg) for pre in reg_classes["prefix"]}
-        registers.add("{}{}".format(reg, reg_classes["postfix"][0]))
+        registers |= {f"{pre}{reg}" for pre in reg_classes["prefix"]}
+        registers.add(f"{reg}{reg_classes['postfix'][0]}")
 
     # Add segment registers as-is
     registers |= set(reg_classes["segment"])
     # Create RIP, EIP, IP registers
-    registers |= {"{}{}".format(pre, reg_classes["ip"]) for pre in reg_classes["prefix"]}
+    registers |= {f"{pre}{reg_classes['ip']}" for pre in reg_classes["prefix"]}
     # Create 64b register variants R8-R15
     start64, end64 = reg_classes["64b-cnt"]
     for idx in range(start64, end64 + 1):
-        registers |= {
-            "{}{}{}".format(reg_classes["64b"], str(idx), post) for post in reg_classes["64b-post"]
-        }
+        registers |= {f"{reg_classes['64b']}{str(idx)}{post}" for post in reg_classes["64b-post"]}
     # Create sse and avx register variants XMM0-XMM7 / YMM0 - YMM7
     start_sse, end_sse = reg_classes["sse-cnt"]
     for idx in range(start_sse, end_sse + 1):
-        registers |= {
-            "{}{}".format(reg, str(idx)) for reg in [reg_classes["sse"], reg_classes["avx"]]
-        }
+        registers |= {f"{reg}{str(idx)}" for reg in [reg_classes["sse"], reg_classes["avx"]]}
 
     return registers
 
@@ -312,7 +308,7 @@ def _cfg_coloring(block, block_old):
         for instr, oper in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
             instr_colors = []
             op_parts = re.split(OPERANDS_SPLIT, oper)
-            instr_full = "{} ".format(instr) + "".join(_color_registers(op_parts))
+            instr_full = f"{instr} " + "".join(_color_registers(op_parts))
             stack.append((instr_full, instr_colors))
         # Sort the instruction stack to invalidate instruction reordering
         stack.sort(key=lambda inst: inst[0])

@@ -15,7 +15,7 @@ def assemble_ebpf_program(src_file, probes, config, **_):
     :param Probes probes: the probes object
     :param Configuration config: the collection configuration
     """
-    WATCH_DOG.info("Attempting to assembly the eBPF program '{}'".format(src_file))
+    WATCH_DOG.info(f"Attempting to assembly the eBPF program '{src_file}'")
 
     # Add unique probe and sampling ID to the probes
     max_id = probes.add_probe_ids()
@@ -54,7 +54,7 @@ def _add_structs_and_init(handle, probe_count, sampled_count, timed_sampling):
     """
     # Create the sampling BPF array if there are any sampled probes
     if sampled_count > 0:
-        sampling_array = "BPF_ARRAY(sampling, u32, {sampled});".format(sampled=sampled_count)
+        sampling_array = f"BPF_ARRAY(sampling, u32, {sampled_count});"
     else:
         sampling_array = "// sampling array omitted"
     # Create the timed sampling array to dynamically enable or disable records gathering
@@ -63,7 +63,7 @@ def _add_structs_and_init(handle, probe_count, sampled_count, timed_sampling):
     else:
         timed_switch = "// timed sampling switch omitted"
     # The initial program code
-    prog_init = """
+    prog_init = f"""
 #include <linux/sched.h>     // for TASK_COMM_LEN
 #include <uapi/linux/bpf_perf_event.h>
 
@@ -76,18 +76,16 @@ struct duration_data {{
 }};
 
 // BPF_ARRAY(cache, u64, 2);
-BPF_ARRAY(timestamps, u64, {probes});
-{timed_sampling}
+BPF_ARRAY(timestamps, u64, {probe_count});
+{timed_switch}
 {sampling_array}
 BPF_PERF_OUTPUT(records);
-""".format(
-        probes=probe_count, sampling_array=sampling_array, timed_sampling=timed_switch
-    )
+"""
     handle.write(prog_init)
 
 
 def _add_timed_event(handle, probe_id):
-    event_template = """
+    event_template = f"""
 int set_enabled(struct bpf_perf_event_data *ctx)
 {{
     u32 idx = 0;
@@ -112,9 +110,7 @@ int set_enabled(struct bpf_perf_event_data *ctx)
     records.perf_submit(ctx, &data, sizeof(data));
     return 0;
 }}
-""".format(
-        probe_id=probe_id
-    )
+"""
     handle.write(event_template)
 
 
@@ -124,7 +120,13 @@ def _add_entry_probe(handle, probe, timed_sampling=False):
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
     """
-    probe_template = """
+    name = (probe["name"],)
+    probe_id = (probe["id"],)
+    sampling_before = (_create_sampling_before(probe["sample"]),)
+    entry_body = (_create_entry_body(),)
+    sampling_after = (_create_sampling_after(probe["sample"]),)
+    timed_sampling = (_add_enabled_check(timed_sampling, probe["name"]),)
+    probe_template = f"""
 int entry_{name}(struct pt_regs *ctx)
 {{
 {timed_sampling}
@@ -136,14 +138,7 @@ int entry_{name}(struct pt_regs *ctx)
     
     return 0;
 }}
-""".format(
-        name=probe["name"],
-        probe_id=probe["id"],
-        sampling_before=_create_sampling_before(probe["sample"]),
-        entry_body=_create_entry_body(),
-        sampling_after=_create_sampling_after(probe["sample"]),
-        timed_sampling=_add_enabled_check(timed_sampling, probe["name"]),
-    )
+"""
     handle.write(probe_template)
 
 
@@ -153,7 +148,10 @@ def _add_exit_probe(handle, probe, timed_sampling=False):
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
     """
-    probe_template = """
+    name = (probe["name"],)
+    probe_id = (probe["id"],)
+    timed_sampling = (_add_enabled_check(timed_sampling, probe["name"]),)
+    probe_template = f"""
 int exit_{name}(struct pt_regs *ctx)
 {{
 {timed_sampling}
@@ -179,11 +177,7 @@ int exit_{name}(struct pt_regs *ctx)
     
     return 0;
 }}
-""".format(
-        name=probe["name"],
-        probe_id=probe["id"],
-        timed_sampling=_add_enabled_check(timed_sampling, probe["name"]),
-    )
+"""
     handle.write(probe_template)
 
 
@@ -193,13 +187,13 @@ def _add_single_probe(handle, probe):
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
     """
-    probe_template = """
-    int usdt_{name}(struct pt_regs *ctx)
+    probe_template = f"""
+    int usdt_{probe['name']}(struct pt_regs *ctx)
     {{
         u64 usdt_timestamp = bpf_ktime_get_ns();
 
         struct duration_data data = {{}};
-        data.id = {probe_id};
+        data.id = {probe['id']};
         data.pid = bpf_get_current_pid_tgid();
         data.entry_ns = usdt_timestamp;
         data.exit_ns = usdt_timestamp;
@@ -209,9 +203,7 @@ def _add_single_probe(handle, probe):
 
         return 0;
     }}
-""".format(
-        name=probe["name"], probe_id=probe["id"]
-    )
+"""
     handle.write(probe_template)
 
 
@@ -260,15 +252,13 @@ def _create_sampling_after(sample_value):
     """
     if sample_value == 1:
         return "   // sampling code omitted"
-    return """
+    return f"""
     }}
         
     (*sample)++;
     if (*sample == {sample_value}) {{
         (*sample) = 0;
-    }}""".format(
-        sample_value=sample_value
-    )
+    }}"""
 
 
 def _create_entry_body():

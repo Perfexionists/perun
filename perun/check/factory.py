@@ -113,9 +113,7 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
         collect_to_log = dutils.strtobool(
             str(config.lookup_key_recursively("degradation.log_collect", "false"))
         )
-        log_file = os.path.join(
-            pcs.get_log_directory(), "{}-precollect.log".format(minor_version.checksum)
-        )
+        log_file = os.path.join(pcs.get_log_directory(), f"{minor_version.checksum}-precollect.log")
         out = log_file if collect_to_log else os.devnull
         with open(out, "w") as black_hole:
             with contextlib.redirect_stdout(black_hole):
@@ -123,9 +121,7 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
                     runner.run_matrix_job([minor_version])
                 except SystemExit as system_exit:
                     log.warn(
-                        "Could not precollect data for {} minor version: {}".format(
-                            minor_version.checksum[:6], str(system_exit)
-                        )
+                        f"could not precollect data for {minor_version.checksum[:6]} version: {system_exit}"
                     )
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
@@ -263,9 +259,8 @@ def degradation_between_files(
     if not force:
         if baseline_config != target_config:
             log.error(
-                "incompatible configurations '{}' and '{}'".format(baseline_config, target_config)
-                + "\n\nPerformance check does not make sense for profiles "
-                "collected in different ways!"
+                f"incompatible configurations '{baseline_config}' and '{target_config}'\n\n"
+                f"Performance check does not make sense for profiles collected in different ways!"
             )
 
     detected_changes = [

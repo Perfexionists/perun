@@ -211,11 +211,11 @@ def check_integrity_of_runner(
     """
     runner_name = runner.__name__.split(".")[-2]
     if "profile" not in report.kwargs.keys() and report.is_ok():
-        log.warn("{} {} does not return any profile".format(runner_name, runner_type))
+        log.warn(f"{runner_name} {runner_type} does not return any profile")
 
     runner_verb = runner_type[:-2]
     if not getattr(runner, runner_verb, None):
-        log.warn("{} is missing {}() function".format(runner_name, runner_verb))
+        log.warn(f"{runner_name} is missing {runner_verb}() function")
 
 
 def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any) -> None:
@@ -226,12 +226,10 @@ def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any) -> None:
     """
     exc = kwargs["exc_val"]
     if isinstance(exc, SignalReceivedException):
-        log.warn("Received signal: {}, safe termination in process".format(exc.signum))
+        log.warn(f"Received signal: {exc.signum}, safe termination in process")
         status_report.status = status_report.error_status
         status_report.exception = exc
-        status_report.message = "received signal during teardown() phase: {} ({})".format(
-            exc.signum, str(exc)
-        )
+        status_report.message = f"received signal during teardown() phase: {exc.signum} ({exc})"
     run_phase_function(status_report, "teardown")
 
 
@@ -376,10 +374,10 @@ def run_postprocessor(
     )
 
     try:
-        postprocessor_module = get_module("perun.postprocess.{0}.run".format(postprocessor.name))
+        postprocessor_module = get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
         log.error(
-            "{} postprocessor does not exist".format(postprocessor.name),
+            f"{postprocessor.name} postprocessor does not exist",
             recoverable=True,
         )
         return PostprocessStatus.ERROR, {}
@@ -390,11 +388,11 @@ def run_postprocessor(
 
     if not postprocess_report.is_ok() or not prof:
         log.error(
-            "while postprocessing by {}: {}".format(postprocessor.name, postprocess_report.message),
+            f"while postprocessing by {postprocessor.name}: {postprocess_report.message}",
             recoverable=True,
         )
     else:
-        log.info("Successfully postprocessed data by {}".format(postprocessor.name))
+        log.info(f"Successfully postprocessed data by {postprocessor.name}")
 
     return cast(PostprocessStatus, postprocess_report.status), prof
 
@@ -412,7 +410,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     streams.store_json(full_profile.serialize(), full_profile_path)
     # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
-    log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
+    log.info(f"stored profile at: {os.path.relpath(full_profile_path)}")
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get("origin", vcs.get_minor_head())
@@ -468,7 +466,7 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
     phase_key = ".".join(["execute", phase]) if not phase.startswith("execute") else phase
     cmds = pcs.local_config().safe_get(phase_key, [])
     if cmds:
-        log.cprint("Running '{}' phase".format(phase), phase_colour)
+        log.cprint(f"Running '{phase}' phase", phase_colour)
         log.newline()
         try:
             utils.run_safely_list_of_commands(cmds)
@@ -477,9 +475,8 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
             error_code = exception.returncode
             error_output = exception.output
             log.error(
-                "error during {} phase while running '{}' exited with: {} ({})".format(
-                    phase, error_command, error_code, error_output
-                )
+                f"error during {phase} phase while running '{error_command}';"
+                f" exited with: {error_code} ({error_output})"
             )
 
 

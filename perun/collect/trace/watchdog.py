@@ -63,11 +63,11 @@ class Watchdog:
         self.pid = pid
         self.timestamp = timestamp
         self.logfile = os.path.join(
-            pcs.get_log_directory(), "trace", "trace_{}_{}.txt".format(timestamp, pid)
+            pcs.get_log_directory(), "trace", f"trace_{timestamp}_{pid}.txt"
         )
 
         # Get the logger object and disable propagation to the root logger
-        self.__logger = logging.getLogger("trace_wd.{}.{}".format(timestamp, pid))
+        self.__logger = logging.getLogger(f"trace_wd.{timestamp}.{pid}")
         self.__logger.propagate = False
 
         # Prepare the directory for trace logs if it does not exist yet
@@ -85,7 +85,7 @@ class Watchdog:
         self.__logger.addHandler(console_handler)
 
         # Log the initial message
-        self.info("Watchdog successfully started for trace PID '{}'.".format(pid))
+        self.info(f"Watchdog successfully started for trace PID '{pid}'.")
 
     def end_session(self, zipper=None):
         """End the current watchdog session and optionally zip the log file.
@@ -94,7 +94,7 @@ class Watchdog:
         """
         # Terminate the session only if it's running
         if self.__enabled:
-            self.info("Watchdog successfully terminated for trace PID '{}'.".format(self.pid))
+            self.info(f"Watchdog successfully terminated for trace PID '{self.pid}'.")
             self.__enabled = False
         # Optionally pack the file and remove it from the file system
         if zipper.pack is not None:
@@ -179,16 +179,10 @@ class Watchdog:
             return
 
         self.info(
-            "SystemTap script '{}', size '{}'".format(
-                script, utils.format_file_size(os.stat(script).st_size)
-            )
+            f"SystemTap script '{script}', size '{utils.format_file_size(os.stat(script).st_size)}'"
         )
-        self.info(
-            "Number of function locations: '{}', usdt locations: '{}'".format(
-                func_count, usdt_count
-            )
-        )
-        self.info("Number of probe points in the script: '{}'".format(_count_script_probes(script)))
+        self.info(f"Number of function locations: '{func_count}', usdt locations: '{usdt_count}'")
+        self.info(f"Number of probe points in the script: '{_count_script_probes(script)}'")
 
     def log_resources(self, processes, modules):
         """Logs the SystemTap and perun related resources that are being used on the system,

@@ -49,7 +49,7 @@ class Comparable(Protocol):
         pass
 
 
-from .log import error, cprint, cprintln
+from .log import error, cprint, cprintln, info
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 
@@ -318,10 +318,10 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
     :raise subprocess.CalledProcessError: when there is an error in any of the commands
     """
     for cmd in cmd_list:
-        print(">", cmd)
+        info(">", cmd)
         out, err = run_safely_external_command(cmd)
         if out:
-            print(out.decode("utf-8"), end="")
+            info(out.decode("utf-8"), end="")
         if err:
             cprint(err.decode("utf-8"), "red")
 
@@ -413,9 +413,7 @@ def get_supported_module_names(package: str) -> list[str]:
     :return: list of names of supported modules for the given package
     """
     if package not in ("vcs", "collect", "postprocess", "view"):
-        error(
-            "trying to call get_supported_module_names with incorrect package '{}'".format(package)
-        )
+        error(f"trying to call get_supported_module_names with incorrect package '{package}'")
     return {
         "vcs": ["git"],
         "collect": ["trace", "memory", "time", "complexity", "bounds"],

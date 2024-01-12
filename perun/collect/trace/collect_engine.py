@@ -119,7 +119,7 @@ class CollectEngine(ABC):
         """
         return os.path.join(
             self.files_dir,
-            "collect_{}_{}_{}{}".format(name, self.timestamp, self.pid, suffix),
+            f"collect_{name}_{self.timestamp}_{self.pid}{suffix}",
         )
 
     @staticmethod
@@ -130,7 +130,7 @@ class CollectEngine(ABC):
         """
         for path in paths:
             temp.touch_temp_file(path, protect=True)
-            WATCH_DOG.debug("Temporary file '{}' successfully created".format(path))
+            WATCH_DOG.debug(f"Temporary file '{path}' successfully created")
 
     def _finalize_collect_files(self, files, keep_temps, zip_temps):
         """Zip and delete the temporary collect files.
@@ -142,7 +142,7 @@ class CollectEngine(ABC):
         pack_name = os.path.join(
             get_log_directory(),
             "trace",
-            "collect_files_{}_{}.zip.lzma".format(self.timestamp, self.pid),
+            f"collect_files_{self.timestamp}_{self.pid}.zip.lzma",
         )
         with Zipper(zip_temps, pack_name) as temp_pack:
             for file_name in files:
@@ -152,7 +152,7 @@ class CollectEngine(ABC):
                     temp_pack.write(file, os.path.basename(file))
                     if not keep_temps:
                         temp.delete_temp_file(file, force=True)
-                        WATCH_DOG.debug("Temporary file '{}' deleted".format(file))
+                        WATCH_DOG.debug(f"Temporary file '{file}' deleted")
                     setattr(self, file_name, None)
             WATCH_DOG.end_session(temp_pack)
 
@@ -176,11 +176,9 @@ class CollectEngine(ABC):
         # Attempt to terminate the process if it's still running
         if proc.poll() is None:
             WATCH_DOG.debug(
-                "Attempting to terminate the '{}' subprocess with PID '{}'".format(
-                    proc_name, proc.pid
-                )
+                f"Attempting to terminate the '{proc_name}' subprocess with PID '{proc.pid}'"
             )
-            utils.run_safely_external_command("sudo kill -{} {}".format(SIGINT, proc.pid), False)
+            utils.run_safely_external_command(f"sudo kill -{SIGINT} {proc.pid}", False)
             # The wait is needed to get rid of the resulting zombie process
             try:
                 proc.wait(timeout=CLEANUP_TIMEOUT)
@@ -188,6 +186,6 @@ class CollectEngine(ABC):
             except TimeoutExpired:
                 # However the process hasn't terminated, report to the user
                 WATCH_DOG.warn(
-                    "Failed to terminate the '{}' subprocess with PID '{}', "
-                    "manual termination is advised".format(proc_name, proc.pid)
+                    f"Failed to terminate the '{proc_name}' subprocess with PID '{proc.pid}', "
+                    "manual termination is advised"
                 )

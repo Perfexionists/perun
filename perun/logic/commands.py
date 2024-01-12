@@ -72,7 +72,7 @@ def config_get(store_type: str, key: str) -> None:
         value = perun_config.lookup_key_recursively(key)
     else:
         value = config_store.get(key)
-    perun_log.info("{}: {}".format(key, value))
+    perun_log.info(f"{key}: {value}")
 
 
 def config_set(store_type: str, key: str, value: Any) -> None:
@@ -85,7 +85,7 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     config_store.set(key, value)
-    perun_log.info("Value '{1}' set for key '{0}'".format(key, value))
+    perun_log.info(f"Value '{value}' set for key '{key}'")
 
 
 def config_edit(store_type: str) -> None:
@@ -114,19 +114,17 @@ def config_reset(store_type: str, config_template: str) -> None:
     :param str config_template: name of the template that we are resetting to
     :raises NotPerunRepositoryException: raised when we are outside of any perun scope
     """
-    if store_type in ("shared", "global"):
+    is_shared_config = store_type in ("shared", "global")
+    if is_shared_config:
         shared_location = perun_config.lookup_shared_config_dir()
         perun_config.init_shared_config_at(shared_location)
     else:
         vcs_url, vcs_type = pcs.get_vcs_type_and_url()
         vcs_config = {"vcs": {"url": vcs_url, "type": vcs_type}}
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
-    perun_log.info(
-        "{} configuration reset{}".format(
-            "global" if store_type in ("shared", "global") else "local",
-            f" to {config_template}" if store_type not in ("shared", "global") else "",
-        )
-    )
+    perun_log.info(f"{'global' if is_shared_config else 'local'} configuration reset")
+    if not is_shared_config:
+        perun_log.info(f" to {config_template}")
 
 
 def init_perun_at(
@@ -164,7 +162,7 @@ def init_perun_at(
 
     # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
-    perun_log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
+    perun_log.msg_to_stdout(msg_prefix + f" Perun repository in {perun_path}", 0)
 
 
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
@@ -178,8 +176,6 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     :param str configuration_template: name of the template that will be used for initialization
         of local configuration
     """
-    perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
-
     # First init the wrapping repository well
     vcs_type = kwargs["vcs_type"]
     vcs_path = kwargs["vcs_path"] or dst
@@ -193,7 +189,7 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
         super_perun_dir = helpers.locate_perun_dir_on(dst)
         is_pcs_reinitialized = super_perun_dir == dst
         if not is_pcs_reinitialized:
-            perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
+            perun_log.warn(f"There exists super perun directory at {super_perun_dir}")
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 
@@ -203,9 +199,9 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     # himself and fix it in the config. Note that this decision was made after tagit design,
     # where one needs to further adjust some options in initialized directory.
     if vcs_type and not vcs.init(vcs_params):
-        err_msg = "Could not initialize empty {0} repository at {1}.\n".format(vcs_type, vcs_path)
-        err_msg += "Either reinitialize perun with 'perun init' or initialize {0} repository"
-        err_msg += "manually and fix the path to vcs in 'perun config --edit'"
+        err_msg = f"Could not initialize empty {vcs_type} repository at {vcs_path}.\n"
+        err_msg += f"Either reinitialize perun with 'perun init' or initialize {vcs_type}"
+        err_msg += "repository manually and fix the path to vcs in 'perun config --edit'"
         perun_log.error(err_msg)
 
 
@@ -238,12 +234,8 @@ def add(
         unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile["origin"] != minor_version:
-            error_msg = "cannot add profile '{}' to minor index of '{}':".format(
-                profile_name, minor_version
-            )
-            error_msg += "profile originates from minor version '{}'".format(
-                unpacked_profile["origin"]
-            )
+            error_msg = f"cannot add profile '{profile_name}' to minor index of '{minor_version}':"
+            error_msg += f"profile originates from minor version '{unpacked_profile['origin']}'"
             perun_log.error(error_msg, recoverable=True)
             continue
 
@@ -252,9 +244,7 @@ def add(
         str_profile_content = profile.to_string(unpacked_profile)
 
         # Append header to the content of the file
-        header = "profile {} {}\0".format(
-            unpacked_profile["header"]["type"], len(str_profile_content)
-        )
+        header = f"profile {unpacked_profile['header']['type']} {len(str_profile_content)}\0"
         profile_content = (header + str_profile_content).encode("utf-8")
 
         # Transform to internal representation - file as sha1 checksum and content packed with zlib
@@ -279,12 +269,10 @@ def add(
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
         perun_log.error(
-            "could not register {} in index: {} failed".format(
-                helpers.str_to_plural(added_profile_count, "profile"),
-                added_profile_count - profile_names_len,
-            )
+            f"could not register {helpers.str_to_plural(added_profile_count, 'profile')}"
+            f" in index: {added_profile_count - profile_names_len} failed"
         )
-    perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
+    perun_log.info(f"successfully registered {added_profile_count} profiles in index")
 
 
 @vcs.lookup_minor_version
@@ -317,11 +305,11 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
 
     if removed_profile_number:
         result_string = perun_log.in_color(
-            "{}".format(helpers.str_to_plural(removed_profile_number, "profile")),
+            f"{helpers.str_to_plural(removed_profile_number, 'profile')}",
             "white",
             ["bold"],
         )
-        perun_log.info("successfully removed {} from pending jobs".format(result_string))
+        perun_log.info(f"successfully removed {result_string} from pending jobs")
 
 
 def calculate_profile_numbers_per_type(
@@ -353,21 +341,18 @@ def print_profile_numbers(
     :param str line_ending: ending of the print (for different outputs of log and status)
     """
     if profile_numbers["all"]:
-        print("{0[all]} {1} profiles (".format(profile_numbers, profile_types), end="")
+        perun_log.info(f"{profile_numbers['all']} {profile_types} profiles (", end="")
         first_printed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
             if not profile_numbers[profile_type]:
                 continue
-            print(", " if first_printed else "", end="")
+            perun_log.info(", " if first_printed else "", end="")
             first_printed = True
             type_colour = PROFILE_TYPE_COLOURS[profile_type]
-            cprint(
-                "{0} {1}".format(profile_numbers[profile_type], profile_type),
-                type_colour,
-            )
-        print(")", end=line_ending)
+            cprint(f"{profile_numbers[profile_type]} {profile_type}", type_colour)
+        perun_log.info(")", end=line_ending)
     else:
-        cprintln("(no {} profiles)".format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
+        cprintln(f"(no {profile_types} profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
 
 def turn_off_paging_wrt_config(paged_function: str) -> bool:
@@ -458,11 +443,7 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
     else:
         # Walk the minor versions and print them
         for minor in vcs.walk_minor_versions(minor_version):
-            cprintln(
-                "Minor Version {}".format(minor.checksum),
-                TEXT_EMPH_COLOUR,
-                attrs=TEXT_ATTRS,
-            )
+            cprintln(f"Minor Version {minor.checksum}", TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
             tracked_profiles = index.get_profile_number_for_minor(base_dir, minor.checksum)
             print_profile_numbers(tracked_profiles, "tracked")
@@ -759,9 +740,11 @@ def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) 
     :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
-    perun_log.info("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
+    perun_log.info(
+        f"Author: {head_minor_version.author} <{head_minor_version.email}> {head_minor_version.date}"
+    )
     for parent in head_minor_version.parents:
-        perun_log.info("Parent: {}".format(parent))
+        perun_log.info(f"Parent: {parent}")
     perun_log.info("")
     indented_desc = "\n".join(
         map(lambda line: " " * (indent * 4) + line, head_minor_version.desc.split("\n"))
@@ -793,9 +776,7 @@ def print_other_formatting_string(
     # Check if encountered incorrect token in the formatting string
     if not hasattr(info_object, info_attr):
         perun_log.error(
-            "invalid formatting string '{}': object does not contain '{}' attribute".format(
-                fmt_string, info_attr
-            )
+            f"invalid formatting string '{fmt_string}': object does not contain '{info_attr}' attribute"
         )
 
     # Obtain the value for the printing
@@ -804,7 +785,7 @@ def print_other_formatting_string(
 
     # Print the actual token
     if info_attr == "type":
-        cprint("[{}]".format(info_value), PROFILE_TYPE_COLOURS[raw_value])
+        cprint(f"[{info_value}]", PROFILE_TYPE_COLOURS[raw_value])
     else:
         cprint(info_value, colour)
 
@@ -934,7 +915,7 @@ def print_status_profiles(
     for profile_no, profile_info in enumerate(profiles):
         perun_log.info(" ", end="")
         cprint(
-            "{}@{}".format(profile_no, list_config.id_char).rjust(list_config.id_width + 2, " "),
+            f"{profile_no}@{list_config.id_char}".rjust(list_config.id_width + 2, " "),
             list_config.colour,
         )
         perun_log.info(" ", end="")
@@ -1112,13 +1093,12 @@ def status(short: bool = False, **_: Any) -> None:
 
     # Print the status of major head.
     perun_log.info(
-        "On major version {} ".format(perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)),
-        end="",
+        f"On major version {perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)} ", end=""
     )
 
     # Print the index of the current head
     perun_log.info(
-        "(minor version: {})".format(perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS))
+        f"(minor version: {perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)})"
     )
 
     # Print in long format, the additional information about head commit, by default print
@@ -1246,19 +1226,19 @@ def print_formatted_temp_files(
         # Print the size of each file
         if show_size:
             perun_log.info(
-                "{}".format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
+                f"{perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)}",
                 end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
             )
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
                 perun_log.info(
-                    "{}".format(temp.UNPROTECTED),
+                    f"{temp.UNPROTECTED}",
                     end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
                 )
             else:
                 perun_log.info(
-                    "{}  ".format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                    f"{perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)}  ",
                     end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
                 )
 
@@ -1267,8 +1247,8 @@ def print_formatted_temp_files(
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            perun_log.info("{}".format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end="")
-        perun_log.info("{}".format(os.path.basename(file_name)))
+            perun_log.info(f"{perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)}", end="")
+        perun_log.info(f"{os.path.basename(file_name)}")
 
 
 def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) -> None:
@@ -1294,9 +1274,7 @@ def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) 
         # The supplied path does not exist, inform the user so they can correct the path
         else:
             perun_log.warn(
-                "The supplied path '{}' does not exist, no files deleted".format(
-                    temp.temp_path(path)
-                )
+                f"The supplied path '{temp.temp_path(path)}' does not exist, no files deleted"
             )
     except (InvalidTempPathException, ProtectedTempException) as exc:
         # Invalid path or protected files encountered
@@ -1385,9 +1363,8 @@ def _print_total_size(total_size: int, enabled: bool) -> None:
     if enabled:
         formated_total_size = utils.format_file_size(total_size)
         perun_log.info(
-            "Total size of all the displayed files / directories: {}".format(
-                perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)
-            )
+            f"Total size of all the displayed files / directories: "
+            f"{perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)}"
         )
 
 

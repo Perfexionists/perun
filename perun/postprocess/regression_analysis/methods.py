@@ -9,6 +9,7 @@ import collections
 
 from typing import Any, Optional, Iterator, Protocol
 
+import perun.utils.log as log
 import perun.postprocess.regression_analysis.regression_models as mod
 import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
@@ -56,8 +57,8 @@ def compute(
                 result["method"] = method
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as exc:
-            print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
-            print("  - " + str(exc))
+            log.info(f"unable to perform regression analysis on function '{chunk[2]}'.")
+            log.info(f"  - {exc}")
     # Compute the derived models
     for der in compute_derived(derived, analysis, **kwargs):
         analysis.append(der)
@@ -456,7 +457,7 @@ def _transform_to_output_data(
     # Transform the coefficients
     transformed["coeffs"] = []
     for idx, coeff in enumerate(data["coeffs"]):
-        transformed["coeffs"].append({"name": "b{0}".format(idx), "value": coeff})
+        transformed["coeffs"].append({"name": f"b{idx}", "value": coeff})
 
     return transformed
 

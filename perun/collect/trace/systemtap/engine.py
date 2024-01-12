@@ -74,7 +74,7 @@ class SystemTapEngine(engine.CollectEngine):
         self.lock_binary = ResourceLock(LockType.Binary, binary_name, self.pid, self.locks_dir)
         self.lock_stap = ResourceLock(
             LockType.SystemTap,
-            "process_{}".format(binary_name),
+            f"process_{binary_name}",
             self.pid,
             self.locks_dir,
         )
@@ -127,9 +127,7 @@ class SystemTapEngine(engine.CollectEngine):
         # Open the log file for collection
         with open(self.log, "w") as logfile:
             # Assemble the SystemTap command and log it
-            stap_cmd = "sudo stap -g --suppress-time-limits -s5 -v {} -o {}".format(
-                self.script, self.data
-            )
+            stap_cmd = f"sudo stap -g --suppress-time-limits -s5 -v {self.script} -o {self.data}"
             compile_cmd = stap_cmd
             if config.stap_cache_off:
                 compile_cmd += " --poison-cache"
@@ -203,7 +201,7 @@ class SystemTapEngine(engine.CollectEngine):
         ) as compilation_process:
             # Store the compilation process object and wait for the compilation to finish
             self.stap_compile = compilation_process
-            WATCH_DOG.debug("Compilation process: '{}'".format(compilation_process.pid))
+            WATCH_DOG.debug(f"Compilation process: '{compilation_process.pid}'")
             _wait_for_script_compilation(logfile.name, compilation_process)
             # The SystemTap seems to print the resulting kernel module into stdout
             # However this may not be universal behaviour so a backup method should be available
@@ -236,7 +234,7 @@ class SystemTapEngine(engine.CollectEngine):
         # The kernel module name has the following format: 'modulename_PID'
         # The first group contains just the PID-independent module name
         self.stap_module = match.group(1)
-        WATCH_DOG.debug("Compiled kernel module name: '{}'".format(self.stap_module))
+        WATCH_DOG.debug(f"Compiled kernel module name: '{self.stap_module}'")
         # Lock the kernel module
         self.lock_module = ResourceLock(LockType.Module, self.stap_module, self.pid, self.locks_dir)
         self.lock_module.lock()
@@ -258,7 +256,7 @@ class SystemTapEngine(engine.CollectEngine):
             {"proc_name": "stap_collect"},
         ) as collect_process:
             self.stap_collect = collect_process
-            WATCH_DOG.debug("Collection process: '{}'".format(collect_process.pid))
+            WATCH_DOG.debug(f"Collection process: '{collect_process.pid}'")
             _wait_for_systemtap_startup(logfile.name, collect_process)
             WATCH_DOG.info("SystemTap collection process is up and running.")
             self._fetch_stapio_pid()
@@ -270,12 +268,12 @@ class SystemTapEngine(engine.CollectEngine):
         """
         # In kernel, the module name is appended with the stapio process PID
         # Scan the running processes for the stapio process and filter out the grep itself
-        proc = _extract_processes('ps -eo {} | grep "[s]tapio.*{}"'.format(PS_FORMAT, self.data))
+        proc = _extract_processes(f'ps -eo {PS_FORMAT} | grep "[s]tapio.*{self.data}"')
         # Check the results - there should be only one result
         if proc:
             if len(proc) != 1:
                 # This shouldn't ever happen
-                WATCH_DOG.debug("Multiple stapio processes found: '{}'".format(proc))
+                WATCH_DOG.debug(f"Multiple stapio processes found: '{proc}'")
             # Store the PID of the first record
             self.stapio = proc[0][0]
         else:
@@ -293,10 +291,9 @@ class SystemTapEngine(engine.CollectEngine):
 
             :param str data_file: the name of the output data file
             """
+            data_size = utils.format_file_size(os.stat(data_file).st_size)
             WATCH_DOG.info(
-                "Command execution status update, collected raw data size so far: {}".format(
-                    utils.format_file_size(os.stat(data_file).st_size)
-                )
+                f"Command execution status update, collected raw data size so far: {data_size}"
             )
 
         # Set the process pipes according to the selected output handling mode
@@ -308,9 +305,7 @@ class SystemTapEngine(engine.CollectEngine):
             profiled_args = dict(stderr=STDOUT, stdout=PIPE, bufsize=1)
 
         # Start the profiled command
-        WATCH_DOG.info(
-            "Launching the profiled command '{}'".format(self.executable.to_escaped_string())
-        )
+        WATCH_DOG.info(f"Launching the profiled command '{self.executable.to_escaped_string()}'")
 
         with utils.nonblocking_subprocess(
             self.executable.to_escaped_string(),
@@ -321,7 +316,7 @@ class SystemTapEngine(engine.CollectEngine):
             metrics.start_timer("command_time")
             # Store the command process
             self.profiled_command = profiled
-            WATCH_DOG.debug("Profiled command process: '{}'".format(profiled.pid))
+            WATCH_DOG.debug(f"Profiled command process: '{profiled.pid}'")
             # Start the periodic thread so that the user is periodically updated about the progress
             with PeriodicThread(HEARTBEAT_INTERVAL, _heartbeat_command, [self.data]):
                 if config.output_handling == OutputHandling.CAPTURE:
@@ -332,9 +327,7 @@ class SystemTapEngine(engine.CollectEngine):
                     profiled.wait(timeout=config.timeout)
                 except TimeoutExpired:
                     WATCH_DOG.info(
-                        "The profiled command has reached a timeout after {}s.".format(
-                            config.timeout
-                        )
+                        f"The profiled command has reached a timeout after {config.timeout}s."
                     )
 
         metrics.end_timer("command_time")
@@ -359,7 +352,7 @@ class SystemTapEngine(engine.CollectEngine):
             # Fetch all processes that are still running and their PPID is tied to either the
             # perun process itself or to the known spawned processes
             pids = [proc.pid for proc in procs if proc is not None] + [self.pid]
-            extractor = "ps -o {} --ppid {}".format(PS_FORMAT, ",".join(map(str, pids)))
+            extractor = f"ps -o {PS_FORMAT} --ppid {','.join(map(str, pids))}"
             extracted_procs = _extract_processes(extractor)
             WATCH_DOG.log_variable("cleanup::extracted_processes", extracted_procs)
 
@@ -367,7 +360,7 @@ class SystemTapEngine(engine.CollectEngine):
             if extracted_procs:
                 WATCH_DOG.warn("Found still running spawned processes:")
                 for proc_pid, _, _, cmd in extracted_procs:
-                    WATCH_DOG.warn(" PID {}: '{}'".format(proc_pid, cmd))
+                    WATCH_DOG.warn(f" PID {proc_pid}: '{cmd}'")
         finally:
             # Make sure that whatever happens, the locks are released
             # The locks shouldn't be None since they were created in __init__
@@ -385,11 +378,11 @@ class SystemTapEngine(engine.CollectEngine):
                 return
 
             # Form the module name which consists of the base module name and stapio PID
-            module_name = "{}__{}".format(self.stap_module, self.stapio)
+            module_name = f"{self.stap_module}__{self.stapio}"
             # Attempts to unload the module
-            utils.run_safely_external_command("sudo rmmod {}".format(module_name), False)
+            utils.run_safely_external_command(f"sudo rmmod {module_name}", False)
             if not _wait_for_resource_release(_loaded_stap_kernel_modules, [module_name]):
-                WATCH_DOG.debug("Unloading the kernel module '{}' failed".format(module_name))
+                WATCH_DOG.debug(f"Unloading the kernel module '{module_name}' failed")
         finally:
             # Always unlock the module
             if self.lock_module is not None:
@@ -407,7 +400,7 @@ def _extract_usdt_probes(binary):
     :return str: the decoded standard output
     """
     out, _ = utils.run_safely_external_command(
-        'sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False
+        f'sudo stap -l \'process("{binary}").mark("*")\'', False
     )
     return out.decode("utf-8")
 
@@ -491,7 +484,7 @@ def _wait_for_script_compilation(logfile, stap_process):
                 return
             else:
                 # The stap process terminated with non-zero code which means failure
-                WATCH_DOG.debug("SystemTap build process failed with exit code '{}'".format(status))
+                WATCH_DOG.debug(f"SystemTap build process failed with exit code '{status}'")
                 raise SystemTapScriptCompilationException(logfile, status)
 
 
@@ -519,9 +512,7 @@ def _wait_for_systemtap_startup(logfile, stap_process):
             # Otherwise wait a bit before the next check
             time.sleep(LOG_WAIT)
         else:
-            WATCH_DOG.debug(
-                "SystemTap collection process failed with exit code '{}'".format(status)
-            )
+            WATCH_DOG.debug(f"SystemTap collection process failed with exit code '{status}'")
             raise SystemTapStartupException(logfile)
 
 
@@ -561,8 +552,9 @@ def _heartbeat_stap(logfile, phase):
     :param str phase: the SystemTap phase (compilation or collection)
     """
     # Report log line count and the last record
-    WATCH_DOG.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
-    WATCH_DOG.info("'{}' ; '{}'".format(*_get_last_line_of(logfile, FileSize.SHORT)))
+    WATCH_DOG.info(f"{phase} status update: 'log lines count' ; 'last log line'")
+    lineno, line = _get_last_line_of(logfile, FileSize.SHORT)
+    WATCH_DOG.info(f"'{lineno}' ; '{line}'")
 
 
 def _extract_processes(extract_command):
@@ -607,7 +599,7 @@ def _loaded_stap_kernel_modules(module=None):
     """
     # Build the extraction command
     module_filter = "stap_" if module is None else module
-    extractor = "lsmod | grep {} | awk '{{print $1}}'".format(module_filter)
+    extractor = f"lsmod | grep {module_filter} | awk '{{print $1}}'"
 
     # Run the command and save the found modules
     out, _ = utils.run_safely_external_command(extractor, False)
@@ -677,7 +669,7 @@ def _check_used_resources(locks_dir):
     active_locks = get_active_locks_for(
         locks_dir, resource_types=[LockType.Module, LockType.SystemTap]
     )
-    processes = _extract_processes('ps -eo {} | awk \'$4" "$5 == "sudo stap"\''.format(PS_FORMAT))
+    processes = _extract_processes(f'ps -eo {PS_FORMAT} | awk \'$4" "$5 == "sudo stap"\'')
     modules = _loaded_stap_kernel_modules()
 
     # Partition the locks into Systemtap and module locks

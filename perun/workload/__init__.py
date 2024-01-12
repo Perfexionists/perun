@@ -47,17 +47,15 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
             warnings.append("incorrect workload specification: missing 'id' or 'type'")
             log.info("F", end="")
             continue
-        generator_module = "perun.workload.{}_generator".format(spec["type"].lower())
-        constructor_name = "{}Generator".format(spec["type"].title())
+        generator_module = f"perun.workload.{spec['type'].lower()}_generator"
+        constructor_name = f"{spec['type'].title()}Generator"
         try:
             constructor = getattr(utils.get_module(generator_module), constructor_name)
             spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
             log.info(".", end="")
         except (ImportError, AttributeError):
             warnings.append(
-                "incorrect workload generator '{}': '{}' is not valid workload type".format(
-                    spec["id"], spec["type"]
-                )
+                f"incorrect workload generator '{spec['id']}': '{spec['type']}' is not valid workload type"
             )
             log.info("F", end="")
 

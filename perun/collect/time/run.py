@@ -37,12 +37,12 @@ def collect(
     for timing in range(0, warmup):
         command = " ".join(["time -p", str(executable)]).split(" ")
         utils.get_stdout_from_external_command(command).split("\n")
-        print(".", end="")
+        log.info(".", end="")
         sys.stdout.flush()
     log.newline()
 
     log.info(
-        "Begin timing of {} {}".format(executable.cmd, helpers.str_to_plural(repeat, "time")),
+        f"Begin timing of {executable.cmd} {helpers.str_to_plural(repeat, 'time')}",
         end="",
     )
     times = []

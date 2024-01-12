@@ -98,24 +98,20 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
     job_params = complexity_collect_job[5]["collector_params"]["complexity"]
 
-    files = [
-        "-f{}".format(os.path.abspath(os.path.join(script_dir, file)))
-        for file in job_params["files"]
-    ]
-    rules = ["-r{}".format(rule) for rule in job_params["rules"]]
+    files = [f"-f{os.path.abspath(os.path.join(script_dir, file))}" for file in job_params["files"]]
+    rules = [f"-r{rule}" for rule in job_params["rules"]]
     samplings = sum(
-        [["-s {}".format(sample["func"]), sample["sample"]] for sample in job_params["sampling"]],
-        [],
+        [[f"-s {sample['func']}", sample["sample"]] for sample in job_params["sampling"]], []
     )
     runner = CliRunner()
     result = runner.invoke(
         cli.collect,
         [
-            "-c{}".format(job_params["target_dir"]),
+            f"-c{job_params['target_dir']}",
             "-a test",
             "-w input",
             "complexity",
-            "-t{}".format(job_params["target_dir"]),
+            f"-t{job_params['target_dir']}",
         ]
         + files
         + rules
@@ -132,14 +128,10 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
             " >(std::remove_reference<std::tuple<int&&> >::type&)"
         ),
     ]
-    rules.extend(["-r{}".format(rule) for rule in more_rules])
+    rules.extend([f"-r{rule}" for rule in more_rules])
     result = runner.invoke(
         cli.collect,
-        [
-            "-c{}".format(job_params["target_dir"]),
-            "complexity",
-            "-t{}".format(job_params["target_dir"]),
-        ]
+        [f"-c{job_params['target_dir']}", "complexity", f"-t{job_params['target_dir']}"]
         + files
         + rules
         + samplings,
@@ -166,14 +158,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
     job_params = complexity_collect_job[5]["collector_params"]["complexity"]
 
-    files = [
-        "-f{}".format(os.path.abspath(os.path.join(script_dir, file)))
-        for file in job_params["files"]
-    ]
-    rules = ["-r{}".format(rule) for rule in job_params["rules"]]
+    files = [f"-f{os.path.abspath(os.path.join(script_dir, file))}" for file in job_params["files"]]
+    rules = [f"-r{rule}" for rule in job_params["rules"]]
     samplings = sum(
-        [["-s {}".format(sample["func"]), sample["sample"]] for sample in job_params["sampling"]],
-        [],
+        [[f"-s {sample['func']}", sample["sample"]] for sample in job_params["sampling"]], []
     )
 
     # prepare the runner
@@ -184,13 +172,13 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "--target-dir parameter must be supplied" in result.output)
 
-    result = runner.invoke(cli.collect, ["complexity", "-t{}".format(job_params["target_dir"])])
+    result = runner.invoke(cli.collect, ["complexity", f"-t{job_params['target_dir']}"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "--files parameter must be supplied" in result.output)
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), "job.yml")
-    result = runner.invoke(cli.collect, ["complexity", "-t{}".format(invalid_target)])
+    result = runner.invoke(cli.collect, ["complexity", f"-t{invalid_target}"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "already exists" in result.output)
 
@@ -203,11 +191,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
 
     monkeypatch.setattr(utils, "run_external_command", _mocked_external_command)
     command = (
-        [
-            "-c{}".format(job_params["target_dir"]),
-            "complexity",
-            "-t{}".format(job_params["target_dir"]),
-        ]
+        [f"-c{job_params['target_dir']}", "complexity", f"-t{job_params['target_dir']}"]
         + files
         + rules
         + samplings
@@ -353,7 +337,7 @@ def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collec
 
     # Try running memory from CLI
     runner = CliRunner()
-    result = runner.invoke(cli.collect, ["-c{}".format(job.executable.cmd), "memory"])
+    result = runner.invoke(cli.collect, [f"-c{job.executable.cmd}", "memory"])
     assert result.exit_code == 0
 
 

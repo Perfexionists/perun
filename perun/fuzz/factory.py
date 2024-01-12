@@ -450,8 +450,8 @@ def perform_baseline_coverage_testing(
         log.done()
     except TimeoutExpired:
         log.error(
-            "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
-            " option --hang-timeout, resp. -h.".format(config.hang_timeout)
+            f"Timeout ({config.hang_timeout}s) reached when testing with initial files. "
+            f"Adjust hang timeout using option --hang-timeout, resp. -h."
         )
     return base_cov
 
@@ -562,9 +562,7 @@ def run_fuzzing_for_command(
                     except TimeoutExpired:
                         fuzz_progress.stats["hangs"] += 1
                         log.warn(
-                            "Timeout ({}s) reached when testing. See {}.".format(
-                                config.hang_timeout, output_dirs["hangs"]
-                            )
+                            f"Timeout ({config.hang_timeout}s) reached when testing. See {output_dirs['hangs']}."
                         )
                         mutation.path = filesystem.move_file_to(mutation.path, output_dirs["hangs"])
                         fuzz_progress.hangs.append(mutation)
@@ -615,7 +613,7 @@ def run_fuzzing_for_command(
                     process_successful_mutation(mutation, parents, fuzz_progress, rule_set, config)
             # temporarily we ignore error within individual perf testing without previous cov test
             except Exception as exc:
-                log.warn("Executing binary raised an exception: {}".format(exc))
+                log.warn(f"Executing binary raised an exception: {exc}")
 
             # in case of testing with coverage, parent will not be removed but used for mutation
             if not successful_result and not config.coverage_testing:

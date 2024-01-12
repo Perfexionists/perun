@@ -84,9 +84,9 @@ def assert_tracked_overview_info(tracked_profiles_info, stored_profiles):
     number_of_profiles = len(stored_profiles)
     if number_of_profiles:
         types_to_counts = analyze_profile_pool(stored_profiles)
-        assert "{} tracked profiles".format(number_of_profiles) in tracked_profiles_info
+        assert f"{number_of_profiles} tracked profiles" in tracked_profiles_info
         for profile_type, type_count in types_to_counts.items():
-            assert "{} {}".format(type_count, profile_type) in tracked_profiles_info
+            assert f"{type_count} {profile_type}" in tracked_profiles_info
     else:
         assert "(no tracked profiles)" in tracked_profiles_info
 
@@ -100,7 +100,7 @@ def assert_untracked_overview_info(untracked_profiles_info, untracked_profiles):
     """
     number_of_untracked = len(untracked_profiles)
     if number_of_untracked:
-        assert "{} untracked profiles".format(number_of_untracked) in untracked_profiles_info
+        assert f"{number_of_untracked} untracked profiles" in untracked_profiles_info
     else:
         assert "(no untracked profiles)" in untracked_profiles_info
 
