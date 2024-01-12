@@ -111,7 +111,7 @@ as follows::
 In case you run in some unexpected behaviour, error or anything suspicious, either contact us
 directly through mail or `create a new Issue`_.
 
-.. _create a new Issue: https://github.com/tfiedor/perun/issues/new
+.. _create a new Issue: https://github.com/Perfexionists/perun/issues/new
 
 Lifetime of a profile
 ---------------------
@@ -246,8 +246,8 @@ Namely, in we are exploring the following possible features into Perun:
 Overview of Customization
 -------------------------
 
-.. _upstream: https://github.com/tfiedor/perun
-.. _send us PR: https://github.com/tfiedor/perun/pull/new/develop
+.. _upstream: https://github.com/Perfexionists/perun
+.. _send us PR: https://github.com/Perfexionists/perun/pull/new/develop
 
 In order to extend the tool suite with custom modules (collectors, postprocessors and
 visualizations) one needs to implement ``run.py`` module inside the custom package stored in
