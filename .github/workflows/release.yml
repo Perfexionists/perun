@@ -35,10 +35,9 @@ jobs:
         run: echo "NEW_TAG=$(perun --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
 
       - name: Tag the new version
-        uses: phish108/autotag-action@1.1.64
+        uses: rickstaa/action-create-tag@v1.7.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branch: devel
           tag: ${{ steps.manual-tagger.outputs.NEW_TAG }}
 
   build-and-deploy-doc:
