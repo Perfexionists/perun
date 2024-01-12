@@ -64,7 +64,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         helpers.touch_dir(target_dir)
     else:
         target_dir = os.path.join(perun_dev_dir, template_type)
-    print(f"Initializing new {template_type} module in {target_dir}")
+    log.info(f"Initializing new {template_type} module in {target_dir}")
 
     # Iterate through all templates and create the new files with rendered templates
     successfully_created_files = []
@@ -75,35 +75,29 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
             kwargs["unit_name"] if "." not in template_filename else template_filename.split(".")[1]
         )
         template_filename += ".py"
-        successfully_created_files.append(template_filename)
-        print(f"> creating module '{template_filename}' from template", end="")
+        successfully_created_files.append(os.path.join(target_dir, template_filename))
+        log.info(f"> creating module '{template_filename}' from template", end="")
 
         # Render and write the template into the resulting file
         with open(os.path.join(target_dir, template_filename), "w") as template_handle:
             template_handle.write(env.get_template(template_file).render(**kwargs))
 
-        print(" [", end="")
+        log.info(" [", end="")
         log.done(ending="")
-        print("]")
+        log.info("]")
 
     # Add the registration point to the set of file
-    successfully_created_files.append(
-        os.path.join(
-            perun_dev_dir,
-            {
-                "check": os.path.join("check", "__init__.py"),
-                "postprocess": os.path.join("utils", "__init__.py"),
-                "collect": os.path.join("utils", "__init__.py"),
-                "view": os.path.join("utils", "__init__.py"),
-            }.get(template_type, "nowhere"),
-        )
+    successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "__init__.py"))
+    if template_type in ("postprocess", "collect", "view"):
+        successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "__init__.py"))
+    log.info(
+        f"Please register your new module in '{template_type}/__init__.py' and/or 'utils/__init__.py'"
     )
-    print(f"Please register your new module in {successfully_created_files[-1]}")
 
     # Unless specified in other way, open all of the files in the w.r.t the general.editor key
     if not no_edit:
         editor = config.lookup_key_recursively("general.editor")
-        print(f"Opening created files and registration point in {editor}")
+        log.info(f"Opening created files and registration point in {editor}")
         try:
             utils.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:

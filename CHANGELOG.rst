@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.21.7 (2023-11-08)
+-------------------
+
+  - Update README, licensing, authors and contributions.
+  - Fix minor issues in README, and various parts of Perun.
+  - Fix minor issue in helper scripts.
+
 0.21.6 (2023-11-06)
 -------------------
 

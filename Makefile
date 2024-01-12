@@ -1,9 +1,3 @@
-test:
-	python3 -m pytest --durations=10 --cov=./ --cov-report term-missing:skip-covered tests/
-
-check:
-	mypy perun/
-
 # Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
 # simple "dev" optional dependency
 dev:
@@ -11,6 +5,15 @@ dev:
 
 install:
 	pip3 install .
+
+init-test:
+	pip3 install .[test]
+
+test:
+	python3 -m pytest --durations=10 --cov=./ --cov-report term-missing:skip-covered tests/
+
+check:
+	mypy perun/
 
 docs:
 	$(MAKE) -C docs html
