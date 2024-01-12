@@ -10,9 +10,9 @@ import collections
 from typing import Any, Optional, Iterator, Protocol
 
 import perun.utils.log as log
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.exceptions as exceptions
+
+from perun.postprocess.regression_analysis import regression_models, tools
 
 
 class ComputationMethod(Protocol):
