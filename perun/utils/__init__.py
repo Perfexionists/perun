@@ -29,7 +29,7 @@ from typing import (
     overload,
 )
 
-from .log import error, cprint, cprintln
+from .log import error, cprint, cprintln, info
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 if TYPE_CHECKING:

@@ -14,10 +14,10 @@ import perun.utils.helpers as helpers
 
 from perun.check import factory, nonparam_helpers as nparam_helpers
 
+from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
-    from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state
