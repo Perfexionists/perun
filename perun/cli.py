@@ -36,7 +36,7 @@ command line arguments. The interface can be broken into several groups:
 Graphical User Interface is currently in development and hopefully will extend
 the flexibility of Perun's usage.
 
-.. _Click: https://click.pocoo.org/5/
+.. _Click: https://click.palletsprojects.com/en/latest/
 """
 from __future__ import annotations
 
