@@ -6,19 +6,21 @@ parsed by internal scanner resulting into profile.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from subprocess import SubprocessError
+from typing import Any
 import os
 import shutil
 import time as systime
 
-from subprocess import SubprocessError
-from typing import Any
+# Third-Party Imports
+import click
 
-import perun.collect.bounds.parser as parser
-import perun.logic.runner as runner
-import perun.utils as utils
-import perun.utils.log as log
-
+# Perun Imports
+from perun import utils
+from perun.collect.bounds import parser
+from perun.logic import runner
+from perun.utils import log
 from perun.utils.structs import CollectStatus
 
 _CLANG_COMPILER = "clang-3.5"

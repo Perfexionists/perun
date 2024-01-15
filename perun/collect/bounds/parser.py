@@ -42,9 +42,13 @@ Total Complexity: FAILED
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any
 import re
 
-from typing import Callable, Any
+# Third-Party Imports
+
+# Perun Imports
 
 RE_FUNCTION = re.compile(r"Function (?P<funcname>\S+)")
 RE_FILE = re.compile(r"file (?P<filename>\S+)")

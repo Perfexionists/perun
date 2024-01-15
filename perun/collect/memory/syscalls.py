@@ -1,11 +1,14 @@
 """This module provides simple wrappers over some linux command line tools"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING
 import os
 import re
 import subprocess
 
-from typing import Any, TYPE_CHECKING
+# Third-Party Imports
+# Perun Imports
 
 from perun.utils.exceptions import SuppressedExceptions
 

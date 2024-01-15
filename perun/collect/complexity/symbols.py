@@ -10,10 +10,13 @@
 """
 from __future__ import annotations
 
+# Standard Imports
 import dataclasses
 
-import perun.utils as utils
+# Third-Party Imports
 
+# Perun Imports
+from perun import utils
 from perun.utils import exceptions
 
 # Symbol table columns constants

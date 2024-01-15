@@ -9,12 +9,15 @@
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import TextIO, Any
 import json
 import os
 
-from typing import TextIO, Any
+# Third-Party Imports
 
-import perun.collect.complexity.symbols as symbols
+# Perun Imports
+from perun.collect.complexity import symbols
 
 
 # Default internal parameters

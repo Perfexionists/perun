@@ -5,17 +5,18 @@ several warm-up executions, followed by the actual timing.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Any
 import sys
 import time as systime
 
-from typing import Any
+# Third-Party Imports
+import click
 
-import perun.logic.runner as runner
-import perun.utils as utils
-
+# Perun Imports
+from perun.logic import runner
+from perun import utils
 from perun.utils import helpers, log
-
 from perun.utils.structs import CollectStatus, Executable
 
 
