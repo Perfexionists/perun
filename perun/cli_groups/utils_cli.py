@@ -76,7 +76,7 @@ def create(template_type: str, **kwargs: Any) -> None:
     Unless ``--no-edit`` is set, after the successful creation of the files, an external editor,
     which is specified by :ckey:`general.editor` configuration key.
 
-    .. _jinja: https://jinja2.pocoo.org/
+    .. _jinja: https://jinja.palletsprojects.com/en/latest/
     """
     try:
         scripts.create_unit_from_template(template_type, **kwargs)
