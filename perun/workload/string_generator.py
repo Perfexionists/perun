@@ -26,11 +26,14 @@ The String Generator can be configured by following options:
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable
 import random
 import string
 
-from typing import Any, Iterable
+# Third-Party Imports
 
+# Perun Imports
 from perun.utils.structs import Job
 from perun.workload.generator import WorkloadGenerator
 

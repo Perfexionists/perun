@@ -40,23 +40,19 @@ the flexibility of Perun's usage.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Optional, Any
 import os
 import sys
 
-from typing import Optional, Any
+# Third-Party Imports
+import click
 
-import perun.collect
-import perun.fuzz.factory as fuzz
-import perun.postprocess
-import perun.profile.helpers as profiles
-import perun.utils as utils
-import perun.view
-
+# Perun Imports
+from perun import utils
 from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
 from perun.logic import commands, pcs, config as perun_config
 from perun.utils import exceptions, cli_helpers, log as perun_log
-
 from perun.collect.trace.optimizations.structs import (
     Pipeline,
     Optimizations,
@@ -74,6 +70,11 @@ from perun.utils.exceptions import (
     ExternalEditorErrorException,
 )
 from perun.utils.structs import Executable
+import perun.collect
+import perun.fuzz.factory as fuzz
+import perun.postprocess
+import perun.profile.helpers as profiles
+import perun.view
 
 
 DEV_MODE = False

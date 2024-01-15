@@ -32,13 +32,15 @@ The External Generator can be configured by following options:
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, TYPE_CHECKING
 import os
 import subprocess
 
-from typing import Any, Iterable, TYPE_CHECKING
+# Third-Party Imports
 
-import perun.utils as utils
-
+# Perun Imports
+from perun import utils
 from perun.utils import log, helpers
 from perun.workload.generator import WorkloadGenerator
 

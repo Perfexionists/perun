@@ -8,14 +8,16 @@
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Callable, Iterable, TYPE_CHECKING
 import distutils.util as dutils
 
-from typing import Any, Callable, Iterable, TYPE_CHECKING
+# Third-Party Imports
 
-import perun.logic.config as config
-import perun.utils.log as log
-
+# Perun Imports
+from perun.logic import config
 from perun.profile import helpers as profile_helpers, factory as profile_factory
+from perun.utils import log
 from perun.utils.structs import CollectStatus, Job, Unit
 
 if TYPE_CHECKING:

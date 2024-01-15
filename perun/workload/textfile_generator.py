@@ -33,14 +33,17 @@ The TextFile Generator can be configured by following options:
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable
 import distutils.util as dutils
-import faker
 import os
 import random
 import tempfile
 
-from typing import Any, Iterable
+# Third-Party Imports
+import faker
 
+# Perun Imports
 from perun.utils.structs import Job
 from perun.workload.generator import WorkloadGenerator
 
