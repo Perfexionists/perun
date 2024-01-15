@@ -1,15 +1,17 @@
 """Flow graphs visualization of the profiles."""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
-import perun.profile.factory as profile_factory
-import perun.view.flow.factory as flow_factory
+# Third-Party Imports
+import click
 
+# Perun Imports
 from perun.utils import view_helpers, cli_helpers, log, helpers
 from perun.utils.exceptions import InvalidParameterException
+import perun.profile.factory as profile_factory
+import perun.view.flow.factory as flow_factory
 
 
 def process_title(ctx: click.Context, _: click.Option, value: str) -> str:

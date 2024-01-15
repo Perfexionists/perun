@@ -1,14 +1,16 @@
 """Scatter plot interpretation of the profile"""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
+from perun.utils import cli_helpers, view_helpers, helpers
 import perun.profile.factory as profile_factory
 import perun.view.scatter.factory as scatter_factory
-
-from perun.utils import cli_helpers, view_helpers, helpers
 
 
 def process_title(ctx: click.Context, _: click.Option, value: str) -> str:

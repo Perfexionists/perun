@@ -5,14 +5,16 @@ formatting and visualization techniques at all.
 """
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
-import perun.profile.factory as profile_factory
-import perun.utils.log as log
+# Third-Party Imports
+import click
 
+# Perun Imports
+from perun.utils import log
 from perun.utils.helpers import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
+import perun.profile.factory as profile_factory
 
 
 def show(profile: profile_factory.Profile, **kwargs: Any) -> None:

@@ -1,14 +1,17 @@
 """ Module with graphs creation and configuration functions. """
 from __future__ import annotations
 
-import holoviews as hv
-import numpy as np
-
-from bokeh import palettes
+# Standard Imports
 from collections.abc import Iterator
 from operator import itemgetter
 from typing import TYPE_CHECKING, Any
 
+# Third-Party Imports
+from bokeh import palettes
+import holoviews as hv
+import numpy as np
+
+# Perun Imports
 from perun.postprocess.regression_analysis import data_provider
 from perun.profile import query, convert
 from perun.utils import view_helpers

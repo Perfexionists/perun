@@ -1,10 +1,13 @@
 """This module contains the Flow usage graph creating functions"""
 from __future__ import annotations
 
-import holoviews as hv
-
+# Standard Imports
 from typing import TYPE_CHECKING, Hashable, cast, Protocol
 
+# Third-Party Imports
+import holoviews as hv
+
+# Perun Imports
 from perun.profile import convert
 from perun.utils import view_helpers
 

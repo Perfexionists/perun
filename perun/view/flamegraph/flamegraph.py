@@ -1,13 +1,17 @@
 """This module provides wrapper for the Flame graph visualization"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import TYPE_CHECKING
 import os
 import subprocess
 
-from typing import TYPE_CHECKING
+# Third-Party Imports
 
-import perun.profile.convert as converter
-import perun.utils.helpers as helpers
+# Perun Imports
+from perun.profile import convert
+from perun.utils import helpers
+
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -26,7 +30,7 @@ def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     :param int height: graphs height
     """
     # converting profile format to format suitable to Flame graph visualization
-    flame = converter.to_flame_graph_format(profile)
+    flame = convert.to_flame_graph_format(profile)
 
     header = profile["header"]
     profile_type = header["type"]

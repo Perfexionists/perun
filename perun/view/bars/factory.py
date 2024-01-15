@@ -1,12 +1,15 @@
 """This module contains the BAR graphs creating functions"""
 from __future__ import annotations
 
+# Standard Imports
 from typing import TYPE_CHECKING
 
+# Third-Party Imports
 import holoviews as hv
 
-import perun.profile.convert as convert
-import perun.utils.view_helpers as view_helpers
+# Perun Imports
+from perun.profile import convert
+from perun.utils import view_helpers
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

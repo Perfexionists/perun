@@ -1,18 +1,20 @@
 """Table interpretation of the profile"""
 from __future__ import annotations
 
-import click
+# Standard Imports
+from itertools import groupby
+from typing import Callable, Any
 import operator
 import os
+
+# Third-Party Imports
+import click
 import pandas
 import tabulate
 
-from itertools import groupby
-from typing import Callable, Any
-
+# Perun Imports
 from perun.utils import log
 from perun.profile import convert, query, helpers
-
 from perun.profile.factory import Profile
 
 

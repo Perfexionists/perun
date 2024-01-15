@@ -5,16 +5,18 @@ with version control systems.
 """
 from __future__ import annotations
 
-import git
+# Standard Imports
+from typing import Optional, Iterator, Callable, Any
 import os
 
+# Third-Party Imports
 from git.exc import NoSuchPathError, InvalidGitRepositoryError, GitCommandError
 from git.repo.base import Repo
 from gitdb.exc import BadName
-from typing import Optional, Iterator, Callable, Any
+import git
 
+# Perun Imports
 from perun.utils import decorators, log as perun_log, timestamps
-
 from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.structs import MinorVersion, MajorVersion
 

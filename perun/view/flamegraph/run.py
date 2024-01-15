@@ -1,12 +1,14 @@
 """Flame graph visualization of the profiles."""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
-import perun.view.flamegraph.flamegraph as flame
+# Third-Party Imports
+import click
 
+# Perun Imports
+import perun.view.flamegraph.flamegraph as flame
 import perun.profile.factory as profile_factory
 
 

@@ -9,13 +9,15 @@ depending on the chosen type/module, like e.g. git, svn, etc.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any, Iterator, TYPE_CHECKING, Optional
 import inspect
 
-from typing import Callable, Any, Iterator, TYPE_CHECKING, Optional
+# Third-Party Imports
 
-import perun.logic.pcs as pcs
-import perun.utils as utils
-
+# Perun Imports
+from perun import utils
+from perun.logic import pcs
 from perun.utils import decorators, log as perun_log
 
 if TYPE_CHECKING:
