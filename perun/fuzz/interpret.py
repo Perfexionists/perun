@@ -1,15 +1,17 @@
 """ Module contains a set of functions for fuzzing results interpretation."""
 from __future__ import annotations
 
+# Standard Imports
+from typing import TextIO, TYPE_CHECKING
 import difflib
-import matplotlib.pyplot as plt
 import os
-import scipy.stats.mstats as stats
 
-from typing import TextIO, Optional, TYPE_CHECKING
+# Third-Party Imports
+from scipy.stats import mstats
+import matplotlib.pyplot as plt
 
-import perun.fuzz.filesystem as filesystem
-
+# Perun Imports
+from perun.fuzz import filesystem
 from perun.utils import log, streams
 
 if TYPE_CHECKING:
@@ -144,7 +146,7 @@ def plot_fuzz_time_series(
 
     axis.grid(color="grey", linestyle="-", linewidth=0.5, alpha=0.2)
 
-    st_quartile, nd_quartile, rd_quartile = stats.mquantiles(time_series.y_axis)
+    st_quartile, nd_quartile, rd_quartile = mstats.mquantiles(time_series.y_axis)
     st_quartile, nd_quartile, rd_quartile = (
         int(st_quartile),
         int(nd_quartile),

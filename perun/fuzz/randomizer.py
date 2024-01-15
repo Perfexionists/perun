@@ -2,9 +2,13 @@
 with only one call of function from random package."""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any
 import random
 
-from typing import Callable, Any
+# Third-Party Imports
+
+# Perun Imports
 
 
 def random_repeats(repeats: int) -> Callable[[Any], Any]:

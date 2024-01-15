@@ -2,12 +2,15 @@
 file system, helpful for fuzzing process."""
 from __future__ import annotations
 
+# Standard Imports
 import os
 import re
 
-from perun.utils import exceptions, log
+# Third-Party Imports
 
+# Perun Imports
 from perun.fuzz.structs import Mutation, FuzzingProgress
+from perun.utils import exceptions, log
 
 
 def get_corpus(workloads: list[str], pattern: str) -> list[Mutation]:

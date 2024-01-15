@@ -6,15 +6,17 @@ executing gcov tool and parsing its output.
 """
 from __future__ import annotations
 
-import os
-import subprocess
-import statistics
-
+# Standard Imports
 from typing import Any, TYPE_CHECKING
+import os
+import statistics
+import subprocess
 
-import perun.utils as utils
-import perun.utils.log as log
+# Third-Party Imports
 
+# Perun Imports
+from perun import utils
+from perun.utils import log
 from perun.utils.exceptions import SuppressedExceptions
 
 if TYPE_CHECKING:

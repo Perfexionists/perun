@@ -1,27 +1,25 @@
 """Collection of global methods for fuzz testing."""
 from __future__ import annotations
 
+# Standard Imports
 import copy
 import filecmp
 import itertools
-import numpy as np
 import os
 import signal
 import sys
-import tabulate
 import threading
 import time
-
 from subprocess import CalledProcessError, TimeoutExpired
 from typing import Optional, Any, cast, TYPE_CHECKING
 from uuid import uuid4
 
-import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
-import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
+# Third-Party Imports
+import numpy as np
+import tabulate
 
-from perun.utils import decorators, log
+# Perun Imports
 from perun.fuzz import interpret, filesystem, filetype, randomizer
-
 from perun.fuzz.structs import (
     Mutation,
     FuzzingConfiguration,
@@ -30,6 +28,9 @@ from perun.fuzz.structs import (
     RuleSet,
     TimeSeries,
 )
+from perun.utils import decorators, log
+import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
+import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 
 if TYPE_CHECKING:
     import types

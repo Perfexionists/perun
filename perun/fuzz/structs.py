@@ -1,14 +1,16 @@
 """Collection of helpers structures for fuzzing"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Optional, Callable
 import dataclasses
 import os
 
-from typing import Any, Optional, Callable
+# Third-Party Imports
 
-import perun.utils as utils
-
-from perun.utils.decorators import always_singleton
+# Perun Imports
+from perun import utils
+from perun.utils import decorators
 
 
 @dataclasses.dataclass
@@ -69,7 +71,7 @@ class Mutation:
         self.fitness: float = fitness
 
 
-@always_singleton
+@decorators.always_singleton
 def get_gcov_version() -> int:
     """Checks the version of the gcov
 

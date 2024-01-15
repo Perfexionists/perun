@@ -10,9 +10,13 @@ stop condition) and may hit a stack overflow error.
 """
 from __future__ import annotations
 
+# Standard Imports
 import re
 
-import perun.fuzz.randomizer as randomizer
+# Third-Party Imports
+
+# Perun Imports
+from perun.fuzz import randomizer
 
 RULE_ITERATIONS = 10
 

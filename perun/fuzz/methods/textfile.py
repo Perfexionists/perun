@@ -1,8 +1,12 @@
 """Collects fuzzing rules specific for text files."""
 from __future__ import annotations
 
-from perun.fuzz import helpers, randomizer
+# Standard Imports
 
+# Third-Party Imports
+
+# Perun Imports
+from perun.fuzz import helpers, randomizer
 from perun.utils.exceptions import SuppressedExceptions
 
 RULE_ITERATIONS = 10

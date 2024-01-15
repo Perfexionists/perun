@@ -4,8 +4,12 @@ existing performance issues. Instead, we mostly adapt the classical fuzzing rul
 """
 from __future__ import annotations
 
+# Standard Imports
 import os
 
+# Third-Party Imports
+
+# Perun Imports
 from perun.fuzz import helpers, randomizer
 
 

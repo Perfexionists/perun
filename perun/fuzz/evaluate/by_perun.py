@@ -5,11 +5,14 @@ profile comparing with baseline profile.
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import TYPE_CHECKING, Iterable, Any
 
+# Third-Party Imports
+
+# Perun Imports
 import perun.check.factory as check
 import perun.logic.runner as run
-
 from perun.utils.structs import PerformanceChange
 
 if TYPE_CHECKING:
