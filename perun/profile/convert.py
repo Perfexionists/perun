@@ -14,16 +14,19 @@ complex queries and statistical tests over the profiles.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import TYPE_CHECKING, Any
 import array
-import numpy
 import operator
+
+# Third-Party Imports
+import numpy
 import pandas
 
-from typing import TYPE_CHECKING, Any
-
-import perun.postprocess.regression_analysis.transform as transform
-import perun.profile.query as query
-import perun.utils.helpers as helpers
+# Perun Imports
+from perun.postprocess.regression_analysis import transform
+from perun.profile import query
+from perun.utils import helpers
 
 
 if TYPE_CHECKING:

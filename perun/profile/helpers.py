@@ -15,21 +15,21 @@ handle the JSON objects in Python refer to `Python JSON library`_.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING
 import json
 import operator
 import os
 import re
 import time
 
-from typing import Any, TYPE_CHECKING
+# Third-Party Imports
 
-import perun.vcs as vcs
-
+# Perun Imports
+from perun import vcs, utils
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
 from perun.utils import decorators, helpers, log as perun_log
-
-from perun.utils import get_module
 from perun.utils.exceptions import (
     InvalidParameterException,
     MissingConfigSectionException,
@@ -275,7 +275,7 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
-    collector = get_module(".".join(["perun.collect", job.collector.name]))
+    collector = utils.get_module(".".join(["perun.collect", job.collector.name]))
 
     return {
         "type": collector.COLLECTOR_TYPE,

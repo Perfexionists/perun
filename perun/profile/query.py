@@ -14,12 +14,16 @@ complex queries and statistical tests over the profiles.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING, Iterable
 import numbers
 import operator
 
-import perun.utils.helpers as helpers
+# Third-Party Imports
 
-from typing import Any, TYPE_CHECKING, Iterable
+# Perun Imports
+from perun.utils import helpers
+
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

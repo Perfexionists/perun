@@ -7,22 +7,23 @@ regions and flatten the format.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from collections.abc import MutableMapping
+from typing import Any, Iterator, Iterable, TYPE_CHECKING
 import collections
 import itertools
 import operator
 
-from collections.abc import MutableMapping
+# Third-Party Imports
+import click
 
-from typing import Any, Iterator, Iterable, TYPE_CHECKING
-
-import perun.logic.config as config
-import perun.utils.log as log
-import perun.check.general_detection as detection
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.postprocess.regressogram.methods as nparam_methods
-
+# Perun Imports
+from perun.logic import config
+from perun.postprocess.regression_analysis import regression_models
 from perun.profile import convert, query
+from perun.utils import log
+import perun.check.general_detection as detection
+import perun.postprocess.regressogram.methods as nparam_methods
 
 if TYPE_CHECKING:
     from perun.utils.structs import ModelRecord
