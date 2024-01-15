@@ -3,16 +3,17 @@ Postprocessor module with non-parametric analysis using the kernel regression me
 """
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any, TYPE_CHECKING
 
-import perun.logic.runner as runner
-import perun.postprocess.kernel_regression.methods as methods
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.cli_helpers as cli_helpers
+# Third-Party Imports
+import click
 
+# Perun Imports
+from perun.logic import runner
+from perun.postprocess.kernel_regression import methods
+from perun.postprocess.regression_analysis import data_provider, tools
+from perun.utils import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:

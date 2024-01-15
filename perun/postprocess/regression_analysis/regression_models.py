@@ -7,15 +7,16 @@ the sections of _MODELS dictionary representing the model properties.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Iterable, Any, cast
 import math
 
-from typing import Callable, Iterable, Any, cast
+# Third-Party Imports
 
-import perun.postprocess.regression_analysis.extensions.plot_models as plot
-
+# Perun Imports
 from perun.postprocess.regression_analysis import derived, generic, specific
-
-import perun.utils.exceptions as exceptions
+from perun.utils import exceptions
+import perun.postprocess.regression_analysis.extensions.plot_models as plot
 
 
 def get_formula_of(model: str) -> Callable[..., float]:

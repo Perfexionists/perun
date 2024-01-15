@@ -10,18 +10,20 @@ All windows can be further augmented by taking into account how many percent of 
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Any
 import itertools
 import operator
 
-from typing import Any
+# Third-Party Imports
+import click
 
-import perun.profile.convert as convert
-import perun.utils as utils
-import perun.utils.log as log
-import perun.logic.runner as runner
-
+# Perun Imports
+from perun import utils
+from perun.logic import runner
+from perun.profile import convert
 from perun.profile.factory import pass_profile, Profile
+from perun.utils import log
 from perun.utils.structs import PostprocessStatus
 
 

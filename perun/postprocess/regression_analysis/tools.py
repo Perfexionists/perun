@@ -3,13 +3,16 @@
 """
 from __future__ import annotations
 
-import numpy as np
-import random
-
+# Standard Imports
 from operator import itemgetter
 from typing import Any, Iterable, TYPE_CHECKING
+import random
 
-import perun.utils.exceptions as exceptions
+# Third-Party Imports
+import numpy as np
+
+# Perun Imports
+from perun.utils import exceptions
 
 if TYPE_CHECKING:
     import numpy.typing as npt

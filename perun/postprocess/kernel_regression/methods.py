@@ -7,17 +7,19 @@ validate the options and to execute the individual computations.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator, cast
+
+# Third-Party Imports
+from sklearn import metrics, base as sklearn
 import click.exceptions as click_exp
 import numpy as np
 import sklearn.metrics.pairwise as kernels
 import statsmodels.nonparametric.api as nparam
 
-from sklearn import metrics, base as sklearn
-from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator, cast
-
-import perun.thirdparty.pyqt_fit_port as pyqt_fit
-
+# Perun Imports
 from perun.postprocess.regression_analysis import tools
+import perun.thirdparty.pyqt_fit_port as pyqt_fit
 
 if TYPE_CHECKING:
     import numpy.typing as npt

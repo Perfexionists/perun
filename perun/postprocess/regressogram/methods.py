@@ -3,16 +3,18 @@ Module with regressogram computational method and auxiliary methods at executing
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Iterator, Any
 import inspect
+
+# Third-Party Imports
 import numpy as np
 import numpy.lib.histograms as numpy_bucket_selectors
 import scipy.stats
 import sklearn.metrics
 
-from typing import Iterator, Any
-
-
-import perun.postprocess.regression_analysis.tools as tools
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
 # required arguments at regressogram post-processor
 _REQUIRED_KEYS = ["bucket_method", "statistic_function"]

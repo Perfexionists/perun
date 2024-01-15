@@ -4,15 +4,18 @@ auxiliary methods at executing of this method.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Callable, Iterator, Any, cast
 import dataclasses
+
+# Third-Party Imports
+import click
 import numpy as np
 import pandas as pd
 import sklearn.metrics
 
-from typing import Callable, Iterator, Any, cast
-
-import perun.postprocess.regression_analysis.tools as tools
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
 
 @dataclasses.dataclass()

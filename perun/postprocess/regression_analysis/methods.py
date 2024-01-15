@@ -5,14 +5,16 @@ This module exposes all currently implemented computational methods for regressi
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Optional, Iterator, Protocol
 import collections
 
-from typing import Any, Optional, Iterator, Protocol
+# Third-Party Imports
 
-import perun.utils.log as log
-import perun.utils.exceptions as exceptions
-
+# Perun Imports
 from perun.postprocess.regression_analysis import regression_models, tools
+from perun.utils import exceptions
+from perun.utils import log
 
 
 class ComputationMethod(Protocol):

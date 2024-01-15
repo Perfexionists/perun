@@ -1,13 +1,15 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Any
 import operator
 
-from typing import Any
+# Third-Party Imports
+import click
 
-import perun.logic.runner as runner
-
+# Perun Imports
+from perun.logic import runner
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 

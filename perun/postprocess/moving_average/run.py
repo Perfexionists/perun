@@ -3,17 +3,18 @@ Postprocessor module with non-parametric analysis using the moving average metho
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Callable, TYPE_CHECKING, Any
 import functools
 
-from typing import Callable, TYPE_CHECKING, Any
+# Third-Party Imports
+import click
 
-import perun.logic.runner as runner
-import perun.postprocess.moving_average.methods as methods
-import perun.utils.cli_helpers as cli_helpers
-
+# Perun Imports
+from perun.logic import runner
+from perun.postprocess.moving_average import methods
 from perun.postprocess.regression_analysis import data_provider, tools
-
+from perun.utils import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:

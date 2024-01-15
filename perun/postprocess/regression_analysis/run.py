@@ -1,16 +1,17 @@
 """Regression analysis postprocessor module."""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
-import perun.logic.runner as runner
+# Third-Party Imports
+import click
 
+# Perun Imports
+from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, methods, regression_models, tools
-from perun.utils import cli_helpers, metrics
-
 from perun.profile.factory import pass_profile, Profile
+from perun.utils import cli_helpers, metrics
 from perun.utils.structs import PostprocessStatus
 
 

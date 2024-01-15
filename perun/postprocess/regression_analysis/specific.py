@@ -6,10 +6,14 @@ This module contains the required specific versions for the models computation.
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable
 
-import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.helpers as helpers
+# Third-Party Imports
+
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
+from perun.utils import helpers
 
 
 def specific_quad_data(

@@ -7,11 +7,14 @@ for special cases.
 """
 from __future__ import annotations
 
+# Standard Imports
 import math
-
 from typing import Any, Iterable
 
-import perun.postprocess.regression_analysis.tools as tools
+# Third-Party Imports
+
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
 
 def derived_const(

@@ -6,9 +6,13 @@ and height).
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any
 
-import perun.utils.log as log
+# Third-Party Imports
+
+# Perun Imports
+from perun.utils import log
 
 
 def compute_window_width(window_width: float, width_measure: str, resource_number: int) -> float:

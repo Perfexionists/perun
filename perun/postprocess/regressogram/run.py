@@ -3,17 +3,18 @@ Postprocessor module with non-parametric analysis using the regressogram method.
 """
 from __future__ import annotations
 
-import click
-
-import perun.logic.runner as runner
-import perun.postprocess.regressogram.methods as methods
-import perun.utils.cli_helpers as cli_helpers
-
-from perun.postprocess.regression_analysis import data_provider, tools
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
+from perun.logic import runner
+from perun.postprocess.regression_analysis import data_provider, tools
+from perun.postprocess.regressogram import methods
 from perun.profile.factory import pass_profile, Profile
+from perun.utils import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 

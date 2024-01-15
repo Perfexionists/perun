@@ -14,12 +14,15 @@ the given argument and return value conventions.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, Callable
 import math
 
-from typing import Any, Iterable, Callable
+# Third-Party Imports
 
-import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.helpers as helpers
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
+from perun.utils import helpers
 
 
 def generic_compute_regression(

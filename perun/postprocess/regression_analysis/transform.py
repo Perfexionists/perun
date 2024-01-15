@@ -4,8 +4,12 @@
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+
+# Perun Imports
 from perun.postprocess.regression_analysis import regression_models, tools
 
 

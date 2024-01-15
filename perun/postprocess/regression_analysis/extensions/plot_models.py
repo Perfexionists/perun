@@ -3,11 +3,14 @@
 """
 from __future__ import annotations
 
-import numpy as np
-
+# Standard Imports
 from typing import Callable, Any, Optional, TYPE_CHECKING
 
-import perun.postprocess.regression_analysis.tools as tools
+# Third-Party Imports
+import numpy as np
+
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
 if TYPE_CHECKING:
     import numpy.typing as npt
