@@ -5,13 +5,15 @@ stats directories, etc.
 """
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
 from perun.logic import commands, stats, temp
 from perun.utils import cli_helpers, log as perun_log, script_helpers as scripts
-
 from perun.utils.exceptions import ExternalEditorErrorException
 
 

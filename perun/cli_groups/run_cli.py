@@ -1,15 +1,16 @@
 """Group of CLI commands for running the Perun process."""
 from __future__ import annotations
 
-import click
-
-import perun.utils as utils
-
-from perun.logic import config as perun_config, runner
-from perun.utils import cli_helpers, log as perun_log
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
+from perun import utils
+from perun.logic import config as perun_config, runner
+from perun.utils import cli_helpers, log as perun_log
 from perun.utils.structs import CollectStatus
 
 

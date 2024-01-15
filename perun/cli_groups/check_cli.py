@@ -1,15 +1,17 @@
 """Group of CLI commands used for detecting degradations in VCS history"""
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Any, TYPE_CHECKING, Optional
 import distutils.util as dutils
 
-import perun.check.factory as check
+# Third-Party Imports
+import click
 
+# Perun Imports
 from perun.logic import pcs, config as perun_config
 from perun.utils import cli_helpers, log
-
-from typing import Any, TYPE_CHECKING, Optional
+import perun.check.factory as check
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
