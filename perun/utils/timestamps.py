@@ -5,11 +5,15 @@ writing of the timestamp to file, converting to string format, etc.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import BinaryIO
 import datetime
 import struct
 import time
 
-from typing import BinaryIO
+# Third-Party Imports
+
+# Perun Imports
 
 
 def write_timestamp(file_handle: BinaryIO, timestamp: float) -> None:

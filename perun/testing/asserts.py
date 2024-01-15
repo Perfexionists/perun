@@ -1,11 +1,15 @@
 """Helper assertion function to be used in tests"""
 from __future__ import annotations
 
-import click.testing
+# Standard Imports
+from typing import Optional
 import os
 import traceback
 
-from typing import Optional
+# Third-Party Imports
+import click.testing
+
+# Perun Imports
 
 
 def predicate_from_cli(cli_result: click.testing.Result | list[str] | str, predicate: bool) -> None:

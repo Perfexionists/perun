@@ -1,15 +1,17 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
 import operator
 import os
 import re
 import signal
 
-from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
+# Third-Party Imports
 
-import perun.postprocess.regression_analysis.tools as tools
-
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 from perun.utils.exceptions import (
     SignalReceivedException,
     NotPerunRepositoryException,

@@ -1,8 +1,12 @@
 """Collection of helper exception classes"""
 from __future__ import annotations
 
-
+# Standard Imports
 from typing import Any, TYPE_CHECKING
+
+# Third-Party Imports
+
+# Perun Imports
 
 if TYPE_CHECKING:
     import traceback

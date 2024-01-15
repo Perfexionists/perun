@@ -1,17 +1,19 @@
 """Collection of helper functions for working with bokeh graphs"""
 from __future__ import annotations
 
+# Standard Imports
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+# Third-Party Imports
 import bokeh.palettes as bk_palettes
 import bokeh.plotting as bk_plot
 import bokeh.themes.theme as bk_theme
 import holoviews as hv
 
-from enum import Enum
-from typing import TYPE_CHECKING, Any
-
-import perun.profile.helpers as profiles
-
+# Perun Imports
 from perun.utils import decorators, log
+import perun.profile.helpers as profiles
 
 if TYPE_CHECKING:
     import pandas as pd

@@ -5,18 +5,7 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
 from __future__ import annotations
 
-import contextlib
-import importlib
-import itertools
-import magic
-import operator
-import os
-import re
-import shlex
-import shutil
-import subprocess
-import sys
-
+# Standard Imports
 from typing import (
     Iterable,
     Optional,
@@ -28,7 +17,21 @@ from typing import (
     TYPE_CHECKING,
     overload,
 )
+import contextlib
+import importlib
+import itertools
+import operator
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
 
+# Third-Party Imports
+import magic
+
+# Perun Imports
 from .log import error, cprint, cprintln, info
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 

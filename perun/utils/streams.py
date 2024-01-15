@@ -5,16 +5,18 @@ This module encapsulates such functions, so they can be used in CLI, in tests, i
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import TextIO, Any
 import io
 import json
 import os
 import re
 
+# Third-Party Imports
 from ruamel.yaml import YAML
 
-from typing import TextIO, Any
-
-import perun.utils.log as log
+# Perun Imports
+from perun.utils import log
 
 
 def store_json(profile: dict[Any, Any], file_path: str) -> None:

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+# Standard Imports
+from typing import Iterable, Callable, BinaryIO, Any, TYPE_CHECKING
 import os
 import shutil
 
-from typing import Iterable, Callable, BinaryIO, Any, TYPE_CHECKING
+# Third-Party Imports
 
+# Perun Imports
 from perun.logic import index, store
 from perun.utils import decorators, streams
 

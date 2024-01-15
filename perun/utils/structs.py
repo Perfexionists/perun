@@ -1,13 +1,16 @@
 """List of helper and globally used structures and named tuples"""
 from __future__ import annotations
 
-import enum
-import shlex
-
+# Standard Imports
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Any, TYPE_CHECKING, cast, Callable
+import enum
+import shlex
 
+# Third-Party Imports
+
+# Perun Imports
 from perun.utils.helpers import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
 
 if TYPE_CHECKING:

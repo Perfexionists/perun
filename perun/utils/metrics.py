@@ -3,13 +3,16 @@ the specified ID.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Optional
 import atexit
 import time
 
-from typing import Any, Optional
+# Third-Party Imports
 
-import perun.logic.temp as temp
-import perun.utils.log as log
+# Perun Imports
+from perun.logic import temp
+from perun.utils import log
 
 
 class MetricsManager:

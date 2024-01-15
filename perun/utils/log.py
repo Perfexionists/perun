@@ -1,25 +1,26 @@
 """Set of helper function for logging and printing warnings or errors"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type
 import builtins
 import collections
 import functools
 import io
 import itertools
 import logging
-import numpy as np
 import operator
 import pydoc
 import sys
-import termcolor
 import time
 import traceback
 
-from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type
+# Third-Party Imports
+import numpy as np
+import termcolor
 
+# Perun Imports
 from perun.utils import helpers, decorators
-
-
 from perun.utils.helpers import (
     COLLECT_PHASE_ATTRS,
     DEGRADATION_ICON,

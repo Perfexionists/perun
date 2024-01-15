@@ -5,10 +5,11 @@ and returning default values.
 """
 from __future__ import annotations
 
-import click
+# Standard Imports
+from collections import defaultdict
+from importlib import metadata
+from typing import Optional, Callable, Any, TYPE_CHECKING
 import functools
-import importlib.metadata as metadata
-import jinja2
 import json
 import os
 import platform
@@ -17,25 +18,25 @@ import sys
 import time
 import traceback
 
-from collections import defaultdict
-from typing import Optional, Callable, Any, TYPE_CHECKING
+# Third-Party Imports
+import click
+import jinja2
 
-import perun
-import perun.vcs as vcs
-
-from perun.profile import helpers as profile_helpers, query
-from perun.logic import commands, store, stats, config, pcs
-from perun.utils import exceptions, helpers, streams, timestamps, log, metrics
-
+# Perun Imports
+from perun import vcs
 from perun.collect.trace.optimizations.optimization import Optimization
 from perun.collect.trace.optimizations.structs import CallGraphTypes
+from perun.logic import commands, store, stats, config, pcs
+from perun.profile import helpers as profile_helpers, query
 from perun.profile.factory import Profile
+from perun.utils import exceptions, helpers, streams, timestamps, log, metrics
 from perun.utils.exceptions import (
     VersionControlSystemException,
     TagOutOfRangeException,
     StatsFileNotFoundException,
     NotPerunRepositoryException,
 )
+import perun
 
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion

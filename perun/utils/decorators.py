@@ -5,11 +5,14 @@ the functions. Or various checker function, that checks given parameters of the 
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any
 import functools
 import inspect
 
-from typing import Callable, Any
+# Third-Party Imports
 
+# Perun Imports
 from perun.utils.exceptions import InvalidParameterException
 
 
