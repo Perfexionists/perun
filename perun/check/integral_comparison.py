@@ -4,16 +4,17 @@ The module contains the methods, that executes the computational logic of
 """
 from __future__ import annotations
 
-import numpy as np
-import scipy.integrate as integrate
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.utils.helpers as helpers
+# Third-Party Imports
+from scipy import integrate
+import numpy as np
 
+# Perun Imports
 from perun.check import factory, nonparam_helpers as nparam_helpers
-
+from perun.postprocess.regression_analysis import regression_models
+from perun.utils import helpers
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 if TYPE_CHECKING:

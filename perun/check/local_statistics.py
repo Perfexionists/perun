@@ -4,21 +4,22 @@ The module contains the methods, that executes the computational logic of
 """
 from __future__ import annotations
 
-import numpy as np
-import scipy.integrate as integrate
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.utils.helpers as helpers
+# Third-Party Imports
+import numpy as np
+from scipy import integrate
+
+# Perun Imports
+from perun.check import factory
+from perun.profile.factory import Profile
+from perun.utils import helpers
+from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
+import perun.check.nonparam_helpers as nparam_helpers
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-
-import perun.check.factory as factory
-import perun.check.nonparam_helpers as nparam_helpers
-
-from perun.profile.factory import Profile
-from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2

@@ -41,11 +41,14 @@ that the best model fit the data tightly and hence the detected optimization is 
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.check.general_detection as detection
+# Third-Party Imports
 
+# Perun Imports
 from perun.utils.structs import DegradationInfo, PerformanceChange
+import perun.check.general_detection as detection
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

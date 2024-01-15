@@ -3,6 +3,7 @@ Collection of global methods for detection of performance changes
 """
 from __future__ import annotations
 
+# Standard Imports
 import contextlib
 import distutils.util as dutils
 import os
@@ -10,13 +11,12 @@ import re
 
 from typing import Any, Iterable, Protocol, TYPE_CHECKING
 
-import perun.profile.helpers as profiles
-import perun.utils as utils
-import perun.vcs as vcs
+# Third-Party Imports
 
+# Perun Imports
+from perun import utils, vcs
 from perun.logic import config, pcs, runner, store
 from perun.utils import decorators, log
-
 from perun.utils.structs import (
     DetectionChangeResult,
     DegradationInfo,
@@ -24,6 +24,7 @@ from perun.utils.structs import (
     MinorVersion,
     ModelRecord,
 )
+import perun.profile.helpers as profiles
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

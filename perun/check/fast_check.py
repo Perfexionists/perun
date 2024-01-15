@@ -5,15 +5,17 @@ according to computed metrics and models from these profiles, based on the regre
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, TYPE_CHECKING
 import copy
+
+# Third-Party Imports
 import numpy as np
 
-from typing import Any, Iterable, TYPE_CHECKING
-
-import perun.logic.runner as runner
-import perun.check.general_detection as detect
-
+# Perun Imports
+from perun.logic import runner
 from perun.utils.structs import DegradationInfo, ClassificationMethod
+import perun.check.general_detection as detect
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

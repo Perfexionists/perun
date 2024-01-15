@@ -65,13 +65,16 @@ reported as the IQR multiple of `110.46`.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Optional, Iterable, Any, TYPE_CHECKING
+
+# Third-Party Imports
 import difflib
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
+from scipy import stats
 
-from typing import Optional, Iterable, Any, TYPE_CHECKING
-
+# Perun Imports
 from perun.logic import config
 from perun.profile import convert
 from perun.utils.structs import DegradationInfo, PerformanceChange

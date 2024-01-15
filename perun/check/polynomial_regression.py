@@ -5,12 +5,14 @@ according to computed metrics and models from these profiles, based on the polyn
 """
 from __future__ import annotations
 
-import numpy as np
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.check.general_detection as detect
+# Third-Party Imports
+import numpy as np
 
+# Perun Imports
+import perun.check.general_detection as detect
 from perun.utils.structs import DegradationInfo, ClassificationMethod
 
 if TYPE_CHECKING:

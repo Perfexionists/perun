@@ -6,14 +6,15 @@ according to computed metrics and models from these profiles, based on the linea
 """
 from __future__ import annotations
 
-import scipy.stats as stats
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.utils as utils
+# Third-Party Imports
+from scipy import stats
 
+# Perun Imports
+from perun import utils
 from perun.check import fast_check, general_detection as detect
-
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 
 if TYPE_CHECKING:

@@ -36,11 +36,14 @@ confidence at all.
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-import perun.profile.convert as convert
-import perun.utils.helpers as helpers
+# Third-Party Imports
 
+# Perun Imports
+from perun.profile import convert
+from perun.utils import helpers
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:

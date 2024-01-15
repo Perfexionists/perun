@@ -9,16 +9,17 @@ general methods.
 """
 from __future__ import annotations
 
-import numpy as np
-
+# Standard Imports
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
 
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.profile.query as query
-import perun.utils.helpers as helpers
+# Third-Party Imports
+import numpy as np
 
+# Perun Imports
 from perun.check import fast_check, linear_regression, polynomial_regression
-
+from perun.postprocess.regression_analysis import regression_models
+from perun.profile import query
+from perun.utils import helpers
 from perun.utils.structs import (
     PerformanceChange,
     DegradationInfo,

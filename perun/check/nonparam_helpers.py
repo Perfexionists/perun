@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-import numpy as np
+# Standard Imports
+from typing import TYPE_CHECKING
 import re
 
-from typing import TYPE_CHECKING
+# Third-Party Imports
+import numpy as np
 
-import perun.check.general_detection as methods
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regressogram.methods as rg_methods
-import perun.utils.log as log
-
+# Perun Imports
+from perun.postprocess.regression_analysis import data_provider
+from perun.utils import log
 from perun.utils.structs import PerformanceChange, ModelRecord
+import perun.check.general_detection as methods
+import perun.postprocess.regressogram.methods as rg_methods
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
