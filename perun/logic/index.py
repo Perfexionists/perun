@@ -5,18 +5,20 @@ of various version of index entries.
 """
 from __future__ import annotations
 
+# Standard Imports
+from enum import Enum
+from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
 import binascii
 import json
 import os
 import struct
 import zlib
 
-from enum import Enum
-from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
+# Third-Party Imports
 
+# Perun Imports
 from perun.logic import pcs, store
 from perun.utils import helpers, log as perun_log, timestamps
-
 from perun.utils.exceptions import (
     EntryNotFoundException,
     MalformedIndexFileException,

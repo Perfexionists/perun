@@ -5,6 +5,8 @@ or load and store into the directories or filenames.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import BinaryIO, Optional
 import hashlib
 import json
 import os
@@ -13,11 +15,11 @@ import string
 import struct
 import zlib
 
-from typing import BinaryIO, Optional
+# Third-Party Imports
 
-from perun.utils import log, helpers
-
+# Perun Imports
 from perun.profile.factory import Profile
+from perun.utils import log, helpers
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.utils.structs import PerformanceChange, DegradationInfo
 

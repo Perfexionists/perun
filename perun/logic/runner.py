@@ -1,24 +1,20 @@
 """Collection of functions for running collectors and postprocessors"""
 from __future__ import annotations
 
-import click
+# Standard Imports
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
 import distutils.util as dutils
 import os
 import signal
 import subprocess
 
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
+# Third-Party Imports
+import click
 
-
-import perun.collect.trace.optimizations.optimization as optimizations
-import perun.profile.helpers as profile
-import perun.utils as utils
-import perun.vcs as vcs
-import perun.workload as workloads
-
+# Perun Imports
+from perun import utils, vcs
 from perun.logic import commands, config, index, pcs
 from perun.utils import decorators, helpers, log, streams
-
 from perun.utils.exceptions import SignalReceivedException
 from perun.utils.helpers import (
     COLLECT_PHASE_CMD,
@@ -39,6 +35,9 @@ from perun.utils.structs import (
     Unit,
 )
 from perun.workload.singleton_generator import SingletonGenerator
+import perun.collect.trace.optimizations.optimization as optimizations
+import perun.profile.helpers as profile
+import perun.workload as workloads
 
 
 if TYPE_CHECKING:

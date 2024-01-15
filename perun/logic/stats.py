@@ -36,21 +36,21 @@ The contents of the stats file are stored in a compressed form to reduce the mem
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Optional, Iterable, BinaryIO, Callable, Any
 import json
 import os
 import re
 import shutil
 import zlib
 
-from typing import Optional, Iterable, BinaryIO, Callable, Any
+# Third-Party Imports
 
-import perun.profile.helpers as helpers
-import perun.utils as utils
-import perun.vcs as vcs
-
+# Perun Imports
+from perun import utils, vcs
 from perun.logic import index, pcs, store
+from perun.profile import helpers
 from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
-
 from perun.utils.exceptions import SuppressedExceptions
 
 # Match the timestamp format of the profile names

@@ -54,14 +54,17 @@ for details on ``perun init``). By default **master** configuration is used.
 """
 from __future__ import annotations
 
-import jinja2
+# Standard Imports
+from typing import Iterable, Any
 import os
 import subprocess
 
-from typing import Iterable, Any
+# Third-Party Imports
+import jinja2
 
-import perun.utils.log as log
-import perun.utils as utils
+# Perun Imports
+from perun.utils import log
+from perun import utils
 
 
 CONFIG_FILE_STRING = """

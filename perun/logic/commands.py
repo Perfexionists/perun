@@ -6,20 +6,19 @@ possible to be run in isolation.
 """
 from __future__ import annotations
 
+# Standard Imports
+from operator import itemgetter
+from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
 import collections
 import os
 import re
 
-from operator import itemgetter
-from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
+# Third-Party Imports
 
-import perun.profile.helpers as profile
-import perun.utils as utils
-import perun.vcs as vcs
-
+# Perun Imports
+from perun import utils, vcs
 from perun.logic import pcs, config as perun_config, store, index, temp, stats
 from perun.utils import helpers, log as perun_log, timestamps
-
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     ExternalEditorErrorException,
@@ -41,6 +40,7 @@ from perun.utils.helpers import (
     ColorChoiceType,
 )
 from perun.utils.structs import ProfileListConfig, MinorVersion
+import perun.profile.helpers as profile
 
 if TYPE_CHECKING:
     from perun.profile.helpers import ProfileInfo

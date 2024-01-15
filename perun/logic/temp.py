@@ -53,12 +53,15 @@ Thus, the user should take care to delete them appropriately to save some memory
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Optional, Any, cast, BinaryIO
 import json
 import os
 import zlib
 
-from typing import Optional, Any, cast, BinaryIO
+# Third-Party Imports
 
+# Perun Imports
 from perun.logic import index, pcs, store
 from perun.utils import exceptions, helpers, log as perun_log
 

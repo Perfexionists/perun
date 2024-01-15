@@ -22,14 +22,16 @@ their resources against each other.
 """
 from __future__ import annotations
 
-import os
-
+# Standard Imports
 from enum import Enum
 from typing import Optional
+import os
 
-import perun.logic.temp as temp
-import perun.utils as utils
+# Third-Party Imports
 
+# Perun Imports
+from perun import utils
+from perun.logic import temp
 from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.utils.exceptions import (

@@ -6,12 +6,14 @@ by its path.
 """
 from __future__ import annotations
 
+# Standard Imports
 import os
 
-import perun.logic.config as config
+# Third-Party Imports
 
+# Perun Imports
+from perun.logic import config
 from perun.utils import helpers, decorators
-
 from perun.utils.exceptions import NotPerunRepositoryException
 
 

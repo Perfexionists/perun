@@ -9,19 +9,19 @@ containing formats and options for one execution of perun command.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, Optional
 import dataclasses
 import os
 import re
-import ruamel.yaml.comments as comments
 import sys
 
-from ruamel.yaml import YAML, scanner
-from typing import Any, Iterable, Optional
+# Third-Party Imports
+from ruamel.yaml import YAML, scanner, comments
 
-import perun.logic.config_templates as templates
-
+# Perun Imports
+from perun.logic import config_templates
 from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
-
 from perun.utils.exceptions import SuppressedExceptions
 
 
@@ -254,7 +254,7 @@ def init_local_config_at(
     helpers.touch_file(path)
 
     # Get configuration template
-    predefined_config = templates.get_predefined_configuration(config_template, wrapped_vcs)
+    predefined_config = config_templates.get_predefined_configuration(config_template, wrapped_vcs)
 
     # Create a config for user to set up
     local_config = streams.safely_load_yaml_from_stream(predefined_config)
