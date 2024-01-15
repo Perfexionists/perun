@@ -54,15 +54,17 @@ for details on ``perun init``). By default **master** configuration is used.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Iterable, Any
 import os
 import subprocess
 
-from typing import Iterable, Any
-
+# Third-Party Imports
 import jinja2
 
-import perun.utils.log as log
-import perun.utils as utils
+# Perun Imports
+from perun.utils import log
+from perun import utils
 
 
 CONFIG_FILE_STRING = """
@@ -307,7 +309,7 @@ class DeveloperConfiguration(MasterConfiguration):
 class UserConfiguration(DeveloperConfiguration):
     """Configuration meant for basic users, which extends the developer configuration.
 
-    This additionally lookus up the commands and workloads out of the project working directory,
+    This additionally looks up the commands and workloads out of the project working directory,
     automatically sets the timing of project, registering and the template for generated profiles.
 
     The following configuration options will be additionally set:

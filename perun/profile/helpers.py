@@ -15,42 +15,38 @@ handle the JSON objects in Python refer to `Python JSON library`_.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING
 import json
-import os
-import time
-import re
 import operator
-import types
+import os
+import re
+import time
 
-from typing import Any
+# Third-Party Imports
 
-import perun.logic.pcs as pcs
-import perun.logic.config as config
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.vcs as vcs
-import perun.profile.query as query
-import perun.utils.log as perun_log
-import perun.utils.helpers as helpers
-import perun.utils.decorators as decorators
-
-import perun.profile.factory as profiles
-from perun.utils import get_module
+# Perun Imports
+from perun import vcs, utils
+from perun.logic import config, index, pcs, store
+from perun.profile import factory as profiles, query
+from perun.utils import decorators, helpers, log as perun_log
 from perun.utils.exceptions import (
     InvalidParameterException,
     MissingConfigSectionException,
     TagOutOfRangeException,
 )
-from perun.utils.helpers import sanitize_filepart
 from perun.utils.structs import Unit, Executable, Job
 
+if TYPE_CHECKING:
+    import types
 
-PROFILE_COUNTER = 0
-DEFAULT_SORT_KEY = "time"
+
+PROFILE_COUNTER: int = 0
+DEFAULT_SORT_KEY: str = "time"
 
 
 def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
-    """Helper function for getting the key from the container. If it is not present in the container
+    """Helper function for getting the key from the container. If it is not present in the container,
     or it is empty string or empty object, the function should return the missing constant.
 
     :param dict container: dictionary container
@@ -64,7 +60,7 @@ def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing
 
 def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     """Helper function for looking up the unit in the profile (can be either collector or
-    postprocessor and finds the value of the param in it
+    postprocessor) and finds the value of the param in it
 
     :param dict profile: dictionary with profile information w.r.t profile specification
     :param str unit: unit in which the parameter is located
@@ -78,7 +74,9 @@ def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     # Lookup the unit params
     unit_params = unit_param_map.get(unit)
     if unit_params:
-        return sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0]) or "_"
+        return (
+            helpers.sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0]) or "_"
+        )
     else:
         return "_"
 
@@ -143,13 +141,13 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             (
                 r"%args%",
                 lambda scanner, token: "["
-                + sanitize_filepart(lookup_value(profile["header"], "args", "_"))
+                + helpers.sanitize_filepart(lookup_value(profile["header"], "args", "_"))
                 + "]",
             ),
             (
                 r"%workload%",
                 lambda scanner, token: "["
-                + sanitize_filepart(
+                + helpers.sanitize_filepart(
                     os.path.split(lookup_value(profile["header"], "workload", "_"))[-1]
                 )
                 + "]",
@@ -189,9 +187,9 @@ def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
     :returns list: list of ProfileInfo parsed from index of the given minor_version
     """
     # Compute the
-    profiles = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    profile_list = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
-    for index_entry in profiles:
+    for index_entry in profile_list:
         inside_info = {
             "header": {
                 "type": index_entry.type,
@@ -277,7 +275,7 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
-    collector = get_module(".".join(["perun.collect", job.collector.name]))
+    collector = utils.get_module(".".join(["perun.collect", job.collector.name]))
 
     return {
         "type": collector.COLLECTOR_TYPE,
@@ -324,7 +322,7 @@ def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Pr
 def to_string(profile: profiles.Profile) -> str:
     """Converts profile from dictionary to string
 
-    :param Profile profile: profile we are converting to string
+    :param Profile profile: profile we are converting
     :returns str: string representation of profile
     """
     return json.dumps(profile.serialize())
@@ -334,7 +332,7 @@ def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple
-    :returns: tuple of (collector.name, cmd, args, workload, postprocessors joined by ', ')
+    :returns: (collector.name, cmd, args, workload, postprocessors joined by ', ')
     """
     profile_header = profile["header"]
     return (
@@ -361,7 +359,7 @@ def extract_job_from_profile(profile: profiles.Profile) -> Job:
     Fixme: Add assert that profile is profile
 
     :param dict profile: dictionary with valid profile
-    :returns Job: job according to the profile informations
+    :returns Job: job according to the profile information
     """
     collector_record = profile["collector_info"]
     collector = Unit(collector_record["name"], collector_record["params"])

@@ -1,19 +1,21 @@
 """The module contains the method for detection with using regression analysis.
 
-This module contains method for classification the perfomance change between two profiles
+This module contains method for classification the performance change between two profiles
 according to computed metrics and models from these profiles, based on the regression analysis.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, TYPE_CHECKING
 import copy
+
+# Third-Party Imports
 import numpy as np
 
-from typing import Any, Iterable, TYPE_CHECKING
-
-import perun.logic.runner as runner
+# Perun Imports
+from perun.logic import runner
+from perun.utils.structs import DegradationInfo, ClassificationMethod
 import perun.check.general_detection as detect
-
-from perun.utils.structs import DegradationInfo
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -31,7 +33,7 @@ def fast_check(
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
     return detect.general_detection(
-        baseline_profile, target_profile, detect.ClassificationMethod.FastCheck
+        baseline_profile, target_profile, ClassificationMethod.FastCheck
     )
 
 

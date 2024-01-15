@@ -1,12 +1,16 @@
 """Collection of helpers structures for fuzzing"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Optional, Callable
 import dataclasses
 import os
-from typing import Any, Optional, Callable
 
-import perun.utils as utils
-from perun.utils.decorators import always_singleton
+# Third-Party Imports
+
+# Perun Imports
+from perun import utils
+from perun.utils import decorators
 
 
 @dataclasses.dataclass
@@ -67,7 +71,7 @@ class Mutation:
         self.fitness: float = fitness
 
 
-@always_singleton
+@decorators.always_singleton
 def get_gcov_version() -> int:
     """Checks the version of the gcov
 
@@ -118,7 +122,7 @@ class CoverageConfiguration:
 class FuzzingConfiguration:
     """Collection of (mostly persistent) configuration of the fuzzing process
 
-    This encapsulates all of the possibly used configurations to be passed around functions, in
+    This encapsulates all possibly used configurations to be passed around functions, in
     order to reduce the number of local variables and parameters.
 
     :ivar int timeout: specifies how long the fuzzing should be running

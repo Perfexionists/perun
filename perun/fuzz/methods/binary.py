@@ -4,10 +4,13 @@ existing performance issues. Instead, we mostly adapt the classical fuzzing rul
 """
 from __future__ import annotations
 
+# Standard Imports
 import os
 
-import perun.fuzz.randomizer as randomizer
-import perun.fuzz.helpers as helpers
+# Third-Party Imports
+
+# Perun Imports
+from perun.fuzz import helpers, randomizer
 
 
 RULE_ITERATIONS = 10

@@ -2,9 +2,13 @@
 with only one call of function from random package."""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any
 import random
 
-from typing import Callable, Any
+# Third-Party Imports
+
+# Perun Imports
 
 
 def random_repeats(repeats: int) -> Callable[[Any], Any]:
@@ -40,7 +44,7 @@ def random_repeats(repeats: int) -> Callable[[Any], Any]:
 
 def rand_from_range(start: int, stop: int) -> int:
     """Basic function that randomly choose an integer from range bounded by `start` and `stop`
-    parameters. Matematically expressed as `start` <= random_number <= `stop`.
+    parameters. Mathematically expressed as `start` <= random_number <= `stop`.
 
     :param int start: lower bound of the interval
     :param int stop: upper limit of the interval

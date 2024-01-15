@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+# Standard Imports
+from typing import Iterable, Callable, BinaryIO, Any, TYPE_CHECKING
 import os
 import shutil
 
-from typing import Iterable, Callable, BinaryIO, Any
+# Third-Party Imports
 
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.utils.streams as streams
-import perun.utils.decorators as decorators
+# Perun Imports
+from perun.logic import index, store
+from perun.utils import decorators, streams
 
-from perun.profile.factory import Profile
-from perun.logic.index import BasicIndexEntry
+if TYPE_CHECKING:
+    from perun.logic.index import BasicIndexEntry
+    from perun.profile.factory import Profile
 
 
 def load_profilename(prof_directory: str, prof_filename: str) -> str:

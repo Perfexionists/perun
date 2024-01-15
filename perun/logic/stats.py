@@ -36,25 +36,22 @@ The contents of the stats file are stored in a compressed form to reduce the mem
 """
 from __future__ import annotations
 
-import os
+# Standard Imports
+from typing import Optional, Iterable, BinaryIO, Callable, Any
 import json
+import os
 import re
 import shutil
-from zlib import error
-from typing import Optional, Iterable, BinaryIO, Callable, Any
+import zlib
 
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.logic.pcs as pcs
-import perun.utils as utils
-import perun.utils.exceptions as exceptions
-import perun.utils.helpers as utils_helpers
-import perun.vcs as vcs
-import perun.profile.helpers as helpers
-import perun.utils.log as perun_log
+# Third-Party Imports
 
-from perun.utils.helpers import SuppressedExceptions
-
+# Perun Imports
+from perun import utils, vcs
+from perun.logic import index, pcs, store
+from perun.profile import helpers
+from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
+from perun.utils.exceptions import SuppressedExceptions
 
 # Match the timestamp format of the profile names
 PROFILE_TIMESTAMP_REGEX = re.compile(r"(-?\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})")
@@ -338,7 +335,7 @@ def delete_version_dirs(
     Based on the only_empty parameter, it may delete only those which are empty or all of them.
 
     :param list minor_versions: a list of minor versions whose directories should be deleted
-    :param bool only_empty: deletes only those directories in 'minor_versions' which are empty
+    :param bool only_empty: if set then only those directories in 'minor_versions' which are empty will be deleted
     :param bool keep_directories: do not delete the minor version directories but only their
                                   content if set to True, does nothing if 'only_empty' is also True
     """
@@ -417,7 +414,7 @@ def clean_stats(keep_custom: bool = False, keep_empty: bool = False) -> None:
 
 
 def synchronize_index() -> None:
-    """Synchronizes the index file with the actual content of the stats directory. Should be
+    """Synchronizes the index file with the actual content of the stats' directory. Should be
     needed only after some manual tampering with the directories and files in the stats directory.
     """
     indexed_versions = _load_stats_index()
@@ -516,7 +513,7 @@ def _load_stats_from(stats_handle: BinaryIO) -> dict[str, Any]:
         # Make sure we're at the beginning
         stats_handle.seek(0)
         return json.loads(store.read_and_deflate_chunk(stats_handle))
-    except (ValueError, error):
+    except (ValueError, zlib.error):
         # Contents either empty or corrupted, init the content to empty dict
         return {}
 

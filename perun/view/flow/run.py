@@ -1,13 +1,16 @@
 """Flow graphs visualization of the profiles."""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
 from perun.utils import view_helpers, cli_helpers, log, helpers
 from perun.utils.exceptions import InvalidParameterException
-from perun.profile.factory import pass_profile, Profile
+import perun.profile.factory as profile_factory
 import perun.view.flow.factory as flow_factory
 
 
@@ -95,7 +98,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     default=False,
     help=(
         "Will stack the y axis values for different <by> keys"
-        " on top of each other. Additionaly shows the sum of the values."
+        " on top of each other. Additionally shows the sum of the values."
     ),
 )
 @click.option(
@@ -142,9 +145,11 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     is_flag=True,
     help="The generated graph will be immediately opened in the browser (firefox will be used).",
 )
-@pass_profile
+@profile_factory.pass_profile
 # Fixme: Consider breaking this to two
-def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
+def flow(
+    profile: profile_factory.Profile, filename: str, view_in_browser: bool, **kwargs: Any
+) -> None:
     """Customizable interpretation of resources using the flow format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/
@@ -159,7 +164,7 @@ def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) 
     value of ``<by>`` key, one graph shows the dependency of ``<of>`` values
     aggregated by ``<func>`` depending on the ``<through>`` key. Moreover, the
     values can either be accumulated (this way when displaying the value of 'n'
-    on x axis, we accumulate the sum of all values for all m < n) or stacked,
+    on x-axis, we accumulate the sum of all values for all m < n) or stacked,
     where the graphs are output on each other and then one can see the overall
     trend through all the groups and proportions between each of the group.
 
@@ -173,7 +178,7 @@ def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) 
     structure over which the given function operated::
 
         perun show 0@i flow mean --of 'amount' --per 'structure-unit-size'
-            --acumulated --by 'uid'
+            --accumulated --by 'uid'
 
     The example output of the bars is as follows::
 

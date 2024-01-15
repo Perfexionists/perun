@@ -1,18 +1,20 @@
 """Group of CLI commands used for manipulation with config"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any
+
+# Third-Party Imports
 import click
 
-import perun.logic.commands as commands
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as perun_log
+# Perun Imports
+from perun.logic import commands
+from perun.utils import cli_helpers, log as perun_log
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     MissingConfigSectionException,
     ExternalEditorErrorException,
 )
-
-from typing import Any
 
 
 @click.group()

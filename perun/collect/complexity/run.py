@@ -7,21 +7,18 @@ collection and postprocessing of collection data.
 from __future__ import annotations
 
 import dataclasses
+import click
 import os
 import shutil
 
 from subprocess import CalledProcessError
 from typing import Any
 
-import click
-
-import perun.collect.complexity.configurator as configurator
-import perun.collect.complexity.makefiles as makefiles
-import perun.collect.complexity.symbols as symbols
 import perun.logic.runner as runner
-import perun.utils.exceptions as exceptions
-import perun.utils.log as log
 import perun.utils as utils
+
+from perun.collect.complexity import configurator, makefiles, symbols
+from perun.utils import exceptions, log
 
 from perun.utils.structs import Executable, CollectStatus
 
@@ -137,7 +134,7 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
     """
     log.cprint("Running the collector...", "white")
     collect_dir = os.path.dirname(executable.cmd)
-    # Run the command and evaluate the returncode
+    # Run the command and evaluate the return code
     try:
         utils.run_safely_external_command(str(executable), cwd=collect_dir)
         log.done()
@@ -300,7 +297,7 @@ def _sampling_to_dictionary(
     if value is not None:
         # Initialize
         sampling_list = []
-        # Transform the tuple to more human readable dictionary
+        # Transform the tuple to more human-readable dictionary
         for sample in value:
             sampling_list.append({"func": sample[0], "sample": sample[1]})
         return sampling_list

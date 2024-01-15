@@ -4,18 +4,21 @@ The module contains the methods, that executes the computational logic of
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, TYPE_CHECKING
+
+# Third-Party Imports
+from scipy import integrate
 import numpy as np
-import scipy.integrate as integrate
 
-from typing import Any, Iterable
-
-import perun.check.factory as factory
-import perun.check.nonparam_helpers as nparam_helpers
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.postprocess.regression_analysis.tools as tools
-
-from perun.profile.factory import Profile
+# Perun Imports
+from perun.check import factory, nonparam_helpers as nparam_helpers
+from perun.postprocess.regression_analysis import regression_models
+from perun.utils import helpers
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state
@@ -34,7 +37,7 @@ def compute_param_integral(model: ModelRecord) -> float:
     According to the value of coefficients from these formulae is computed the
     integral using the general integration method from `scipy` package.
 
-    :param ModelRecord model: model with its required metrics (coefficients,type,etc)
+    :param ModelRecord model: model with its required metrics (coefficients,type, etc.)
     :return float: the value of integral of `formula` from `x_start` to `x_end`
     """
     formula = regression_models.get_formula_of(model.type)
@@ -74,7 +77,7 @@ def execute_analysis(
     **_: Any,
 ) -> DetectionChangeResult:
     """
-    A method performs the primary analysis for pair of models.
+    A method performs the primary analysis for a pair of models.
 
     A method executes the comparison of a pair of models. Method computes the integral from
     model values a subsequently is computed the relative error of target model against to
@@ -87,7 +90,7 @@ def execute_analysis(
     :param ModelRecord target_model: dictionary of target_model with its required properties
     :param Profile target_profile: target profile for the analysis
     :param dict _: unification with remaining detection methods (i.e. Integral Comparison)
-    :return DegradationInfo: tuple with degradation info between pair of models:
+    :return DegradationInfo: tuple with degradation info between a pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
     x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
@@ -105,7 +108,7 @@ def execute_analysis(
         else compute_nparam_integral(x_pts, target_y_pts)
     )
 
-    rel_error = tools.safe_division(
+    rel_error = helpers.safe_division(
         float(target_integral - baseline_integral), float(baseline_integral)
     )
 

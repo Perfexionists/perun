@@ -8,15 +8,16 @@
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Callable, Iterable, TYPE_CHECKING
 import distutils.util as dutils
 
-from typing import Any, Callable, Iterable, TYPE_CHECKING
+# Third-Party Imports
 
-import perun.logic.config as config
-import perun.utils.log as log
-import perun.profile.helpers as profile
-import perun.profile.factory as factory
-
+# Perun Imports
+from perun.logic import config
+from perun.profile import helpers as profile_helpers, factory as profile_factory
+from perun.utils import log
 from perun.utils.structs import CollectStatus, Job, Unit
 
 if TYPE_CHECKING:
@@ -51,7 +52,7 @@ class WorkloadGenerator:
 
         :return: tuple of collection status and collected profile
         """
-        collective_profile, collective_status = factory.Profile(), CollectStatus.OK
+        collective_profile, collective_status = profile_factory.Profile(), CollectStatus.OK
 
         for workload, workload_ctx in self._generate_next_workload():
             config.runtime().set("context.workload", workload_ctx)
@@ -68,7 +69,7 @@ class WorkloadGenerator:
                 collective_status = (
                     CollectStatus.ERROR if collective_status == CollectStatus.ERROR else c_status
                 )
-                collective_profile = profile.merge_resources_of(collective_profile, prof)
+                collective_profile = profile_helpers.merge_resources_of(collective_profile, prof)
 
         if not self.for_each:
             yield collective_status, collective_profile
@@ -76,7 +77,7 @@ class WorkloadGenerator:
     def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:
         """Logs error, since each generator should generate the workloads in different ways
 
-        :return: tuple of generated workload and deeper workload context (used when contructing
+        :return: tuple of generated workload and deeper workload context (used when constructing
             resources that will be added to profile)
         """
         yield from ()

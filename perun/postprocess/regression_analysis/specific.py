@@ -6,9 +6,14 @@ This module contains the required specific versions for the models computation.
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable
 
-import perun.postprocess.regression_analysis.tools as tools
+# Third-Party Imports
+
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
+from perun.utils import helpers
 
 
 def specific_quad_data(
@@ -176,7 +181,7 @@ def specific_quad_error(
     sse = y_sq_sum - coeffs[0] * y_sum - coeffs[1] * xy_sum - coeffs[2] * x_sq_y_sum
 
     # Compute the r^2
-    r_square = 1 - tools.safe_division(sse, tss)
+    r_square = 1 - helpers.safe_division(sse, tss)
 
     # Save the data
     data = dict(sse=sse, tss=tss, r_square=r_square)

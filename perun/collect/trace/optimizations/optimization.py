@@ -3,7 +3,8 @@
 
 import collections
 
-from perun.utils.helpers import SuppressedExceptions, sanitize_filepart
+from perun.utils.helpers import sanitize_filepart
+from perun.utils.exceptions import SuppressedExceptions
 from perun.collect.trace.optimizations.structs import (
     Optimizations,
     Pipeline,

@@ -1,17 +1,17 @@
 """Group of CLI commands used for detecting degradations in VCS history"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING, Optional
 import distutils.util as dutils
 
+# Third-Party Imports
 import click
 
+# Perun Imports
+from perun.logic import pcs, config as perun_config
+from perun.utils import cli_helpers, log
 import perun.check.factory as check
-import perun.logic.pcs as pcs
-import perun.logic.config as perun_config
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as log
-
-from typing import Any, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -63,7 +63,7 @@ def check_group(**_: Any) -> None:
 
     This command group either runs the checks for one point of history (``perun check head``) or for
     the whole history (``perun check all``). For each minor version (called the `target`) we iterate
-    over all of the registered profiles and try to find a predecessor minor version (called the
+    over the registered profiles and try to find a predecessor minor version (called the
     `baseline`) with profile of the same configuration (by configuration we mean the tuple of
     collector, postprocessors, command, arguments and workloads) and run the checks according to the
     rules set in the configurations.
@@ -92,7 +92,7 @@ def check_group(**_: Any) -> None:
               method: bmoe
             - method: aat
 
-    Currently we support the following methods:
+    Currently, we support the following methods:
 
         \b
 
@@ -140,16 +140,16 @@ def check_group(**_: Any) -> None:
     default="HEAD",
 )
 def check_head(head_minor: str = "HEAD") -> None:
-    """Checks for changes in performance between between specified minor version (or current `head`)
+    """Checks for changes in performance between specified minor version (or current `head`)
     and its predecessor minor versions.
 
-    The command iterates over all of the registered profiles of the specified `minor version`
+    The command iterates over the registered profiles of the specified `minor version`
     (`target`; e.g. the `head`), and tries to find the nearest predecessor minor version
     (`baseline`), where the profile with the same configuration as the tested target profile exists.
     When it finds such a pair, it runs the check according to the strategies set in the
     configuration (see :ref:`degradation-config` or :doc:`config`).
 
-    By default the ``hash`` corresponds to the `head` of the current project.
+    By default, the ``hash`` corresponds to the `head` of the current project.
     """
     log.newline()
     check.degradation_in_minor(head_minor)
@@ -167,8 +167,8 @@ def check_head(head_minor: str = "HEAD") -> None:
 def check_all(minor_head: str = "HEAD") -> None:
     """Checks for changes in performance for the specified interval of version history.
 
-    The commands crawls through the whole history of project versions starting from the specified
-    ``<hash>`` and for all of the registered profiles (corresponding to some `target` minor version)
+    The command crawls through the whole history of project versions starting from the specified
+    ``<hash>`` and for registered profiles (corresponding to some `target` minor version)
     tries to find a suitable predecessor profile (corresponding to some `baseline` minor version)
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).

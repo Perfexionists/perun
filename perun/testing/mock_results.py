@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+# Standard Imports
+
+# Third-Party Imports
+
+# Perun Imports
+from perun.utils.structs import DegradationInfo
+from perun.utils.structs import PerformanceChange as pc
 import perun.check.integral_comparison as int_cmp
 import perun.check.linear_regression as lreg
 import perun.check.local_statistics as loc_stat
 import perun.check.polynomial_regression as preg
-from perun.utils.structs import DegradationInfo
-from perun.utils.structs import PerformanceChange as pc
 
 
 _PREG_EXPECTED_RESULTS = [

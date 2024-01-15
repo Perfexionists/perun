@@ -1,13 +1,16 @@
 """Bar's graphs interpretation of the profiles."""
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
 import perun.view.bars.factory as bars_factory
+import perun.profile.factory as profile_factory
 from perun.utils import cli_helpers, view_helpers, log, helpers
-from perun.profile.factory import pass_profile, Profile
 from perun.utils.exceptions import InvalidParameterException
 
 
@@ -131,8 +134,10 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     is_flag=True,
     help="The generated graph will be immediately opened in the browser (firefox will be used).",
 )
-@pass_profile
-def bars(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
+@profile_factory.pass_profile
+def bars(
+    profile: profile_factory.Profile, filename: str, view_in_browser: bool, **kwargs: Any
+) -> None:
     """Customizable interpretation of resources using the bar format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/
@@ -157,7 +162,7 @@ def bars(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) 
     further customized by adding custom labels for axes, custom graph title or
     different graph width.
 
-    Example 1. The following will display the sum of sum of amounts of all
+    Example 1. The following will display the sum of sums of amounts of all
     resources of given for each subtype, stacked by uid (e.g. the locations in
     the program)::
 

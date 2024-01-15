@@ -6,26 +6,19 @@ possible to be run in isolation.
 """
 from __future__ import annotations
 
+# Standard Imports
+from operator import itemgetter
+from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
 import collections
 import os
 import re
 
-from operator import itemgetter
-from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
+# Third-Party Imports
 
-import perun.logic.pcs as pcs
-import perun.logic.config as perun_config
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.profile.helpers as profile
-import perun.utils as utils
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
-import perun.utils.timestamps as timestamp
-import perun.vcs as vcs
-import perun.logic.temp as temp
-import perun.logic.stats as stats
-
+# Perun Imports
+from perun import utils, vcs
+from perun.logic import pcs, config as perun_config, store, index, temp, stats
+from perun.utils import helpers, log as perun_log, timestamps
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     ExternalEditorErrorException,
@@ -46,8 +39,8 @@ from perun.utils.helpers import (
     PROFILE_DELIMITER,
     ColorChoiceType,
 )
-from perun.utils.log import cprint, cprintln
 from perun.utils.structs import ProfileListConfig, MinorVersion
+import perun.profile.helpers as profile
 
 if TYPE_CHECKING:
     from perun.profile.helpers import ProfileInfo
@@ -349,10 +342,10 @@ def print_profile_numbers(
             perun_log.info(", " if first_printed else "", end="")
             first_printed = True
             type_colour = PROFILE_TYPE_COLOURS[profile_type]
-            cprint(f"{profile_numbers[profile_type]} {profile_type}", type_colour)
+            perun_log.cprint(f"{profile_numbers[profile_type]} {profile_type}", type_colour)
         perun_log.info(")", end=line_ending)
     else:
-        cprintln(f"(no {profile_types} profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
+        perun_log.cprintln(f"(no {profile_types} profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
 
 def turn_off_paging_wrt_config(paged_function: str) -> bool:
@@ -443,7 +436,9 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
     else:
         # Walk the minor versions and print them
         for minor in vcs.walk_minor_versions(minor_version):
-            cprintln(f"Minor Version {minor.checksum}", TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+            perun_log.cprintln(
+                f"Minor Version {minor.checksum}", TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS
+            )
             base_dir = pcs.get_object_directory()
             tracked_profiles = index.get_profile_number_for_minor(base_dir, minor.checksum)
             print_profile_numbers(tracked_profiles, "tracked")
@@ -545,7 +540,7 @@ def print_shortlog_profile_list(
                 print_shortlog_token(fmt_string, max_lengths, minor_version, stat_length, token)
             # Non-token parts of the formatting string are printed as they are
             else:
-                cprint(token, "white")
+                perun_log.cprint(token, "white")
         perun_log.info("")
 
 
@@ -677,12 +672,12 @@ def print_shortlog_profile_list_header(
                 else:
                     limit = adjust_limit(limit, attr_type, max_lengths)
                     token_string = attr_type.center(limit, " ")
-                    cprint(token_string, "white", HEADER_ATTRS)
+                    perun_log.cprint(token_string, "white", HEADER_ATTRS)
             else:
                 perun_log.error(f"incorrect formatting token {token}")
         else:
             # Print the rest (non-token stuff)
-            cprint(token, "white", HEADER_ATTRS)
+            perun_log.cprint(token, "white", HEADER_ATTRS)
     perun_log.info("")
 
 
@@ -785,9 +780,9 @@ def print_other_formatting_string(
 
     # Print the actual token
     if info_attr == "type":
-        cprint(f"[{info_value}]", PROFILE_TYPE_COLOURS[raw_value])
+        perun_log.cprint(f"[{info_value}]", PROFILE_TYPE_COLOURS[raw_value])
     else:
-        cprint(info_value, colour)
+        perun_log.cprint(info_value, colour)
 
 
 def calculate_maximal_lengths_for_stats(
@@ -914,7 +909,7 @@ def print_status_profiles(
     """
     for profile_no, profile_info in enumerate(profiles):
         perun_log.info(" ", end="")
-        cprint(
+        perun_log.cprint(
             f"{profile_no}@{list_config.id_char}".rjust(list_config.id_width + 2, " "),
             list_config.colour,
         )
@@ -935,10 +930,10 @@ def print_status_profiles(
                 else:
                     perun_log.error(f"incorrect formatting token {token}")
             else:
-                cprint(token, list_config.colour)
+                perun_log.cprint(token, list_config.colour)
         perun_log.info("")
         if profile_no % 5 == 0 or profile_no == list_config.list_len - 1:
-            cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+            perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
 
 def print_status_profile_list_header(
@@ -958,9 +953,9 @@ def print_status_profile_list_header(
     :param ProfileInfoConfig list_config: configuration of the output profile list
     :param dict max_lengths: mapping of token types ot their maximal lengths for alignment
     """
-    cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+    perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
     perun_log.info(" ", end="")
-    cprint("id".center(list_config.id_width + 2, " "), list_config.colour)
+    perun_log.cprint("id".center(list_config.id_width + 2, " "), list_config.colour)
     perun_log.info(" ", end="")
     for token_type, token in fmt_tokens:
         if token_type == "fmt_string":
@@ -970,14 +965,14 @@ def print_status_profile_list_header(
                     limit, attr_type, max_lengths, (2 if attr_type == "type" else 0)
                 )
                 token_string = attr_type.center(limit, " ")
-                cprint(token_string, list_config.colour)
+                perun_log.cprint(token_string, list_config.colour)
             else:
                 perun_log.error(f"incorrect formatting token {token}")
         else:
             # Print the rest (non token stuff)
-            cprint(token, list_config.colour)
+            perun_log.cprint(token, list_config.colour)
     perun_log.info("")
-    cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+    perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
 
 def adjust_header_length(
@@ -1055,7 +1050,7 @@ def get_untracked_profiles() -> list[ProfileInfo]:
     #   extract the info and register it in the index
     for untracked_path in untracked_list:
         real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+        time = timestamps.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Load the data from JSON, which contains additional information about profile
         # We know, that the real_path exists, since we obtained it above from listdir

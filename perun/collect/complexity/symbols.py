@@ -10,11 +10,14 @@
 """
 from __future__ import annotations
 
+# Standard Imports
 import dataclasses
 
-import perun.utils.helpers as helpers
-import perun.utils.exceptions as exceptions
-import perun.utils as utils
+# Third-Party Imports
+
+# Perun Imports
+from perun import utils
+from perun.utils import exceptions
 
 # Symbol table columns constants
 _SYMTABLE_NAME_COLUMN = 8
@@ -210,7 +213,7 @@ def _dismantle_symbols(symbol_map: dict[str, str]) -> dict[str, PrototypeParts]:
     specification_map = dict()
     for key in symbol_map.keys():
         # Process each symbol from the map
-        with helpers.SuppressedExceptions(exceptions.UnexpectedPrototypeSyntaxError):
+        with exceptions.SuppressedExceptions(exceptions.UnexpectedPrototypeSyntaxError):
             specification_map[key] = _process_symbol(symbol_map[key])
     return specification_map
 

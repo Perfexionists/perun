@@ -9,23 +9,20 @@ containing formats and options for one execution of perun command.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Iterable, Optional
 import dataclasses
 import os
 import re
 import sys
 
-from ruamel.yaml import YAML, scanner
-import ruamel.yaml.comments as comments
-from typing import Any, Iterable, Optional
+# Third-Party Imports
+from ruamel.yaml import YAML, scanner, comments
 
-import perun.logic.config_templates as templates
-import perun.utils.decorators as decorators
-import perun.utils.exceptions as exceptions
-import perun.utils.helpers as helpers
-import perun.utils.log as perun_log
-import perun.utils.streams as streams
-
-from perun.utils.helpers import SuppressedExceptions
+# Perun Imports
+from perun.logic import config_templates
+from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
+from perun.utils.exceptions import SuppressedExceptions
 
 
 def is_valid_key(key: str) -> bool:
@@ -121,7 +118,7 @@ class Config:
         """Safely returns the value of the key; i.e. in case it is missing default is used
 
         :param str key: key we are looking up
-        :param object default: default value of the key, which is used if we did not find the value
+        :param object default: default value of the key, which is used if we did not find the value for the key
         :return: value of the key in the config or default
         """
         try:
@@ -155,7 +152,7 @@ class Config:
 
     @decorators.validate_arguments(["keys"], are_valid_keys)
     def get_bulk(self, keys: Iterable[str]) -> Any:
-        """Core functiont hat returns the value of the multiple keys in config
+        """Core function that returns the value of the multiple keys in config
 
         :param keys: list of section separated by dots
         :returns value: retrieved values of the keys at config
@@ -257,7 +254,7 @@ def init_local_config_at(
     helpers.touch_file(path)
 
     # Get configuration template
-    predefined_config = templates.get_predefined_configuration(config_template, wrapped_vcs)
+    predefined_config = config_templates.get_predefined_configuration(config_template, wrapped_vcs)
 
     # Create a config for user to set up
     local_config = streams.safely_load_yaml_from_stream(predefined_config)
@@ -298,8 +295,8 @@ def _ascend_by_section_safely(section_iterator: dict[str, Any], section_key: str
 
     In case the section_key is not in the section_iterator, MissingConfigSectionException is raised.
 
-    :param dict section_iterator: dictionary with sections
-    :param str section_key: section in dictionary
+    :param dict section_iterator: dictionary
+    :param str section_key: section of keys in the stream of nested dictionaries
     :returns: dictionary or the key after ascending by one section key
     :raises exceptions.MissingConfigSectionException: when the given section_key is not found in the
         configuration object.
@@ -399,7 +396,7 @@ def local(path: str) -> Config:
 def runtime() -> Config:
     """
     Returns the configuration corresponding to the one runtime of perun command, not stored anywhere
-    and serving as a temporary shared storage through various functions. Moreover this is also
+    and serving as a temporary shared storage through various functions. Moreover, this is also
     used to temporary rewrite some options looked-up in the recursive manner.
 
     runtime = {

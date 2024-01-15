@@ -1,7 +1,12 @@
 """A simple clusterization technique, which classifies resources according to sorted values."""
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any
+
+# Third-Party Imports
+
+# Perun Imports
 
 
 def clusterize(sorted_resources: list[dict[str, Any]], **_: Any) -> None:

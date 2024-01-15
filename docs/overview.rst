@@ -5,7 +5,7 @@ Perun: Performance Under Control
    :align: center
 
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
-.. _Click: http://click.pocoo.org/5/
+.. _Click: https://click.palletsprojects.com/en/latest/
 .. _JSON: https://www.json.org/
 .. _Yaml: http://yaml.org/
 

@@ -1,13 +1,15 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any
 import operator
+
+# Third-Party Imports
 import click
 
-from typing import Any
-
-import perun.logic.runner as runner
-
+# Perun Imports
+from perun.logic import runner
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
@@ -32,7 +34,7 @@ def normalize_resources(resources: list[dict[str, Any]]) -> None:
 
     :param list resources: list of resources
     """
-    # First compute maximas per each type
+    # First compute maxima per each type
     maximum_per_type: dict[str, int] = {}
     for resource in resources:
         resource_type = get_resource_type(resource)
@@ -71,7 +73,7 @@ def normalizer(profile: Profile) -> None:
       * **Limitations**: `none`
       * **Dependencies**: `none`
 
-    Normalizer is a postprocessor, which iterates through all of the snapshots
+    Normalizer is a postprocessor, which iterates through the snapshots
     and normalizes the resources of same type to interval ``(0, 1)``, where
     ``1`` corresponds to the maximal value of the given type.
 

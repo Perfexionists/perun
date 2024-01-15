@@ -4,18 +4,21 @@ auxiliary methods at executing of this method.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Iterator, Any, cast
+import dataclasses
+
+# Third-Party Imports
 import click
 import numpy as np
 import pandas as pd
 import sklearn.metrics
 
-from typing import Callable, Iterator, Any, cast
-from dataclasses import dataclass
-
-import perun.postprocess.regression_analysis.tools as tools
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
 
-@dataclass()
+@dataclasses.dataclass()
 class DecayParamInfo:
     __slots__ = ["condition", "err_msg"]
     condition: Callable[[float], bool]
@@ -165,7 +168,7 @@ def moving_average(
     # If has been specified the window width by user, then will be followed the direct computation
     if configuration.get("window_width"):
         bucket_stats, r_square = execute_computation(y_pts, configuration)
-    # If has not been specified the window width, then will be followed the iterative computation
+    # If we did not specify the window width, then will be followed the iterative computation
     else:
         bucket_stats, r_square, configuration["window_width"] = iterative_analysis(
             x_pts, y_pts, configuration
@@ -252,7 +255,7 @@ def validate_decay_param(
         )
 
 
-# dictionary contains the required keys to check before the access to this keys
+# dictionary contains the required keys to check before the access to these keys
 # - required keys are divided according to individual supported methods
 _METHOD_REQUIRED_KEYS: dict[str, list[str]] = {
     "sma": ["moving_method", "center", "window_type", "min_periods", "per_key"],

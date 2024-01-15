@@ -14,10 +14,15 @@ the given argument and return value conventions.
 """
 from __future__ import annotations
 
-from math import sqrt
+# Standard Imports
 from typing import Any, Iterable, Callable
+import math
 
-import perun.postprocess.regression_analysis.tools as tools
+# Third-Party Imports
+
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
+from perun.utils import helpers
 
 
 def generic_compute_regression(
@@ -122,7 +127,7 @@ def generic_regression_data(
             x_sq_sum=x_square_sum,
             y_sq_sum=y_square_sum,
             pts_num=pts_num,
-            num_sqrt=sqrt(pts_num),
+            num_sqrt=math.sqrt(pts_num),
             x_start=x_min,
             x_end=x_max,
         )
@@ -146,7 +151,7 @@ def generic_regression_coefficients(
     based on the intermediate results from the data generator.
 
     The 'f_a' and 'f_b' refer to the coefficients modification function (similar to the 'f_x' and
-    'f_y', e.g. 10**x for b0 coefficient => 10**(b0) coefficient value)), which is applied after
+    'f_y', e.g. 10**x for b0 coefficient => 10**(b0) coefficient value), which is applied after
     the coefficients are computed.
 
     Returns the data dictionary with intermediate values 's_xx', 's_xy' and 'coeffs' key containing
@@ -188,11 +193,11 @@ def generic_regression_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
-    s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(y_sum, num_sqrt)
-    s_xx = x_sq_sum - (tools.safe_division(x_sum, num_sqrt) ** 2)
+    s_xy = xy_sum - helpers.safe_division(x_sum, num_sqrt) * helpers.safe_division(y_sum, num_sqrt)
+    s_xx = x_sq_sum - (helpers.safe_division(x_sum, num_sqrt) ** 2)
 
-    b_1 = tools.safe_division(s_xy, s_xx)
-    b_0 = tools.safe_division(y_sum - b_1 * x_sum, pts_num)
+    b_1 = helpers.safe_division(s_xy, s_xx)
+    b_0 = helpers.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
     return {"coeffs": [f_a(b_0), f_b(b_1)], "s_xy": s_xy, "s_xx": s_xx}
@@ -230,13 +235,13 @@ def generic_regression_error(
     :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
-    tss = y_sq_sum - (tools.safe_division(y_sum, num_sqrt) ** 2)
+    tss = y_sq_sum - (helpers.safe_division(y_sum, num_sqrt) ** 2)
 
     # Compute the RSS
-    rss = tools.safe_division(s_xy, sqrt(s_xx)) ** 2
+    rss = helpers.safe_division(s_xy, math.sqrt(s_xx)) ** 2
 
     # Compute the r^2
-    r_square = tools.safe_division(rss, tss)
+    r_square = helpers.safe_division(rss, tss)
 
     # Save the data
     data = dict(rss=rss, tss=tss, r_square=r_square)

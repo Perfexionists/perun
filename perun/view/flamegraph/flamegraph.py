@@ -1,21 +1,28 @@
 """This module provides wrapper for the Flame graph visualization"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import TYPE_CHECKING
 import os
 import subprocess
 
-import perun.profile.convert as converter
-import perun.profile.factory as profiles
-import perun.utils.helpers as helpers
+# Third-Party Imports
 
+# Perun Imports
+from perun.profile import convert
+from perun.utils import helpers
+
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 _SCRIPT_FILENAME = "./flamegraph.pl"
 
 
-def draw_flame_graph(profile: profiles.Profile, output_file: str, height: int) -> None:
+def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     """Draw Flame graph from profile.
 
-        To create Flame graphs it's uses perl script created by Brendan Gregg.
+        To create Flame graphs we use perl script created by Brendan Gregg.
         https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
 
     :param dict profile: the memory profile
@@ -23,7 +30,7 @@ def draw_flame_graph(profile: profiles.Profile, output_file: str, height: int) -
     :param int height: graphs height
     """
     # converting profile format to format suitable to Flame graph visualization
-    flame = converter.to_flame_graph_format(profile)
+    flame = convert.to_flame_graph_format(profile)
 
     header = profile["header"]
     profile_type = header["type"]

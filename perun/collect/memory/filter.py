@@ -1,9 +1,13 @@
 """This module provides methods for filtering the profile"""
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any
 
-import perun.collect.memory.parsing as parsing
+# Third-Party Imports
+
+# Perun Imports
+from perun.collect.memory import parsing
 
 
 def remove_allocators(profile: dict[str, Any]) -> dict[str, Any]:

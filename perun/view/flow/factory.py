@@ -1,17 +1,20 @@
 """This module contains the Flow usage graph creating functions"""
 from __future__ import annotations
 
+# Standard Imports
 from typing import TYPE_CHECKING, Hashable, cast, Protocol
 
+# Third-Party Imports
 import holoviews as hv
 
+# Perun Imports
 from perun.profile import convert
 from perun.utils import view_helpers
 
-
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
     import pandas as pd
+
+    from perun.profile.factory import Profile
 
 
 class IntTableLike(Protocol):
@@ -108,7 +111,7 @@ def construct_data_source_from(
     minimal_x_value: int = data_frame[through_key].min()
     maximal_x_value: int = data_frame[through_key].max()
 
-    # Construct the data source (first we group the values by 'by_key' (one graph per each key).
+    # Construct the data source: first we group the values by 'by_key' (one graph per each key).
     #   And then we compute the aggregations of the data grouped again, but by through key
     #   (i.e. for each value on X axis), the values are either accumulated or not
     data_source: dict[Hashable, list[int]] = {}

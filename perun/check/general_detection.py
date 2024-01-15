@@ -9,32 +9,29 @@ general methods.
 """
 from __future__ import annotations
 
-from enum import Enum
+# Standard Imports
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
+
+# Third-Party Imports
+import numpy as np
+
+# Perun Imports
+from perun.check import fast_check, linear_regression, polynomial_regression
+from perun.postprocess.regression_analysis import regression_models
+from perun.profile import query
+from perun.utils import helpers
+from perun.utils.structs import (
+    PerformanceChange,
+    DegradationInfo,
+    ModelRecord,
+    ClassificationMethod,
+)
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
-import numpy as np
-
-import perun.postprocess.regression_analysis.regression_models as regression_models
-import perun.profile.query as query
-import perun.utils.helpers
-import perun.check.polynomial_regression as polynomial_regression
-import perun.check.fast_check as fast_check
-import perun.check.linear_regression as linear_regression
-
-from perun.utils.structs import PerformanceChange, DegradationInfo, ModelRecord
-
 
 SAMPLES: int = 1000
-
-
-class ClassificationMethod(Enum):
-    FastCheck = 1
-    LinearRegression = 2
-    PolynomialRegression = 3
-
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -53,8 +50,8 @@ def create_filter_by_model(
     def filter_by_model(_: dict[str, Any], model: dict[str, Any]) -> bool:
         """Filters the models according to the model name
 
-        :param dict _: dictionary with already found models
-        :param dict model: model of given uid
+        :param dict _: dictionary with set of models
+        :param dict model: filtered model of given uid
         :return: true if the given model is of the given type
         """
         return model["model"] == model_name
@@ -65,8 +62,8 @@ def create_filter_by_model(
 def filter_by_r_square(model_map: dict[str, Any], model: dict[str, Any]) -> bool:
     """Filters the models according to the value of the r_square
 
-    :param dict model_map: dictionary with already found models
-    :param dict model: model of given uid
+    :param dict model_map: dictionary with found models
+    :param dict model: filtered model of given uid
     :return: filter function that retrieves only the best model w.r.t r_square
     """
     return model_map[model["uid"]].r_square < model["r_square"]
@@ -137,11 +134,11 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
     :param ModelRecord model: model with its required metrics (value of coefficient, type, ...)
     :returns: np_array (x-coordinates, y-coordinates)
     """
-    model_handler = regression_models._MODELS[model.type]
+    model_handler = regression_models.MODEL_MAP[model.type]
     plotter = model_handler["transformations"]["plot_model"]
 
     array_x_pts = plotter["model_x"](
-        model.x_start, model.x_end, SAMPLES, transform_by=perun.utils.helpers.identity
+        model.x_start, model.x_end, SAMPLES, transform_by=helpers.identity
     )
 
     if model.type == "quadratic":
@@ -151,7 +148,7 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
             model.b1,
             model.b2,
             plotter["formula"],
-            transform_by=perun.utils.helpers.identity,
+            transform_by=helpers.identity,
         )
     else:
         array_y_pts = plotter["model_y"](
@@ -160,7 +157,7 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
             model.b1,
             plotter["formula"],
             model_handler["f_x"],
-            transform_by=perun.utils.helpers.identity,
+            transform_by=helpers.identity,
         )
 
     return array_y_pts, array_x_pts
@@ -171,11 +168,11 @@ def general_detection(
     target_profile: Profile,
     classification_method: ClassificationMethod = ClassificationMethod.PolynomialRegression,
 ) -> Iterable[DegradationInfo]:
-    """The general method, which covers all detection logic. At the begin obtains the pairs
-    of the best models from the given profiles and the pairs of the linears models. Subsequently
+    """The general method, which covers all detection logic. At the beginning obtains the pairs
+    of the best models from the given profiles and the pairs of the linear models. Subsequently,
     are computed the needed statistics metrics, concretely relative and absolute error. According
-    to the calling method is call the relevant classification method. After the returned from this
-    classification is know the type of occurred changes. In the last steps is determined
+    to the calling method is call the relevant classification method. After the return from this
+    classification we know the type of occurred changes. In the last steps is determined
     information, which will be returned to users (i.e. confidence, change between models).
 
     :param Profile baseline_profile: baseline against which we are checking the degradation

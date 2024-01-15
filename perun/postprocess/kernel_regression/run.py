@@ -3,16 +3,17 @@ Postprocessor module with non-parametric analysis using the kernel regression me
 """
 from __future__ import annotations
 
-import click
-
+# Standard Imports
 from typing import Any, TYPE_CHECKING
 
-import perun.logic.runner as runner
-import perun.postprocess.kernel_regression.methods as methods
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.cli_helpers as cli_helpers
+# Third-Party Imports
+import click
 
+# Perun Imports
+from perun.logic import runner
+from perun.postprocess.kernel_regression import methods
+from perun.postprocess.regression_analysis import data_provider, tools
+from perun.utils import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:
@@ -194,7 +195,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
             kernel-type estimators, such as the *Nadaraya-Watson* estimator. More precisely, it
             adapts to both random and fixed designs, and to various design densities such as highly
             clustered designs and nearly uniform designs. It turns out that the *local linear*
-            smoother repairs the drawbacks of other kernel regression estimators. An regression
+            smoother repairs the drawbacks of other kernel regression estimators. A regression
             estimator *m* of *m* is a linear smoother if, for each *x*, there is a vector
             :math:`l(x) = (l_1(x), ..., l_n(x))^T` such that:
 
@@ -215,7 +216,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
 
     **Bandwidth Method <bandwidth-method>**:
 
-        As has been said in the general description of the *kernel regression*, once of the most
+        As has been said in the general description of the *kernel regression*, one of the most
         important factors of the resulting estimate is the kernel **bandwidth**. When the
         inappropriate value is selected may occur to *under-laying* or *over-laying* fo the
         resulting kernel estimate. Since the bandwidth of the kernel is a free parameter which
@@ -261,7 +262,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
             kernel_regression.KernelReg.html#statsmodels.nonparametric.kernel_regression.KernelReg
 
     The remaining options at this mode of kernel regression postprocessor are described within usage
-    to it and you can see this in the list below. All these options are parameters to
+    from the CLI and you can see this in the list below. All these options are parameters to
     *EstimatorSettings* (see EstimatorSettings_), that optimizing the kernel bandwidth based on the
     these specified settings.
 
@@ -360,7 +361,7 @@ def method_selection(ctx: click.Context, **kwargs: Any) -> None:
 
         **Scotts's Rule** of thumb to determine the smoothing bandwidth for a kernel estimation. It
         is very fast compute. This rule was designed for density estimation but is usable for kernel
-        regression too. Typically produces a larger bandwidth and therefore it is useful for
+        regression too. Typically, produces a larger bandwidth, and therefore it is useful for
         estimating a gradual trend:
 
             .. math::
@@ -630,7 +631,7 @@ def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:
     little bit different way. From a given range of potential bandwidths <gamma-range> try to
     select the optimal kernel bandwidth with use of *leave-one-out cross-validation*. This approach
     was described in :ref:`postprocessors-kernel-regression-estimator_settings`, where was
-    introduced the *least-squares cross- validation* and it is a modification of this approach.
+    introduced the *least-squares cross-validation* and it is a modification of this approach.
     *Leave-one-out cross validation* is K-fold_ cross validation taken to its logical extreme, with
     *K* equal to *N*, the number of data points in the set. The original *gamma-range* will be
     divided on the base of size the given step <gamma-step>. The selection of specific value from
@@ -667,7 +668,7 @@ def kernel_regression(ctx: click.Context, **_: Any) -> None:
     to estimate the regression function. The main idea of kernel regression is putting the
     **kernel**, that have the role of weighted function, to each observation point in the dataset.
     Subsequently, the kernel will assign weight to each point in depends on the distance from the
-    current data point. The kernel basis formula depends only to the *bandwidth* from the current
+    current data point. The kernel basis formula depends only on the *bandwidth* from the current
     ('local') data point X to a set of neighboring data points X.
 
         **Kernel Selection** does not important from an asymptotic point of view. It is appropriate
@@ -681,9 +682,9 @@ def kernel_regression(ctx: click.Context, **_: Any) -> None:
 
         **Bandwidth Selection** is the most important factor at each approach of kernel regression,
         since this value significantly affects the smoothness of the resulting estimate. In case,
-        when is choose the inappropriate value, in the most cases can be expected the following two
+        when we choose the inappropriate value, in the most cases can be expected the following two
         situations. The **small** bandwidth value reproduce estimated data and vice versa, the
-        **large** value leads to over-leaving, so to average of the estimated data. Therefore are
+        **large** value leads to over-leaving, so to average of the estimated data. Therefore, are
         used the methods to determine the bandwidth value. One of the most widespread and most
         commonly used methods is the **cross-validation** method. This method is based on the
         estimate of the regression function in which will be omitted *i-th* observation. In this
@@ -695,7 +696,7 @@ def kernel_regression(ctx: click.Context, **_: Any) -> None:
     This postprocessor in summary offers five different modes, which does not differ in the
     resulting estimate, but in the way of computation the resulting estimate. Better said, it
     means, that the result of each mode is the **kernel estimate** with relevant parameters,
-    selected according to the concrete mode. In short we will describe the individual methods, for
+    selected according to the concrete mode. In short, we will describe the individual methods, for
     more information about it, you can visit the relevant parts of documentation:
 
         | * **Estimator-Settings**: Nadaraya-Watson kernel regression with specific settings

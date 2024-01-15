@@ -3,17 +3,20 @@
 """
 from __future__ import annotations
 
-from random import shuffle
+# Standard Imports
 from operator import itemgetter
+from typing import Any, Iterable, TYPE_CHECKING
+import random
+
+# Third-Party Imports
 import numpy as np
 
-from typing import Any, Iterable, TYPE_CHECKING
+# Perun Imports
+from perun.utils import exceptions
 
 if TYPE_CHECKING:
     import numpy.typing as npt
     import perun.profile.factory as profiles
-
-import perun.utils.exceptions as exceptions
 
 
 # Minimum points count to perform the regression
@@ -96,7 +99,7 @@ def shuffle_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float],
     # Build one list to ensure the coordinates are paired after the shuffle
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
     points = list(zip(x_pts, y_pts))
-    shuffle(points)
+    random.shuffle(points)
     res_x_pts, res_y_pts = zip(*points)
     return list(res_x_pts), list(res_y_pts)
 
@@ -135,19 +138,6 @@ def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.flo
     return x_pts
 
 
-def safe_division(dividend: float, divisor: float) -> float:
-    """Safe division of divident by operand
-
-    :param number dividend: upper operand of the division
-    :param number divisor: lower operand of the division, may be zero
-    :return: safe value after division of approximated zero
-    """
-    try:
-        return dividend / divisor
-    except (ZeroDivisionError, ValueError):
-        return dividend / APPROX_ZERO
-
-
 def as_plot_x_dict(plot_x: Any) -> dict[str, Any]:
     """Returns the argument as dictionary with given key
 
@@ -172,7 +162,7 @@ def add_models_to_profile(
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
-    :param Profile profile: profile to add the analysis
+    :param Profile profile: profile to add the results to
     :param list models: analysis executed by the individual postprocessor
     :return: method has no return value
     """

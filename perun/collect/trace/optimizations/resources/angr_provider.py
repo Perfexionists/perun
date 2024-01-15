@@ -8,8 +8,7 @@ import os
 import angr
 
 import perun.logic.stats as stats
-from perun.utils.helpers import SuppressedExceptions
-from perun.utils.exceptions import StatsFileNotFoundException
+from perun.utils.exceptions import StatsFileNotFoundException, SuppressedExceptions
 
 
 def extract(stats_name, binary, cache, **kwargs):

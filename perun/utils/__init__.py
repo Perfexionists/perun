@@ -5,20 +5,7 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
 from __future__ import annotations
 
-import importlib
-import logging
-import shlex
-import shutil
-import subprocess
-import os
-import sys
-import re
-import operator
-import itertools
-import types
-from contextlib import contextmanager
-import magic
-
+# Standard Imports
 from typing import (
     Iterable,
     Optional,
@@ -30,8 +17,27 @@ from typing import (
     TYPE_CHECKING,
     overload,
 )
+import contextlib
+import importlib
+import itertools
+import operator
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+
+# Third-Party Imports
+import magic
+
+# Perun Imports
+from .log import error, cprint, cprintln, info
+from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 if TYPE_CHECKING:
+    import types
+
     from perun.utils.structs import CollectStatus, PostprocessStatus
 
 
@@ -47,10 +53,6 @@ class Comparable(Protocol):
 
     def __gt__(self, other: Any) -> bool:
         pass
-
-
-from .log import error, cprint, cprintln, info
-from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 
 # Parse the obtained python version identifier into groups of digits and postfixes
@@ -196,7 +198,7 @@ def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
     return process.returncode
 
 
-@contextmanager
+@contextlib.contextmanager
 def nonblocking_subprocess(
     command: str,
     subprocess_kwargs: dict[str, Any],
@@ -401,7 +403,7 @@ def get_supported_module_names(package: str) -> list[str]:
     a key lookup and returns the list of supported values.
 
     This was originally dynamic collection of all the modules through beautiful module iteration,
-    which was shown to be completely uselessly slow than this hardcoded table. Since I assume, that
+    which was shown to be completely uselessly slower than this hardcoded table. Since I assume, that
     new modules will be registered very rarely, I think it is ok to have it implemented like this.
 
     Note: This is used in CLI, and as of Click 7.0 all subcommands have underscores (_)
@@ -557,7 +559,7 @@ def create_empty_pass(
 def create_empty_pass(
     return_code: PostprocessStatus,
 ) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
-    """Typing signature for creating empty pass returning PostpProcessStatus"""
+    """Typing signature for creating empty pass returning PostProcessStatus"""
     pass
 
 
@@ -632,7 +634,7 @@ def get_current_interpreter(
             while len(version_digits) != 3:
                 version_digits.append(0)
             return version_digits, cmp_op
-        logging.error(f"Unparsable Python version {python_version}")
+        error(f"Unparsable Python version {python_version}")
         return [], operator.eq
 
     interpreter = sys.executable

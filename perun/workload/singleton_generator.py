@@ -2,7 +2,7 @@
 behaviour of Perun, i.e. when each specified workload in :munit:`workloads` was passed to profiled
 program as string.
 
-Currently be default, any string specified in :munit:`workloads`, that does not correspond to some
+Currently, be default any string specified in :munit:`workloads`, that does not correspond to some
 generator specified in :ckey:`generators.workload`, is converted to Singleton Generator.
 
 The Singleton Generator can be configured by following options:
@@ -12,10 +12,14 @@ The Singleton Generator can be configured by following options:
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable
 
-from perun.workload.generator import WorkloadGenerator
+# Third-Party Imports
+
+# Perun Imports
 from perun.utils.structs import Job
+from perun.workload.generator import WorkloadGenerator
 
 
 class SingletonGenerator(WorkloadGenerator):

@@ -1,10 +1,13 @@
 """This module contains the BAR graphs creating functions"""
 from __future__ import annotations
 
+# Standard Imports
 from typing import TYPE_CHECKING
 
+# Third-Party Imports
 import holoviews as hv
 
+# Perun Imports
 from perun.profile import convert
 from perun.utils import view_helpers
 
@@ -46,7 +49,7 @@ def create_from_params(
     data_frame = convert.resources_to_pandas_dataframe(profile)
     data_frame.sort_values([per_key, by_key], inplace=True)
 
-    # Holoviews improperly implements pandas aggregation for non-numeric vdims. Their aggregation
+    # Holoviews improperly implements pandas aggregation for non-numeric dims. Their aggregation
     # accepts only np.size as an aggregation function for non-numeric columns. Let's do the data
     # preparation ourselves and let the users handle potential warnings when they select columns
     # and aggregation function combination that is invalid.

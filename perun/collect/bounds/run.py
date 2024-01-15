@@ -6,19 +6,21 @@ parsed by internal scanner resulting into profile.
 """
 from __future__ import annotations
 
+# Standard Imports
+from subprocess import SubprocessError
+from typing import Any
 import os
 import shutil
 import time as systime
 
-from subprocess import SubprocessError
-from typing import Any
-
+# Third-Party Imports
 import click
 
-import perun.collect.bounds.parser as parser
-import perun.logic.runner as runner
-import perun.utils.log as log
-import perun.utils as utils
+# Perun Imports
+from perun import utils
+from perun.collect.bounds import parser
+from perun.logic import runner
+from perun.utils import log
 from perun.utils.structs import CollectStatus
 
 _CLANG_COMPILER = "clang-3.5"
@@ -96,7 +98,7 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
 
 
 def lookup_source_files(ctx: click.Context, __: click.Option, value: list[str]) -> list[str]:
-    """Lookus up sources for the analysis.
+    """Looks up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.
 

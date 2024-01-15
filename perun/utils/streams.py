@@ -1,19 +1,22 @@
 """Functions for loading and working with streams (e.g. yaml)
 
 Some of the stuff are stored in the stream, like e.g. yaml and are reused in several places.
-This module encapulates such functions, so they can be used in CLI, in tests, in configs.
+This module encapsulates such functions, so they can be used in CLI, in tests, in configs.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import TextIO, Any
+import io
 import json
 import os
 import re
-import io
+
+# Third-Party Imports
 from ruamel.yaml import YAML
 
-from typing import TextIO, Any
-
-import perun.utils.log as log
+# Perun Imports
+from perun.utils import log
 
 
 def store_json(profile: dict[Any, Any], file_path: str) -> None:

@@ -6,24 +6,27 @@ executing gcov tool and parsing its output.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING
 import os
-import os.path as path
-import subprocess
 import statistics
+import subprocess
 
-from typing import Any
+# Third-Party Imports
 
-import perun.utils.log as log
-import perun.utils as utils
+# Perun Imports
+from perun import utils
+from perun.utils import log
+from perun.utils.exceptions import SuppressedExceptions
 
-from perun.utils.helpers import SuppressedExceptions
-from perun.utils.structs import Executable
-from perun.fuzz.structs import (
-    FuzzingConfiguration,
-    Mutation,
-    FuzzingProgress,
-    CoverageConfiguration,
-)
+if TYPE_CHECKING:
+    from perun.fuzz.structs import (
+        FuzzingConfiguration,
+        Mutation,
+        FuzzingProgress,
+        CoverageConfiguration,
+    )
+    from perun.utils.structs import Executable
 
 
 def prepare_workspace(source_path: str) -> None:
@@ -42,7 +45,7 @@ def prepare_workspace(source_path: str) -> None:
     """
     for file in os.listdir(source_path):
         if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith(".gcov.json.gz"):
-            os.remove(path.join(source_path, file))
+            os.remove(os.path.join(source_path, file))
 
 
 def get_src_files(source_path: str) -> list[str]:
@@ -60,9 +63,9 @@ def get_src_files(source_path: str) -> list[str]:
         if files:
             sources.extend(
                 [
-                    path.join(path.abspath(root), filename)
+                    os.path.join(os.path.abspath(root), filename)
                     for filename in files
-                    if path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]
+                    if os.path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]
                 ]
             )
 
@@ -77,7 +80,6 @@ def baseline_testing(
     :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
     :param FuzzingConfiguration config: configuration of the fuzzing
-    :param dict _: additional information about paths to .gcno files and source files
     :return tuple: median of measured coverages
     """
     # get source files (.c, .cc, .cpp, .h)
@@ -109,7 +111,7 @@ def get_initial_coverage(
     for seed in seeds:
         prepare_workspace(fuzzing_config.coverage.gcno_path)
 
-        command = " ".join([path.abspath(executable.cmd), executable.args, seed.path])
+        command = " ".join([os.path.abspath(executable.cmd), executable.args, seed.path])
 
         try:
             utils.run_safely_external_command(command, timeout=timeout)
@@ -131,7 +133,7 @@ def target_testing(
     **__: Any,
 ) -> bool:
     """
-    Testing function for coverage based fuzzing. Before testing it prepares the workspace
+    Testing function for coverage based fuzzing. Before testing, it prepares the workspace
     using `prepare_workspace` func, executes given command and `get_coverage_info` to
     obtain coverage information.
 
@@ -168,8 +170,8 @@ def get_gcov_files(directory: str) -> list[str]:
     """
     gcov_files = []
     for file in os.listdir(directory):
-        if path.isfile(file) and file.endswith("gcov"):
-            gcov_file = path.abspath(path.join(directory, file))
+        if os.path.isfile(file) and file.endswith("gcov"):
+            gcov_file = os.path.abspath(os.path.join(directory, file))
             gcov_files.append(gcov_file)
     return gcov_files
 
@@ -178,7 +180,7 @@ def parse_coverage_from_line(line: str, coverage_config: CoverageConfiguration) 
     """Parses coverage information out of the line according to the version of gcov
 
     :param str line: one line in coverage info
-    :param CoverageConfiguration coverage_config: configuration of the coverage
+    :param CoverageConfiguration coverage_config: configuration of the coverage testing
     :return: coverage info from one line
     """
     with SuppressedExceptions(ValueError):
@@ -231,10 +233,9 @@ def check_if_coverage_increased(
     """Condition for adding mutated input to set of candidates(parents).
 
     :param int base_cov: base coverage
-    :param int cov: measured coverage
+    :param int cov: measured coverage of the current mutation
     :param int parent_cov: coverage of mutation parent
     :param int increase_ratio: desired coverage increase ration between `base_cov` and `cov`
     :return bool: True if `cov` is greater than `base_cov` * `deg_ratio`, False otherwise
     """
-    tresh_cov = int(base_cov * increase_ratio)
-    return cov > tresh_cov and cov > parent_cov
+    return cov > int(base_cov * increase_ratio) and cov > parent_cov

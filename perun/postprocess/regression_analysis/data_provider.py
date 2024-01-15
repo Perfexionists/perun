@@ -1,9 +1,14 @@
 """Module for various means of regression data acquisition. """
 from __future__ import annotations
 
+# Standard Imports
 from operator import itemgetter
-from typing import Iterator, Any, Callable, TYPE_CHECKING
-import perun.profile.convert as convert
+from typing import Iterator, Any, TYPE_CHECKING
+
+# Third-Party Imports
+
+# Perun Imports
+from perun.profile import convert
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

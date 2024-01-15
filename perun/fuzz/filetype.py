@@ -1,16 +1,16 @@
 """Module for automatic recognizing file type and choosing appropriate fuzzing rules."""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Optional, Any
 import mimetypes
 import re
 
-from typing import Callable, Optional, Any
+# Third-Party Imports
 
-import perun.fuzz.randomizer as randomizer
-
-import perun.fuzz.methods.binary as binary
-import perun.fuzz.methods.xml as xml
-import perun.fuzz.methods.textfile as textfile
+# Perun Imports
+from perun.fuzz import randomizer
+from perun.fuzz.methods import binary, textfile, xml
 from perun.fuzz.structs import RuleSet
 
 

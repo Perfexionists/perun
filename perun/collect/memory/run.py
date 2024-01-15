@@ -1,17 +1,17 @@
 """This module contains methods needed by Perun logic"""
 from __future__ import annotations
 
+# Standard Imports
 import os
-
-import click
-
 from typing import Any
 
-import perun.collect.memory.filter as filters
-import perun.collect.memory.parsing as parser
-import perun.collect.memory.syscalls as syscalls
-import perun.logic.runner as runner
-import perun.utils.log as log
+# Third-Party Imports
+import click
+
+# Perun Imports
+from perun.collect.memory import filter as filters, parsing as parser, syscalls
+from perun.logic import runner
+from perun.utils import log
 from perun.utils.structs import CollectStatus, Executable
 
 

@@ -12,6 +12,7 @@ import os
 import sys
 import tabulate
 import perun.logic.store as store
+import perun.utils.helpers as helpers
 import perun.profile.convert as convert
 import perun.utils.log as log
 import perun.utils.streams as streams
@@ -32,7 +33,7 @@ def run_benchmark(benchmark_dir, performance_tests):
     results = []
     r, d = os.path.split(benchmark_dir)
     store_dir = os.path.join(r, "store-" + d)
-    store.touch_dir(store_dir)
+    helpers.touch_dir(store_dir)
     for bench in os.listdir(benchmark_dir):
         log.info(" > {}".format(log.in_color(bench, "yellow")))
         results.append(performance_test(benchmark_dir, bench, store_dir, executed_tests))

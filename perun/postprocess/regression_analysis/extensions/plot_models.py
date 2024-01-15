@@ -3,17 +3,22 @@
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Any, Optional, TYPE_CHECKING
+
+# Third-Party Imports
 import numpy as np
-import numpy.typing as npt
 
-from typing import Callable, Any, Optional
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
 
-import perun.postprocess.regression_analysis.tools as tools
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 # Default model curve smoothness specified as number of points generated from x interval
 # The higher the value, the smoother the curves, the longer the computation tho.
 # Default value is an empirically chosen compromise between speed and smoothness
-DEFAULT_SMOOTHNESS = 51
+DEFAULT_SMOOTHNESS: int = 51
 
 
 def model_plot_computation(

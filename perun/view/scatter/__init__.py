@@ -1,4 +1,4 @@
-""" `Scatter plot` visualizes the data as points on two dimensional grid, with
+""" `Scatter plot` visualizes the data as points on two-dimensional grid, with
 moderate customization possibilities. This visualization also display
 regression models, if the input profile was postprocessed by
 :ref:`postprocessors-regression-analysis`. The output backend of `Scatter plot`

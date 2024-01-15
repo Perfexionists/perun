@@ -1,31 +1,34 @@
 """Clusterization postprocessing module
 
-Currently we will try to issue the following clusterization techniques:
+Currently, we will try to issue the following clusterization techniques:
   1. **Sort order**---the sort order of values itself gives the cluster
   2. **Fixed window**---the cluster is represented by a fixed sized window of values
   3. **Weighted window**---the cluster is represented by a window. The size of the window is
      dependent on the values themselves.
 
-All of the windows can be further augmented by taking into account how many percent of values are
-actually taken.
+All windows can be further augmented by taking into account how many percent of values are actually taken.
 """
 from __future__ import annotations
 
-import operator
+# Standard Imports
+from typing import Any
 import itertools
+import operator
+
+# Third-Party Imports
 import click
 
-from typing import Any
-
-import perun.postprocess.clusterizer as clustering
-import perun.profile.convert as convert
-import perun.utils as utils
-import perun.utils.log as log
-import perun.logic.runner as runner
-
-from perun.profile.factory import pass_profile
+# Perun Imports
+from perun import utils
+from perun.logic import runner
+from perun.profile import convert
+from perun.profile.factory import pass_profile, Profile
+from perun.utils import log
 from perun.utils.structs import PostprocessStatus
-from perun.profile.factory import Profile
+
+
+SUPPORTED_STRATEGIES = ["sort_order", "sliding_window"]
+DEFAULT_STRATEGY = SUPPORTED_STRATEGIES[0]
 
 
 def resource_sort_key(resource: dict[str, Any]) -> Any:
@@ -68,7 +71,7 @@ def postprocess(
 ) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Takes the given profile and according to the set strategy computes clusters of resources
 
-    All of the resources are first sorted according to their uid and amounts. Then they are group
+    All resources are first sorted according to their uid and amounts. Then they are group
     according to their uid and for each group we compute the clusters in isolation
 
     :param Profile profile: performance profile that will be clusterized
@@ -105,15 +108,15 @@ def postprocess(
         print_groups(resources)
 
     # Return that everything is ok
-    return PostprocessStatus.OK, "Sucessfully clusterized the profile", dict(kwargs)
+    return PostprocessStatus.OK, "Successfully clusterized the profile", dict(kwargs)
 
 
 @click.command()
 @click.option(
     "--strategy",
     "-s",
-    default=clustering.DEFAULT_STRATEGY,
-    type=click.Choice(clustering.SUPPORTED_STRATEGIES),
+    default=DEFAULT_STRATEGY,
+    type=click.Choice(SUPPORTED_STRATEGIES),
     help="Specifies the clustering strategy, that will be applied for the profile",
 )
 @click.option(
@@ -188,13 +191,13 @@ def clusterizer(profile: Profile, **kwargs: Any) -> None:
     to the sliding window.
 
     The sliding window can be further adjusted by setting its **width** (i.e. how many near values
-    on the x axis will we fit to a cluster) and its **height** (i.e. how big of an interval of
-    resource amounts will be consider for one cluster). Both **width** and **height** can be further
+    on the x-axis will we fit to a cluster) and its **height** (i.e. how big of an interval of
+    resource amounts will be considered for one cluster). Both **width** and **height** can be further
     augmented. **Width** can either be `absolute`, where we take in maximum the absolute number of
     resources, `relative`, where we take in maximum the percentage of number of resources for each
     cluster, or `weighted`, where we take the number of resource depending on the frequency of their
     occurrences. Similarly, the **height** can either be `absolute`, where we set the interval of
-    amounts to an absolute size, or `relative`, where we set the interval of amounts relative to the
+    amounts to an absolute size, or `relative`, where we set the interval of amounts relative
     to the first resource amount in the cluster (so e.g. if we have window of height 0.1 and the
     first resource in the cluster has amount of 100, we will cluster every resources in interval 100
     to 110 to this cluster).

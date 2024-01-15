@@ -1,7 +1,12 @@
 """Collection of helper functions used in fuzzing"""
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, AnyStr
+
+# Third-Party Imports
+
+# Perun Imports
 
 
 def insert_at_split(

@@ -25,10 +25,14 @@ The Integer Generator can be configured by following options:
 """
 from __future__ import annotations
 
+# Standard Imports
 from typing import Any, Iterable
 
-from perun.workload.generator import WorkloadGenerator
+# Third-Party Imports
+
+# Perun Imports
 from perun.utils.structs import Job
+from perun.workload.generator import WorkloadGenerator
 
 
 class IntegerGenerator(WorkloadGenerator):

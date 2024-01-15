@@ -1,18 +1,21 @@
 """This module provides methods for parsing raw memory data"""
 from __future__ import annotations
 
+# Standard Imports
+from decimal import Decimal
+from typing import Any, TYPE_CHECKING
 import collections
 import re
 
-from decimal import Decimal
+# Third-Party Imports
 
-from typing import Any
+# Perun Imports
+from perun.collect.memory import syscalls
+from perun.profile import convert
+from perun.utils import helpers
 
-import perun.profile.convert as convert
-import perun.collect.memory.syscalls as syscalls
-import perun.utils.helpers as helpers
-
-from perun.utils.structs import Executable
+if TYPE_CHECKING:
+    from perun.utils.structs import Executable
 
 
 PATTERN_WORD: re.Pattern[str] = re.compile(r"(\w+|[?])")

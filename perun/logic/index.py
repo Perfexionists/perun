@@ -5,29 +5,28 @@ of various version of index entries.
 """
 from __future__ import annotations
 
-import os
-import binascii
-import struct
-import json
-from zlib import error
-
+# Standard Imports
 from enum import Enum
 from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
+import binascii
+import json
+import os
+import struct
+import zlib
 
-if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+# Third-Party Imports
 
-import perun.utils.timestamps as timestamps
-import perun.utils.log as perun_log
-import perun.utils.helpers as helpers
-import perun.logic.store as store
-import perun.logic.pcs as pcs
-
+# Perun Imports
+from perun.logic import pcs, store
+from perun.utils import helpers, log as perun_log, timestamps
 from perun.utils.exceptions import (
     EntryNotFoundException,
     MalformedIndexFileException,
     IndexNotFoundException,
 )
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 # List of current versions of format and magic constants
@@ -294,11 +293,11 @@ def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
     """Iterator through index entries
 
     Reads the beginning of the file, verifying the version and type of the index. Then it iterates
-    through all of the index entries and returns them as a BasicIndexEntry structure for further
+    through index entries and returns them as a BasicIndexEntry structure for further
     processing.
 
     :param file index_handle: handle to file containing index
-    :returns BasicIndexEntry: Index entry named tuple
+    :returns BasicIndexEntry: entry from the index
     """
     # Get end of file position
     index_handle.seek(0, 2)
@@ -343,7 +342,7 @@ def print_index(index_file: str) -> None:
 
 
 def print_index_from_handle(index_handle: BinaryIO) -> None:
-    """Helper funciton for printing the contents of index inside the handle.
+    """Helper function for printing the contents of index inside the handle.
 
     :param file index_handle: opened file handle
     """
@@ -360,7 +359,7 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
 
 
 def touch_index(index_path: str) -> None:
-    """Initializes and creates the index if it does not exists
+    """Initializes and creates the index if it does not exist
 
     The Version 1 index is of following form:
       -  4B magic prefix 'pidx' (perun index) for quick identification of the file
@@ -590,8 +589,8 @@ def register_in_index(
 ) -> None:
     """Registers file in the index corresponding to either minor_version or pending profiles
 
-    :param str index_filename: source index filename
-    :param path registered_file: filename that is registered
+    :param str index_filename: source index file
+    :param path registered_file: filename that is registered in the index
     :param str registered_file_checksum: sha-1 representation fo the registered file
     :param dict profile: profile to be registered
     """
@@ -611,7 +610,7 @@ def remove_from_index(
 ) -> None:
     """Removes stream of removed files from the index.
 
-    Iterates through all the removed files, and removes their partial/full occurence from the
+    Iterates through all the removed files, and removes their partial/full occurrence from the
     index. The index is walked just once.
 
     :param str base_dir: base directory of the minor version
@@ -632,19 +631,19 @@ def remove_from_index(
 
     # Lookup all entries for the given function
     with open(minor_version_index, "rb+") as index_handle:
-        # Gather all of the entries from the index
+        # Gather all entries from the index
         all_entries = list(walk_index(index_handle))
         all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
         removed_entries = []
 
         for i, removed_file in enumerate(removed_file_generator):
 
-            def lookup_function(entry: BasicIndexEntry) -> bool:
+            def lookup_function(looked_entry: BasicIndexEntry) -> bool:
                 """Helper lookup function according to the type of the removed file"""
                 if store.is_sha1(removed_file):
-                    return entry.checksum == removed_file
+                    return looked_entry.checksum == removed_file
                 else:
-                    return entry.path == removed_file
+                    return looked_entry.path == removed_file
 
             found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
             removed_entries.append(found_entry)
@@ -747,7 +746,7 @@ def load_custom_index(index_path: str) -> dict[Any, Any]:
     try:
         with open(index_path, "rb") as index_handle:
             return json.loads(store.read_and_deflate_chunk(index_handle))
-    except (ValueError, error):
+    except (ValueError, zlib.error):
         # Contents either empty or corrupted, init the content to empty dict
         return {}
 

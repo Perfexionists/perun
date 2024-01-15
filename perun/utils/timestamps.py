@@ -5,11 +5,15 @@ writing of the timestamp to file, converting to string format, etc.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import BinaryIO
 import datetime
 import struct
 import time
 
-from typing import BinaryIO
+# Third-Party Imports
+
+# Perun Imports
 
 
 def write_timestamp(file_handle: BinaryIO, timestamp: float) -> None:
@@ -34,7 +38,7 @@ def read_timestamp_from_file(file_handle: BinaryIO) -> float:
 def timestamp_to_str(timestamp: float) -> str:
     """
     :param int timestamp: timestamp, that will be converted to string
-    :returns str: string representation of the timestamp in format %Y-%m-%d %H:%M:%S
+    :returns str: representation of the timestamp in format %Y-%m-%d %H:%M:%S
     """
     return datetime.datetime.fromtimestamp(round(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 

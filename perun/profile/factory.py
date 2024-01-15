@@ -1,31 +1,32 @@
 """Profile factory optimizes the previous profile format
 
 In particular, in the new format we propose to merge some regions into
-so called resource types, which are dictionaries of persistent less
+so-called resource types, which are dictionaries of persistent less
 frequently changed aspects of resources. Moreover, we optimize other
 regions and flatten the format.
 """
 from __future__ import annotations
 
-import collections
+# Standard Imports
 from collections.abc import MutableMapping
-import operator
+from typing import Any, Iterator, Iterable, TYPE_CHECKING
+import collections
 import itertools
+import operator
+
+# Third-Party Imports
 import click
 
-from typing import Any, Iterator, Iterable, TYPE_CHECKING
+# Perun Imports
+from perun.logic import config
+from perun.postprocess.regression_analysis import regression_models
+from perun.profile import convert, query
+from perun.utils import log
+import perun.check.general_detection as detection
+import perun.postprocess.regressogram.methods as nparam_methods
 
 if TYPE_CHECKING:
     from perun.utils.structs import ModelRecord
-
-import perun.profile.convert as convert
-import perun.profile.query as query
-import perun.logic.config as config
-import perun.utils.log as log
-
-from perun.check.general_detection import get_filtered_best_models_of
-from perun.postprocess.regression_analysis.regression_models import get_supported_models
-from perun.postprocess.regressogram.methods import get_supported_nparam_methods
 
 
 class Profile(MutableMapping[str, Any]):
@@ -104,7 +105,7 @@ class Profile(MutableMapping[str, Any]):
         :param list resource_list: either list or dict
         :param str resource_type: type of the resources in the resources list,
             can either be snapshots (then it is list of different snapshots), global
-            then it is old type of profile) or it can be resource l
+            (then it is old type of profile) or it can be resource l
         :param bool clear_existing_resources: if set to true then the actual storage will be cleared
             before updating the resources
         :return:
@@ -221,7 +222,7 @@ class Profile(MutableMapping[str, Any]):
         del self._storage[key]
 
     def __iter__(self) -> Iterator[str]:
-        """Iterates through all of the stuff in storage.
+        """Iterates through the stuff in storage.
 
         :return: storage iterator
         """
@@ -358,9 +359,9 @@ class Profile(MutableMapping[str, Any]):
         """
         group = models_strategy.rsplit("-")[1]
         if models_strategy in ("all-param", "all-nonparam"):
-            return get_filtered_best_models_of(self, group=group, model_filter=None)
+            return detection.get_filtered_best_models_of(self, group=group, model_filter=None)
         elif models_strategy in ("best-nonparam", "best-model", "best-param"):
-            return get_filtered_best_models_of(self, group=group)
+            return detection.get_filtered_best_models_of(self, group=group)
         else:
             return {}
 
@@ -397,8 +398,14 @@ class Profile(MutableMapping[str, Any]):
         for model_idx, model in enumerate(self._storage["models"]):
             if (
                 group == "model"
-                or (group == "param" and model.get("model") in get_supported_models())
-                or (group == "nonparam" and model.get("model") in get_supported_nparam_methods())
+                or (
+                    group == "param"
+                    and model.get("model") in regression_models.get_supported_models()
+                )
+                or (
+                    group == "nonparam"
+                    and model.get("model") in nparam_methods.get_supported_nparam_methods()
+                )
             ):
                 yield model_idx, model
 
@@ -409,7 +416,7 @@ class Profile(MutableMapping[str, Any]):
 
         :param str model_type: specific kind of required model (e.g. regressogram, constant, etc.)
         :param str uid: specific unique identification of required model
-        :return dict: model with all its relevant items
+        :return dict: dictionary model with all its relevant items
         """
         for _, model in enumerate(self._storage["models"]):
             if model_type == model["model"] and model["uid"] == uid:

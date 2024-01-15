@@ -1,14 +1,19 @@
 """This module provides simple wrappers over some linux command line tools"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, TYPE_CHECKING
 import os
 import re
 import subprocess
 
-from typing import Any
+# Third-Party Imports
+# Perun Imports
 
-from perun.utils.helpers import SuppressedExceptions
-from perun.utils.structs import Executable
+from perun.utils.exceptions import SuppressedExceptions
+
+if TYPE_CHECKING:
+    from perun.utils.structs import Executable
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")

@@ -5,14 +5,16 @@ This module exposes all currently implemented computational methods for regressi
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Any, Optional, Iterator, Protocol
 import collections
 
-from typing import Any, Optional, Iterator, Protocol
+# Third-Party Imports
 
-import perun.utils.log as log
-import perun.postprocess.regression_analysis.regression_models as mod
-import perun.utils.exceptions as exceptions
-import perun.postprocess.regression_analysis.tools as tools
+# Perun Imports
+from perun.postprocess.regression_analysis import regression_models, tools
+from perun.utils import exceptions
+from perun.utils import log
 
 
 class ComputationMethod(Protocol):
@@ -47,7 +49,7 @@ def compute(
     :returns list of dict: the computation results
     """
     # Split the models into derived and standard ones
-    derived, models = mod.filter_derived(models)
+    derived, models = regression_models.filter_derived(models)
     analysis = []
     for chunk in data_gen:
         try:
@@ -77,7 +79,7 @@ def compute_derived(
     :returns iterable: generator object which produces results one by one
     """
     if derived_models:
-        for der in mod.map_keys_to_models(derived_models):
+        for der in regression_models.map_keys_to_models(derived_models):
             for result in der["derived"](analysis, der, **kwargs):
                 yield result
 
@@ -100,7 +102,7 @@ def full_computation(
         transformed output data dictionary
     """
     # Get all the models properties
-    for model in mod.map_keys_to_models(computation_models):
+    for model in regression_models.map_keys_to_models(computation_models):
         # Update the properties accordingly
         model["steps"] = 1
         model = _build_uniform_regression_data_format(x_pts, y_pts, model)
@@ -403,7 +405,7 @@ def _models_initial_step(
     model_generators = []
     results = []
     # Get all the models properties
-    for model in mod.map_keys_to_models(computation_models):
+    for model in regression_models.map_keys_to_models(computation_models):
         # Transform the properties
         model["steps"] = steps
         data = _build_uniform_regression_data_format(x_pts, y_pts, model)

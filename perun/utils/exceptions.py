@@ -1,8 +1,15 @@
 """Collection of helper exception classes"""
 from __future__ import annotations
 
-import traceback
-from typing import Any
+# Standard Imports
+from typing import Any, TYPE_CHECKING
+
+# Third-Party Imports
+
+# Perun Imports
+
+if TYPE_CHECKING:
+    import traceback
 
 
 class InvalidParameterException(Exception):
@@ -460,7 +467,7 @@ class MissingDependencyException(Exception):
 
 
 class UnexpectedPrototypeSyntaxError(Exception):
-    """Raised when the function prototype syntax is somehow different than expected"""
+    """Raised when the function prototype syntax is somehow different from expected"""
 
     __slots__ = ["prototype_name", "cause"]
 
@@ -493,3 +500,36 @@ class SignalReceivedException(BaseException):
 
     def __str__(self) -> str:
         return f"Received signal: {self.signum}"
+
+
+class SuppressedExceptions:
+    """Context manager class for code blocks that need to suppress / ignore some exceptions
+    and simply continue in the execution if those exceptions are encountered.
+
+    :ivar list exc: the list of exception classes that should be ignored
+    """
+
+    def __init__(self, *exception_list: type[Exception]) -> None:
+        """
+        :param exception_list: the exception classes to ignore
+        """
+        self.exc = exception_list
+
+    def __enter__(self) -> "SuppressedExceptions":
+        """Context manager entry sentinel, no set up needed
+
+        :return object: the context manager class instance, shouldn't be needed
+        """
+        return self
+
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
+        """Context manager exit sentinel, check if the code raised an exception and if the
+        exception belongs to the list of suppressed exceptions.
+
+        :param type exc_type: the type of the exception
+        :param exception exc_val: the value of the exception
+        :param traceback exc_tb: the traceback of the exception
+        :return bool: True if the encountered exception should be ignored, False otherwise or if
+                      no exception was raised
+        """
+        return isinstance(exc_val, tuple(self.exc))

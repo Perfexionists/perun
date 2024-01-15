@@ -1,16 +1,26 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 from __future__ import annotations
 
+# Standard Imports
+from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
+import operator
 import os
 import re
-import operator
 import signal
-import traceback
-import types
 
-from typing import Optional, Any, Iterable, Callable, Literal
+# Third-Party Imports
 
-from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
+# Perun Imports
+from perun.postprocess.regression_analysis import tools
+from perun.utils.exceptions import (
+    SignalReceivedException,
+    NotPerunRepositoryException,
+    SuppressedExceptions,
+)
+
+if TYPE_CHECKING:
+    import traceback
+    import types
 
 # Types
 ColorChoiceType = Literal[
@@ -149,41 +159,6 @@ def uid_getter(uid: tuple[str, Any]) -> int:
     )
 
 
-class SuppressedExceptions:
-    """Context manager class for code blocks that need to suppress / ignore some exceptions
-    and simply continue in the execution if those exceptions are encountered.
-
-    :ivar list exc: the list of exception classes that should be ignored
-    """
-
-    __slots__ = ["exc"]
-
-    def __init__(self, *exception_list: type[Exception]) -> None:
-        """
-        :param exception_list: the exception classes to ignore
-        """
-        self.exc = exception_list
-
-    def __enter__(self) -> "SuppressedExceptions":
-        """Context manager entry sentinel, no set up needed
-
-        :return object: the context manager class instance, shouldn't be needed
-        """
-        return self
-
-    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
-        """Context manager exit sentinel, check if the code raised an exception and if the
-        exception belongs to the list of suppressed exceptions.
-
-        :param type exc_type: the type of the exception
-        :param exception exc_val: the value of the exception
-        :param traceback exc_tb: the exception traceback
-        :return bool: True if the encountered exception should be ignored, False otherwise or if
-                      no exception was raised
-        """
-        return isinstance(exc_val, tuple(self.exc))
-
-
 def str_to_plural(count: int, verb: str) -> str:
     """Helper function that returns the plural of the string if count is more than 1
 
@@ -194,7 +169,7 @@ def str_to_plural(count: int, verb: str) -> str:
 
 
 def format_counter_number(count: int, max_number: int) -> str:
-    """Helper function that returns string formatted to number of places given by the lenght of max
+    """Helper function that returns string formatted to number of places given by the length of max
     counter number.
 
     :param int count: the current number of the counter
@@ -264,7 +239,7 @@ class HandledSignals:
 
         :param type exc_type: the type of the exception
         :param exception exc_val: the value of the exception
-        :param traceback exc_tb: the exception traceback
+        :param traceback exc_tb: the traceback of the exception
         :return bool: True if the encountered exception should be ignored, False otherwise or if
                       no exception was raised
         """
@@ -358,7 +333,7 @@ def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None) -
     """
     Corresponding implementation of touch inside python.
     Courtesy of:
-    http://stackoverflow.com/questions/1158076/implement-touch-using-python
+    https://stackoverflow.com/questions/1158076/implement-touch-using-python
 
     :param str touched_filename: filename that will be touched
     :param time times: access times of the file
@@ -396,8 +371,8 @@ def path_to_subpaths(path: str) -> list[str]:
 def locate_perun_dir_on(path: str) -> str:
     """Locates the nearest perun directory
 
-    Locates the nearest perun directory starting from the @p path. It walks all of the
-    subpaths sorted by their lenght and checks if .perun directory exists there.
+    Locates the nearest perun directory starting from the @p path. It walks all
+    subpaths sorted by their length and checks if .perun directory exists there.
 
     :param str path: starting point of the perun dir search
     :returns str: path to perun dir or "" if the path is not underneath some underlying perun
@@ -442,7 +417,7 @@ def safe_match(pattern: re.Pattern[str], searched_string: str, default: str) -> 
 
     :param re.Pattern pattern: compiled regular expression pattern
     :param str searched_string: searched string
-    :param Optional[Any] default: default value returned if not matched
+    :param Optional[Any] default: default value returned if no match is found
     :return: matched value or default
     """
     match = pattern.search(searched_string)
@@ -457,3 +432,16 @@ def sanitize_filepart(part: str) -> str:
     """
     invalid_characters = r"# %&{}\<>*?/ $!'\":@"
     return "".join("_" if c in invalid_characters else c for c in str(part))
+
+
+def safe_division(dividend: float, divisor: float) -> float:
+    """Safe division of dividend by operand
+
+    :param number dividend: upper operand of the division
+    :param number divisor: lower operand of the division, may be zero
+    :return: safe value after division of approximated zero
+    """
+    try:
+        return dividend / divisor
+    except (ZeroDivisionError, ValueError):
+        return dividend / tools.APPROX_ZERO

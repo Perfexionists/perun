@@ -7,15 +7,16 @@ the sections of _MODELS dictionary representing the model properties.
 """
 from __future__ import annotations
 
+# Standard Imports
+from typing import Callable, Iterable, Any, cast
 import math
 
-from typing import Callable, Iterable, Any, cast
+# Third-Party Imports
 
-import perun.postprocess.regression_analysis.generic as generic
-import perun.postprocess.regression_analysis.specific as specific
-import perun.postprocess.regression_analysis.derived as derived
+# Perun Imports
+from perun.postprocess.regression_analysis import derived, generic, specific
+from perun.utils import exceptions
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
-import perun.utils.exceptions as exceptions
 
 
 def get_formula_of(model: str) -> Callable[..., float]:
@@ -26,7 +27,7 @@ def get_formula_of(model: str) -> Callable[..., float]:
     :param str model: the type of model which formula is required
     :return lambda: formula for y coordinates computation
     """
-    return _MODELS[model]["transformations"]["plot_model"]["formula"]
+    return MODEL_MAP[model]["transformations"]["plot_model"]["formula"]
 
 
 def get_supported_models() -> list[str]:
@@ -37,7 +38,7 @@ def get_supported_models() -> list[str]:
     :returns list of str: the names of all supported models and 'all' specifier
     """
     # Disable quadratic model, but allow to process already existing profiles with quad model
-    return [key for key in sorted(_MODELS.keys())]
+    return [key for key in sorted(MODEL_MAP.keys())]
 
 
 def get_supported_transformations(model_key: str) -> list[str]:
@@ -46,20 +47,20 @@ def get_supported_transformations(model_key: str) -> list[str]:
     :param str model_key: model key (e.g. 'log') for which the transformations are gathered
     :returns list of str: the names of all supported transformations for given model
     """
-    return [t for t in _MODELS.get(model_key, {}).get("transformations", {}).keys()]
+    return [t for t in MODEL_MAP.get(model_key, {}).get("transformations", {}).keys()]
 
 
 def get_transformation_data_for(regression_model: str, transformation: str) -> dict[str, Any]:
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
-    :param str regression_model: the regression model in which to search for transformation
+    :param str regression_model: the regression model in which to search for transformation function
     :param str transformation: transformation name (key in _MODELS transformation, e.g. plot_model)
         that identify the desired transformation dictionary
     :returns dict: the transformation dictionary
     """
     # Get the model key first
     key = map_model_to_key(regression_model)
-    if key not in _MODELS.keys():
+    if key not in MODEL_MAP.keys():
         # Model does not exist
         raise exceptions.InvalidModelException(regression_model)
 
@@ -67,7 +68,7 @@ def get_transformation_data_for(regression_model: str, transformation: str) -> d
     if transformation not in get_supported_transformations(key):
         # Model does not support requested transformation
         raise exceptions.InvalidTransformationException(regression_model, transformation)
-    return _MODELS[key]["transformations"][transformation]
+    return MODEL_MAP[key]["transformations"][transformation]
 
 
 def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str, Any]]:
@@ -85,16 +86,16 @@ def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str,
 
     # Get all models
     if not regression_models_keys or "all" in regression_models_keys:
-        for model in sorted(_MODELS.keys()):
+        for model in sorted(MODEL_MAP.keys()):
             if model != "all":
-                yield _MODELS[model].copy()
+                yield MODEL_MAP[model].copy()
     # Specific models
     else:
         for model in regression_models_keys:
-            if model not in _MODELS.keys():
+            if model not in MODEL_MAP.keys():
                 raise exceptions.InvalidModelException(model)
             else:
-                yield _MODELS[model].copy()
+                yield MODEL_MAP[model].copy()
 
 
 def map_model_to_key(model: str) -> str:
@@ -105,7 +106,7 @@ def map_model_to_key(model: str) -> str:
     :returns str:  the _MODELS key containing the model data
     """
     # Collect all models in _MODELS as a dict of model: key
-    elements = {_MODELS[m].get("model"): m for m in _MODELS}
+    elements = {MODEL_MAP[m].get("model"): m for m in MODEL_MAP}
     # Check the key validity
     if model in elements:
         return elements[model]
@@ -128,20 +129,20 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
     der: list[str] = []
     normal: list[str] = []
     for model in regression_models_keys:
-        if model not in _MODELS.keys():
+        if model not in MODEL_MAP.keys():
             raise exceptions.InvalidModelException(model)
-        if "derived" in _MODELS[model]:
+        if "derived" in MODEL_MAP[model]:
             der.append(model)
         else:
             normal.append(model)
 
     # Add models that are required by derived models if not already present
     for model in der:
-        if "required" in _MODELS[model] and _MODELS[model]["required"] not in normal:
+        if "required" in MODEL_MAP[model] and MODEL_MAP[model]["required"] not in normal:
             # Check if the model exists
-            if _MODELS[model]["required"] not in _MODELS.keys():
+            if MODEL_MAP[model]["required"] not in MODEL_MAP.keys():
                 raise exceptions.InvalidModelException(model)
-            normal.append(_MODELS[model]["required"])
+            normal.append(MODEL_MAP[model]["required"])
     return cast(tuple[str], tuple(der)), cast(tuple[str], tuple(normal))
 
 
@@ -166,7 +167,7 @@ def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tupl
 # -- model_y: function that produces y coordinates of points
 # -- m_fx: function that modifies x coordinates according to formulae
 # -- formula: function with formula for y coordinates computation
-_MODELS: dict[str, dict[str, Any]] = {
+MODEL_MAP: dict[str, dict[str, Any]] = {
     "all": {},  # key representing all models
     "constant": {
         "model": "constant",

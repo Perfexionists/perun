@@ -4,24 +4,22 @@ The module contains the methods, that executes the computational logic of
 """
 from __future__ import annotations
 
-import numpy as np
-import scipy.integrate as integrate
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
+
+# Third-Party Imports
+import numpy as np
+from scipy import integrate
+
+# Perun Imports
+from perun.check import factory
+from perun.profile.factory import Profile
+from perun.utils import helpers
+from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
+import perun.check.nonparam_helpers as nparam_helpers
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-
-import perun.check.factory as factory
-import perun.check.nonparam_helpers as nparam_helpers
-import perun.postprocess.regression_analysis.tools as tools
-
-from perun.profile.factory import Profile
-from perun.utils.structs import (
-    DegradationInfo,
-    ModelRecord,
-    DetectionChangeResult
-)
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2
@@ -207,7 +205,7 @@ def execute_analysis(
     **__: Any,
 ) -> DetectionChangeResult:
     """
-    A method performs the primary analysis for pair of models.
+    A method performs the primary analysis for a pair of models.
 
     The method executes the analysis between the pair of models. In the beginning, the method checks
     the length of both models. Subsequently, it computes the individual statistics from both given
@@ -220,7 +218,7 @@ def execute_analysis(
     :param dict baseline_model: baseline model with all its parameters for comparison
     :param dict target_model: target model with all its parameters for comparison
     :param Profile target_profile: target model for the comparison
-    :param dict kwargs: dictionary with baseline and target profiles
+    :param dict __: dictionary with baseline and target profiles
     :return:
     """
     (
@@ -239,12 +237,12 @@ def execute_analysis(
     partial_intervals = list(np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T)
 
     change_info_enum = nparam_helpers.classify_change(
-        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
+        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE,
         _STATS_DIFF_CHANGE,
     )
     relative_error = round(
-        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
+        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
     )
 
     return DetectionChangeResult(change_info_enum, relative_error, partial_intervals)

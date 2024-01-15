@@ -1,25 +1,27 @@
 """The module contains the method for detection with using linear regression.
 
-This module contains method for classification the perfomance change between two profiles
+This module contains method for classification the performance change between two profiles
 according to computed metrics and models from these profiles, based on the linear regression.
 
 """
 from __future__ import annotations
 
-import scipy.stats as stats
-
+# Standard Imports
 from typing import Any, Iterable, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    import numpy.typing as npt
-    import numpy
-    from perun.profile.factory import Profile
-    from perun.utils.structs import DegradationInfo
+# Third-Party Imports
+from scipy import stats
 
-import perun.utils as utils
-import perun.check.general_detection as detect
-import perun.check.fast_check as fast_check
-from perun.utils.structs import ModelRecord
+# Perun Imports
+from perun import utils
+from perun.check import fast_check, general_detection as detect
+from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
+
+if TYPE_CHECKING:
+    import numpy
+    import numpy.typing as npt
+
+    from perun.profile.factory import Profile
 
 
 def linear_regression(
@@ -35,7 +37,7 @@ def linear_regression(
     """
 
     return detect.general_detection(
-        baseline_profile, target_profile, detect.ClassificationMethod.LinearRegression
+        baseline_profile, target_profile, ClassificationMethod.LinearRegression
     )
 
 

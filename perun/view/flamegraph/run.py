@@ -1,11 +1,15 @@
 """Flame graph visualization of the profiles."""
 from __future__ import annotations
 
-import click
+# Standard Imports
 from typing import Any
 
+# Third-Party Imports
+import click
+
+# Perun Imports
 import perun.view.flamegraph.flamegraph as flame
-from perun.profile.factory import pass_profile, Profile
+import perun.profile.factory as profile_factory
 
 
 @click.command()
@@ -22,8 +26,10 @@ from perun.profile.factory import pass_profile, Profile
     type=int,
     help="Increases the width of the resulting flame graph.",
 )
-@pass_profile
-def flamegraph(profile: Profile, filename: str, graph_height: int, **_: Any) -> None:
+@profile_factory.pass_profile
+def flamegraph(
+    profile: profile_factory.Profile, filename: str, graph_height: int, **_: Any
+) -> None:
     """Flame graph interprets the relative and inclusive presence of the
     resources according to the stack depth of the origin of resources.
 
@@ -42,7 +48,7 @@ def flamegraph(profile: Profile, filename: str, graph_height: int, **_: Any) -> 
     **Acknowledgements**: Big thanks to Brendan Gregg for creating the original
     perl script for creating flame graphs w.r.t simple format. If you like this
     visualization technique, please check out this guy's site
-    (http://brendangregg.com) for more information about performance, profiling
+    (https://brendangregg.com) for more information about performance, profiling
     and useful talks and visualization techniques!
 
     The example output of the flamegraph is more or less as follows::
