@@ -55,7 +55,6 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
     import perun.view.bars.run as bars_run
     import perun.view.flamegraph.run as flamegraph_run
     import perun.view.flow.run as flow_run
-    import perun.view.raw.run as raw_run
     import perun.view.scatter.run as scatter_run
     import perun.view.tableof.run as tableof_run
 
@@ -63,7 +62,6 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
         bars_run.bars,
         flamegraph_run.flamegraph,
         flow_run.flow,
-        raw_run.raw,
         scatter_run.scatter,
         tableof_run.tableof,
     ]

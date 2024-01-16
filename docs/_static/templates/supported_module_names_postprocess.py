@@ -17,7 +17,6 @@ def get_supported_module_names(package):
             "flamegraph",
             "flow",
             "heapmap",
-            "raw",
             "scatter",
         ],
     }[package]

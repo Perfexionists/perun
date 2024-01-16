@@ -427,7 +427,7 @@ def get_supported_module_names(package: str) -> list[str]:
             "moving-average",
             "kernel-regression",
         ],
-        "view": ["bars", "flamegraph", "flow", "heapmap", "raw", "scatter", "tableof"],
+        "view": ["bars", "flamegraph", "flow", "heapmap", "scatter", "tableof"],
     }[package]
 
 

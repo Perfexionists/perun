@@ -12,6 +12,5 @@ py3.install_sources(
 subdir('bars')
 subdir('flamegraph')
 subdir('flow')
-subdir('raw')
 subdir('scatter')
 subdir('tableof')
