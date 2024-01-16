@@ -56,7 +56,7 @@ jobs:
       - name: Create tarball or wheel
         run: |
           pip3 install -q build
-          make pypi-release
+          make release
 
       - name: Install from dist (wheel)
         run: |
@@ -85,7 +85,6 @@ jobs:
         uses: ./.github/workflows/actions/setup
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
 
       - name: Generate docs for Python ${{ matrix.python-version }} using Tox
         run: |

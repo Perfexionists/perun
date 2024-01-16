@@ -1,11 +1,15 @@
 [build-system]
-requires = ["setuptools>=60", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "meson-python >= 0.15.0",
+    "meson >= 1.2.3",
+    "patchelf >= 0.11.0",
+    "wheel",
+]
+build-backend = "mesonpy"
 
 [project]
 name = "perun-toolsuite"
 description = "Perun: Lightweight Performance Version System"
-version = "0.21.8"
 requires-python = ">=3.9"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -21,6 +25,11 @@ authors = [
     {name = "Vladimir Hucovic"}
 ]
 dependencies = [
+    # Build
+    "meson-python>=0.15.0",
+    "meson>=1.2.3",
+    "ninja>=1.0",
+
     # CLI
     "click>=8.1",
 
@@ -55,10 +64,31 @@ dependencies = [
     # Transitive dependencies that we need to limit for some reason
     "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
 ]
-# (1) Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
-# dependency and its version constraints specified only once to avoid inconsistencies.
-dynamic = ["optional-dependencies"]
+dynamic = ["version"]
 
+[project.optional-dependencies]
+docs = [
+    # Sphinx 7.2 dropped support for Python 3.8
+    "Sphinx>=7.1",
+    "sphinx-click>=5.0",
+]
+lint = [
+    "black>=22.1.0",
+    "pylint>=2.17",
+]
+test = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "tox>=4.9.0",
+]
+typing = [
+    "mypy>=1.5",
+    "mypy-extensions>=1.0",
+    "typing-extensions>=4.7",
+    "types-tabulate>=0.9",
+    "pandas-stubs>=2.0",
+    "nptyping>=2.5.0",
+]
 
 [project.urls]
 Repository = "https://github.com/Perfexionists/perun.git"
@@ -67,41 +97,6 @@ Changelog = "https://github.com/Perfexionists/perun/blob/master/CHANGELOG.rst"
 
 [project.scripts]
 perun = "perun.cli:launch_cli"
-
-# A flat-level package with multiple directories, we need to specify the python module manually
-# See https://stackoverflow.com/questions/72294299/multiple-top-level-packages-discovered-in-a-flat-layout
-[tool.setuptools]
-py-modules = ["perun"]
-package-dir = {"perun" = "perun"}
-
-[tool.setuptools.dynamic]
-# Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
-# simple "dev" optional dependency
-optional-dependencies.test = { file = ["requirements_test.txt"] }
-optional-dependencies.typing = { file = ["requirements_typing.txt"] }
-optional-dependencies.lint = { file = ["requirements_lint.txt"] }
-optional-dependencies.docs = { file = ["requirements_docs.txt"] }
-
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = [
-    "perun",
-    "perun*",
-]
-namespaces = true
-
-[tool.setuptools.package-data]
-perun = [
-    "view/flamegraph/flamegraph.pl",
-    "collect/memory/malloc.so",
-    "collect/bounds/bin/**",
-    "collect/complexity/cpp_sources/*",
-    "collect/complexity/lib/*",
-    "templates/*",
-    "../requirements_*.txt",
-]
-
 
 # Mypy configuration
 # ----------------------
