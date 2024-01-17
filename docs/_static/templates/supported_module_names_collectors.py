@@ -5,7 +5,12 @@ def get_supported_module_names(package):
     return {
         "vcs": ["git"],
         "collect": ["trace", "memory", "time", "mycollector"],
-        "postprocess": ["filter", "normalizer", "regression-analysis"],
+        "postprocess": [
+            "moving-average",
+            "kernel-regression",
+            "regression-analysis",
+            "regressogram",
+        ],
         "view": [
             "alloclist",
             "bars",

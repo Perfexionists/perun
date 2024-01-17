@@ -421,7 +421,6 @@ def get_supported_module_names(package: str) -> list[str]:
         "collect": ["trace", "memory", "time", "complexity", "bounds"],
         "postprocess": [
             "clusterizer",
-            "normalizer",
             "regression-analysis",
             "regressogram",
             "moving-average",

@@ -12,29 +12,24 @@ Supported Postprocessors
 
 Perun's tool suite currently contains the following five postprocessors:
 
-  1. :ref:`postprocessors-normalizer` scales the resources of the given profile to the
-     interval (0, 1). The main intuition behind the usage of this postprocessor is to be able to
-     compare profiles from different workloads or parameters, which may have different scales of
-     resource amounts.
-
-  2. :ref:`postprocessors-regression-analysis` (authored by **Jirka Pavela**) attempts to do a
+  1. :ref:`postprocessors-regression-analysis` (authored by **Jirka Pavela**) attempts to do a
      regression analysis by finding the fitting model for dependent variable based on other
      independent one. Currently the postprocessor focuses on finding a well
      suited model (linear, quadratic, logarithmic, etc.) for the amount of time duration
      depending on size of the data structure the function operates on.
 
-  3. :ref:`postprocessors-clusterizer` tries to classify resources to uniquely identified clusters,
+  2. :ref:`postprocessors-clusterizer` tries to classify resources to uniquely identified clusters,
      which can be used for further postprocessing (e.g. by regression analysis) or to group
      similar amounts of resources.
 
-  4. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) also known as the binning
+  3. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) also known as the binning
      approach, is the simplest non-parametric estimator. This method trying to fit models through
      data by dividing the interval into N equal-width bucket and the resultant value in each bucket
      is equal to result of selected statistical aggregation function (mean/median) within the values
      in the relevant bucket. In short, we can describe the regressogram as a step function
      (i.e. constant function by parts).
 
-  5. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
+  4. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
      average or running average, is the statistical analysis belongs to non-parametric approaches.
      This method is based on the analysis of the given data points by creating a series of values based
      on the specific aggregation function, most often average or possibly median. The resulting values
@@ -43,6 +38,17 @@ Perun's tool suite currently contains the following five postprocessors:
      Average. In the first method is an available selection from two aggregation function: **mean**
      or **median**.
 
+  5. :ref:`postprocessors-kernel-regression` (authored by **Simon Stupinsky**) is a non-parametric
+     approach to estimate the conditional expectation of a random variable. Generally, the main goal
+     of this approach is to find non-parametric relation between a pair of random variables X <per-key>
+     and Y <of-key>. Different from parametric techniques (e.g. linear regression), kernel
+     regression does not assume any underlying distribution (e.g. linear, exponential, etc.)
+     to estimate the regression function. The main idea of kernel regression is putting the
+     **kernel**, that have the role of weighted function, to each observation point in the dataset.
+     Subsequently, the kernel will assign weight to each point in depends on the distance from the
+     current data point. The kernel basis formula depends only on the *bandwidth* from the current
+     ('local') data point X to a set of neighboring data points X.
+
 All of the listed postprocessors can be run from command line. For more information about command
 line interface for individual postprocessors refer to :ref:`cli-postprocess-units-ref`.
 
@@ -50,18 +56,9 @@ Postprocessors modules are implementation independent and only requires a simple
 registered within Perun. For brief tutorial how to create and register your own postprocessors
 refer to :ref:`postprocessors-custom`.
 
-.. _postprocessors-normalizer:
-
-Normalizer Postprocessor
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: perun.postprocess.normalizer
 
 Command Line Interface
 """"""""""""""""""""""
-
-.. click:: perun.postprocess.normalizer.run:normalizer
-   :prog: perun postprocessby normalizer
 
 .. _postprocessors-regression-analysis:
 
@@ -399,8 +396,10 @@ You can register your new postprocessor as follows:
             |-- /mypostprocessor
                 |-- __init__.py
                 |-- run.py
-            |-- /normalizer
+            |-- /kernel_regression
+            |-- /moving_average
             |-- /regression_analysis
+            |-- /regressogram
             |-- __init__.py
 
     2. First, implement the ``__init__py`` file, including the module docstring with brief

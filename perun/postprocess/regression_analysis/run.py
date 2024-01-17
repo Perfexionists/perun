@@ -82,9 +82,12 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     "--method",
     "-m",
     type=click.Choice(methods.get_supported_param_methods()),
-    required=True,
+    default="full",
     multiple=False,
-    help="Will use the <method> to find the best fitting models for the given profile.",
+    help=(
+        "Will use the <method> to find the best fitting models for the given profile. "
+        "By default 'full' computation will be performed"
+    ),
 )
 @click.option(
     "--regression_models",

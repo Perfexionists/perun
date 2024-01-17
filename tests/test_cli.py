@@ -913,10 +913,9 @@ def test_reg_analysis_incorrect(pcs_single_prof):
     # Instantiate the runner fist
     runner = CliRunner()
 
-    # Test the lack of arguments
+    # Test the lack of arguments passes with defaults
     result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis"])
-    asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, "Usage" in result.output)
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Test non-existing argument
     result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis", "-f"])
@@ -1617,33 +1616,35 @@ def test_postprocess_tag(pcs_single_prof, valid_profile_pool):
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
-    result = runner.invoke(cli.postprocessby, ["0@p", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["0@p", "regression-analysis", "-dp", "time"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
-    result = runner.invoke(cli.postprocessby, ["666@p", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["666@p", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
-    result = runner.invoke(cli.postprocessby, ["0@i", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try incorrect index tag -> expect failure and return code 2 (click error)
-    result = runner.invoke(cli.postprocessby, ["1337@i", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["1337@i", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
-    first_in_jobs = list(filter(test_utils.index_filter, os.listdir(pending_dir)))[0]
+    first_in_jobs = sorted(list(filter(test_utils.index_filter, os.listdir(pending_dir))))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
-    result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, "normalizer"])
+    result = runner.invoke(
+        cli.postprocessby, [absolute_first_in_jobs, "regression-analysis", "-dp", "time"]
+    )
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try lookup postprocessing
-    result = runner.invoke(cli.postprocessby, [first_in_jobs, "normalizer"])
+    result = runner.invoke(cli.postprocessby, [first_in_jobs, "regression-analysis", "-dp", "time"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 

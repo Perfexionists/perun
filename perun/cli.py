@@ -714,10 +714,10 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     For checking the associated `tags` to profiles run ``perun status``.
 
     Example 1. The following command will postprocess the given profile
-    stored at given path by normalizer, i.e. for each snapshot, the resources
-    will be normalized to the interval <0, 1>::
+    stored at given path by regression analysis, i.e. for each snapshot,
+    computes regression models::
 
-        perun postprocessby ./echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
+        perun postprocessby ./echo-time-hello-2017-04-02-13-13-34-12.perf regression-analysis
 
     Example 2. The following command will postprocess the second profile stored
     in index of commit preceding the current head using interval regression

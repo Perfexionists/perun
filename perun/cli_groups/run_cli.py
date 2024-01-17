@@ -194,12 +194,12 @@ def job(ctx: click.Context, **kwargs: Any) -> None:
 
     .. code-block:: bash
 
-        perun run job -c time -b ./mybin -w file.in -w file2.in -p normalizer
+        perun run job -c time -b ./mybin -w file.in -w file2.in -p regression-analysis
 
     This command profiles two commands ``./mybin file.in`` and ``./mybin
     file2.in`` and collects the profiling data using the
-    :ref:`collectors-time`. The profiles are then normalized with the
-    :ref:`postprocessors-normalizer`.
+    :ref:`collectors-time`. The profiles are then modeled with the
+    :ref:`postprocessors-regression-analysis`.
 
     .. code-block:: bash
 
@@ -211,12 +211,12 @@ def job(ctx: click.Context, **kwargs: Any) -> None:
 
     .. code-block:: bash
 
-        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p clusterizer
+        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p regressogram -p regression-analysis
 
     This commands runs two jobs ``./mybin input.txt`` and ``./otherbin
     input.txt`` and collects the profiles using the :ref:`collectors-memory`.
     The profiles are then postprocessed, first using the
-    :ref:`postprocessors-normalizer` and then with
+    :ref:`postprocessors-regressogram` and then with
     :ref:`postprocessors-regression-analysis`.
 
     Refer to :doc:`jobs` and :doc:`profile` for more details about automation

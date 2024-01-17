@@ -104,9 +104,6 @@ Postprocess units
 
 .. _cli-views-ref:
 
-.. click:: perun.postprocess.normalizer.run:normalizer
-   :prog: perun postprocessby normalizer
-
 .. click:: perun.postprocess.regression_analysis.run:regression_analysis
    :prog: perun postprocessby regression_analysis
 
