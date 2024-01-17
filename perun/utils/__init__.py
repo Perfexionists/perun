@@ -429,19 +429,7 @@ def get_supported_module_names(package: str) -> list[str]:
     }[package]
 
 
-def merge_dictionaries(lhs: dict[Any, Any], rhs: dict[Any, Any]) -> dict[Any, Any]:
-    """Helper function for merging two dictionaries to one to be used as oneliner.
-
-    :param dict lhs: left operand of the dictionary merge
-    :param dict rhs: right operand of the dictionary merge
-    :return: merged dictionary of the lhs and rhs
-    """
-    res = lhs.copy()
-    res.update(rhs)
-    return res
-
-
-def merge_dict_range(*args: dict[Any, Any]) -> dict[Any, Any]:
+def merge_dictionaries(*args: dict[Any, Any]) -> dict[Any, Any]:
     """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
 
     :param list args: list of dictionaries
