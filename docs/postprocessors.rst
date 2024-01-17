@@ -18,18 +18,14 @@ Perun's tool suite currently contains the following five postprocessors:
      suited model (linear, quadratic, logarithmic, etc.) for the amount of time duration
      depending on size of the data structure the function operates on.
 
-  2. :ref:`postprocessors-clusterizer` tries to classify resources to uniquely identified clusters,
-     which can be used for further postprocessing (e.g. by regression analysis) or to group
-     similar amounts of resources.
-
-  3. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) also known as the binning
+  2. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) also known as the binning
      approach, is the simplest non-parametric estimator. This method trying to fit models through
      data by dividing the interval into N equal-width bucket and the resultant value in each bucket
      is equal to result of selected statistical aggregation function (mean/median) within the values
      in the relevant bucket. In short, we can describe the regressogram as a step function
      (i.e. constant function by parts).
 
-  4. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
+  3. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
      average or running average, is the statistical analysis belongs to non-parametric approaches.
      This method is based on the analysis of the given data points by creating a series of values based
      on the specific aggregation function, most often average or possibly median. The resulting values
@@ -38,7 +34,7 @@ Perun's tool suite currently contains the following five postprocessors:
      Average. In the first method is an available selection from two aggregation function: **mean**
      or **median**.
 
-  5. :ref:`postprocessors-kernel-regression` (authored by **Simon Stupinsky**) is a non-parametric
+  4. :ref:`postprocessors-kernel-regression` (authored by **Simon Stupinsky**) is a non-parametric
      approach to estimate the conditional expectation of a random variable. Generally, the main goal
      of this approach is to find non-parametric relation between a pair of random variables X <per-key>
      and Y <of-key>. Different from parametric techniques (e.g. linear regression), kernel
@@ -106,54 +102,6 @@ random). The best fitted model is then chosen and fully computed on the rest of 
 
 The picture shows only one model, namely `linear` which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.
-
-.. _postprocessors-clusterizer:
-
-Clusterizer
-~~~~~~~~~~~
-
-.. automodule:: perun.postprocess.clusterizer
-
-.. _postprocessors-clusterizer-cli:
-
-Command Line Interface
-""""""""""""""""""""""
-
-.. click:: perun.postprocess.clusterizer.run:clusterizer
-   :prog: perun postprocessby clusterizer
-
-.. _postprocessors-clusterizer-examples:
-
-Examples
-""""""""
-
-.. literalinclude:: /../examples/clusterized-profile.perf
-    :language: json
-    :linenos:
-    :emphasize-lines: 32
-
-The profile above shows an example of profile postprocessed by clusterizer (note that this is only
-an excerpt of the whole profile). Each resource is annotated by a new field named ``cluster``,
-which can be used in further interpretation of the profiles (either by :ref:`views-bars`,
-:ref:`views-scatter` or :ref:`postprocessors-regression-analysis`).
-
-.. image:: /../examples/clusterizer-memory-scatter.*
-
-The :ref:`views-scatter` above shows the memory profile of a simple example, which randomly
-allocates memory with linear dependency and was collected by :ref:`collectors-memory`. Since
-:ref:`collectors-memory` does not collect any other information, but memory rallocation records.
-Such profile cannot be used to infer any models. However the :ref:`views-scatter` above was
-postprocessed by clusterizer and hence, we can plot the dependency of amount of allocated memory
-per each cluster. The :ref:`views-scatter` itself ephasize the linear dependency of allocated
-memory depending on some unknown parameters (here represented by `cluster`).
-
-We can use :ref:`postprocessors-regression-analysis` to prove our assumption, and on the plot below
-we can see that the best model for the amount of allocated memory depending on clusters is indeed
-**linear**.
-
-.. image:: /../examples/clusterizer-memory-scatter-with-models.*
-
-.. _postprocessors-regressogram:
 
 Regressogram method
 ~~~~~~~~~~~~~~~~~~~~~~~~

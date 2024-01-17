@@ -9,7 +9,6 @@ py3.install_sources(
     subdir: perun_postprocess_dir
 )
 
-subdir('clusterizer')
 subdir('kernel_regression')
 subdir('moving_average')
 subdir('regression_analysis')

@@ -107,9 +107,6 @@ Postprocess units
 .. click:: perun.postprocess.regression_analysis.run:regression_analysis
    :prog: perun postprocessby regression_analysis
 
-.. click:: perun.postprocess.clusterizer.run:clusterizer
-   :prog: perun postprocessby clusterizer
-
 .. click:: perun.postprocess.regressogram.run:regressogram
    :prog: perun postprocessby regressogram
 

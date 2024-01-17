@@ -420,7 +420,6 @@ def get_supported_module_names(package: str) -> list[str]:
         "vcs": ["git"],
         "collect": ["trace", "memory", "time", "complexity", "bounds"],
         "postprocess": [
-            "clusterizer",
             "regression-analysis",
             "regressogram",
             "moving-average",
