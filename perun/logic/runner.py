@@ -339,7 +339,7 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
 
     try:
-        collector_module = utils.get_module(f"perun.collect.{collector.name}.run")
+        collector_module = helpers.get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
         log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
@@ -407,7 +407,7 @@ def run_postprocessor(
     )
 
     try:
-        postprocessor_module = utils.get_module(f"perun.postprocess.{postprocessor.name}.run")
+        postprocessor_module = helpers.get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
         log.error(
             f"{postprocessor.name} postprocessor does not exist",

@@ -47,7 +47,7 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
     """
     registered_modules = cli_helpers.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
-        module = utils.get_module(module_name)
+        module = helpers.get_module(module_name)
         for must_have_function_name in must_have_function_names:
             assert (
                 hasattr(module, must_have_function_name)
@@ -75,9 +75,9 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
     registered_modules = cli_helpers.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
-        module = utils.get_module(module_name)
+        module = helpers.get_module(module_name)
         assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
-        run_module = utils.get_module(".".join([module_name, "run"]))
+        run_module = helpers.get_module(".".join([module_name, "run"]))
         for must_have_function_name in must_have_function_names:
             assert (
                 not must_have_function_name
@@ -299,7 +299,7 @@ def test_common(capsys):
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
     with pytest.raises(UnsupportedModuleFunctionException):
-        utils.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
+        helpers.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
 
     with pytest.raises(SystemExit):
         cli_helpers.get_supported_module_names("nonexisting")

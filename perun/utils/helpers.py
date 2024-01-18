@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
+import importlib
 import itertools
 import operator
 import os
@@ -17,6 +18,8 @@ from perun.utils.exceptions import (
     SignalReceivedException,
     NotPerunRepositoryException,
     SuppressedExceptions,
+    UnsupportedModuleException,
+    UnsupportedModuleFunctionException,
 )
 
 if TYPE_CHECKING:
@@ -526,3 +529,58 @@ def partition_list(
         else:
             bad.append(item)
     return good, bad
+
+
+def dynamic_module_function_call(
+    package_name: str, module_name: str, fun_name: str, *args: Any, **kwargs: Any
+) -> Any:
+    """Dynamically calls the function from other package with given arguments
+
+    Looks up dynamically the module of the @p module_name inside the @p package_name
+    package and calls its function @p fun_name with positional *args and keyword
+    **kwargs.
+
+    In case the module or function is missing, error is returned and program ends
+    TODO: Add dynamic checking for the possible malicious code
+
+    :param str package_name: name of the package, where the function we are calling is
+    :param str module_name: name of the module, to which the function corresponds
+    :param str fun_name: name of the function we are dynamically calling
+    :param list args: list of non-keyword arguments
+    :param dict kwargs: dictionary of keyword arguments
+    :return: whatever the wrapped function returns
+    """
+    function_location_path = ".".join([package_name, module_name])
+    try:
+        module = get_module(function_location_path)
+        module_function = getattr(module, fun_name)
+        return module_function(*args, **kwargs)
+    # Simply pass these exceptions higher however with different flavours:
+    # 1) When Import Error happens, this means, that some module is not found in Perun hierarchy,
+    #   hence, we are trying to call some collector/visualizer/postprocessor/vcs, which is not
+    #   implemented in Perun.
+    #
+    # 2) When Attribute Error happens, this means, that we have found supported module, but, there
+    #   is some functionality, that is missing in the module.
+    #
+    # Why reraise the exceptions? Because it is up to the higher levels to catch these exceptions
+    # and handle the errors their way. It should be different in CLI and in GUI, and they should
+    # be caught in right places.
+    except ImportError:
+        raise UnsupportedModuleException(module_name)
+    except AttributeError:
+        raise UnsupportedModuleFunctionException(fun_name, function_location_path)
+
+
+def get_module(module_name: str) -> types.ModuleType:
+    """Finds module by its name.
+
+    :param str module_name: dynamically load a module (but first check the cache)
+    :return: loaded module
+    """
+    if module_name not in MODULE_CACHE.keys():
+        MODULE_CACHE[module_name] = importlib.import_module(module_name)
+    return MODULE_CACHE[module_name]
+
+
+MODULE_CACHE: dict[str, types.ModuleType] = {}

@@ -26,7 +26,7 @@ import time
 # Third-Party Imports
 
 # Perun Imports
-from perun import vcs, utils
+from perun import vcs
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
 from perun.utils import decorators, helpers, log as perun_log
@@ -275,7 +275,7 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
-    collector = utils.get_module(".".join(["perun.collect", job.collector.name]))
+    collector = helpers.get_module(".".join(["perun.collect", job.collector.name]))
 
     return {
         "type": collector.COLLECTOR_TYPE,
