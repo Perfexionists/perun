@@ -30,6 +30,7 @@ from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
+from perun.utils.external import environment
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -282,8 +283,8 @@ def test_ordered_enum():
 
 def test_get_interpreter():
     """Tests that the python interpreter can be obtained in reasonable format"""
-    assert re.search("python", utils.get_current_interpreter(required_version="3+"))
-    assert re.search("python", utils.get_current_interpreter(required_version="3"))
+    assert re.search("python", environment.get_current_interpreter(required_version="3+"))
+    assert re.search("python", environment.get_current_interpreter(required_version="3"))
 
 
 def test_common(capsys):

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
 import distutils.util as dutils
 import os
 import signal
@@ -161,6 +161,46 @@ def load_job_info_from_config() -> dict[str, Any]:
     return info
 
 
+@overload
+def create_empty_pass(
+    return_code: CollectStatus,
+) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning CollectStatus"""
+    pass
+
+
+@overload
+def create_empty_pass(
+    return_code: PostprocessStatus,
+) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning PostProcessStatus"""
+    pass
+
+
+def create_empty_pass(
+    return_code: CollectStatus | PostprocessStatus,
+) -> Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]]:
+    """Returns a function which will do nothing
+
+    This is used to handle collectors and postprocessors that do not have before or after phases.
+
+    :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
+    :return: function that does nothing
+    """
+
+    def empty_pass(
+        **kwargs: Any,
+    ) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
+        """Empty collection or postprocessing phase, doing nothing
+
+        :param dict kwargs: arguments of the phase
+        :return: return code, empty return message, non-modified arguments
+        """
+        return return_code, "", kwargs
+
+    return empty_pass
+
+
 def run_phase_function(report: RunnerReport, phase: str) -> None:
     """Runs the concrete phase function of the runner (collector or postprocessor)
 
@@ -173,7 +213,7 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     """
     phase_function: Callable[
         ..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]
-    ] = getattr(report.runner, phase, utils.create_empty_pass(report.ok_status))
+    ] = getattr(report.runner, phase, create_empty_pass(report.ok_status))
     runner_verb = report.runner_type[:-2]
     report.phase = phase
     try:
@@ -183,8 +223,8 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     except Exception as exc:
         report.status = report.error_status
         report.exception = exc
-        report.message = "error while {}{} phase: {}".format(
-            phase, ("_" + runner_verb) * (phase != runner_verb), str(exc)
+        report.message = (
+            f"error while {phase}{('_' + runner_verb) * (phase != runner_verb)} phase: {exc}"
         )
 
 

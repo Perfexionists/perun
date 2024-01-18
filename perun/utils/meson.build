@@ -19,3 +19,5 @@ py3.install_sources(
     perun_utils_files,
     subdir: perun_utils_dir
 )
+
+subdir('external')
