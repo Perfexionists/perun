@@ -1,28 +1,28 @@
-
-int main(int argc, char* argv[])
-{
-    // Initialize symbol table code, needed for rtn instrumentation
+int main(int argc, char* argv[]) {
+    // Initialize symbol table code, needed for routine instrumentation
     PIN_InitSymbols();
 
-    //Initialize mutex lock for the shared output file
-    PIN_MutexInit(&outFileLock);
+    //Initialize mutex locks for the shared output files
+    PIN_MutexInit(&dynamicDataLock);
+    PIN_MutexInit(&staticDataLock);
 
     // Initialize pin
-    if (PIN_Init(argc, argv)) return 1;
+    if (PIN_Init(argc, argv)) { return 1; }
 
-    // Open output file
-    outFile.open(KnobOutputFile.Value().c_str());
+    // Open output files
+    dynamicData.open(DYNAMIC_DATA_FILE);
+    staticData.open(STATIC_DATA_FILE);
 
-    // Register Routine to be called to instrument rtn
-    RTN_AddInstrumentFunction(Routine,0);
+    {% if collect_basic_blocks -%}
+    // Register a function to be called when new trace is about to be entered. The function will instrument it.
+    TRACE_AddInstrumentFunction(instrumentBasicBlocksInTrace, 0);
+    {% endif -%}
 
-    {% if bbl -%}
-    // Register Trace to be called to instrument every trace for basic block instrumentation
-    TRACE_AddInstrumentFunction(Trace, 0);
-    {%- endif %}
+    // Register a function to be called when new image is loaded. The function will instrument it.
+    IMG_AddInstrumentFunction(instrumentRoutinesInImage, 0);
 
     // Register Fini to be called when the application exits
-    PIN_AddFiniFunction(Fini, 0);
+    PIN_AddFiniFunction(fini, 0);
 
     // Start the program, never returns
     {% if probed -%}

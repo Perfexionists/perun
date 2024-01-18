@@ -1,0 +1,51 @@
+enum Granularity { G_RTN, G_BBL };
+enum Location { L_BEFORE, L_AFTER };
+
+class SourceCodeLocation {
+public:
+    INT32 line;
+    INT32 column;
+
+    std::string fileName;
+
+    SourceCodeLocation(INS instruction);
+};
+
+class SourceFilesMap {
+public:
+    std::unordered_map<std::string, UINT32> sourceFiles;
+    UINT32 sourceFileIdCounter;
+
+    SourceFilesMap() {
+        this->sourceFiles.emplace("", 0);
+        this->sourceFileIdCounter = 1;
+    }
+
+    UINT32 addFile(std::string file);
+    std::string dumpMap();
+};
+
+
+class RoutineMetadata {
+public:
+    ADDRINT address;
+    std::string name;
+    std::pair<INT32, INT32> locationBoundaries;
+    UINT32 sourceCodeFileId;
+
+    RoutineMetadata(RTN routine);
+};
+
+{% if collect_basic_blocks %}
+class BasicBlockMetadata {
+public:
+    ADDRINT address;
+    std::string routineName;
+    UINT32 instructionsCount;
+    std::set<INT32> sourceCodeLines;
+    UINT32 sourceCodeFileId;
+    int isFunctionEnd;
+
+    BasicBlockMetadata(BBL basicBlock);
+};
+{% endif %}

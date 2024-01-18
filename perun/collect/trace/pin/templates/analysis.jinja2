@@ -1,73 +1,55 @@
-// --- Default analysis functions for routines without collecting arguments ---
 {#- NOTE: Probed mode doesn't support thread IDs - the PIN_GetTid() will return process ID instead, however to preserve the output format it is used#}
-{%- for location in range(2) %}
-VOID {% if location==0 %}rtn_analysis_before{% else %}rtn_analysis_after{% endif %}(RoutineInfo* routineInfo{% if not probed %}, THREADID tid{% endif %}){
-    UINT64 timeStamp;
-    PIN_MutexLock(&outFileLock);
+// Default analysis function for routines without collecting arguments
+VOID PIN_FAST_ANALYSIS_CALL routineAnalysis(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}, UINT32 location){
+    UINT64 timeStamp = 0;
+    PIN_MutexLock(&dynamicDataLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_RTN
-            << ";" << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %}
-            << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}
-            << ";" << PIN_GetPid()
-            << ";" << timeStamp
-            << ";" << routineInfo->id
-            << ";" << routineInfo->name
-            << ";" << routineInfo->sourceCodeLine
-            << ";" << routineInfo->sourceCodeFile
-            << endl;
-    outFile.flush();
-    PIN_MutexUnlock(&outFileLock);
+    dynamicData << Granularity::G_RTN << location << 0  // Information about granularity and location - 3 flags (last empty)
+                << ";" << routineMetadataIndex  // Routine ID
+                << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                << ";" << timeStamp  // Time stamp
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
 }
-{% endfor -%}
 
+{%- if collect_basic_block %}
 {#- NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
-{%- if bbl %}
-// --- Analysis functions for basic blocks ---
-{%- for location in range(2) %}
-VOID {% if location==0 %}bbl_analysis_before{% else %}bbl_analysis_after{% endif %}(BasicBlockInfo* basicBlockInfo, THREADID tid) {
+// Default analysis function for basic blocks
+VOID PIN_FAST_ANALYSIS_CALL basicBlockAnalysis(ADDRINT basicBlockId, THREADID tid, UINT32 location, UINT32 isFunctionEnd) {
     UINT64 timeStamp;
-    PIN_MutexLock(&outFileLock);
+    PIN_MutexLock(&dynamicDataLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_BBL
-            << ";" << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %}
-            << ";" << tid
-            << ";" << PIN_GetPid()
-            << ";" << timeStamp
-            << ";" << basicBlockInfo->routineId
-            << ";" << basicBlockInfo->routineName
-            << ";" << basicBlockInfo->sourceCodeLineStart
-            << ";" << basicBlockInfo->sourceCodeFile
-            << ";" << basicBlockInfo->sourceCodeLineEnd
-            << ";" << basicBlockInfo->id
-            << endl;
-    outFile.flush();
-    PIN_MutexUnlock(&outFileLock);
+    dynamicData << Granularity::G_RTN << location << isFunctionEnd  // Information about granularity and location - 3 flags
+                << ";" << basicBlockId  // Basic block ID - address
+                << ";" << tid  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                << ";" << timeStamp  // Time stamp
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
 }
-{%- endfor %}
-{%- endif %}
+{% endif -%}
 
 {%- if collect_arguments %}
 // --- Analysis functions for routines with argument collection ---
 {%- for function in function_table %}
-VOID rtn_analysis_before_{{ function.name }}(RoutineInfo* routineInfo{% if not probed %}, THREADID tid{% endif %}{% for arg in function.arguments %}, {{ arg.type }} *arg{{ arg.index }}{% endfor %}){
-    UINT64 timeStamp;
-    PIN_MutexLock(&outFileLock);
+VOID PIN_FAST_ANALYSIS_CALL routineAnalysisBefore_{{ function.name }}(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}{% for arg in function.arguments %}, {{ arg.type }} *arg{{ arg.index }}{% endfor %}){
+    UINT64 timeStamp = 0;
+    PIN_MutexLock(&dynamicDataLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_RTN
-            << ";" << Location::L_BEFORE
-            << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}
-            << ";" << PIN_GetPid()
-            << ";" << timeStamp
-            << ";" << routineInfo->id
-            << ";" << routineInfo->name
-            << ";" << routineInfo->sourceCodeLine
-            << ";" << routineInfo->sourceCodeFile
-            {% for arg in function.arguments -%}
-            << ";" << *arg{{ arg.index }}
-            {%- endfor %}
-            << endl;
-    outFile.flush();
-    PIN_MutexUnlock(&outFileLock);
+    dynamicData << Granularity::G_RTN << Location::AFTER << 0  // Information about granularity and location - 3 flags (last empty)
+                << ";" << routineMetadataIndex  // Routine ID
+                << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                << ";" << timeStamp  // Time stamp
+                {% for arg in function.arguments -%}
+                << ";" << *arg{{ arg.index }}  // Argument of type {{ arg.type }}
+                {%- endfor %}
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
 }
-{% endfor %}
+{%- endfor %}
 {%- endif %}

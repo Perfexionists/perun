@@ -1,122 +1,139 @@
-// Function that executes every time a new routine is found during the execution of the program
-VOID Routine(RTN rtn, VOID* v){
-    // Determine if the routine is valid and should be instrumented
-    if (IMG_IsMainExecutable(SEC_Img(RTN_Sec(rtn))) && RTN_Valid(rtn){% if not probed %} && !RTN_IsDynamic(rtn){% endif %} && !RTN_IsArtificial(rtn){% if probed %} && RTN_IsSafeForProbedInsertion(rtn){% endif %}) {
-        std::string rtn_name = PIN_UndecorateSymbolName(RTN_Name(rtn), UNDECORATION_NAME_ONLY);
-        if (rtn_name.rfind("__",0) == 0 || rtn_name.rfind("_GLOBAL__sub_I__",0) == 0){
-            // Filter out internal functions. These functions don't need to be profiled and their filtration reduces size
-            // of collected data as well as shortens the time required to parse this data.
-            return;
-        }
+{%- if collect_basic_blocks %}
+{#- NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
+VOID instrumentBasicBlocksInTrace(TRACE trace, VOID *v) {
+    RTN routine = TRACE_Rtn(trace);
 
-        // Store information about routine for the output
-        RoutineInfo* rc = new RoutineInfo;
-        rc->name = rtn_name;
-        rc->id = RTN_Id(rtn);
+    // Filter out trace based on the routine it belongs to
+    if (!RTN_Valid(routine) or
+        !IMG_Valid(SEC_Img(RTN_Sec(routine))) or
+        !IMG_IsMainExecutable(SEC_Img(RTN_Sec(routine))) or
+        RTN_IsDynamic(routine) or RTN_IsArtificial(routine) or
+        isBlacklistedRoutine(routine)) { return; }
 
-        // Retrieve the location of the routine in the source code
-        INT32 sourceCodeCol;
-        PIN_LockClient();
-        // Requires debugging information in instrumented binary
-        PIN_GetSourceLocation(RTN_Address(rtn), &sourceCodeCol, &(rc->sourceCodeLine), &(rc->sourceCodeFile));
-        PIN_UnlockClient();
-        if (rc->sourceCodeFile == "") {
-            // skip the functions since its location is not known
-            return;
-        }
-
-        {% if probed %}
-        // FIXME: Here is the main problem with probed mode. A function prototype needs to be created for every 
-        // instrumented function however, providing arguments to this prototype is tricky due to limitations, such as no
-        // support for floats. Documentation in this case is very vague and doesn't provide much information about PROTO
-        // object and its use. For now the prototype is created as a dummy and output of probed mode isn't very
-        // reliable, in some cases even there isn't even output.
-        PROTO after_f = PROTO_Allocate(PIN_PARG(VOID), CALLINGSTD_DEFAULT, "rtn_analysis_after", PIN_PARG(RoutineInfo*), PIN_PARG_END());
-        {%- endif -%}
-
-        {% if not probed %}RTN_Open(rtn);{% endif %}
-
-        {% if collect_arguments -%}
-        int found_in_table = 0;
-        for (int func_index = 0; func_index < FUNC_CNT; func_index++) {
-            if (function_names[func_index] == rc->name) {
-                // Function has arguments that need to be collected
-                found_in_table = 1;
-                {% for function in function_table %}
-                if (rc->name == "{{ function.name }}") {
-                    RTN_InsertCall{% if probed %}Probed{% endif %}(rtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_{{ function.name }},
-                                        IARG_PTR, rc,
-                                        {%- if not probed %}IARG_THREAD_ID,{% endif %}
-                                        {%- for argument in function.arguments %}
-                                        IARG_FUNCARG_ENTRYPOINT_REFERENCE, {{ argument.index }},
-                                        {%- endfor %}
-                                        IARG_END);
-                    break;
-                }
-                {% endfor %}
-            }
-        }
-        if (!found_in_table) {
-            RTN_InsertCall{% if probed %}Probed{% endif %}(rtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before, IARG_PTR, rc, {% if not probed %}IARG_THREAD_ID,{% endif %}IARG_END);
-        }
-        {% else %} {# Don't collect arguments #}
-        RTN_InsertCall{% if probed %}Probed{% endif %}(rtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before, IARG_PTR, rc, {% if not probed %}IARG_THREAD_ID,{% endif %}IARG_END);
-        {%- endif %}
-        RTN_InsertCall{% if probed %}Probed{% endif %}(rtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after, {% if probed %}IARG_PROTOTYPE, after_f, {% endif %}IARG_PTR, rc, {% if not probed %}IARG_THREAD_ID,{% endif %} IARG_END);
-
-        {% if not probed %}RTN_Close(rtn);{% endif %}
-        {%- if probed %}PROTO_Free(after_f);{% endif %}
-    }
-}
-
-
-{%- if bbl %}
-// Pin calls this function every time a new Trace is executed
-VOID Trace(TRACE trace, VOID *v) {
-
-    if (!RTN_Valid(TRACE_Rtn(trace)) || RTN_IsDynamic(TRACE_Rtn(trace)) ||
-        RTN_IsArtificial(TRACE_Rtn(trace)) ||
-        !IMG_Valid(SEC_Img(RTN_Sec(TRACE_Rtn(trace)))) ||
-        !IMG_IsMainExecutable(SEC_Img(RTN_Sec(TRACE_Rtn(trace))))) {
-        return;
-    }
-    std::string rtn_name = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
-    if (rtn_name.rfind("__",0) == 0 || rtn_name.rfind("_GLOBAL__sub_I__",0) == 0){
-        // Filter out internal functions. These functions don't need to be profiled and their filtration reduces size
-        // of collected data as well as shortens the time required to parse this data.
-        return;
-    }
-
-    BasicBlockInfo* basicBlockInfo = new BasicBlockInfo;
-    basicBlockInfo->routineName = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
-    basicBlockInfo->routineId = RTN_Id(TRACE_Rtn(trace));
-
-    ADDRINT firstInstrAddr, lastInstrAddr;
-    INT32 sourceCodeCol;
-
+    BasicBlockMetadata basicBlockMetadata(TRACE_BblHead(trace));
+    std::unordered_map<ADDRINT, BasicBlockMetadata>::const_iterator basicBlockIterator;
+    ADDRINT basicBlockId;
+    IPOINT ipointAfter;
+    // Iterate over basic blocks in the trace
     for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
+        basicBlockId = BBL_Address(bbl);
+        basicBlockMetadata = BasicBlockMetadata(bbl);
+        basicBlockIterator = basicBlocks.insert(std::make_pair(basicBlockId, basicBlockMetadata)).first;
+        // Instrument the first instruction of the basic block
+        INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)basicBlockAnalysis,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_ADDRINT, basicBlockIterator->first,
+                       IARG_THREAD_ID,
+                       IARG_UINT32, Location::L_BEFORE,
+                       IARG_UINT32, basicBlockIterator->second.isFunctionEnd,
+                       IARG_END);
 
-        firstInstrAddr = INS_Address(BBL_InsHead(bbl));
-        lastInstrAddr = INS_Address(BBL_InsTail(bbl));
-        basicBlockInfo->id = firstInstrAddr;
-
-        PIN_LockClient();
-        // Requires debugging information in instrumented binary
-        PIN_GetSourceLocation(lastInstrAddr, &sourceCodeCol, &(basicBlockInfo->sourceCodeLineEnd),
-                                                             &(basicBlockInfo->sourceCodeFile));
-        PIN_GetSourceLocation(firstInstrAddr, &sourceCodeCol, &(basicBlockInfo->sourceCodeLineStart),
-                                                              &(basicBlockInfo->sourceCodeFile));
-        PIN_UnlockClient();
-
-        if (basicBlockInfo->sourceCodeFile == "") {
-            // skip the basic block since its location is not known
-            continue;
+        ipointAfter = IPOINT_AFTER;
+        if (!INS_IsValidForIpointAfter(BBL_InsTail(bbl))) {
+            // If the last instruction is a control flow instruction, instrument it
+            // after the branch has been taken
+            ipointAfter = IPOINT_TAKEN_BRANCH;
         }
-
-        INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_before,
-                       IARG_PTR, basicBlockInfo, IARG_THREAD_ID, IARG_END);
-        INS_InsertCall(BBL_InsTail(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_after,
-                       IARG_PTR, basicBlockInfo, IARG_THREAD_ID, IARG_END);
+        // Instrument the last instruction of the basic block
+        INS_InsertCall(BBL_InsTail(bbl), ipointAfter, (AFUNPTR)basicBlockAnalysis,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_ADDRINT, basicBlockIterator->first,
+                       IARG_THREAD_ID,
+                       IARG_UINT32, Location::L_AFTER,
+                       IARG_UINT32, basicBlockIterator->second.isFunctionEnd,
+                       IARG_END);
     }
 }
-{%- endif %}
+{% endif -%}
+
+VOID instrumentRoutinesInImage(IMG img, VOID* v) {
+    // Skip images that are not from main executable
+    if (!IMG_IsMainExecutable(img)) { return; }
+
+    UINT32 routineIndex = 0;
+
+    // Iterate over sections in the image
+    for (SEC sec = IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec)) {
+        // Iterate over routines in the section
+        for (RTN routine = SEC_RtnHead(sec); RTN_Valid(routine); routine = RTN_Next(routine)) {
+
+            // Filter out routines that should not be instrumented
+            if (RTN_IsArtificial(routine) or{% if not probed %} RTN_IsDynamic(routine) or{% endif %}
+                isBlacklistedRoutine(routine){% if probed %}or !RTN_IsSafeForProbedInsertion(routine){% endif %}) {
+                continue;
+            }
+
+            // Store information about routine for the output
+            RoutineMetadata routineMetadata(routine);
+            // Skip routines where source file is not found
+            if (routineMetadata.sourceCodeFileId == 0) { continue; }
+            routines.push_back(routineMetadata);
+            routineIndex = routines.size() - 1;
+
+            {% if probed %}
+            // FIXME: Here is the main problem with probed mode. A function prototype needs to be created for every
+            // instrumented function however, providing arguments to this prototype is tricky due to limitations, such as no
+            // support for floats. Documentation in this case is very vague and doesn't provide much information about PROTO
+            // object and its use. For now the prototype is created as a dummy and output of probed mode isn't very
+            // reliable, in some cases even there isn't even output.
+            PROTO after_f = PROTO_Allocate(PIN_PARG(VOID), CALLINGSTD_DEFAULT, "routineAnalysis", PIN_PARG(NULL), PIN_PARG_END());
+            {%- endif -%}
+
+            // Instrument routine with before and after calls
+            {% if not probed %}RTN_Open(routine);{% endif %}
+
+            {% if collect_arguments -%}
+            int found_in_table = 0;
+            for (int i = 0; i < FUNC_CNT; i++) {
+                if (function_names[i] == routineMetadata.name) {
+                    // Function has arguments that need to be collected
+                    found_in_table = 1;
+                    // TODO: create an PARG lists for each function and index it by the i from for cycle. This should eliminate
+                    // the need for so many ifs. The routine index needs to be added at this stage, however the lists can be
+                    // pre-crafted as the global array of function names with arguments.
+                    {% for function in function_table %}
+                    if (routineMetadata.name == "{{ function.name }}") {
+                        RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis_{{ function.name }},
+                                                                       IARG_FAST_ANALYSIS_CALL,
+                                                                       IARG_UINT32, routineIndex,
+                                                                       {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                                       IARG_UINT32, Location::L_BEFORE,
+                                                                       {%- for argument in function.arguments %}
+                                                                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, {{ argument.index }},
+                                                                       {%- endfor %}
+                                                                       IARG_END);
+                        break; // found the function and instrumented it
+                    }
+                    {% endfor %}
+                }
+            }
+            if (!found_in_table) { // The function does not require special arguments instrumentation
+                RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis,
+                                                               IARG_FAST_ANALYSIS_CALL,
+                                                               IARG_UINT32, routineIndex,
+                                                               {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                               IARG_UINT32, Location::L_BEFORE,
+                                                               IARG_END);
+            }
+            {% else %} {# Don't collect arguments #}
+            RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis,
+                                                           IARG_FAST_ANALYSIS_CALL,
+                                                           IARG_UINT32, routineIndex,
+                                                           {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                           IARG_UINT32, Location::L_BEFORE,
+                                                           IARG_END);
+            {%- endif %}
+            RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_AFTER, (AFUNPTR)routineAnalysis,
+                           IARG_FAST_ANALYSIS_CALL,
+                           {% if probed %}IARG_PROTOTYPE, after_f,{% endif %}
+                           IARG_UINT32, routineIndex,
+                           {% if not probed %}IARG_THREAD_ID,{% endif %}
+                           IARG_UINT32, Location::L_AFTER,
+                           IARG_END);
+
+            {% if not probed %}RTN_Close(routine);{% endif %}
+            {%- if probed %}PROTO_Free(after_f);{% endif %}
+        }
+    }
+}
+
