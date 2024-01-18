@@ -122,7 +122,8 @@ def after(**kwargs):
     WATCH_DOG.info(
         "Processing raw performance data. Note that this may take a while for large raw data files."
     )
-    data_size = os.stat(kwargs["config"].engine.data).st_size
+    data_size = os.stat(kwargs["config"].engine.dynamic_data).st_size
+    data_size += os.stat(kwargs["config"].engine.static_data).st_size
     metrics.add_metric("data_size", data_size)
     WATCH_DOG.info("Raw data file size: {}".format(utils.format_file_size(data_size)))
 
@@ -165,6 +166,7 @@ def teardown(**kwargs):
         config.engine.cleanup(**kwargs)
 
     metrics.end_timer("total_time")
+    #metrics.save_separate("details/{}.json".format(metrics.Metrics.metrics_id), func_summary)
     # metrics.save()
     stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
@@ -179,7 +181,8 @@ def teardown(**kwargs):
     help=(
         "Sets the data collection engine to be used:\n"
         " - stap: the SystemTap framework\n"
-        " - ebpf: the eBPF framework"
+        " - ebpf: the eBPF framework\n"
+        " - pin: the Intel's PIN framework\n"
     ),
 )
 @click.option(
@@ -362,6 +365,28 @@ def teardown(**kwargs):
     is_flag=True,
     default=False,
     help="DEBUG: Disables Dynamic Stats updates",
+)
+@click.option(
+    "--collect-arguments",
+    "-ca",
+    is_flag=True,
+    default=False,
+    help="Collect basic arguments of the functions when possible.",
+)
+@click.option(
+    "--collect-basic-blocks",
+    "-cbb",
+    is_flag=True,
+    default=False,
+    help="Collect run-times of basic blocks.",
+)
+@click.option(
+    "--probed",
+    "-p",
+    is_flag=True,
+    default=False,
+    help=("Perform collection using PIN's probed mode "
+          "(can't be used when collection of basic blocks is enabled) [EXPERIMENTAL]."),
 )
 @click.pass_context
 def trace(ctx, **kwargs):
