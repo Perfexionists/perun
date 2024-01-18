@@ -18,6 +18,7 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
 import perun.utils.helpers as helpers
+import perun.utils.cli_helpers as cli_helpers
 import perun.testing.asserts as asserts
 import perun.utils.log as log
 from perun.utils.exceptions import (
@@ -44,7 +45,7 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = utils.get_supported_module_names(package_name)
+    registered_modules = cli_helpers.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         module = utils.get_module(module_name)
         for must_have_function_name in must_have_function_names:
@@ -71,7 +72,7 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = utils.get_supported_module_names(package_name)
+    registered_modules = cli_helpers.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
         module = utils.get_module(module_name)
@@ -301,7 +302,7 @@ def test_common(capsys):
         utils.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
 
     with pytest.raises(SystemExit):
-        utils.get_supported_module_names("nonexisting")
+        cli_helpers.get_supported_module_names("nonexisting")
 
     with pytest.raises(subprocess.CalledProcessError):
         utils.run_safely_external_command("ls -3", quiet=False, check_results=True)

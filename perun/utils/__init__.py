@@ -26,7 +26,7 @@ import subprocess
 import magic
 
 # Perun Imports
-from .log import error, cprint, cprintln, info
+from .log import cprint, cprintln, info
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 if TYPE_CHECKING:
@@ -365,48 +365,3 @@ def get_module(module_name: str) -> types.ModuleType:
 
 
 MODULE_CACHE: dict[str, types.ModuleType] = {}
-
-
-def get_supported_module_names(package: str) -> list[str]:
-    """Obtains list of supported modules supported by the package.
-
-    Contains the hard-coded dictionary of packages and their supported values. This simply does
-    a key lookup and returns the list of supported values.
-
-    This was originally dynamic collection of all the modules through beautiful module iteration,
-    which was shown to be completely uselessly slower than this hardcoded table. Since I assume, that
-    new modules will be registered very rarely, I think it is ok to have it implemented like this.
-
-    Note: This is used in CLI, and as of Click 7.0 all subcommands have underscores (_)
-    replaced by (-). While this is useful in CLI, Perun needs the underscore,
-    so use Unit.sanitize_module_name to replace the dash back.
-
-    :param str package: name of the package for which we want to obtain the supported modules
-                        one of ('vcs', 'collect', 'postprocess')
-    :return: list of names of supported modules for the given package
-    """
-    if package not in ("vcs", "collect", "postprocess", "view"):
-        error(f"trying to call get_supported_module_names with incorrect package '{package}'")
-    return {
-        "vcs": ["git"],
-        "collect": ["trace", "memory", "time", "complexity", "bounds"],
-        "postprocess": [
-            "regression-analysis",
-            "regressogram",
-            "moving-average",
-            "kernel-regression",
-        ],
-        "view": ["bars", "flamegraph", "flow", "heapmap", "scatter", "tableof"],
-    }[package]
-
-
-def merge_dictionaries(*args: dict[Any, Any]) -> dict[Any, Any]:
-    """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
-
-    :param list args: list of dictionaries
-    :return: one merged dictionary
-    """
-    res = {}
-    for dictionary in args:
-        res.update(dictionary)
-    return res

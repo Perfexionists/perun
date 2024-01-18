@@ -137,7 +137,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=True,
     multiple=True,
-    type=click.Choice(utils.get_supported_module_names("collect")),
+    type=click.Choice(cli_helpers.get_supported_module_names("collect")),
     help="Profiler used for collection of profiling data for the given <cmd>",
 )
 @click.option(
@@ -155,7 +155,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    type=click.Choice(utils.get_supported_module_names("postprocess")),
+    type=click.Choice(cli_helpers.get_supported_module_names("postprocess")),
     help=(
         "After each collection of data will run <postprocessor> to "
         "postprocess the collected resources."

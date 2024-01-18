@@ -345,7 +345,7 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = utils.merge_dictionaries(job._asdict(), collector.params)
+    job_params = helpers.merge_dictionaries(job._asdict(), collector.params)
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
@@ -416,7 +416,7 @@ def run_postprocessor(
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = utils.merge_dictionaries(job._asdict(), {"profile": prof}, postprocessor.params)
+    job_params = helpers.merge_dictionaries(job._asdict(), {"profile": prof}, postprocessor.params)
     postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:

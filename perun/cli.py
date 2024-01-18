@@ -192,7 +192,7 @@ def configure_local_perun(perun_path: str) -> None:
     "--vcs-type",
     metavar="<type>",
     default="git",
-    type=click.Choice(utils.get_supported_module_names("vcs")),
+    type=click.Choice(cli_helpers.get_supported_module_names("vcs")),
     help=(
         "In parallel to initialization of Perun, initialize the vcs"
         " of <type> as well (by default ``git``)."
@@ -921,7 +921,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     "-c",
     nargs=1,
     default="time",
-    type=click.Choice(utils.get_supported_module_names("collect")),
+    type=click.Choice(cli_helpers.get_supported_module_names("collect")),
     help=(
         "Collector that will be used to collect performance data and used to infer "
         "baseline or target performance profiles. "
@@ -946,7 +946,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    type=click.Choice(utils.get_supported_module_names("postprocess")),
+    type=click.Choice(cli_helpers.get_supported_module_names("postprocess")),
     help=(
         "After each collection of performance data, the fuzzer can run <postprocessor> to "
         "postprocess the collected resources (e.g. to create models of resources). "

@@ -494,6 +494,18 @@ def abs_in_relative_range(value: float, range_val: float, range_rate: float) -> 
     return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
 
 
+def merge_dictionaries(*args: dict[Any, Any]) -> dict[Any, Any]:
+    """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
+
+    :param list args: list of dictionaries
+    :return: one merged dictionary
+    """
+    res = {}
+    for dictionary in args:
+        res.update(dictionary)
+    return res
+
+
 def partition_list(
     input_list: Iterable[Any], condition: Callable[[Any], bool]
 ) -> tuple[list[Any], list[Any]]:
