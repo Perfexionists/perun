@@ -37,7 +37,7 @@ class FunctionInfo:
 
 def get_function_info_from_binary(filename: str) -> List[FunctionInfo]:
     """ Function reads DWARF debug information form the specified binary file and extracts 
-    information about functions contained in it. Namely function name and argument names, 
+    information about functions contained in it. Namely, function name and argument names,
     types and indices.
 
     :param str filename: binary with DWARF debug info one wants to analyze

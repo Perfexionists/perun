@@ -11,7 +11,7 @@
 
 {%- if collect_arguments %}
 #define FUNC_CNT {{ function_count }}
-string function_names[FUNC_CNT] { {{ function_names }} };
+std::string function_names[FUNC_CNT] { {{ function_names }} };
 {%- endif %}
 
 PIN_MUTEX staticDataLock;
@@ -142,8 +142,8 @@ VOID fini(INT32 code, VOID* v){
     for (auto& basicBlock: basicBlocks) {
         staticData << basicBlock.first  // Basic block ID - address
                    << ";" << basicBlock.second.routineName  // Name of the routine the basic block belongs to
-                   << ";" << basicBlock.second.instructionsCount;  // Number of instructions in the basic block
-                   << ";" << basicBlock.second.sourceCodeFileId  // ID of file where is the basic block located
+                   << ";" << basicBlock.second.instructionsCount  // Number of instructions in the basic block
+                   << ";" << basicBlock.second.sourceCodeFileId;  // ID of file where is the basic block located
         for (auto& lineNumber : basicBlock.second.sourceCodeLines) {  // Lines that basic block maps to
             staticData << ";" << lineNumber;
         }

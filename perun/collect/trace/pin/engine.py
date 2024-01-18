@@ -3,6 +3,7 @@
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os
 import subprocess
+from typing import List, Dict, Union
 
 import perun.collect.trace.collect_engine as engine
 from perun.utils.log import msg_to_stdout
@@ -37,16 +38,18 @@ class PinEngine(engine.CollectEngine):
         :param Configuration config: the collection parameters stored in the configuration object
         """
         super().__init__(config)
-        self.pintool_src = f'{get_tmp_directory()}/pintool.cpp'
-        self.pintool_makefile = f'{get_tmp_directory()}/makefile'
-        self.data = self._assemble_file_name('data', '.txt')
-        self.functions_in_binary = []
-        self.__dependencies = ['g++', 'make']
-        self.__supported_base_argument_types = ["int", "char", "float", "double", "bool"]
-        self.__pinroot = ''
+        self.pintool_src: str = f'{get_tmp_directory()}/pintool.cpp'
+        self.pintool_makefile: str = f'{get_tmp_directory()}/makefile'
+        self.dynamic_data: str = self._assemble_file_name('dynamic-data', '.txt')
+        self.static_data: str = self._assemble_file_name('static-data', '.txt')
+        self.functions_in_binary: List[scan_binary.FunctionInfo] = []
+        self.__dependencies: List[str] = ['g++', 'make']
+        self.__supported_base_argument_types: List[str] = ["int", "char", "float", "double", "bool"]
+        self.__pin_root: str = ''
 
-        msg_to_stdout(f'[Debug]: Creating collect files: {self.data}, {self.pintool_src}, {self.pintool_makefile}', 3)
-        super()._create_collect_files([self.data, self.pintool_src, self.pintool_makefile])
+        msg_to_stdout((f'[Debug]: Creating collect files: {self.dynamic_data}, {self.static_data}, '
+                       f'{self.pintool_src}, {self.pintool_makefile}'), 3)
+        super()._create_collect_files([self.dynamic_data, self.static_data, self.pintool_src, self.pintool_makefile])
 
     def check_dependencies(self):
         """ Check that the tools for pintool creation are available and if pin's root folder is specified.
@@ -54,10 +57,12 @@ class PinEngine(engine.CollectEngine):
         msg_to_stdout('[Info]: Checking dependencies.', 2)
         check(self.__dependencies)
 
+        # Check if PIN_ROOT environmental variable is set
+        # TODO: maybe add check if the specified directory contains some of the required contents
         if 'PIN_ROOT' not in os.environ.keys():
             raise PinUnspecifiedPinRoot()
-        self.__pinroot = os.environ['PIN_ROOT']
-        if not os.path.isdir(self.__pinroot) or not os.path.isabs(self.__pinroot):
+        self.__pin_root = os.environ['PIN_ROOT']
+        if not os.path.isdir(self.__pin_root) or not os.path.isabs(self.__pin_root):
             msg_to_stdout(f'[Debug]: PIN_ROOT environmental variable exists, but is not valid absolute path.', 3)
             raise PinUnspecifiedPinRoot()
 
@@ -92,12 +97,11 @@ class PinEngine(engine.CollectEngine):
         :param Configuration config: the configuration object
         """
         msg_to_stdout('[Info]: Collecting the performance data.', 2)
-        run_collection = (f'{self.__pinroot}/pin -t {get_tmp_directory()}/obj-intel64/pintool.so '
-                          f'-o {self.data} -- {config.executable}')
+        collection_cmd: str = f'{self.__pin_root}/pin -t {get_tmp_directory()}/obj-intel64/pintool.so -- {config.executable}'
 
-        msg_to_stdout(f'[Debug]: Running the pintool with command: {run_collection}.', 3)
+        msg_to_stdout(f'[Debug]: Running the pintool with command: {collection_cmd}.', 3)
         try:
-            utils.run_safely_external_command(run_collection)
+            utils.run_safely_external_command(collection_cmd)
         except subprocess.CalledProcessError:
             raise PinBinaryInstrumentationFailed
 
@@ -108,9 +112,11 @@ class PinEngine(engine.CollectEngine):
 
         :return iterable: a generator object that produces the resources
         """
+        # TODO enable parsing
         msg_to_stdout('[Info]: Transforming the collected data to perun profile.', 2)
-        msg_to_stdout(f'[Debug]: Parsing data from {self.data}', 3)
-        return parse.parse_data(self.data, config.executable.workload, self.functions_in_binary)
+        msg_to_stdout(f'[Debug]: Parsing data from {self.dynamic_data} and {self.static_data}', 3)
+        return parse.parse_data(dynamic_data_file=self.dynamic_data, static_data_file=self.static_data,
+                                workload=config.executable.workload, functions_information=self.functions_in_binary)
 
     def cleanup(self, config, **_):
         """ Cleans up all the engine-related resources such as files, processes, locks, etc.
@@ -120,10 +126,10 @@ class PinEngine(engine.CollectEngine):
         msg_to_stdout('[Info]: Cleaning up.', 2)
         if os.path.exists(f'{get_tmp_directory()}/obj-intel64'):
             utils.run_safely_external_command(f'make -C {get_tmp_directory()} clean-obj-intel64')
-        super()._finalize_collect_files(['data', 'pintool_src', 'pintool_makefile'],
-                                        config.keep_temps, config.zip_temps)
+        # super()._finalize_collect_files(['data', 'pintool_src', 'pintool_makefile'],
+        #                                 config.keep_temps, config.zip_temps)
 
-    def _assemble_pintool(self, collect_args: bool=False, collect_bbls: bool=False, probed: bool=False):
+    def _assemble_pintool(self, collect_args: bool = False, collect_bbls: bool = False, probed: bool = False):
         """ Creates makefile for pintool and the pintool itself from Jinja2 templates.
 
         :param bool collect_args: if True pintool will be able to collect arguments specified in functions_in_binary
@@ -138,21 +144,26 @@ class PinEngine(engine.CollectEngine):
         )
 
         if probed and collect_bbls:
-            raise InvalidParameterException("collect_basic_blocks", True, "Can't be used when Probed mode is enabled.")
+            raise InvalidParameterException("collect_basic_blocks", True,
+                                            "Can't be used when Probed mode is enabled.")
 
-        function_names = ''
-        func_len = 0
+        function_names: str = ''
+        func_len: int = 0
         if self.functions_in_binary:
             # enclose the function names in quotes for declaration of name array in the pintool
             function_names = ', '.join([f'"{function.name}"' for function in self.functions_in_binary])
             func_len = len(self.functions_in_binary)
 
-        source_code = env.get_template('pintool.jinja2').render({'probed': probed, 'bbl': collect_bbls,
-                                                                 'collect_arguments': collect_args,
-                                                                 'function_table': self.functions_in_binary,
-                                                                 'func_names': function_names,
-                                                                 'function_table_len': func_len})
-        makefile_rules = env.get_template('makefile.jinja2').render({'pin_root': self.__pinroot})
+        pintool_info: Dict[str, Union[str, bool, List[scan_binary.FunctionInfo]]] = {
+            'dynamic_data_file': self.dynamic_data, 'static_data_file': self.static_data,
+            'collect_basic_blocks': collect_bbls, 'collect_arguments': collect_args, 'enable_probed_mode': probed,
+            'function_arguments_info': self.functions_in_binary, 'function_names': function_names,
+            'function_count': func_len
+        }
+
+        # Generate the pintool and its makefile
+        source_code = env.get_template('pintool.jinja2').render(pintool_info)
+        makefile_rules = env.get_template('makefile.jinja2').render({'pin_root': self.__pin_root})
 
         with open(self.pintool_src, 'w') as pt, open(self.pintool_makefile, 'w') as mf:
             pt.write(source_code)
@@ -166,9 +177,9 @@ class PinEngine(engine.CollectEngine):
         """
 
         #NOTE: Lets the types like 'long long int' through
-        is_pointer = argument_type.count('*') > 0
+        is_pointer: bool = argument_type.count('*') > 0
         for supported_type in self.__supported_base_argument_types:
-            if supported_type in argument_type.replace('*','').split():
+            if supported_type in argument_type.replace('*', '').split():
                 # match the argument type to one of the supported base types
                 return not is_pointer or supported_type == 'char'  # only supported pointer is char*
         return False

@@ -47,7 +47,7 @@ class Profile(MutableMapping[str, Any]):
         "exclusive",
     }
     persistent = {'trace', 'type', 'subtype', 'uid', 'location',
-                  'source-file', 'source-line', 'source-line-end', 'caller'}
+                  'source-file', 'source-lines', 'caller', 'instruction-count'}
     independent = [
         "structure-unit-size",
         "snapshot",

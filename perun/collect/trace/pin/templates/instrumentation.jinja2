@@ -28,12 +28,14 @@ VOID instrumentBasicBlocksInTrace(TRACE trace, VOID *v) {
                        IARG_UINT32, basicBlockIterator->second.isFunctionEnd,
                        IARG_END);
 
-        ipointAfter = IPOINT_AFTER;
-        if (!INS_IsValidForIpointAfter(BBL_InsTail(bbl))) {
-            // If the last instruction is a control flow instruction, instrument it
-            // after the branch has been taken
-            ipointAfter = IPOINT_TAKEN_BRANCH;
-        }
+
+        ipointAfter = IPOINT_BEFORE;
+{#        if (INS_IsValidForIpointAfter(BBL_InsTail(bbl))) {#}
+{#            ipointAfter = IPOINT_AFTER;#}
+{#        }#}
+{#        if (INS_IsValidForIpointTakenBranch(BBL_InsTail(bbl))) {#}
+{#            ipointAfter = IPOINT_TAKEN_BRANCH;#}
+{#        }#}
         // Instrument the last instruction of the basic block
         INS_InsertCall(BBL_InsTail(bbl), ipointAfter, (AFUNPTR)basicBlockAnalysis,
                        IARG_FAST_ANALYSIS_CALL,
@@ -91,13 +93,12 @@ VOID instrumentRoutinesInImage(IMG img, VOID* v) {
                     // TODO: create an PARG lists for each function and index it by the i from for cycle. This should eliminate
                     // the need for so many ifs. The routine index needs to be added at this stage, however the lists can be
                     // pre-crafted as the global array of function names with arguments.
-                    {% for function in function_table %}
+                    {% for function in function_arguments_info %}
                     if (routineMetadata.name == "{{ function.name }}") {
-                        RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis_{{ function.name }},
+                        RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysisBefore_{{ function.name }},
                                                                        IARG_FAST_ANALYSIS_CALL,
                                                                        IARG_UINT32, routineIndex,
                                                                        {% if not probed %}IARG_THREAD_ID,{% endif %}
-                                                                       IARG_UINT32, Location::L_BEFORE,
                                                                        {%- for argument in function.arguments %}
                                                                        IARG_FUNCARG_ENTRYPOINT_REFERENCE, {{ argument.index }},
                                                                        {%- endfor %}
