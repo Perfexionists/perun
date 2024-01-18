@@ -13,7 +13,6 @@ import os
 import pprint
 
 import perun.logic.pcs as pcs
-import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 
@@ -179,7 +178,7 @@ class Watchdog:
             return
 
         self.info(
-            f"SystemTap script '{script}', size '{utils.format_file_size(os.stat(script).st_size)}'"
+            f"SystemTap script '{script}', size '{perun_log.format_file_size(os.stat(script).st_size)}'"
         )
         self.info(f"Number of function locations: '{func_count}', usdt locations: '{usdt_count}'")
         self.info(f"Number of probe points in the script: '{_count_script_probes(script)}'")

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
+import itertools
 import operator
 import os
 import re
@@ -445,3 +446,23 @@ def safe_division(dividend: float, divisor: float) -> float:
         return dividend / divisor
     except (ZeroDivisionError, ValueError):
         return dividend / tools.APPROX_ZERO
+
+
+def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
+    """Slice generator into multiple generators and each generator yields up to chunk_size items.
+
+    Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
+
+    Example: chunkify(it, 100); it generates a total of 450 elements:
+        _it0: 100,
+        _it1: 100,
+        _it2: 100,
+        _it3: 100,
+        _it4: 50
+
+    :param generator generator: a generator object
+    :param int chunk_size: the maximum size of each chunk
+    :return generator: a generator object
+    """
+    for first in generator:
+        yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))

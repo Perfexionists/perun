@@ -194,15 +194,15 @@ def test_binaries_lookup():
 def test_size_formatting():
     """Test the file size formatting"""
     # Test small size values
-    assert utils.format_file_size(148) == "   148 B  "
-    assert utils.format_file_size(1012) == "  1012 B  "
+    assert log.format_file_size(148) == "   148 B  "
+    assert log.format_file_size(1012) == "  1012 B  "
     # Test some larger values
-    assert utils.format_file_size(23456) == "  22.9 KiB"
-    assert utils.format_file_size(1054332440) == "1005.5 MiB"
+    assert log.format_file_size(23456) == "  22.9 KiB"
+    assert log.format_file_size(1054332440) == "1005.5 MiB"
     # Test some ridiculously large values
-    assert utils.format_file_size(8273428342423) == "   7.5 TiB"
-    assert utils.format_file_size(81273198731928371) == "72.2 PiB"
-    assert utils.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
+    assert log.format_file_size(8273428342423) == "   7.5 TiB"
+    assert log.format_file_size(81273198731928371) == "72.2 PiB"
+    assert log.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
 
 
 def test_nonblocking_subprocess():
@@ -294,7 +294,7 @@ def test_common(capsys):
         for i in range(0, 10):
             yield i
 
-    chunks = list(map(list, utils.chunkify(simple_generator(), 2)))
+    chunks = list(map(list, helpers.chunkify(simple_generator(), 2)))
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
     with pytest.raises(UnsupportedModuleFunctionException):

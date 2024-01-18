@@ -17,7 +17,6 @@ from typing import (
 )
 import contextlib
 import importlib
-import itertools
 import os
 import shlex
 import shutil
@@ -459,47 +458,3 @@ def abs_in_absolute_range(value: float, border: float) -> bool:
     :return: true if the value is in absolute range
     """
     return -abs(border) <= value <= abs(border)
-
-
-def format_file_size(size: Optional[float]) -> str:
-    """Format file size in Bytes into a fixed-length output so that it can be easily printed.
-
-    If size is set to 'None' then the function returns number of whitespace characters of the
-    same width as if an actual value was supplied.
-
-    Courtesy of 'https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-
-    readable-version-of-file-size'
-
-    :param int size: the size in Bytes
-
-    :return str: the formatted size for output
-    """
-    if size is None:
-        return " " * 10
-    for unit in ["", "Ki", "Mi", "Gi", "Ti"]:
-        if abs(size) < 1024.0:
-            if unit == "":
-                return f"{size:6.0f} B  "
-            return f"{size:6.1f} {unit}B"
-        size /= 1024.0
-    return f"{size:.1f} PiB"
-
-
-def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
-    """Slice generator into multiple generators and each generator yields up to chunk_size items.
-
-    Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
-
-    Example: chunkify(it, 100); it generates a total of 450 elements:
-        _it0: 100,
-        _it1: 100,
-        _it2: 100,
-        _it3: 100,
-        _it4: 50
-
-    :param generator generator: a generator object
-    :param int chunk_size: the maximum size of each chunk
-    :return generator: a generator object
-    """
-    for first in generator:
-        yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))

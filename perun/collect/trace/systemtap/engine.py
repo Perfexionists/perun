@@ -26,6 +26,7 @@ from perun.collect.trace.values import (
 )
 
 import perun.utils as utils
+import perun.utils.log as perun_log
 import perun.utils.metrics as metrics
 from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
 from perun.utils.exceptions import (
@@ -291,7 +292,7 @@ class SystemTapEngine(engine.CollectEngine):
 
             :param str data_file: the name of the output data file
             """
-            data_size = utils.format_file_size(os.stat(data_file).st_size)
+            data_size = perun_log.format_file_size(os.stat(data_file).st_size)
             WATCH_DOG.info(
                 f"Command execution status update, collected raw data size so far: {data_size}"
             )

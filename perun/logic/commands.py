@@ -1221,7 +1221,7 @@ def print_formatted_temp_files(
         # Print the size of each file
         if show_size:
             perun_log.info(
-                f"{perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)}",
+                f"{perun_log.in_color(perun_log.format_file_size(size), TEXT_EMPH_COLOUR)}",
                 end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
             )
         # Print the protection level of each file
@@ -1343,7 +1343,7 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
 
     # Format the size so that is's suitable for output
     final_results: list[tuple[str, str, str | int]] = [
-        (utils.format_file_size(size), version, file) for size, version, file in results
+        (perun_log.format_file_size(size), version, file) for size, version, file in results
     ]
     # Print all the results
     _print_stat_objects(final_results, properties)
@@ -1356,7 +1356,7 @@ def _print_total_size(total_size: int, enabled: bool) -> None:
     :param bool enabled: a flag describing if the total size should be displayed at all
     """
     if enabled:
-        formated_total_size = utils.format_file_size(total_size)
+        formated_total_size = perun_log.format_file_size(total_size)
         perun_log.info(
             f"Total size of all the displayed files / directories: "
             f"{perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)}"

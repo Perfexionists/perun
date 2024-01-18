@@ -24,7 +24,6 @@ from perun.collect.trace.values import (
 import perun.logic.runner as runner
 import perun.utils.log as stdout
 import perun.utils.metrics as metrics
-import perun.utils as utils
 from perun.profile.factory import Profile
 from perun.utils.structs import CollectStatus
 
@@ -123,7 +122,7 @@ def after(**kwargs):
     )
     data_size = os.stat(kwargs["config"].engine.data).st_size
     metrics.add_metric("data_size", data_size)
-    WATCH_DOG.info(f"Raw data file size: {utils.format_file_size(data_size)}")
+    WATCH_DOG.info(f"Raw data file size: {stdout.format_file_size(data_size)}")
 
     # Dirty temporary hack
     if kwargs["config"].engine.name == "ebpf":
