@@ -492,3 +492,25 @@ def abs_in_relative_range(value: float, range_val: float, range_rate: float) -> 
     """
     range_rate = range_rate if 0.0 <= range_rate <= 1.0 else 0.0
     return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
+
+
+def partition_list(
+    input_list: Iterable[Any], condition: Callable[[Any], bool]
+) -> tuple[list[Any], list[Any]]:
+    """Utility function for list partitioning on a condition so that the list is not iterated
+    twice and the condition is evaluated only once.
+
+    Based on a SO answer featuring multiple methods and their performance comparison:
+    'https://stackoverflow.com/a/31448772'
+
+    :param iterator input_list: the input list to be partitioned
+    :param function condition: the condition that should be evaluated on every list item
+    :return tuple: (list of items evaluated to True, list of items evaluated to False)
+    """
+    good, bad = [], []
+    for item in input_list:
+        if condition(item):
+            good.append(item)
+        else:
+            bad.append(item)
+    return good, bad

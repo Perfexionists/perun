@@ -47,7 +47,7 @@ import zlib
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import index, pcs, store
 from perun.profile import helpers
 from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
@@ -406,7 +406,7 @@ def clean_stats(keep_custom: bool = False, keep_empty: bool = False) -> None:
     if not keep_custom:
         # Get the custom files and directories in the stats directory
         _, custom = _get_versions_in_stats_directory()
-        custom_files, custom_dirs = utils.partition_list(custom, os.path.isfile)
+        custom_files, custom_dirs = utils_helpers.partition_list(custom, os.path.isfile)
         # Use the reversed order to minimize the number of exceptions due to already deleted files
         _delete_stats_objects(reversed(custom_dirs), reversed(custom_files))
     if not keep_empty:

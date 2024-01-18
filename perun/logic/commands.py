@@ -1324,7 +1324,7 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
     # Separate the results with no files since they cannot be properly sorted but still need
     # to be printed
     record_size = itemgetter(0)
-    valid_results, empty_results = utils.partition_list(
+    valid_results, empty_results = helpers.partition_list(
         results, lambda item: record_size(item) is not None
     )
 
