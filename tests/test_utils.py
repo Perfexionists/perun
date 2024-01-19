@@ -31,7 +31,7 @@ from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
-from perun.utils.external import environment, commands as external_commands
+from perun.utils.external import environment, commands as external_commands, processes
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -170,7 +170,7 @@ def test_binaries_lookup():
         "universal_newlines": True,
         "stdout": subprocess.PIPE,
     }
-    with utils.nonblocking_subprocess("make", args) as p:
+    with processes.nonblocking_subprocess("make", args) as p:
         # Verify if the call is non blocking
         for _ in p.stdout:
             pass
@@ -224,21 +224,21 @@ def test_nonblocking_subprocess():
     target = os.path.join(target_dir, "tst_waiting")
     # Test the subprocess interruption with default termination handler
     with pytest.raises(SystemTapScriptCompilationException) as exception:
-        with utils.nonblocking_subprocess(target, {}):
+        with processes.nonblocking_subprocess(target, {}):
             raise SystemTapScriptCompilationException("testlog", 1)
     assert "compilation failure" in str(exception.value)
 
     # Test the subprocess interruption with custom termination handler with no parameters
     proc_dict = {}
     with pytest.raises(SystemTapStartupException) as exception:
-        with utils.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
+        with processes.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
             proc_dict["pid"] = waiting_process.pid
             raise SystemTapStartupException("testlog")
     assert "startup error" in str(exception.value)
 
     # Test the subprocess interruption with custom termination handler and custom parameter
     with pytest.raises(ResourceLockedException) as exception:
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             target, {}, termination_wrapper, proc_dict
         ) as waiting_process:
             proc_dict["pid"] = waiting_process.pid

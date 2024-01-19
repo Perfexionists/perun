@@ -25,11 +25,10 @@ from perun.collect.trace.values import (
     STAP_PHASES,
 )
 
-import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 import perun.utils.metrics as metrics
-from perun.utils.external import commands
+from perun.utils.external import commands, processes
 from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
 from perun.utils.exceptions import (
     SystemTapStartupException,
@@ -196,7 +195,7 @@ class SystemTapEngine(engine.CollectEngine):
         # Fetch the password so that the preexec_fn doesn't halt
         commands.run_safely_external_command("sudo sleep 0")
         # Run only the first 4 phases of the stap command, before actually running the collection
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             command + " -p 4",
             {"stderr": logfile, "stdout": PIPE, "preexec_fn": os.setpgrp},
             self._terminate_process,
@@ -252,7 +251,7 @@ class SystemTapEngine(engine.CollectEngine):
         :param Configuration config: the configuration object
         """
         WATCH_DOG.info("Starting up the SystemTap collection process.")
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             command,
             {"stderr": logfile, "preexec_fn": os.setpgrp},
             self._terminate_process,
@@ -310,7 +309,7 @@ class SystemTapEngine(engine.CollectEngine):
         # Start the profiled command
         WATCH_DOG.info(f"Launching the profiled command '{self.executable.to_escaped_string()}'")
 
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             self.executable.to_escaped_string(),
             profiled_args,
             self._terminate_process,

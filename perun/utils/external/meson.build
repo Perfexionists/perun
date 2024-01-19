@@ -4,6 +4,7 @@ perun_external_files = files(
     '__init__.py',
     'commands.py',
     'environment.py',
+    'processes.py',
 )
 
 py3.install_sources(
