@@ -17,6 +17,7 @@ import click
 from perun.logic import runner
 from perun import utils
 from perun.utils import helpers, log
+from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, Executable
 
 
@@ -38,7 +39,7 @@ def collect(
     log.info("Executing the warmup-phase ", end="")
     for timing in range(0, warmup):
         command = " ".join(["time -p", str(executable)]).split(" ")
-        utils.get_stdout_from_external_command(command).split("\n")
+        commands.get_stdout_from_external_command(command).split("\n")
         log.info(".", end="")
         sys.stdout.flush()
     log.newline()
@@ -52,7 +53,7 @@ def collect(
     before_timing = systime.time()
     for timing in range(1, repeat + 1):
         command = " ".join(["time -p", str(executable)]).split(" ")
-        collected_data = utils.get_stdout_from_external_command(command).split("\n")
+        collected_data = commands.get_stdout_from_external_command(command).split("\n")
 
         times.extend(
             [

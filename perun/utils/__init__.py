@@ -28,8 +28,6 @@ import magic
 from .log import cprint, cprintln, info
 
 if TYPE_CHECKING:
-    import types
-
     from perun.utils.structs import CollectStatus, PostprocessStatus
 
 
@@ -295,16 +293,3 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
             info(out.decode("utf-8"), end="")
         if err:
             cprint(err.decode("utf-8"), "red")
-
-
-def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[bytes]] = None) -> str:
-    """Runs external command with parameters, checks its output and provides its output.
-
-    :param list command: list of arguments for command
-    :param handle stdin: the command input as a file handle
-    :return: string representation of output of command
-    """
-    output = subprocess.check_output(
-        [c for c in command if c != ""], stderr=subprocess.STDOUT, stdin=stdin
-    )
-    return output.decode("utf-8")

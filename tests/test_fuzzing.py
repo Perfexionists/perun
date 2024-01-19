@@ -6,7 +6,6 @@ import os
 import sys
 import subprocess
 import pytest
-import inspect
 
 from click.testing import CliRunner
 
@@ -15,6 +14,7 @@ import perun.cli as cli
 import perun.fuzz.evaluate.by_coverage as coverage_fuzz
 import perun.fuzz.evaluate.by_perun as perun_fuzz
 from perun.fuzz.structs import CoverageConfiguration
+from perun.utils.external import commands
 
 import perun.testing.asserts as asserts
 
@@ -540,13 +540,13 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
         else:
             return old_run_process(*_, **__)
 
-    old_check_output = utils.get_stdout_from_external_command
+    old_check_output = commands.get_stdout_from_external_command
 
     def patched_check_output(*_, **__):
         return "real 0.01\nuser 0.00\nsys 0.00"
 
     monkeypatch.setattr(utils, "run_safely_external_command", patched_run_process)
-    monkeypatch.setattr(utils, "get_stdout_from_external_command", patched_check_output)
+    monkeypatch.setattr(commands, "get_stdout_from_external_command", patched_check_output)
     result = runner.invoke(
         cli.fuzz_cmd,
         [
@@ -595,4 +595,4 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, "target_testing", old_target_perun_testing)
-    monkeypatch.setattr(utils, "get_stdout_from_external_command", old_check_output)
+    monkeypatch.setattr(commands, "get_stdout_from_external_command", old_check_output)
