@@ -31,7 +31,7 @@ from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
-from perun.utils.external import environment
+from perun.utils.external import environment, commands as external_commands
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -305,7 +305,7 @@ def test_common(capsys):
         cli_helpers.get_supported_module_names("nonexisting")
 
     with pytest.raises(subprocess.CalledProcessError):
-        utils.run_safely_external_command("ls -3", quiet=False, check_results=True)
+        external_commands.run_safely_external_command("ls -3", quiet=False, check_results=True)
     out, _ = capsys.readouterr()
     assert "captured stdout" in out
 

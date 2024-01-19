@@ -40,8 +40,8 @@ import subprocess
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.utils import log, helpers
+from perun.utils.external import commands
 from perun.workload.generator import WorkloadGenerator
 
 if TYPE_CHECKING:
@@ -145,7 +145,7 @@ class ExternalGenerator(WorkloadGenerator):
         :return: path to a file
         """
         try:
-            utils.run_safely_external_command(self.generator, check_results=True)
+            commands.run_safely_external_command(self.generator, check_results=True)
         except subprocess.CalledProcessError as error:
             log.warn(
                 f"External workload generator '{self.generator}' returned failed with: {error}"

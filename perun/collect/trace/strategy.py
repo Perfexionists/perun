@@ -11,11 +11,15 @@
     extract_configuration serves as a recommended module interface
 """
 
+# Standard Imports
+
+# Third-Party Imports
+
+# Perun Imports
 from perun.collect.trace.probes import Probes, ProbeType
 from perun.collect.trace.values import Strategy, SUFFIX_DELIMITERS
 from perun.collect.trace.watchdog import WATCH_DOG
-
-import perun.utils as utils
+from perun.utils.external import commands
 
 
 # TODO: add test to check the existence of specified probes (needs cross-comparison)
@@ -348,7 +352,7 @@ def _load_function_names(binary, only_user):
     """
     # Extract user function symbols from the supplied binary
     awk_filter = '$2 == "T" || $2 == "t"' if only_user else '$2 == "T" || $2 == "W"'
-    output, _ = utils.run_safely_external_command(
+    output, _ = commands.run_safely_external_command(
         f"nm -P {binary} | awk '{awk_filter} {{print $1}}'"
     )
     return output.decode("utf-8")

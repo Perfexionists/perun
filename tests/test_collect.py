@@ -21,6 +21,7 @@ from subprocess import SubprocessError
 
 from perun.profile.factory import Profile
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
+from perun.utils.external import commands
 from perun.workload.integer_generator import IntegerGenerator
 from subprocess import CalledProcessError
 
@@ -149,10 +150,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
 
     old_run = utils.run_external_command
     old_cfg = configurator.create_runtime_config
-    old_safe_run = utils.run_safely_external_command
+    old_safe_run = commands.run_safely_external_command
     monkeypatch.setattr(utils, "run_external_command", _mocked_always_correct)
     monkeypatch.setattr(configurator, "create_runtime_config", _mocked_always_correct)
-    monkeypatch.setattr(utils, "run_safely_external_command", mocked_safe_external)
+    monkeypatch.setattr(commands, "run_safely_external_command", mocked_safe_external)
 
     # Get the job.yml parameters
     script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
@@ -250,13 +251,13 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     def mock_raised_exception(*_, **__):
         raise CalledProcessError(-1, "failed")
 
-    monkeypatch.setattr(utils, "run_safely_external_command", mock_raised_exception)
+    monkeypatch.setattr(commands, "run_safely_external_command", mock_raised_exception)
     status, msg, _ = complexity.collect(Executable("pikachu"))
     assert status == CollectStatus.ERROR
     assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
     monkeypatch.setattr(utils, "run_external_command", old_run)
-    monkeypatch.setattr(utils, "run_safely_external_command", old_safe_run)
+    monkeypatch.setattr(commands, "run_safely_external_command", old_safe_run)
     monkeypatch.setattr(configurator, "create_runtime_config", old_cfg)
 
 
@@ -428,12 +429,14 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
     assert status == CollectStatus.OK
     assert len(prof["global"]["resources"]) == 8
 
-    original_function = utils.run_safely_external_command
+    original_function = commands.run_safely_external_command
 
     def before_returning_error(cmd, **kwargs):
         raise SubprocessError("something happened")
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", before_returning_error
+    )
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
 
@@ -443,7 +446,9 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
         else:
             original_function(cmd, **kwargs)
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", collect_returning_error)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", collect_returning_error
+    )
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR

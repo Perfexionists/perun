@@ -188,7 +188,9 @@ def test_external_generator(monkeypatch, capsys):
     def correct_generation(*_, **__):
         _generate_temp_files(target_dir, 3)
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", correct_generation)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", correct_generation
+    )
 
     for c_status, profile in external_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
@@ -214,7 +216,9 @@ def test_external_generator(monkeypatch, capsys):
     target_dir = os.path.join(os.getcwd(), "test2")
     helpers.touch_dir(target_dir)
     external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
-    monkeypatch.setattr("perun.utils.run_safely_external_command", incorrect_generation)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", incorrect_generation
+    )
     profiles = list(external_generator.generate(runner.run_collector))
     assert len(profiles) == 1
     assert len(list(profiles[0][1].all_resources())) == 0

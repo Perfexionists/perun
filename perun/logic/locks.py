@@ -30,7 +30,6 @@ import os
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.logic import temp
 from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
 from perun.collect.trace.watchdog import WATCH_DOG
@@ -39,6 +38,7 @@ from perun.utils.exceptions import (
     InvalidTempPathException,
     SuppressedExceptions,
 )
+from perun.utils.external import commands
 
 
 class LockType(Enum):
@@ -227,7 +227,7 @@ def _is_running_perun_process(pid: int) -> bool:
     # Request information about process with the given PID
     WATCH_DOG.debug(f"Checking the details of a process '{pid}'")
     query = f"ps -o {PS_FORMAT} -p {pid}"
-    result = utils.run_safely_external_command(query, False)[0].decode("utf-8").splitlines()
+    result = commands.run_safely_external_command(query, False)[0].decode("utf-8").splitlines()
     WATCH_DOG.log_variable(f"process::{pid}", result)
     # If no such process exists then the output contains only header line
     if len(result) < 2:

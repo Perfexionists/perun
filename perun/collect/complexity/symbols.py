@@ -16,7 +16,7 @@ import dataclasses
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
+from perun.utils.external import commands
 from perun.utils import exceptions
 
 # Symbol table columns constants
@@ -101,7 +101,7 @@ def translate_mangled_symbols(mangled_names: list[str]) -> dict[str, str]:
     mangled_str = "\n".join(mangled_names)
 
     # Create demangled counterparts of the function names
-    demangled_bytes, _ = utils.run_safely_external_command(f"echo '{mangled_str}' | c++filt")
+    demangled_bytes, _ = commands.run_safely_external_command(f"echo '{mangled_str}' | c++filt")
     demangled_names = demangled_bytes.decode("utf-8").split("\n")
     if "" in demangled_names:
         demangled_names.remove("")
@@ -161,7 +161,7 @@ def _get_symbols(executable_path: str, columns: list[int]) -> list[str]:
     )
 
     # Run the command to obtain function symbols
-    symbols_bytes, _ = utils.run_safely_external_command(cmd)
+    symbols_bytes, _ = commands.run_safely_external_command(cmd)
 
     # Decode the bytes and create list
     symbols = symbols_bytes.decode("utf-8").replace(" ", "\n").split("\n")

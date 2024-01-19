@@ -17,10 +17,10 @@ import time as systime
 import click
 
 # Perun Imports
-from perun import utils
 from perun.collect.bounds import parser
 from perun.logic import runner
 from perun.utils import log
+from perun.utils.external import commands
 from perun.utils.structs import CollectStatus
 
 _CLANG_COMPILER = "clang-3.5"
@@ -44,7 +44,7 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
-        utils.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
+        commands.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
         log.failed()
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
@@ -76,7 +76,7 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
             + " -zPrintComplexity -zEnableOptimisticAssumptionsOnPointerAliasAndShapes "
             + " ".join(source_filenames)
         )
-        returned_out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
+        returned_out, _ = commands.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = returned_out.decode("utf-8")
     except SubprocessError as sub_err:
         log.failed()

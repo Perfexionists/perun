@@ -9,7 +9,7 @@ from signal import SIGINT
 from subprocess import TimeoutExpired
 
 import perun.logic.temp as temp
-import perun.utils as utils
+from perun.utils.external import commands
 from perun.logic.pcs import get_log_directory
 from perun.collect.trace.values import CLEANUP_TIMEOUT, Zipper
 from perun.collect.trace.watchdog import WATCH_DOG
@@ -178,7 +178,7 @@ class CollectEngine(ABC):
             WATCH_DOG.debug(
                 f"Attempting to terminate the '{proc_name}' subprocess with PID '{proc.pid}'"
             )
-            utils.run_safely_external_command(f"sudo kill -{SIGINT} {proc.pid}", False)
+            commands.run_safely_external_command(f"sudo kill -{SIGINT} {proc.pid}", False)
             # The wait is needed to get rid of the resulting zombie process
             try:
                 proc.wait(timeout=CLEANUP_TIMEOUT)

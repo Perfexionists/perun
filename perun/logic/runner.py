@@ -12,10 +12,11 @@ import subprocess
 import click
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import commands, config, index, pcs
 from perun.utils import decorators, helpers, log, streams
 from perun.utils.exceptions import SignalReceivedException
+from perun.utils.external import commands as external_commands
 from perun.utils.helpers import (
     COLLECT_PHASE_CMD,
     COLLECT_PHASE_COLLECT,
@@ -503,7 +504,7 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
         log.cprint(f"Running '{phase}' phase", phase_colour)
         log.newline()
         try:
-            utils.run_safely_list_of_commands(cmds)
+            external_commands.run_safely_list_of_commands(cmds)
         except subprocess.CalledProcessError as exception:
             error_command = str(exception.cmd)
             error_code = exception.returncode

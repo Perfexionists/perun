@@ -6,20 +6,21 @@ collection and postprocessing of collection data.
 """
 from __future__ import annotations
 
+# Standard Imports
+from subprocess import CalledProcessError
+from typing import Any
 import dataclasses
-import click
 import os
 import shutil
 
-from subprocess import CalledProcessError
-from typing import Any
+# Third-Party Imports
+import click
 
-import perun.logic.runner as runner
-import perun.utils as utils
-
+# Perun Imports
 from perun.collect.complexity import configurator, makefiles, symbols
+from perun.logic import runner
 from perun.utils import exceptions, log
-
+from perun.utils.external import commands
 from perun.utils.structs import Executable, CollectStatus
 
 
@@ -136,7 +137,7 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
     collect_dir = os.path.dirname(executable.cmd)
     # Run the command and evaluate the return code
     try:
-        utils.run_safely_external_command(str(executable), cwd=collect_dir)
+        commands.run_safely_external_command(str(executable), cwd=collect_dir)
         log.done()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:

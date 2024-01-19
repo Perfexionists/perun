@@ -14,10 +14,7 @@ import sys
 
 # Perun Imports
 from perun.utils import log
-
-# TODO: TEMPORARY
-from perun import utils
-
+from perun.utils.external import commands
 
 # Parse the obtained python version identifier into groups of digits and postfixes
 # We assume 3 blocks of version specification, where each block consists of:
@@ -96,7 +93,9 @@ def get_current_interpreter(
     # Ensure that the found interpreter satisfies the required version
     if interpreter and required_version is not None:
         # The format of --version should be 'Python x.y.z'
-        version = utils.run_safely_external_command(f"{interpreter} --version")[0].decode("utf-8")
+        version = commands.run_safely_external_command(f"{interpreter} --version")[0].decode(
+            "utf-8"
+        )
         version = version.split()[1]
         interpreter_version = _parse_version(version)[0]
         parsed_required_version, cmp_operator = _parse_version(required_version)

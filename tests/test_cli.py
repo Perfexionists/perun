@@ -29,6 +29,7 @@ import perun.check.factory as check
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
 
+from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, RunnerReport
 
 import perun.testing.asserts as asserts
@@ -2058,7 +2059,7 @@ def test_run(pcs_with_root, monkeypatch):
     assert len(job_profiles) >= 3
 
     # Run the matrix with error in prerun phase
-    saved_func = utils.run_safely_external_command
+    saved_func = commands.run_safely_external_command
 
     def run_wrapper(cmd):
         if cmd == 'ls | grep "."':
@@ -2066,7 +2067,7 @@ def test_run(pcs_with_root, monkeypatch):
         else:
             return saved_func(cmd)
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", run_wrapper)
+    monkeypatch.setattr("perun.utils.external.commands.run_safely_external_command", run_wrapper)
     matrix.data["execute"]["pre_run"].append("ls | grep dafad")
     result = runner.invoke(run_cli.run, ["matrix"])
     asserts.predicate_from_cli(result, result.exit_code == 1)

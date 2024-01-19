@@ -15,9 +15,9 @@ import subprocess
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.utils import log
 from perun.utils.exceptions import SuppressedExceptions
+from perun.utils.external import commands
 
 if TYPE_CHECKING:
     from perun.fuzz.structs import (
@@ -114,7 +114,7 @@ def get_initial_coverage(
         command = " ".join([os.path.abspath(executable.cmd), executable.args, seed.path])
 
         try:
-            utils.run_safely_external_command(command, timeout=timeout)
+            commands.run_safely_external_command(command, timeout=timeout)
         except subprocess.CalledProcessError as serr:
             log.error("Initial testing with file " + seed.path + " caused " + str(serr))
         seed.cov = get_coverage_from_dir(os.getcwd(), fuzzing_config.coverage)
@@ -149,7 +149,7 @@ def target_testing(
     command = " ".join([executable.cmd, executable.args, workload.path])
 
     try:
-        utils.run_safely_external_command(command, timeout=config.hang_timeout)
+        commands.run_safely_external_command(command, timeout=config.hang_timeout)
     except subprocess.CalledProcessError as err:
         log.error(
             "Testing with file " + workload.path + " caused an error: " + str(err),
@@ -212,7 +212,7 @@ def get_coverage_from_dir(cwd: str, config: CoverageConfiguration) -> int:
     cmd.extend(config.source_files)
 
     with SuppressedExceptions(subprocess.CalledProcessError):
-        utils.run_safely_external_command(" ".join(cmd))
+        commands.run_safely_external_command(" ".join(cmd))
 
     # searching for gcov files, if they are not already known
     if not config.gcov_files:
