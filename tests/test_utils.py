@@ -31,7 +31,7 @@ from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
-from perun.utils.external import environment, commands as external_commands, processes
+from perun.utils.external import environment, commands as external_commands, processes, executable
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -176,14 +176,14 @@ def test_binaries_lookup():
             pass
 
     # Find all executables in tree with build directories
-    binaries = utils.get_project_elf_executables(testdir)
+    binaries = executable.get_project_elf_executables(testdir)
     assert len(binaries) == 2
     assert binaries[0].endswith("utils_tree/build/quicksort")
     assert binaries[1].endswith("utils_tree/build/_build/quicksort")
 
     # Find all executables with debug symbols in a tree that has no build directories
     testdir2 = os.path.join(testdir, "testdir")
-    binaries2 = utils.get_project_elf_executables(testdir2, True)
+    binaries2 = executable.get_project_elf_executables(testdir2, True)
     assert len(binaries2) == 2
     assert binaries2[0].endswith("utils_tree/testdir/quicksort")
     assert binaries2[1].endswith("utils_tree/testdir/nobuild/quicksort")
