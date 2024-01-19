@@ -41,7 +41,7 @@ import subprocess
 
 # Perun Imports
 from perun.utils import log
-from perun.utils.common import helpers
+from perun.utils.common import common_kit
 from perun.utils.external import commands
 from perun.workload.generator import WorkloadGenerator
 
@@ -132,12 +132,12 @@ class ExternalGenerator(WorkloadGenerator):
                 try:
                     val, workload = workload.split(split, maxsplit=1)
                     if val:
-                        values.append(helpers.try_convert(val, [int, float]))
+                        values.append(common_kit.try_convert(val, [int, float]))
                 except ValueError:
                     return []
         # Handling the case when the pattern is at the end of the string and hence split is empty
         if workload:
-            values.append(helpers.try_convert(workload, [int, float]))
+            values.append(common_kit.try_convert(workload, [int, float]))
         return values
 
     def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:

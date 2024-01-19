@@ -30,7 +30,7 @@ from perun.logic import commands, store, stats, config, pcs
 from perun.profile import helpers as profile_helpers, query
 from perun.profile.factory import Profile
 from perun.utils import exceptions, streams, timestamps, log, metrics
-from perun.utils.common import helpers
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     VersionControlSystemException,
     TagOutOfRangeException,
@@ -749,10 +749,10 @@ def generate_cli_dump(
                 },
             },
             "command": " ".join(["perun"] + sys.argv[1:]),
-            "output": helpers.escape_ansi(
+            "output": common_kit.escape_ansi(
                 "".join([" " * 4 + line for line in stdout.log.readlines()])
             ),
-            "error": helpers.escape_ansi(
+            "error": common_kit.escape_ansi(
                 "".join([" " * 4 + line for line in stderr.log.readlines()])
             ),
             "exception": reported_error,

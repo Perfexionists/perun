@@ -52,7 +52,7 @@ import click
 from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
 from perun.logic import commands, pcs, config as perun_config
 from perun.utils import exceptions, log as perun_log
-from perun.utils.common import cli_helpers
+from perun.utils.common import cli_kit
 from perun.utils.external import commands as external_commands
 from perun.collect.trace.optimizations.structs import (
     Pipeline,
@@ -122,14 +122,14 @@ DEV_MODE = False
     is_eager=True,
     is_flag=True,
     default=False,
-    callback=cli_helpers.print_version,
+    callback=cli_kit.print_version,
 )
 @click.option(
     "--metrics",
     "-m",
     type=(str, str),
     default=["", ""],
-    callback=cli_helpers.configure_metrics,
+    callback=cli_kit.configure_metrics,
     help=(
         "Enables the collection of metrics into the given temp file"
         "(first argument) under the supplied ID (second argument)."
@@ -193,7 +193,7 @@ def configure_local_perun(perun_path: str) -> None:
     "--vcs-type",
     metavar="<type>",
     default="git",
-    type=click.Choice(cli_helpers.get_supported_module_names("vcs")),
+    type=click.Choice(cli_kit.get_supported_module_names("vcs")),
     help=(
         "In parallel to initialization of Perun, initialize the vcs"
         " of <type> as well (by default ``git``)."
@@ -209,7 +209,7 @@ def configure_local_perun(perun_path: str) -> None:
     nargs=2,
     metavar="<param>",
     multiple=True,
-    callback=cli_helpers.vcs_parameter_callback,
+    callback=cli_kit.vcs_parameter_callback,
     help=(
         "Passes additional (key, value) parameter to initialization"
         " of version control system, e.g. ``separate-git-dir dir``."
@@ -220,7 +220,7 @@ def configure_local_perun(perun_path: str) -> None:
     nargs=1,
     metavar="<flag>",
     multiple=True,
-    callback=cli_helpers.vcs_parameter_callback,
+    callback=cli_kit.vcs_parameter_callback,
     help="Passes additional flag to a initialization of version control system, e.g. ``bare``.",
 )
 @click.option(
@@ -305,7 +305,7 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
     required=True,
     metavar="<profile>",
     nargs=-1,
-    callback=cli_helpers.lookup_added_profile_callback,
+    callback=cli_kit.lookup_added_profile_callback,
 )
 @click.option(
     "--minor",
@@ -314,7 +314,7 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
     default=None,
     metavar="<hash>",
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="<profile> will be stored at this minor version (default is HEAD).",
 )
 @click.option(
@@ -414,7 +414,7 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     required=True,
     metavar="<profile>",
     nargs=-1,
-    callback=cli_helpers.lookup_removed_profile_callback,
+    callback=cli_kit.lookup_removed_profile_callback,
 )
 @click.option(
     "--minor",
@@ -423,7 +423,7 @@ def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     default=None,
     metavar="<hash>",
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="<profile> will be stored at this minor version (default is HEAD).",
 )
 def remove(
@@ -539,9 +539,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     "format__sort_profiles_by",
     nargs=1,
     type=click.Choice(profiles.ProfileInfo.valid_attributes),
-    callback=cli_helpers.set_config_option_from_flag(
-        pcs.local_config, "format.sort_profiles_by", str
-    ),
+    callback=cli_kit.set_config_option_from_flag(pcs.local_config, "format.sort_profiles_by", str),
     help=(
         "Sets the <key> in the local configuration for sorting profiles. "
         "Note that after setting the <key> it will be used for sorting which is "
@@ -590,7 +588,7 @@ def status(**kwargs: Any) -> None:
     "profile",
     required=True,
     metavar="<profile>",
-    callback=cli_helpers.lookup_any_profile_callback,
+    callback=cli_kit.lookup_any_profile_callback,
 )
 @click.option(
     "--minor",
@@ -598,7 +596,7 @@ def status(**kwargs: Any) -> None:
     nargs=1,
     default=None,
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="Will check the index of different minor version <hash> during the profile lookup",
 )
 @click.pass_context
@@ -654,13 +652,13 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "profile",
     required=True,
     metavar="<profile>",
-    callback=cli_helpers.lookup_any_profile_callback,
+    callback=cli_kit.lookup_any_profile_callback,
 )
 @click.option(
     "--output-filename-template",
     "-ot",
     default=None,
-    callback=cli_helpers.set_config_option_from_flag(
+    callback=cli_kit.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
     help=(
@@ -676,7 +674,7 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     nargs=1,
     default=None,
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="Will check the index of different minor version <hash> during the profile lookup",
 )
 @click.pass_context
@@ -750,7 +748,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "minor_version_list",
     nargs=1,
     multiple=True,
-    callback=cli_helpers.minor_version_list_callback,
+    callback=cli_kit.minor_version_list_callback,
     default=["HEAD"],
     help="Specifies the head minor version, for which the profiles will be collected.",
 )
@@ -800,14 +798,14 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    callback=cli_helpers.single_yaml_param_callback,
+    callback=cli_kit.single_yaml_param_callback,
     help="Additional parameters for called collector read from file in YAML format.",
 )
 @click.option(
     "--output-filename-template",
     "-ot",
     default=None,
-    callback=cli_helpers.set_config_option_from_flag(
+    callback=cli_kit.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
     help=(
@@ -822,7 +820,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "-op",
     type=click.Choice(Pipeline.supported()),
     default=Pipeline.default(),
-    callback=cli_helpers.set_optimization,
+    callback=cli_kit.set_optimization,
     help="Pre-configured combinations of collection optimization methods.",
 )
 @click.option(
@@ -830,7 +828,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "-on",
     type=click.Choice(Optimizations.supported()),
     multiple=True,
-    callback=cli_helpers.set_optimization,
+    callback=cli_kit.set_optimization,
     help="Enable the specified collection optimization method.",
 )
 @click.option(
@@ -838,7 +836,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "-off",
     type=click.Choice(Optimizations.supported()),
     multiple=True,
-    callback=cli_helpers.set_optimization,
+    callback=cli_kit.set_optimization,
     help="Disable the specified collection optimization method.",
 )
 @click.option(
@@ -846,20 +844,20 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "-oa",
     type=(click.Choice(Parameters.supported()), str),
     multiple=True,
-    callback=cli_helpers.set_optimization_param,
+    callback=cli_kit.set_optimization_param,
     help="Set parameter values for various optimizations.",
 )
 @click.option(
     "--optimization-cache-off",
     is_flag=True,
-    callback=cli_helpers.set_optimization_cache,
+    callback=cli_kit.set_optimization_cache,
     help="Ignore cached optimization data (e.g., cached call graph).",
 )
 @click.option(
     "--optimization-reset-cache",
     is_flag=True,
     default=False,
-    callback=cli_helpers.reset_optimization_cache,
+    callback=cli_kit.reset_optimization_cache,
     help="Remove the cached optimization resources and data.",
 )
 @click.option(
@@ -867,7 +865,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     "-cg",
     type=(click.Choice(CallGraphTypes.supported())),
     default=CallGraphTypes.default(),
-    callback=cli_helpers.set_call_graph_type,
+    callback=cli_kit.set_call_graph_type,
 )
 @click.pass_context
 def collect(ctx: click.Context, **kwargs: Any) -> None:
@@ -922,7 +920,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     "-c",
     nargs=1,
     default="time",
-    type=click.Choice(cli_helpers.get_supported_module_names("collect")),
+    type=click.Choice(cli_kit.get_supported_module_names("collect")),
     help=(
         "Collector that will be used to collect performance data and used to infer "
         "baseline or target performance profiles. "
@@ -935,7 +933,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=2,
     required=False,
     multiple=True,
-    callback=cli_helpers.yaml_param_callback,
+    callback=cli_kit.yaml_param_callback,
     help=(
         "Additional parameters for the <collector>: "
         "can be specified as a file in YAML format or as YAML string"
@@ -947,7 +945,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    type=click.Choice(cli_helpers.get_supported_module_names("postprocess")),
+    type=click.Choice(cli_kit.get_supported_module_names("postprocess")),
     help=(
         "After each collection of performance data, the fuzzer can run <postprocessor> to "
         "postprocess the collected resources (e.g. to create models of resources). "
@@ -960,7 +958,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=2,
     required=False,
     multiple=True,
-    callback=cli_helpers.yaml_param_callback,
+    callback=cli_kit.yaml_param_callback,
     help=(
         "Additional parameters for the <postprocessor>: "
         "can be specified as a file in YAML format or as YAML string"
@@ -972,7 +970,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     "minor_version_list",
     nargs=1,
     multiple=True,
-    callback=cli_helpers.minor_version_list_callback,
+    callback=cli_kit.minor_version_list_callback,
     default=["HEAD"],
     help=(
         "Specifies the head minor version in the wrapped repository. "
@@ -1157,7 +1155,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    callback=cli_helpers.single_yaml_param_callback,
+    callback=cli_kit.single_yaml_param_callback,
     metavar="<file>",
     help=(
         "Option for adding custom fuzzing rules specified by regular expressions,"
@@ -1236,7 +1234,7 @@ def launch_cli_safely() -> None:
         reported_error = error_name + ": " + str(catched_exception)
         perun_log.error(f"unexpected error: {reported_error}", recoverable=True)
         with exceptions.SuppressedExceptions(Exception):
-            cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
+            cli_kit.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
 def launch_cli() -> None:

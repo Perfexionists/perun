@@ -16,7 +16,7 @@ import click
 # Perun Imports
 from perun.logic import runner
 from perun.utils import log
-from perun.utils.common import helpers
+from perun.utils.common import common_kit
 from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, Executable
 
@@ -45,7 +45,7 @@ def collect(
     log.newline()
 
     log.info(
-        f"Begin timing of {executable.cmd} {helpers.str_to_plural(repeat, 'time')}",
+        f"Begin timing of {executable.cmd} {common_kit.str_to_plural(repeat, 'time')}",
         end="",
     )
     times = []

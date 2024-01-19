@@ -16,8 +16,7 @@ import perun.postprocess as postprocess
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
-import perun.utils.common.helpers as helpers
-import perun.utils.common.cli_helpers as cli_helpers
+from perun.utils.common import common_kit, cli_kit
 import perun.testing.asserts as asserts
 import perun.utils.log as log
 from perun.utils.exceptions import (
@@ -29,7 +28,7 @@ from perun.utils.exceptions import (
 from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
-from perun.utils.common.helpers import HandledSignals
+from perun.utils.common.common_kit import HandledSignals
 from perun.utils.external import environment, commands as external_commands, processes, executable
 
 
@@ -44,9 +43,9 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = cli_helpers.get_supported_module_names(package_name)
+    registered_modules = cli_kit.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
-        module = helpers.get_module(module_name)
+        module = common_kit.get_module(module_name)
         for must_have_function_name in must_have_function_names:
             assert (
                 hasattr(module, must_have_function_name)
@@ -71,12 +70,12 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = cli_helpers.get_supported_module_names(package_name)
+    registered_modules = cli_kit.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
-        module = helpers.get_module(module_name)
+        module = common_kit.get_module(module_name)
         assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
-        run_module = helpers.get_module(".".join([module_name, "run"]))
+        run_module = common_kit.get_module(".".join([module_name, "run"]))
         for must_have_function_name in must_have_function_names:
             assert (
                 not must_have_function_name
@@ -254,10 +253,10 @@ def test_signal_handler():
 def test_safe_key_get():
     """Tests the get_key_with_aliases functions"""
     test_dict = {"key": 1}
-    assert helpers.get_key_with_aliases(test_dict, ("hello", "key")) == 1
-    assert helpers.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"), 2) == 2
+    assert common_kit.get_key_with_aliases(test_dict, ("hello", "key")) == 1
+    assert common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"), 2) == 2
     with pytest.raises(KeyError):
-        helpers.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"))
+        common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"))
 
 
 def test_ordered_enum():
@@ -294,14 +293,14 @@ def test_common(capsys):
         for i in range(0, 10):
             yield i
 
-    chunks = list(map(list, helpers.chunkify(simple_generator(), 2)))
+    chunks = list(map(list, common_kit.chunkify(simple_generator(), 2)))
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
     with pytest.raises(UnsupportedModuleFunctionException):
-        helpers.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
+        common_kit.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
 
     with pytest.raises(SystemExit):
-        cli_helpers.get_supported_module_names("nonexisting")
+        cli_kit.get_supported_module_names("nonexisting")
 
     with pytest.raises(subprocess.CalledProcessError):
         external_commands.run_safely_external_command("ls -3", quiet=False, check_results=True)

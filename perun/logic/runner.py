@@ -15,10 +15,10 @@ import click
 from perun import vcs
 from perun.logic import commands, config, index, pcs
 from perun.utils import decorators, log, streams
-from perun.utils.common import helpers
+from perun.utils.common import common_kit
 from perun.utils.exceptions import SignalReceivedException
 from perun.utils.external import commands as external_commands
-from perun.utils.common.helpers import (
+from perun.utils.common.common_kit import (
     COLLECT_PHASE_CMD,
     COLLECT_PHASE_COLLECT,
     COLLECT_PHASE_POSTPROCESS,
@@ -148,7 +148,7 @@ def load_job_info_from_config() -> dict[str, Any]:
 
     info = {
         "cmd": local_config["cmds"],
-        "args": helpers.get_key_with_aliases(local_config, ("args", "params"), default=[]),
+        "args": common_kit.get_key_with_aliases(local_config, ("args", "params"), default=[]),
         "workload": local_config.get("workloads", [""]),
         "postprocessor": [post.get("name", "") for post in postprocessors],
         "collector": [collect.get("name", "") for collect in collectors],
@@ -341,13 +341,13 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
 
     try:
-        collector_module = helpers.get_module(f"perun.collect.{collector.name}.run")
+        collector_module = common_kit.get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
         log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = helpers.merge_dictionaries(job._asdict(), collector.params)
+    job_params = common_kit.merge_dictionaries(job._asdict(), collector.params)
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
@@ -409,7 +409,7 @@ def run_postprocessor(
     )
 
     try:
-        postprocessor_module = helpers.get_module(f"perun.postprocess.{postprocessor.name}.run")
+        postprocessor_module = common_kit.get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
         log.error(
             f"{postprocessor.name} postprocessor does not exist",
@@ -418,7 +418,9 @@ def run_postprocessor(
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = helpers.merge_dictionaries(job._asdict(), {"profile": prof}, postprocessor.params)
+    job_params = common_kit.merge_dictionaries(
+        job._asdict(), {"profile": prof}, postprocessor.params
+    )
     postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:

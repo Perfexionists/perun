@@ -11,7 +11,7 @@ import shlex
 # Third-Party Imports
 
 # Perun Imports
-from perun.utils.common.helpers import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
+from perun.utils.common.common_kit import ColorChoiceType, PROFILE_TRACKED, PROFILE_UNTRACKED
 
 if TYPE_CHECKING:
     import types

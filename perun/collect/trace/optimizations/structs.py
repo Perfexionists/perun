@@ -9,7 +9,7 @@ from functools import partial
 
 from enum import Enum
 from perun.utils.structs import OrderedEnum
-import perun.utils.common.helpers as helpers
+from perun.utils.common import common_kit
 import perun.utils.metrics as metrics
 
 
@@ -398,7 +398,7 @@ class ParametersManager:
             Parameters.CG_SHAPING_MODE,
             Parameters.THRESHOLD_MODE,
         ]
-        cli_modes, cli_params = helpers.partition_list(
+        cli_modes, cli_params = common_kit.partition_list(
             self.cli_params, lambda param: param[0] in modes
         )
 

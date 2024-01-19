@@ -7,7 +7,7 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 import perun.utils.decorators as decorators
-import perun.utils.common.helpers as helpers
+from perun.utils.common import common_kit
 
 from perun.utils.structs import Unit, Executable, CollectStatus, Job
 from perun.workload.integer_generator import IntegerGenerator
@@ -167,7 +167,7 @@ def _generate_temp_files(temp_dir, num):
     :param num:
     :return:
     """
-    helpers.touch_dir(temp_dir)
+    common_kit.touch_dir(temp_dir)
     for i in range(num):
         temp_file = os.path.join(temp_dir, f"tmp{num}_{num * 10}")
         with open(temp_file, "w") as tmp_handle:
@@ -199,7 +199,7 @@ def test_external_generator(monkeypatch, capsys):
 
     # Test when values are incorrectly paired in format
     target_dir = os.path.join(os.getcwd(), "test3")
-    helpers.touch_dir(target_dir)
+    common_kit.touch_dir(target_dir)
     external_generator = ExternalGenerator(
         file_job, "generate", target_dir, "tmp{rows}_{cols}_{chars}"
     )
@@ -214,7 +214,7 @@ def test_external_generator(monkeypatch, capsys):
         raise CalledProcessError(-1, "failed")
 
     target_dir = os.path.join(os.getcwd(), "test2")
-    helpers.touch_dir(target_dir)
+    common_kit.touch_dir(target_dir)
     external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
     monkeypatch.setattr(
         "perun.utils.external.commands.run_safely_external_command", incorrect_generation

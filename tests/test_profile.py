@@ -4,7 +4,6 @@ import git
 import perun.profile.helpers as profiles
 import perun.logic.commands as commands
 import perun.logic.config as config
-import perun.profile.helpers as factory
 
 from perun.profile.factory import Profile
 
@@ -41,7 +40,7 @@ def test_name_generation(capsys):
     """
     rt_config = config.runtime()
     rt_config.set("format.output_profile_template", "%collector%-of-%cmd%-%args%-%workload%")
-    profile_name = factory.generate_profile_name(
+    profile_name = profiles.generate_profile_name(
         {
             "header": {
                 "cmd": "./whatever/sub/fun/mybin",
@@ -54,7 +53,7 @@ def test_name_generation(capsys):
     assert profile_name == "memory-of-mybin-[-O2_-q]-[input.txt].perf"
 
     rt_config.set("format.output_profile_template", "%collector%-%postprocessors%-%origin%")
-    profile_name = factory.generate_profile_name(
+    profile_name = profiles.generate_profile_name(
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
             "header": {
@@ -76,7 +75,7 @@ def test_name_generation(capsys):
 
     # Lookup of collectors params
     rt_config.set("format.output_profile_template", "%collector%-sampling-[%memory.sampling%]")
-    profile_name = factory.generate_profile_name(
+    profile_name = profiles.generate_profile_name(
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
             "header": {
@@ -96,7 +95,7 @@ def test_name_generation(capsys):
     # Lookup in incorrect formatting string
     rt_config.set("format.output_profile_template", "%")
     with pytest.raises(SystemExit):
-        factory.generate_profile_name(
+        profiles.generate_profile_name(
             {
                 "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
                 "header": {
@@ -117,5 +116,5 @@ def test_name_generation(capsys):
 
     # Try missing param
     rt_config.set("format.output_profile_template", "sampling-[%memory.sampling%]")
-    profile_name = factory.generate_profile_name({"collector_info": {"name": "trace"}})
+    profile_name = profiles.generate_profile_name({"collector_info": {"name": "trace"}})
     assert profile_name == "sampling-[_].perf"

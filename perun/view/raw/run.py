@@ -13,7 +13,7 @@ import click
 
 # Perun Imports
 from perun.utils import log
-from perun.utils.common.helpers import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
+from perun.utils.common.common_kit import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
 import perun.profile.factory as profile_factory
 
 

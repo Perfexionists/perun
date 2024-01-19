@@ -9,7 +9,7 @@ from click.testing import CliRunner
 import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
-import perun.utils.common.helpers as helpers
+from perun.utils.common import common_kit
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
@@ -221,7 +221,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
 
     # Simulate the failure of output processing
     # We mock some data to trace.log
-    helpers.touch_dir(os.path.join(job_params["target_dir"], "bin"))
+    common_kit.touch_dir(os.path.join(job_params["target_dir"], "bin"))
     with open(os.path.join(job_params["target_dir"], "bin", "trace.log"), "w") as mock_handle:
         mock_handle.write("a b c d\na b c d")
     old_record_processing = complexity._process_file_record

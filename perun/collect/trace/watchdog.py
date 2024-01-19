@@ -13,7 +13,7 @@ import os
 import pprint
 
 import perun.logic.pcs as pcs
-import perun.utils.common.helpers as helpers
+from perun.utils.common import common_kit
 import perun.utils.log as perun_log
 
 
@@ -70,7 +70,7 @@ class Watchdog:
         self.__logger.propagate = False
 
         # Prepare the directory for trace logs if it does not exist yet
-        helpers.touch_dir(os.path.split(self.logfile)[0])
+        common_kit.touch_dir(os.path.split(self.logfile)[0])
         # Create the file handler, log all the DEBUG messages for detailed diagnostic
         file_handler = logging.FileHandler(self.logfile)
         file_handler.setLevel(logging.DEBUG)

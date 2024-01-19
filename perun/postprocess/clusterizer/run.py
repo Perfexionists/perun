@@ -23,7 +23,7 @@ from perun.logic import runner
 from perun.profile import convert
 from perun.profile.factory import pass_profile, Profile
 from perun.utils import log
-from perun.utils.common import helpers
+from perun.utils.common import common_kit
 from perun.utils.structs import PostprocessStatus
 
 
@@ -94,7 +94,7 @@ def postprocess(
                 group[0], f"({group[1]})" if group[1] else "", group[2]
             )
         )
-        helpers.dynamic_module_function_call(
+        common_kit.dynamic_module_function_call(
             "perun.postprocess.clusterizer",
             strategy,
             "clusterize",

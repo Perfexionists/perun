@@ -2,10 +2,10 @@ perun_common_dir = perun_utils_dir / 'common'
 
 perun_common_files = files(
     '__init__.py',
-    'cli_helpers.py',
-    'helpers.py',
-    'script_helpers.py',
-    'view_helpers.py',
+    'cli_kit.py',
+    'common_kit.py',
+    'script_kit.py',
+    'view_kit.py',
 )
 
 py3.install_sources(

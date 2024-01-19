@@ -25,7 +25,7 @@ from perun.collect.trace.values import (
     STAP_PHASES,
 )
 
-import perun.utils.common.helpers as helpers
+from perun.utils.common import common_kit
 import perun.utils.log as perun_log
 import perun.utils.metrics as metrics
 from perun.utils.external import commands, processes
@@ -675,7 +675,7 @@ def _check_used_resources(locks_dir):
     modules = _loaded_stap_kernel_modules()
 
     # Partition the locks into Systemtap and module locks
-    stap_locks, mod_locks = helpers.partition_list(
+    stap_locks, mod_locks = common_kit.partition_list(
         active_locks, lambda lock: lock.type == LockType.SystemTap
     )
 
