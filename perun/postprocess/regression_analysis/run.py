@@ -11,7 +11,8 @@ import click
 from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, methods, regression_models, tools
 from perun.profile.factory import pass_profile, Profile
-from perun.utils import cli_helpers, metrics
+from perun.utils import metrics
+from perun.utils.common import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 

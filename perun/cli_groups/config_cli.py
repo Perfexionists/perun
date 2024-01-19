@@ -9,7 +9,8 @@ import click
 
 # Perun Imports
 from perun.logic import commands
-from perun.utils import cli_helpers, log as perun_log
+from perun.utils import log as perun_log
+from perun.utils.common import cli_helpers
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     MissingConfigSectionException,

@@ -13,7 +13,8 @@ import click
 
 # Perun Imports
 from perun.logic import commands, stats, temp
-from perun.utils import cli_helpers, log as perun_log, script_helpers as scripts
+from perun.utils import log as perun_log, script_helpers as scripts
+from perun.utils.common import cli_helpers
 from perun.utils.exceptions import ExternalEditorErrorException
 
 

@@ -8,9 +8,9 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun import utils
 from perun.logic import config as perun_config, runner
-from perun.utils import cli_helpers, log as perun_log
+from perun.utils import log as perun_log
+from perun.utils.common import cli_helpers
 from perun.utils.structs import CollectStatus
 
 

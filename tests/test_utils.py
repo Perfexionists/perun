@@ -10,7 +10,6 @@ import sys
 
 import pytest
 
-import perun.utils as utils
 import perun.vcs as vcs
 import perun.collect as collect
 import perun.postprocess as postprocess
@@ -18,7 +17,7 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
 import perun.utils.helpers as helpers
-import perun.utils.cli_helpers as cli_helpers
+import perun.utils.common.cli_helpers as cli_helpers
 import perun.testing.asserts as asserts
 import perun.utils.log as log
 from perun.utils.exceptions import (

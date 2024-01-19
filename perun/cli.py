@@ -51,7 +51,8 @@ import click
 # Perun Imports
 from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
 from perun.logic import commands, pcs, config as perun_config
-from perun.utils import exceptions, cli_helpers, log as perun_log
+from perun.utils import exceptions, log as perun_log
+from perun.utils.common import cli_helpers
 from perun.utils.external import commands as external_commands
 from perun.collect.trace.optimizations.structs import (
     Pipeline,

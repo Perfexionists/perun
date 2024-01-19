@@ -14,7 +14,7 @@ import click
 from perun.logic import runner
 from perun.postprocess.moving_average import methods
 from perun.postprocess.regression_analysis import data_provider, tools
-from perun.utils import cli_helpers
+from perun.utils.common import cli_helpers
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:

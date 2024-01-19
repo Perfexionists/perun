@@ -7,4 +7,7 @@ In particular, it includes functions for working with:
   3. Executables: getting information about executable files.
 """
 
+import perun.utils.external.commands
 import perun.utils.external.environment
+import perun.utils.external.executable
+import perun.utils.external.processes

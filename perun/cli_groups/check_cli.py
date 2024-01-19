@@ -10,7 +10,8 @@ import click
 
 # Perun Imports
 from perun.logic import pcs, config as perun_config
-from perun.utils import cli_helpers, log
+from perun.utils import log
+from perun.utils.common import cli_helpers
 import perun.check.factory as check
 
 if TYPE_CHECKING:
