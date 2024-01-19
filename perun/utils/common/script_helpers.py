@@ -11,7 +11,8 @@ import jinja2
 
 # Perun Imports
 from perun.logic import config
-from perun.utils import helpers, log
+from perun.utils import log
+from perun.utils.common import helpers
 from perun.utils.exceptions import ExternalEditorErrorException
 from perun.utils.external import commands
 
@@ -89,9 +90,9 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         log.info("]")
 
     # Add the registration point to the set of file
-    successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "__init__.py"))
+    successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "../__init__.py"))
     if template_type in ("postprocess", "collect", "view"):
-        successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "__init__.py"))
+        successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "../__init__.py"))
     log.info(
         f"Please register your new module in '{template_type}/__init__.py' and/or 'utils/__init__.py'"
     )

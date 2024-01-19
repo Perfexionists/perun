@@ -13,7 +13,7 @@ import os
 import pprint
 
 import perun.logic.pcs as pcs
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.utils.log as perun_log
 
 

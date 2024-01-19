@@ -22,8 +22,7 @@ import operator
 # Third-Party Imports
 
 # Perun Imports
-from perun.utils import helpers
-
+from perun.utils.common import helpers
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

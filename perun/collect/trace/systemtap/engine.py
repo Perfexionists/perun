@@ -25,7 +25,7 @@ from perun.collect.trace.values import (
     STAP_PHASES,
 )
 
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.utils.log as perun_log
 import perun.utils.metrics as metrics
 from perun.utils.external import commands, processes

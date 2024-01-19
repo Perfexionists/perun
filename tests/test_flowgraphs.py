@@ -6,7 +6,7 @@ from click.testing import CliRunner
 import perun.view.flow.factory as flow_factory
 import perun.testing.utils as test_utils
 from perun import cli
-from perun.utils import view_helpers
+from perun.utils.common import view_helpers
 from perun.testing import asserts
 
 import bokeh.plotting as bk_plot

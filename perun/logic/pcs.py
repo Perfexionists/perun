@@ -13,7 +13,8 @@ import os
 
 # Perun Imports
 from perun.logic import config
-from perun.utils import helpers, decorators
+from perun.utils import decorators
+from perun.utils.common import helpers
 from perun.utils.exceptions import NotPerunRepositoryException
 
 

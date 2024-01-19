@@ -14,7 +14,7 @@ import numpy as np
 # Perun Imports
 from perun.postprocess.regression_analysis import data_provider
 from perun.profile import query, convert
-from perun.utils import view_helpers
+from perun.utils.common import view_helpers
 
 if TYPE_CHECKING:
     import numpy.typing as npt

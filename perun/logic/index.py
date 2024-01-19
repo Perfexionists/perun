@@ -18,7 +18,8 @@ import zlib
 
 # Perun Imports
 from perun.logic import pcs, store
-from perun.utils import helpers, log as perun_log, timestamps
+from perun.utils import log as perun_log, timestamps
+from perun.utils.common import helpers
 from perun.utils.exceptions import (
     EntryNotFoundException,
     MalformedIndexFileException,

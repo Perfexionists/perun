@@ -20,8 +20,9 @@ import numpy as np
 import termcolor
 
 # Perun Imports
-from perun.utils import helpers, decorators
-from perun.utils.helpers import (
+from perun.utils import decorators
+from perun.utils.common import helpers
+from perun.utils.common.helpers import (
     COLLECT_PHASE_ATTRS,
     DEGRADATION_ICON,
     OPTIMIZATION_ICON,

@@ -4,7 +4,7 @@ import pathlib
 
 import perun.logic.stats as stats
 import perun.logic.store as store
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
 import perun.logic.index as index

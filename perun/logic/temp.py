@@ -63,7 +63,8 @@ import zlib
 
 # Perun Imports
 from perun.logic import index, pcs, store
-from perun.utils import exceptions, helpers, log as perun_log
+from perun.utils import exceptions, log as perun_log
+from perun.utils.common import helpers
 
 # Valid protection levels of temporary files
 UNPROTECTED, PROTECTED = "unprotected", "protected"

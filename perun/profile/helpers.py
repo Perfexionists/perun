@@ -29,7 +29,8 @@ import time
 from perun import vcs
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
-from perun.utils import decorators, helpers, log as perun_log
+from perun.utils import decorators, log as perun_log
+from perun.utils.common import helpers
 from perun.utils.exceptions import (
     InvalidParameterException,
     MissingConfigSectionException,

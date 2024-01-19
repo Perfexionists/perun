@@ -10,8 +10,7 @@ import subprocess
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import helpers
-
+from perun.utils.common import helpers
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

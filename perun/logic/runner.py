@@ -14,10 +14,11 @@ import click
 # Perun Imports
 from perun import vcs
 from perun.logic import commands, config, index, pcs
-from perun.utils import decorators, helpers, log, streams
+from perun.utils import decorators, log, streams
+from perun.utils.common import helpers
 from perun.utils.exceptions import SignalReceivedException
 from perun.utils.external import commands as external_commands
-from perun.utils.helpers import (
+from perun.utils.common.helpers import (
     COLLECT_PHASE_CMD,
     COLLECT_PHASE_COLLECT,
     COLLECT_PHASE_POSTPROCESS,

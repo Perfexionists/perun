@@ -43,7 +43,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import helpers
+from perun.utils.common import helpers
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:

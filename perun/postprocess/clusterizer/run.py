@@ -22,7 +22,8 @@ import click
 from perun.logic import runner
 from perun.profile import convert
 from perun.profile.factory import pass_profile, Profile
-from perun.utils import log, helpers
+from perun.utils import log
+from perun.utils.common import helpers
 from perun.utils.structs import PostprocessStatus
 
 

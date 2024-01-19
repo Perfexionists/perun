@@ -21,7 +21,8 @@ from ruamel.yaml import YAML, scanner, comments
 
 # Perun Imports
 from perun.logic import config_templates
-from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
+from perun.utils import decorators, exceptions, log as perun_log, streams
+from perun.utils.common import helpers
 from perun.utils.exceptions import SuppressedExceptions
 
 

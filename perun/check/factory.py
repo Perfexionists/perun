@@ -16,7 +16,8 @@ from typing import Any, Iterable, Protocol, TYPE_CHECKING
 # Perun Imports
 from perun import vcs
 from perun.logic import config, pcs, runner, store
-from perun.utils import decorators, log, helpers
+from perun.utils import decorators, log
+from perun.utils.common import helpers
 from perun.utils.structs import (
     DetectionChangeResult,
     DegradationInfo,

@@ -10,7 +10,7 @@ import git
 import pytest
 
 import perun.logic.commands as commands
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 from perun.utils.exceptions import NotPerunRepositoryException, EntryNotFoundException
 
 import perun.testing.utils as test_utils

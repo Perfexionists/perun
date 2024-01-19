@@ -12,7 +12,7 @@ import os
 import sys
 import tabulate
 import perun.logic.store as store
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.profile.convert as convert
 import perun.utils.log as log
 import perun.utils.streams as streams

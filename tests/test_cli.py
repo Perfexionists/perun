@@ -18,7 +18,7 @@ import perun.cli_groups.utils_cli as utils_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
 import perun.cli_groups.check_cli as check_cli
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.temp as temp
@@ -1921,7 +1921,7 @@ def test_utils_create(monkeypatch, tmpdir):
     """Tests creating stuff in the perun"""
     # Prepare different directory
     monkeypatch.setattr(
-        "perun.utils.script_helpers.__file__",
+        "perun.utils.common.script_helpers.__file__",
         os.path.join(str(tmpdir), "utils", "script_helpers.py"),
     )
     monkeypatch.chdir(str(tmpdir))

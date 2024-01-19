@@ -9,7 +9,7 @@ from functools import partial
 
 from enum import Enum
 from perun.utils.structs import OrderedEnum
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.utils.metrics as metrics
 
 

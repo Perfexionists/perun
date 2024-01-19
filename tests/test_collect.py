@@ -9,7 +9,7 @@ from click.testing import CliRunner
 import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity

@@ -8,8 +8,8 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun.utils import view_helpers, log, helpers
-from perun.utils.common import cli_helpers
+from perun.utils import log
+from perun.utils.common import cli_helpers, helpers, view_helpers
 from perun.utils.exceptions import InvalidParameterException
 import perun.profile.factory as profile_factory
 import perun.view.flow.factory as flow_factory

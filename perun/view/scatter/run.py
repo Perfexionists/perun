@@ -8,8 +8,7 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun.utils import view_helpers, helpers
-from perun.utils.common import cli_helpers
+from perun.utils.common import cli_helpers, helpers, view_helpers
 import perun.profile.factory as profile_factory
 import perun.view.scatter.factory as scatter_factory
 

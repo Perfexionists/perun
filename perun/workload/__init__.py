@@ -15,7 +15,8 @@ You can use some basic generators specified in shared configurations called ``ba
 from __future__ import annotations
 
 from perun.logic import config
-from perun.utils import log, decorators, helpers
+from perun.utils import log, decorators
+from perun.utils.common import helpers
 from perun.utils.structs import GeneratorSpec
 
 

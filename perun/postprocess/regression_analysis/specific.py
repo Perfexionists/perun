@@ -13,7 +13,7 @@ from typing import Any, Iterable
 
 # Perun Imports
 from perun.postprocess.regression_analysis import tools
-from perun.utils import helpers
+from perun.utils.common import helpers
 
 
 def specific_quad_data(

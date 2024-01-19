@@ -10,7 +10,7 @@ import git
 
 from typing import Iterable, Callable
 
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store

@@ -19,7 +19,7 @@ import numpy as np
 from perun.check import fast_check, linear_regression, polynomial_regression
 from perun.postprocess.regression_analysis import regression_models
 from perun.profile import query
-from perun.utils import helpers
+from perun.utils.common import helpers
 from perun.utils.structs import (
     PerformanceChange,
     DegradationInfo,

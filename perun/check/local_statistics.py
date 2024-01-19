@@ -14,7 +14,7 @@ from scipy import integrate
 # Perun Imports
 from perun.check import factory
 from perun.profile.factory import Profile
-from perun.utils import helpers
+from perun.utils.common import helpers
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 import perun.check.nonparam_helpers as nparam_helpers
 

@@ -40,7 +40,8 @@ import subprocess
 # Third-Party Imports
 
 # Perun Imports
-from perun.utils import log, helpers
+from perun.utils import log
+from perun.utils.common import helpers
 from perun.utils.external import commands
 from perun.workload.generator import WorkloadGenerator
 

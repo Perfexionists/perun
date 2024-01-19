@@ -14,7 +14,7 @@ import numpy as np
 # Perun Imports
 from perun.check import factory, nonparam_helpers as nparam_helpers
 from perun.postprocess.regression_analysis import regression_models
-from perun.utils import helpers
+from perun.utils.common import helpers
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 if TYPE_CHECKING:

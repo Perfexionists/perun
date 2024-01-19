@@ -9,7 +9,7 @@ import holoviews as hv
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import view_helpers
+from perun.utils.common import view_helpers
 
 if TYPE_CHECKING:
     import pandas as pd

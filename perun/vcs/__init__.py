@@ -17,7 +17,8 @@ import inspect
 
 # Perun Imports
 from perun.logic import pcs
-from perun.utils import decorators, log as perun_log, helpers
+from perun.utils import decorators, log as perun_log
+from perun.utils.common import helpers
 
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion, MajorVersion

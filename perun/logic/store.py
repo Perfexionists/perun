@@ -19,7 +19,8 @@ import zlib
 
 # Perun Imports
 from perun.profile.factory import Profile
-from perun.utils import log, helpers
+from perun.utils import log
+from perun.utils.common import helpers
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.utils.structs import PerformanceChange, DegradationInfo
 

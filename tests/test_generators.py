@@ -7,7 +7,7 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 import perun.utils.decorators as decorators
-import perun.utils.helpers as helpers
+import perun.utils.common.helpers as helpers
 
 from perun.utils.structs import Unit, Executable, CollectStatus, Job
 from perun.workload.integer_generator import IntegerGenerator

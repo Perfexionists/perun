@@ -26,8 +26,7 @@ import pandas
 # Perun Imports
 from perun.postprocess.regression_analysis import transform
 from perun.profile import query
-from perun.utils import helpers
-
+from perun.utils.common import helpers
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

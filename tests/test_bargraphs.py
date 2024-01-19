@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import perun.view.bars.factory as bars_factory
 import perun.testing.utils as test_utils
 from perun import cli
-from perun.utils import view_helpers
+from perun.utils.common import view_helpers
 from perun.testing import asserts
 
 import bokeh.plotting as bk_plot

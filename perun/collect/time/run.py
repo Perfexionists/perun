@@ -15,8 +15,8 @@ import click
 
 # Perun Imports
 from perun.logic import runner
-from perun import utils
-from perun.utils import helpers, log
+from perun.utils import log
+from perun.utils.common import helpers
 from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, Executable
 

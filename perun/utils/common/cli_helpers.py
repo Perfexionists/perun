@@ -29,7 +29,8 @@ from perun.collect.trace.optimizations.structs import CallGraphTypes
 from perun.logic import commands, store, stats, config, pcs
 from perun.profile import helpers as profile_helpers, query
 from perun.profile.factory import Profile
-from perun.utils import exceptions, helpers, streams, timestamps, log, metrics
+from perun.utils import exceptions, streams, timestamps, log, metrics
+from perun.utils.common import helpers
 from perun.utils.exceptions import (
     VersionControlSystemException,
     TagOutOfRangeException,

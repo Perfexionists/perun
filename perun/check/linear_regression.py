@@ -13,9 +13,8 @@ from typing import Any, Iterable, TYPE_CHECKING
 from scipy import stats
 
 # Perun Imports
-from perun import utils
 from perun.check import fast_check, general_detection as detect
-from perun.utils import helpers
+from perun.utils.common import helpers
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 
 if TYPE_CHECKING:

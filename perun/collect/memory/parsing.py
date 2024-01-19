@@ -12,7 +12,7 @@ import re
 # Perun Imports
 from perun.collect.memory import syscalls
 from perun.profile import convert
-from perun.utils import helpers
+from perun.utils.common import helpers
 
 if TYPE_CHECKING:
     from perun.utils.structs import Executable

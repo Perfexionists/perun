@@ -18,7 +18,8 @@ import re
 # Perun Imports
 from perun import vcs
 from perun.logic import pcs, config as perun_config, store, index, temp, stats
-from perun.utils import helpers, log as perun_log, timestamps
+from perun.utils import log as perun_log, timestamps
+from perun.utils.common import helpers
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     ExternalEditorErrorException,
@@ -27,7 +28,7 @@ from perun.utils.exceptions import (
     ProtectedTempException,
 )
 from perun.utils.external import commands as external_commands
-from perun.utils.helpers import (
+from perun.utils.common.helpers import (
     TEXT_EMPH_COLOUR,
     TEXT_ATTRS,
     TEXT_WARN_COLOUR,

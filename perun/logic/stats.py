@@ -50,7 +50,8 @@ import zlib
 from perun import vcs
 from perun.logic import index, pcs, store
 from perun.profile import helpers
-from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
+from perun.utils import exceptions, log as perun_log
+from perun.utils.common import helpers as utils_helpers
 from perun.utils.exceptions import SuppressedExceptions
 
 # Match the timestamp format of the profile names
