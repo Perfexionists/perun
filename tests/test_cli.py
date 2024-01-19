@@ -18,7 +18,6 @@ import perun.cli_groups.utils_cli as utils_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
 import perun.cli_groups.check_cli as check_cli
-import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.log as log
 import perun.logic.config as config
@@ -1239,7 +1238,7 @@ def test_init_correct_with_edit(monkeypatch):
     def donothing(*_):
         pass
 
-    monkeypatch.setattr("perun.utils.run_external_command", donothing)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", donothing)
     result = runner.invoke(cli.init, [dst, "--vcs-type=git", "--configure"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -1256,7 +1255,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException("", "")
 
-    monkeypatch.setattr("perun.utils.run_external_command", raiseexc)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", raiseexc)
     result = runner.invoke(cli.init, [dst, "--vcs-type=git", "--configure"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     monkeypatch.undo()
@@ -1732,7 +1731,7 @@ def test_config(pcs_with_root, monkeypatch):
     def donothing(*_):
         pass
 
-    monkeypatch.setattr("perun.utils.run_external_command", donothing)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", donothing)
     result = runner.invoke(config_cli.config, ["--local", "edit"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -1742,7 +1741,7 @@ def test_config(pcs_with_root, monkeypatch):
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
 
-    monkeypatch.setattr("perun.utils.run_external_command", raiseexc)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", raiseexc)
     result = runner.invoke(config_cli.config, ["--local", "edit"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
@@ -1976,14 +1975,14 @@ def test_utils_create(monkeypatch, tmpdir):
     def donothing(*_):
         pass
 
-    monkeypatch.setattr("perun.utils.run_external_command", donothing)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", donothing)
     result = runner.invoke(utils_cli.create, ["check", "mydifferentcheck"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
 
-    monkeypatch.setattr("perun.utils.run_external_command", raiseexc)
+    monkeypatch.setattr("perun.utils.external.commands.run_external_command", raiseexc)
     result = runner.invoke(utils_cli.create, ["check", "mythirdcheck"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 

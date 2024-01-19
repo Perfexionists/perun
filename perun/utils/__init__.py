@@ -145,15 +145,3 @@ def find_executable(cmd: Optional[str]) -> Optional[str]:
         return None
     # However, we still want to resolve the real path of the file
     return os.path.realpath(cmd)
-
-
-def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
-    """Runs external command with parameters.
-
-    :param list cmd_args: list of external command and its arguments to be run
-    :param subprocess_kwargs: additional parameters to the subprocess object
-    :return: return value of the external command that was run
-    """
-    process = subprocess.Popen(cmd_args, **subprocess_kwargs)
-    process.wait()
-    return process.returncode

@@ -9,7 +9,6 @@ from click.testing import CliRunner
 import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
-import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
@@ -148,10 +147,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     def mocked_safe_external(*_, **__):
         return b"", b""
 
-    old_run = utils.run_external_command
+    old_run = commands.run_external_command
     old_cfg = configurator.create_runtime_config
     old_safe_run = commands.run_safely_external_command
-    monkeypatch.setattr(utils, "run_external_command", _mocked_always_correct)
+    monkeypatch.setattr(commands, "run_external_command", _mocked_always_correct)
     monkeypatch.setattr(configurator, "create_runtime_config", _mocked_always_correct)
     monkeypatch.setattr(commands, "run_safely_external_command", mocked_safe_external)
 
@@ -190,7 +189,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
         else:
             return 0
 
-    monkeypatch.setattr(utils, "run_external_command", _mocked_external_command)
+    monkeypatch.setattr(commands, "run_external_command", _mocked_external_command)
     command = (
         [f"-c{job_params['target_dir']}", "complexity", f"-t{job_params['target_dir']}"]
         + files
@@ -201,12 +200,12 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     asserts.predicate_from_cli(
         result, "Command 'cmake' returned non-zero exit status 1" in result.output
     )
-    monkeypatch.setattr(utils, "run_external_command", mocked_make)
+    monkeypatch.setattr(commands, "run_external_command", mocked_make)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(
         result, "Command 'make' returned non-zero exit status 1" in result.output
     )
-    monkeypatch.setattr(utils, "run_external_command", _mocked_always_correct)
+    monkeypatch.setattr(commands, "run_external_command", _mocked_always_correct)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
@@ -256,7 +255,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     assert status == CollectStatus.ERROR
     assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
-    monkeypatch.setattr(utils, "run_external_command", old_run)
+    monkeypatch.setattr(commands, "run_external_command", old_run)
     monkeypatch.setattr(commands, "run_safely_external_command", old_safe_run)
     monkeypatch.setattr(configurator, "create_runtime_config", old_cfg)
 

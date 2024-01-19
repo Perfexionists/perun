@@ -111,3 +111,15 @@ def run_safely_list_of_commands(cmd_list: list[str]) -> None:
             log.info(out.decode("utf-8"), end="")
         if err:
             log.cprint(err.decode("utf-8"), "red")
+
+
+def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
+    """Runs external command with parameters.
+
+    :param list cmd_args: list of external command and its arguments to be run
+    :param subprocess_kwargs: additional parameters to the subprocess object
+    :return: return value of the external command that was run
+    """
+    process = subprocess.Popen(cmd_args, **subprocess_kwargs)
+    process.wait()
+    return process.returncode

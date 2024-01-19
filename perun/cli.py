@@ -49,10 +49,10 @@ import sys
 import click
 
 # Perun Imports
-from perun import utils
 from perun.cli_groups import check_cli, config_cli, run_cli, utils_cli
 from perun.logic import commands, pcs, config as perun_config
 from perun.utils import exceptions, cli_helpers, log as perun_log
+from perun.utils.external import commands as external_commands
 from perun.collect.trace.optimizations.structs import (
     Pipeline,
     Optimizations,
@@ -183,7 +183,7 @@ def configure_local_perun(perun_path: str) -> None:
     """
     editor = perun_config.lookup_key_recursively("general.editor")
     local_config_file = os.path.join(perun_path, ".perun", "local.yml")
-    utils.run_external_command([editor, local_config_file])
+    external_commands.run_external_command([editor, local_config_file])
 
 
 @cli.command()

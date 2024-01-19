@@ -16,7 +16,7 @@ import re
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import pcs, config as perun_config, store, index, temp, stats
 from perun.utils import helpers, log as perun_log, timestamps
 from perun.utils.exceptions import (
@@ -26,6 +26,7 @@ from perun.utils.exceptions import (
     InvalidTempPathException,
     ProtectedTempException,
 )
+from perun.utils.external import commands as external_commands
 from perun.utils.helpers import (
     TEXT_EMPH_COLOUR,
     TEXT_ATTRS,
@@ -93,7 +94,7 @@ def config_edit(store_type: str) -> None:
     editor = perun_config.lookup_key_recursively("general.editor")
     config_file = pcs.get_config_file(store_type)
     try:
-        utils.run_external_command([editor, config_file])
+        external_commands.run_external_command([editor, config_file])
     except Exception as inner_exception:
         raise ExternalEditorErrorException(editor, str(inner_exception))
 

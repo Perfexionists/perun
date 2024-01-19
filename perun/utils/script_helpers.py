@@ -10,10 +10,10 @@ import os
 import jinja2
 
 # Perun Imports
-from perun import utils
 from perun.logic import config
 from perun.utils import helpers, log
 from perun.utils.exceptions import ExternalEditorErrorException
+from perun.utils.external import commands
 
 
 def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) -> None:
@@ -101,6 +101,6 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         editor = config.lookup_key_recursively("general.editor")
         log.info(f"Opening created files and registration point in {editor}")
         try:
-            utils.run_external_command([editor] + successfully_created_files[::-1])
+            commands.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:
             raise ExternalEditorErrorException(editor, str(inner_exception))
