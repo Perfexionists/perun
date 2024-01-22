@@ -913,10 +913,9 @@ def test_reg_analysis_incorrect(pcs_single_prof):
     # Instantiate the runner fist
     runner = CliRunner()
 
-    # Test the lack of arguments
+    # Test the lack of arguments passes with defaults
     result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis"])
-    asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, "Usage" in result.output)
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Test non-existing argument
     result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis", "-f"])
@@ -1423,7 +1422,7 @@ def test_show_help(pcs_with_root):
     result = runner.invoke(cli.show, ["--help"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "bars" in result.output)
-    asserts.predicate_from_cli(result, "raw" in result.output)
+    asserts.predicate_from_cli(result, "tableof" in result.output)
 
 
 def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
@@ -1617,33 +1616,35 @@ def test_postprocess_tag(pcs_single_prof, valid_profile_pool):
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
-    result = runner.invoke(cli.postprocessby, ["0@p", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["0@p", "regression-analysis", "-dp", "time"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
-    result = runner.invoke(cli.postprocessby, ["666@p", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["666@p", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
-    result = runner.invoke(cli.postprocessby, ["0@i", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["0@i", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try incorrect index tag -> expect failure and return code 2 (click error)
-    result = runner.invoke(cli.postprocessby, ["1337@i", "normalizer"])
+    result = runner.invoke(cli.postprocessby, ["1337@i", "regression-analysis"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
-    first_in_jobs = list(filter(test_utils.index_filter, os.listdir(pending_dir)))[0]
+    first_in_jobs = sorted(list(filter(test_utils.index_filter, os.listdir(pending_dir))))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
-    result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, "normalizer"])
+    result = runner.invoke(
+        cli.postprocessby, [absolute_first_in_jobs, "regression-analysis", "-dp", "time"]
+    )
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try lookup postprocessing
-    result = runner.invoke(cli.postprocessby, [first_in_jobs, "normalizer"])
+    result = runner.invoke(cli.postprocessby, [first_in_jobs, "regression-analysis", "-dp", "time"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
@@ -1656,43 +1657,45 @@ def test_show_tag(pcs_single_prof, valid_profile_pool, monkeypatch):
     pending_dir = os.path.join(pcs_single_prof.get_path(), "jobs")
 
     runner = CliRunner()
-    result = runner.invoke(cli.show, ["0@p", "raw"])
+    result = runner.invoke(cli.show, ["0@p", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
-    result = runner.invoke(cli.show, ["1337@p", "raw"])
+    result = runner.invoke(cli.show, ["1337@p", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
 
     # Try correct index tag
-    result = runner.invoke(cli.show, ["0@i", "raw"])
+    result = runner.invoke(cli.show, ["0@i", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try incorrect index tag
-    result = runner.invoke(cli.show, ["666@i", "raw"])
+    result = runner.invoke(cli.show, ["666@i", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
 
     # Try absolute showing
     first_in_jobs = list(filter(test_utils.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
-    result = runner.invoke(cli.show, [absolute_first_in_jobs, "raw"])
+    result = runner.invoke(cli.show, [absolute_first_in_jobs, "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try lookup showing
-    result = runner.invoke(cli.show, [first_in_jobs, "raw"])
+    result = runner.invoke(cli.show, [first_in_jobs, "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try iterating through files
     monkeypatch.setattr("click.confirm", lambda *_: True)
-    result = runner.invoke(cli.show, ["prof", "raw"])
+    result = runner.invoke(cli.show, ["prof", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Try iterating through files, but none is confirmed to be true
     monkeypatch.setattr("click.confirm", lambda *_: False)
-    result = runner.invoke(cli.show, ["prof", "raw"])
+    result = runner.invoke(cli.show, ["prof", "tableof", "resources"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
     # Try getting something from index
-    result = runner.invoke(cli.show, ["prof-2-complexity-2017-03-20-21-40-42.perf", "raw"])
+    result = runner.invoke(
+        cli.show, ["prof-2-complexity-2017-03-20-21-40-42.perf", "tableof", "resources"]
+    )
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 

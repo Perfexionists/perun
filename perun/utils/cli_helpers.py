@@ -96,8 +96,7 @@ def process_resource_key_param(
     else:
         valid_keys = set()
     if value not in valid_keys:
-        error_msg_ending = ", 'snaphots'" if param.human_readable_name == "per_key" else ""
-        valid_keys_str = ", ".join(f"'{vk}'" for vk in valid_keys) + error_msg_ending
+        valid_keys_str = ", ".join(f"'{vk}'" for vk in valid_keys)
         raise click.BadParameter(f"'{value}' is not one of {valid_keys_str}.")
     return value
 

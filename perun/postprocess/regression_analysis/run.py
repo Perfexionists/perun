@@ -82,9 +82,12 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     "--method",
     "-m",
     type=click.Choice(methods.get_supported_param_methods()),
-    required=True,
+    default="full",
     multiple=False,
-    help="Will use the <method> to find the best fitting models for the given profile.",
+    help=(
+        "Will use the <method> to find the best fitting models for the given profile. "
+        "By default 'full' computation will be performed"
+    ),
 )
 @click.option(
     "--regression_models",
@@ -191,10 +194,6 @@ def regression_analysis(profile: Profile, **kwargs: Any) -> None:
             "model": "linear",
             "method": "full",
         }
-
-    Note that if your data are not suitable for regression analysis, check out
-    :ref:`postprocessors-clusterizer` to postprocess your profile to be
-    analysable by this analysis.
 
     For more details about regression analysis refer to
     :ref:`postprocessors-regression-analysis`. For more details how to collect

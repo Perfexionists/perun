@@ -158,7 +158,7 @@ List of Supported Options
 
         Placeholder for list of postprocessors that were used on the given profile. The resulting
         string consists of postprocessor names joined by ``-and-`` string, i.e. for example this will
-        output string ``normalizer-and-regression-analysis``.
+        output string ``regressogram-and-regression-analysis``.
 
     ``%<unit>.<param>%``:
 
