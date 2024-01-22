@@ -27,8 +27,7 @@ from perun.utils.exceptions import (
 )
 from perun.collect.trace.optimizations.structs import Complexity
 
-from perun.utils.structs import Unit, OrderedEnum
-from perun.utils.common.common_kit import HandledSignals
+from perun.utils.structs import Unit, OrderedEnum, HandledSignals
 from perun.utils.external import environment, commands as external_commands, processes, executable
 
 

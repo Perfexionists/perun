@@ -24,12 +24,12 @@ from perun.utils.common.common_kit import (
     COLLECT_PHASE_POSTPROCESS,
     COLLECT_PHASE_WORKLOAD,
     ColorChoiceType,
-    HandledSignals,
 )
 from perun.utils.structs import (
     CollectStatus,
     Executable,
     GeneratorSpec,
+    HandledSignals,
     Job,
     MinorVersion,
     PostprocessStatus,
