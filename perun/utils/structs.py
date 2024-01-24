@@ -493,7 +493,7 @@ class ProfileListConfig:
         :param list profile_list: list of profiles
         """
         self.colour: ColorChoiceType = (
-            PROFILE_UNTRACKED if list_type == "tracked" else PROFILE_TRACKED
+            PROFILE_UNTRACKED if list_type != "tracked" else PROFILE_TRACKED
         )
         self.ending = ":\n\n" if not short else "\n"
         self.list_len = len(profile_list)

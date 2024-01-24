@@ -544,6 +544,9 @@ def print_list_of_degradations(
     :param list degradation_list: list of found degradations
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
+    if not degradation_list:
+        info("no changes found")
+        return
 
     def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
         """Returns the location of the degradation from the tuple
