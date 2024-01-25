@@ -11,7 +11,7 @@ new notions of selecting version. In particular, this should include:
 from __future__ import annotations
 
 # Standard Imports
-from typing import TYPE_CHECKING, Optional, Iterator
+from typing import TYPE_CHECKING, Iterator
 import abc
 
 # Third-Party Imports
@@ -22,6 +22,7 @@ import abc
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion
     from perun.profile.factory import Profile
+    from perun.profile.helpers import ProfileInfo
 
 
 class AbstractBaseSelection(abc.ABC):
@@ -80,7 +81,7 @@ class AbstractBaseSelection(abc.ABC):
     @abc.abstractmethod
     def get_profiles(
         self, target_version: MinorVersion, target_profile: Profile
-    ) -> list[tuple[MinorVersion, Profile]]:
+    ) -> list[tuple[MinorVersion, ProfileInfo]]:
         """For given target version and its profile returns list of profiles and their versions.
 
         Note that given profile in the corresponding target version can have multiple suitable
@@ -90,13 +91,13 @@ class AbstractBaseSelection(abc.ABC):
         :param target_version: given target version in the history (version we are analysing
         :param target_profile: profile corresponding to the target version
             (particular profile we are analysing).
-        :return: list of tuples of baseline minor versions and their particular profiles
+        :return: list of tuples of baseline minor versions and their particular profile infos
         """
 
     @abc.abstractmethod
-    def get_skeleton(
-        self, target_version: MinorVersion, target_profile: Optional[Profile] = None
-    ) -> Iterator[tuple[MinorVersion, Optional[Profile]]]:
+    def get_skeleton_for_profile(
+        self, target_version: MinorVersion, target_profile: Profile
+    ) -> Iterator[tuple[MinorVersion, ProfileInfo]]:
         """From given point in history (the target version) generates the portion of the history
         which contains only relevant profiles and minor versions wrt given target version.
 
@@ -108,6 +109,19 @@ class AbstractBaseSelection(abc.ABC):
         :param target_profile: optionally one can restrict the searching to one particular type of profile
         :return: iterable of the minor versions and optionally profiles that forms the skeleton for given
             target version.
+        """
+
+    @abc.abstractmethod
+    def get_skeleton(self, target_version: MinorVersion) -> Iterator[MinorVersion]:
+        """From given point in history (the target version) generates the portion of the history
+        relevant to performance analysis.
+
+        For example, the skeleton could e.g. contain all the tags in the history
+        (since, tags usually corresponds to the stable releases and hence are
+        ideal for comparison in history).
+
+        :param target_version: head (or target) version in the history for which we are generating the skeleton
+        :return: iterable of the minor versions
         """
 
     @abc.abstractmethod

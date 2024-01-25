@@ -589,6 +589,24 @@ class ProfileInfo:
         """
         return store.load_profile_from_file(self.realpath, self._is_raw_profile)
 
+    def is_compatible_with_profile(self, profile: profiles.Profile) -> bool:
+        """Tests if the profile info is compatible with other profile
+
+        :param profile: profile, that is compared with this profile
+        :return: true if this profile is compatible with the other profile
+        """
+        profile_postprocessors = {
+            postprocessor["name"] for postprocessor in profile["postprocessors"]
+        }
+        return (
+            self.type == profile["header"]["type"]
+            and self.cmd == profile["header"]["cmd"]
+            and self.args == common_kit.get_key_with_aliases(profile["header"], ("args", "params"))
+            and self.workload == profile["header"]["workload"]
+            and self.collector == profile["collector_info"]["name"]
+            and all(post in profile_postprocessors for post in self.postprocessors)
+        )
+
     valid_attributes: list[str] = [
         "realpath",
         "type",

@@ -135,7 +135,8 @@ def degradation_in_minor(
     :returns: list of found changes
     """
     minor_version_info = vcs.get_minor_version_info(minor_version)
-    baseline_version_queue = [p for p in minor_version_info.parents]
+    # TODO: Choose parents through selection
+    baseline_version_queue = list(minor_version_info.parents)
     pre_collect_profiles(minor_version_info)
     target_profile_queue = profiles_to_queue(minor_version)
     detected_changes = []
@@ -196,6 +197,7 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     detected_changes = []
     with log.History(head) as history:
         for minor_version in vcs.walk_minor_versions(head):
+            # TODO: SELECT MINOR VERSION
             history.progress_to_next_minor_version(minor_version)
             newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
             log.print_short_change_string(log.count_degradations_per_group(newly_detected_changes))
@@ -251,6 +253,7 @@ def degradation_between_files(
     :param bool force: force profiles check despite different configurations
     :returns None: no return value
     """
+    # TODO: SELECT
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
@@ -277,6 +280,7 @@ def degradation_between_files(
     log.print_short_summary_of_degradations(detected_changes)
 
 
+# TODO: EXTRACT
 def is_rule_applicable_for(rule: dict[str, Any], configuration: Profile) -> bool:
     """Helper function for testing, whether the rule is applicable for the given profile
 
