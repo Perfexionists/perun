@@ -135,47 +135,34 @@ def degradation_in_minor(
     :param bool quiet: if set to true then nothing will be printed
     :returns: list of found changes
     """
+    selection: AbstractBaseSelection = pcs.selection()
     minor_version_info = vcs.get_minor_version_info(minor_version)
-    # TODO: Choose parents through selection
-    baseline_version_queue = list(minor_version_info.parents)
+
+    # Precollect profiles for all near versions
     pre_collect_profiles(minor_version_info)
-    target_profile_queue = profiles_to_queue(minor_version)
+    for parent_version in selection.get_parents(minor_version_info):
+        pre_collect_profiles(parent_version)
+
+    profile_queue = profiles_to_queue(minor_version)
     detected_changes = []
-    while target_profile_queue and baseline_version_queue:
-        # Pop the nearest baseline
-        baseline = baseline_version_queue.pop(0)
 
-        # Enqueue the parents in BFS manner
-        baseline_info = vcs.get_minor_version_info(baseline)
-        baseline_version_queue.extend(baseline_info.parents)
-
-        # Precollect profiles if this is set
-        pre_collect_profiles(baseline_info)
-
-        # Print header if there is at least some profile to check against
-        baseline_profiles = profiles_to_queue(baseline)
-
+    for target_config, target_profile_info in profile_queue.items():
         # Iterate through the profiles and check degradation between those of same configuration
-        for baseline_config, baseline_profile_info in baseline_profiles.items():
-            target_profile_info = target_profile_queue.get(baseline_config)
-            cmdstr = profiles.config_tuple_to_cmdstr(baseline_config)
-            if target_profile_info:
-                # Print information about configuration
-                # and extend the list of the detected changes including the configuration
-                # and source minor version.
-                baseline_prof = store.load_profile_from_file(
-                    baseline_profile_info.realpath, False, True
-                )
-                target_prof = store.load_profile_from_file(
-                    target_profile_info.realpath, False, True
-                )
-                for deg in degradation_between_profiles(baseline_prof, target_prof, "best-model"):
-                    if deg.result != PerformanceChange.NoChange:
-                        detected_changes.append((deg, cmdstr, baseline_info.checksum))
-                del target_profile_queue[target_profile_info.config_tuple]
+        target_prof = store.load_profile_from_file(target_profile_info.realpath, False, True)
+        cmdstr = profiles.config_tuple_to_cmdstr(target_config)
 
-        # Store the detected degradation
-        store.save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
+        for baseline_info, baseline_profile_info in selection.get_profiles(
+            minor_version_info, target_prof
+        ):
+            baseline_prof = store.load_profile_from_file(
+                baseline_profile_info.realpath, False, True
+            )
+            for deg in degradation_between_profiles(baseline_prof, target_prof, "best-model"):
+                if deg.result != PerformanceChange.NoChange:
+                    detected_changes.append((deg, cmdstr, baseline_info.checksum))
+
+    # Store the detected degradation
+    store.save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
     if not quiet:
         log.print_list_of_degradations(detected_changes)
     return detected_changes
