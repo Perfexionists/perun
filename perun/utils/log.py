@@ -300,6 +300,15 @@ def failed(ending: str = "\n") -> None:
     print("]", end=ending)
 
 
+def skipped(ending: str = "\n") -> None:
+    """
+    :param str ending: end of the string, by default new line
+    """
+    print("[", end="")
+    cprint("skip", "grey", attrs=["bold"])
+    print("]", end=ending)
+
+
 def yes(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line

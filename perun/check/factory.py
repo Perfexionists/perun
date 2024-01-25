@@ -16,6 +16,7 @@ from typing import Any, Iterable, Protocol, TYPE_CHECKING
 # Perun Imports
 from perun import vcs
 from perun.logic import config, pcs, runner, store
+from perun.select.abstract_base_selection import AbstractBaseSelection
 from perun.utils import decorators, log
 from perun.utils.common import common_kit
 from perun.utils.structs import (
@@ -168,15 +169,9 @@ def degradation_in_minor(
                 target_prof = store.load_profile_from_file(
                     target_profile_info.realpath, False, True
                 )
-                detected_changes.extend(
-                    [
-                        (deg, cmdstr, baseline_info.checksum)
-                        for deg in degradation_between_profiles(
-                            baseline_prof, target_prof, "best-model"
-                        )
-                        if deg.result != PerformanceChange.NoChange
-                    ]
-                )
+                for deg in degradation_between_profiles(baseline_prof, target_prof, "best-model"):
+                    if deg.result != PerformanceChange.NoChange:
+                        detected_changes.append((deg, cmdstr, baseline_info.checksum))
                 del target_profile_queue[target_profile_info.config_tuple]
 
         # Store the detected degradation
@@ -195,12 +190,18 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     detected_changes = []
+    version_selection: AbstractBaseSelection = pcs.selection()
     with log.History(head) as history:
         for minor_version in vcs.walk_minor_versions(head):
-            # TODO: SELECT MINOR VERSION
             history.progress_to_next_minor_version(minor_version)
-            newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
-            log.print_short_change_string(log.count_degradations_per_group(newly_detected_changes))
+            newly_detected_changes = []
+            if version_selection.should_check_version(minor_version):
+                newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
+                log.print_short_change_string(
+                    log.count_degradations_per_group(newly_detected_changes)
+                )
+            else:
+                log.skipped()
             history.finish_minor_version(minor_version, newly_detected_changes)
             log.print_list_of_degradations(newly_detected_changes)
             detected_changes.extend(newly_detected_changes)
@@ -253,7 +254,6 @@ def degradation_between_files(
     :param bool force: force profiles check despite different configurations
     :returns None: no return value
     """
-    # TODO: SELECT
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
@@ -265,11 +265,12 @@ def degradation_between_files(
                 f"Performance check does not make sense for profiles collected in different ways!"
             )
 
-    detected_changes = [
-        (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version)
-        for deg in degradation_between_profiles(baseline_file, target_file, models_strategy)
-        if deg.result != PerformanceChange.NoChange
-    ]
+    detected_changes = []
+    for deg in degradation_between_profiles(baseline_file, target_file, models_strategy):
+        if deg.result != PerformanceChange.NoChange:
+            detected_changes.append(
+                (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version)
+            )
 
     # Store the detected changes for given minor version
     store.save_degradation_list_for(
@@ -280,7 +281,6 @@ def degradation_between_files(
     log.print_short_summary_of_degradations(detected_changes)
 
 
-# TODO: EXTRACT
 def is_rule_applicable_for(rule: dict[str, Any], configuration: Profile) -> bool:
     """Helper function for testing, whether the rule is applicable for the given profile
 
