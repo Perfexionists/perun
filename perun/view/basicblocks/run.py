@@ -284,15 +284,7 @@ def create_sunburst_graph(function_data, type='time'):
 
     return p, my_table
 
-
-
-
-
-
-
-
-
-
+# OLD IMPLEMENTATION TODO remove
 # def get_functions_data(data: pd.DataFrame, top_basic_blocks: Union[int, None]=None, sort_by :str='time') -> dict:
 #     """Converts data from dataframe into records about functions instead and filters basic blocks.
 
@@ -452,116 +444,116 @@ def create_sunburst_graph(function_data, type='time'):
 #     return pd.DataFrame(data_frame)
 
 
-# def sunburst(df:pd.DataFrame, type :str='time'):
-    """ Creates a sunburst like plot. Inspired by: http://docs.bokeh.org/en/0.12.6/docs/gallery/burtin.html
-
-    :param DataFrame df: dataframe containing information for the sunburst in correct format
-    :param string type: type of sunburst graph time/execs
-
-    :returns figure p: figure with the created sunburst
-    """
-    msg_to_stdout(f'[Info]:\n {df}', 2)
-    bbl_columns = df.columns[2:]
-
-    # Create color palettes
-    num_of_bbls = len(bbl_columns)
-    bbl_color = {}
-    bbl_pallete = palettes.magma(num_of_bbls+10)
-    bbl_pallete = bbl_pallete[5:-5]
-    for i in range(num_of_bbls):
-        bbl_color[f"BBL{i+1}"] = bbl_pallete[i]
-
-    percentage_color = {}
-    colors = palettes.all_palettes['RdYlGn'][10]
-    for idx, color in enumerate(colors):
-        percentage_color[str((idx+1)*10)] = color
-
-    width = 1000
-    height = 1000
-    inner_radius = 160
-    outer_radius = 400 - 10
-
-    big_angle = 2.0 * np.pi / (len(df) + 1)  # +1 for the annotations column
-    small_angle = big_angle / (len(bbl_columns)*2+1)
-
-    # Prepare figure
-    p = figure(plot_width=width, plot_height=height, title="",
-               x_axis_type=None, y_axis_type=None,
-               x_range=(-510, 520), y_range=(-510, 520),
-               min_border=0, outline_line_color="black",
-               background_fill_color="#f9f5d7", border_fill_color="#f9f5d7",
-               toolbar_sticky=False)
-
-    p.xgrid.grid_line_color = None
-    p.ygrid.grid_line_color = None
-
-    # annular wedges
-    #[        starting point       ]
-    #TOP - 1/2 of annotation column - COL_IDX * ITSANGLE == starting position of the column
-    angles = np.pi / 2 - big_angle / 2 - df.index.to_series() * big_angle
-    colors = []
-    for func_percentage_group in df.func_percentage_group:
-        percentage_group = (func_percentage_group//10+1)*10
-        colors.append(percentage_color[str(int(percentage_group))])
-    p.annular_wedge(0, 0, inner_radius, outer_radius, -big_angle + angles, angles, color=colors)
-
-    # small wedges
-    bbl_col_keys = bbl_columns
-    bbl_colum_offset_multypliers = [i for i in reversed(range(len(bbl_col_keys)*2+1)) if i % 2 != 0]
-    for offset_multip,  bbl_key in zip(bbl_colum_offset_multypliers, bbl_col_keys):
-        p.annular_wedge(0, 0, inner_radius, inner_radius + df[bbl_key] * (outer_radius - inner_radius),
-                        -big_angle + angles + offset_multip * small_angle, -big_angle + angles + (offset_multip+1) * small_angle,
-                        color=bbl_color[bbl_key])
-
-    # circular axes and lables
-    labels = [float(key) for key in percentage_color]
-
-    percentage_series = [0.0, *labels]
-    percentage_series = pd.Series(percentage_series)/100
-    radii = inner_radius + percentage_series*(outer_radius-inner_radius)
-    p.circle(0, 0, radius=radii[1:], fill_color=None, line_color="#282828")
-    p.circle(0, 0, radius=radii[0], fill_color=None, line_color="#282828")
-    p.text(0, radii[:-1], [str(int(r))+"%" for r in labels],
-           text_font_size="9pt", text_align="center", text_baseline="middle")
-
-    # radial axes
-    p.annular_wedge(0, 0, inner_radius - 10, outer_radius + 10,
-                    -big_angle + angles, -big_angle + angles, color="black")
-
-    # function labels
-    xr = outer_radius * np.cos(np.array(-big_angle / 2 + angles))
-    yr = outer_radius * np.sin(np.array(-big_angle / 2 + angles))
-    label_angle = np.array(-big_angle / 2 + angles)
-    label_angle[label_angle < -np.pi / 2] += np.pi  # easier to read labels on the left side
-    p.text(xr, yr, df.function_name, angle=label_angle,
-           text_font_size="11pt", text_font_style="bold", text_align="center", text_baseline="middle")
-
-    fclx_rect = [-90 + i*20 for i in range(10)]
-    fcly_rect = [0]*10
-
-    p.rect(fclx_rect, fcly_rect, width=20, height=15,  color=list(percentage_color.values()))
-    p.text([-100, 80], [-20, -20], text=['0%', '100%'], text_font_size='10px', text_align='left', text_baseline='middle')
-    heading_text = "Function time" if type == 'time' else "Function executions"
-    p.text(-100, 15, text=[heading_text],
-           text_font_size="10pt", text_align="left")
-
-    # Basic blocks color labels
-    bblx_circle = [outer_radius+60]*len(bbl_color)
-    bblx_text = [outer_radius+75]*len(bbl_color)
-    bbly = [20*(len(bbl_color)/2) - 20*i for i in range(len(bbl_color))]
-    p.rect(bblx_circle, bbly, width=15, height=15,
-           color=list(bbl_color.values()))
-    p.text(bblx_text, bbly, text=[f'TOP{i+1}' for i in range(len(bbl_color))],
-           text_font_size="10pt", text_align="left", text_baseline="middle")
-
-    p.text(outer_radius+45, 20*(len(bbl_color)/2+1)-10, text=["Basic Blocks"],
-           text_font_size="10pt", text_align="left")
-
-    heading_text = "Basic block time" if type == 'time' else 'Basic block executions'
-    p.text(0, outer_radius+2, text=[heading_text],
-           text_font_size="10pt", text_align="center")
-
-    return p
+ # def sunburst(df:pd.DataFrame, type :str='time'):
+ #    """ Creates a sunburst like plot. Inspired by: http://docs.bokeh.org/en/0.12.6/docs/gallery/burtin.html
+ #
+ #    :param DataFrame df: dataframe containing information for the sunburst in correct format
+ #    :param string type: type of sunburst graph time/execs
+ #
+ #    :returns figure p: figure with the created sunburst
+ #    """
+ #    msg_to_stdout(f'[Info]:\n {df}', 2)
+ #    bbl_columns = df.columns[2:]
+ #
+ #    # Create color palettes
+ #    num_of_bbls = len(bbl_columns)
+ #    bbl_color = {}
+ #    bbl_pallete = palettes.magma(num_of_bbls+10)
+ #    bbl_pallete = bbl_pallete[5:-5]
+ #    for i in range(num_of_bbls):
+ #        bbl_color[f"BBL{i+1}"] = bbl_pallete[i]
+ #
+ #    percentage_color = {}
+ #    colors = palettes.all_palettes['RdYlGn'][10]
+ #    for idx, color in enumerate(colors):
+ #        percentage_color[str((idx+1)*10)] = color
+ #
+ #    width = 1000
+ #    height = 1000
+ #    inner_radius = 160
+ #    outer_radius = 400 - 10
+ #
+ #    big_angle = 2.0 * np.pi / (len(df) + 1)  # +1 for the annotations column
+ #    small_angle = big_angle / (len(bbl_columns)*2+1)
+ #
+ #    # Prepare figure
+ #    p = figure(plot_width=width, plot_height=height, title="",
+ #               x_axis_type=None, y_axis_type=None,
+ #               x_range=(-510, 520), y_range=(-510, 520),
+ #               min_border=0, outline_line_color="black",
+ #               background_fill_color="#f9f5d7", border_fill_color="#f9f5d7",
+ #               toolbar_sticky=False)
+ #
+ #    p.xgrid.grid_line_color = None
+ #    p.ygrid.grid_line_color = None
+ #
+ #    # annular wedges
+ #    #[        starting point       ]
+ #    #TOP - 1/2 of annotation column - COL_IDX * ITSANGLE == starting position of the column
+ #    angles = np.pi / 2 - big_angle / 2 - df.index.to_series() * big_angle
+ #    colors = []
+ #    for func_percentage_group in df.func_percentage_group:
+ #        percentage_group = (func_percentage_group//10+1)*10
+ #        colors.append(percentage_color[str(int(percentage_group))])
+ #    p.annular_wedge(0, 0, inner_radius, outer_radius, -big_angle + angles, angles, color=colors)
+ #
+ #    # small wedges
+ #    bbl_col_keys = bbl_columns
+ #    bbl_colum_offset_multypliers = [i for i in reversed(range(len(bbl_col_keys)*2+1)) if i % 2 != 0]
+ #    for offset_multip,  bbl_key in zip(bbl_colum_offset_multypliers, bbl_col_keys):
+ #        p.annular_wedge(0, 0, inner_radius, inner_radius + df[bbl_key] * (outer_radius - inner_radius),
+ #                        -big_angle + angles + offset_multip * small_angle, -big_angle + angles + (offset_multip+1) * small_angle,
+ #                        color=bbl_color[bbl_key])
+ #
+ #    # circular axes and lables
+ #    labels = [float(key) for key in percentage_color]
+ #
+ #    percentage_series = [0.0, *labels]
+ #    percentage_series = pd.Series(percentage_series)/100
+ #    radii = inner_radius + percentage_series*(outer_radius-inner_radius)
+ #    p.circle(0, 0, radius=radii[1:], fill_color=None, line_color="#282828")
+ #    p.circle(0, 0, radius=radii[0], fill_color=None, line_color="#282828")
+ #    p.text(0, radii[:-1], [str(int(r))+"%" for r in labels],
+ #           text_font_size="9pt", text_align="center", text_baseline="middle")
+ #
+ #    # radial axes
+ #    p.annular_wedge(0, 0, inner_radius - 10, outer_radius + 10,
+ #                    -big_angle + angles, -big_angle + angles, color="black")
+ #
+ #    # function labels
+ #    xr = outer_radius * np.cos(np.array(-big_angle / 2 + angles))
+ #    yr = outer_radius * np.sin(np.array(-big_angle / 2 + angles))
+ #    label_angle = np.array(-big_angle / 2 + angles)
+ #    label_angle[label_angle < -np.pi / 2] += np.pi  # easier to read labels on the left side
+ #    p.text(xr, yr, df.function_name, angle=label_angle,
+ #           text_font_size="11pt", text_font_style="bold", text_align="center", text_baseline="middle")
+ #
+ #    fclx_rect = [-90 + i*20 for i in range(10)]
+ #    fcly_rect = [0]*10
+ #
+ #    p.rect(fclx_rect, fcly_rect, width=20, height=15,  color=list(percentage_color.values()))
+ #    p.text([-100, 80], [-20, -20], text=['0%', '100%'], text_font_size='10px', text_align='left', text_baseline='middle')
+ #    heading_text = "Function time" if type == 'time' else "Function executions"
+ #    p.text(-100, 15, text=[heading_text],
+ #           text_font_size="10pt", text_align="left")
+ #
+ #    # Basic blocks color labels
+ #    bblx_circle = [outer_radius+60]*len(bbl_color)
+ #    bblx_text = [outer_radius+75]*len(bbl_color)
+ #    bbly = [20*(len(bbl_color)/2) - 20*i for i in range(len(bbl_color))]
+ #    p.rect(bblx_circle, bbly, width=15, height=15,
+ #           color=list(bbl_color.values()))
+ #    p.text(bblx_text, bbly, text=[f'TOP{i+1}' for i in range(len(bbl_color))],
+ #           text_font_size="10pt", text_align="left", text_baseline="middle")
+ #
+ #    p.text(outer_radius+45, 20*(len(bbl_color)/2+1)-10, text=["Basic Blocks"],
+ #           text_font_size="10pt", text_align="left")
+ #
+ #    heading_text = "Basic block time" if type == 'time' else 'Basic block executions'
+ #    p.text(0, outer_radius+2, text=[heading_text],
+ #           text_font_size="10pt", text_align="center")
+ #
+ #    return p
 
 @click.command()
 @click.option('--top-functions', '-tf', type=int, default=None,
@@ -588,7 +580,7 @@ def basicblocks(profile: Profile, top_functions: int, top_basic_blocks: int, sor
     # df_time, df_execs = get_data(profile, top_functions, top_basic_blocks, sort_by)
     # p1 = sunburst(df_time, 'time')
     # p2 = sunburst(df_execs, 'execs')
-    #p = row(p1, p2)
+    # p = row(p1, p2)
     save(p)
 
 

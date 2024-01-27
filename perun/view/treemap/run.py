@@ -1,6 +1,7 @@
 """ Tree map of function calls
 """
 from pprint import pprint
+from typing import List
 
 import click
 import os
@@ -28,13 +29,20 @@ def extract_function_information(profile: Profile) -> pd.DataFrame:
     return pd.DataFrame(unique_functions)
 
 
-def aggregate_location(locations: pd.Series):
+def aggregate_files(locations: pd.Series):
     if locations.drop_duplicates().size > 1:
         raise Exception("Provided profile is inconsistent.")
     return locations.iloc[0]
 
+def aggregate_lines(lines: pd.Series):
+    print(lines)
+    lines.drop_duplicates()
+    print(lines)
+    if lines.drop_duplicates().size > 1:
+        raise Exception("Provided profile is inconsistent.")
+    return lines.iloc[0] if isinstance(lines.iloc[0], str) else str(lines.iloc[0])
 
-def get_file_contents(file: str, start: int, end: int) -> str:
+def get_file_contents_by_range(file: str, start: int, end: int) -> str:
     if not os.path.isfile(file):
         return ""
     if start > end:
@@ -42,6 +50,18 @@ def get_file_contents(file: str, start: int, end: int) -> str:
 
     with open(file, "r") as file_handle:
         contents = file_handle.read().split('\n')[start - 1:end - 1 + 1]
+    return '\n'.join(contents)
+
+
+def get_file_contents_by_sequence(file: str, lines_sequence: List[int]) -> str:
+    if not os.path.isfile(file):
+        return ""
+
+    with open(file, "r") as file_handle:
+        file: List[str] = file_handle.read().split('\n')
+        contents: List[str] = []
+        for line_number in lines_sequence:
+            contents.append(f"{line_number}: " + file[line_number-1])
     return '\n'.join(contents)
 
 
@@ -56,33 +76,28 @@ def get_file_contents(file: str, start: int, end: int) -> str:
 def treemap(profile: Profile, depth: str, graph_type: int, basic_blocks: bool):
     df = resources_to_pandas_dataframe(profile)
     df = df.drop(columns=['timestamp', 'time', 'snapshots', 'subtype', 'type', 'workload'])
+    # pd.set_option('display.max_columns', None)
+    # df.to_csv('out.csv')
 
     # Override basic blocks flag if expected values are not found in the dataframe
-    if basic_blocks and 'source-line-end' not in df.columns:
+    if basic_blocks and 'instructions-count' not in df.columns:
         # TODO: add warning
         basic_blocks = False
 
 
     # Form aggregation dictionary
     aggregation = {'amount': 'sum',
-                 'source-line': aggregate_location,
-                 'source-file': aggregate_location}
-    if basic_blocks:
-        aggregation['source-line-end'] = aggregate_location
+                   'source-lines': aggregate_lines,
+                   'source-file': aggregate_files}
 
 
     amounts = df.groupby(['uid', 'caller']).aggregate(aggregation).reset_index()
-    #amounts = df.groupby(['uid', 'caller'])['amount'].sum().to_frame().reset_index()
 
     # Filter out the basic blocks if present and should not be displayed
-    if not basic_blocks and 'source-line-end' in df.columns:
+    if not basic_blocks and 'instructions-count' in df.columns:
         for idx, row in amounts.iterrows():
             if row['uid'].startswith("BBL#"):
                 amounts.drop(idx, inplace=True)
-
-
-    with pd.option_context('display.max_rows', None):
-        print(amounts)
 
 
 
@@ -96,6 +111,10 @@ def treemap(profile: Profile, depth: str, graph_type: int, basic_blocks: bool):
                 if nr['amount'] > row['amount']:
                     amounts.at[i, 'amount'] = row['amount']
         #print(row['uid'], expected_sum, accumulated_sum)
+
+    with pd.option_context('display.max_rows', None):
+        print('-----------------------------------')
+        print(amounts)
 
     parents = list(amounts['caller'])
     labels = list(amounts['uid'])
@@ -114,16 +133,21 @@ def treemap(profile: Profile, depth: str, graph_type: int, basic_blocks: bool):
                 code_col.append("")
                 continue
 
-            bbl_src_line_start = int(row['source-line'])
-            bbl_src_line_end = int(row['source-line-end'])
-            contents = get_file_contents(row['source-file'], bbl_src_line_start, bbl_src_line_end)
+            lines: int | str = row['source-lines']
+            lines_sequence: List[int] = []
+            if isinstance(lines, int):
+                lines_sequence = [lines]
+            elif isinstance(lines, str) and lines:
+                lines_sequence = [int(i) for i in lines.split(',')]
+
+            contents = get_file_contents_by_sequence(row['source-file'], lines_sequence)
             #print(f"{row['uid'] :<20}{0:^5}{row['source-line']:^7}{row['source-line-end']:^7}{row['amount']:^12}{contents:<100}")
             contents = '\n' + contents + '\n'
             code_col.append(contents.replace('\n', '<br>'))
 
         amounts['code'] = code_col
-        with pd.option_context('display.max_rows', None):
-            print(amounts)
+        # with pd.option_context('display.max_rows', None):
+        #     print(amounts)
 
 
     fig = go.Figure(viz_method_map[graph_type](
@@ -142,8 +166,7 @@ def treemap(profile: Profile, depth: str, graph_type: int, basic_blocks: bool):
     for _, row in amounts.iterrows():
         formated_time = f"{row['amount']:,} μs".replace(',', ' ')
         hover_text = f"File: {row['source-file']} <br>" \
-                     f"Line: {row['source-line']} {'-' if basic_blocks and row['uid'].startswith('BBL#') else ''} " \
-                     f"{int(row['source-line-end']) if basic_blocks and row['uid'].startswith('BBL#') else ''} <br>" \
+                     f"Lines: {row['source-lines']} <br>" \
                      f"Time: {formated_time}<br>"
         hover_texts.append(hover_text)
     amounts['hover'] = hover_texts

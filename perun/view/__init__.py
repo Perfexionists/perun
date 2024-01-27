@@ -13,8 +13,7 @@ Perun can can interpret the profiling data in several ways:
     2. By **using python interpreter** together with internal modules for
        manipulation, conversion and querying the profiles (refer to
        :ref:`profile-api`, :ref:`profile-query-api`, and
-       :ref:`profile-conversion-api`) and external statistical libraries, like
-       e.g. using pandas_.
+       :ref:`profile-conversion-api`) and external statistical libraries, like e.g. using pandas_.
 
 The format of input profiles has to be w.r.t. :ref:`profile-spec`, in
 particular the intepreted profiles should contain the :pkey:`resources` region
@@ -57,6 +56,9 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
     import perun.view.raw.run as raw_run
     import perun.view.scatter.run as scatter_run
     import perun.view.tableof.run as tableof_run
+    import perun.view.funcargs.run as funcargs_run
+    import perun.view.treemap.run as treemap_run
+    import perun.view.basicblocks.run as basicblocks_run
 
     return [
         bars_run.bars,
@@ -65,4 +67,7 @@ def lazy_get_cli_commands() -> list[Callable[..., Any]]:
         raw_run.raw,
         scatter_run.scatter,
         tableof_run.tableof,
+        funcargs_run.funcargs,
+        treemap_run.treemap,
+        basicblocks_run.basicblocks
     ]
