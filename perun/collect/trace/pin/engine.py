@@ -38,10 +38,15 @@ class PinEngine(engine.CollectEngine):
         :param Configuration config: the collection parameters stored in the configuration object
         """
         super().__init__(config)
+        # TODO: check if the combination of engine cli options makes sense
+
         self.pintool_src: str = f'{get_tmp_directory()}/pintool.cpp'
         self.pintool_makefile: str = f'{get_tmp_directory()}/makefile'
+
         self.dynamic_data: str = self._assemble_file_name('dynamic-data', '.txt')
+        # TODO: the static data file is not needed for memory collection
         self.static_data: str = self._assemble_file_name('static-data', '.txt')
+
         self.functions_in_binary: List[scan_binary.FunctionInfo] = []
         self.__dependencies: List[str] = ['g++', 'make']
         self.__supported_base_argument_types: List[str] = ["int", "char", "float", "double", "bool"]
@@ -84,10 +89,14 @@ class PinEngine(engine.CollectEngine):
         if kwargs['collect_arguments']:
             msg_to_stdout('[Info]: Scanning binary for functions and their arguments.', 2)
             self.functions_in_binary = scan_binary.get_function_info_from_binary(self.binary)
+            import pprint
+            pprint.pprint(self.functions_in_binary)
             self._filter_functions_in_binary()
 
         msg_to_stdout('[Info]: Assembling the pintool.', 2)
-        self._assemble_pintool(kwargs['collect_arguments'], kwargs['collect_basic_blocks'], kwargs['probed'])
+        self._assemble_pintool(kwargs['collect_arguments'],
+                               kwargs['collect_basic_blocks'], kwargs['collect_basic_blocks_only'],
+                               kwargs['probed'], kwargs['mode'])
         msg_to_stdout('[Debug]: Building the pintool.', 3)
         utils.run_safely_external_command(f'make -C {get_tmp_directory()}')
 
@@ -105,17 +114,17 @@ class PinEngine(engine.CollectEngine):
         except subprocess.CalledProcessError:
             raise PinBinaryInstrumentationFailed
 
-    def transform(self, config, **_):
+    def transform(self, config, **kwargs):
         """ Transform the raw performance data into a resources as used in the profiles.
 
         :param Configuration config: the configuration object
 
         :return iterable: a generator object that produces the resources
         """
-        # TODO enable parsing
         msg_to_stdout('[Info]: Transforming the collected data to perun profile.', 2)
         msg_to_stdout(f'[Debug]: Parsing data from {self.dynamic_data} and {self.static_data}', 3)
-        return parse.parse_data(dynamic_data_file=self.dynamic_data, static_data_file=self.static_data,
+        # TODO: decide what options to pass (not the whole kwargs dict)
+        return parse.parse_data(options=kwargs, dynamic_data_file=self.dynamic_data, static_data_file=self.static_data,
                                 workload=config.executable.workload, functions_information=self.functions_in_binary)
 
     def cleanup(self, config, **_):
@@ -129,7 +138,8 @@ class PinEngine(engine.CollectEngine):
         # super()._finalize_collect_files(['data', 'pintool_src', 'pintool_makefile'],
         #                                 config.keep_temps, config.zip_temps)
 
-    def _assemble_pintool(self, collect_args: bool = False, collect_bbls: bool = False, probed: bool = False):
+    def _assemble_pintool(self, collect_args: bool = False, collect_bbls: bool = False,
+                          collect_bbls_only: bool = False, probed: bool = False, mode: str = 'time'):
         """ Creates makefile for pintool and the pintool itself from Jinja2 templates.
 
         :param bool collect_args: if True pintool will be able to collect arguments specified in functions_in_binary
@@ -146,6 +156,8 @@ class PinEngine(engine.CollectEngine):
         if probed and collect_bbls:
             raise InvalidParameterException("collect_basic_blocks", True,
                                             "Can't be used when Probed mode is enabled.")
+        if collect_bbls_only:
+            collect_bbls = True
 
         function_names: str = ''
         func_len: int = 0
@@ -155,8 +167,9 @@ class PinEngine(engine.CollectEngine):
             func_len = len(self.functions_in_binary)
 
         pintool_info: Dict[str, Union[str, bool, List[scan_binary.FunctionInfo]]] = {
-            'dynamic_data_file': self.dynamic_data, 'static_data_file': self.static_data,
-            'collect_basic_blocks': collect_bbls, 'collect_arguments': collect_args, 'enable_probed_mode': probed,
+            'mode': mode, 'dynamic_data_file': self.dynamic_data, 'static_data_file': self.static_data,
+            'collect_basic_blocks': collect_bbls, 'collect_basic_blocks_only': collect_bbls_only,
+            'collect_arguments': collect_args, 'probed': probed,
             'function_arguments_info': self.functions_in_binary, 'function_names': function_names,
             'function_count': func_len
         }
@@ -175,8 +188,7 @@ class PinEngine(engine.CollectEngine):
         :param str argument_type: type of the argument as string
         :return bool: True if supported, False otherwise
         """
-
-        #NOTE: Lets the types like 'long long int' through
+        # NOTE: Lets the types like 'long long int' through
         is_pointer: bool = argument_type.count('*') > 0
         for supported_type in self.__supported_base_argument_types:
             if supported_type in argument_type.replace('*', '').split():

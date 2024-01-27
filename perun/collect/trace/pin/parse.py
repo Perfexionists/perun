@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Generator, Dict, Union, List, Any, Tuple
+from typing import Generator, Dict, Union, List, Any, Tuple, ClassVar
 from perun.utils.log import msg_to_stdout
 import pprint
 
@@ -51,8 +51,7 @@ class ProgramData:
 
     source_code_files: List[str]
 
-
-class RawDataEntry:
+class RawTimeDataEntry:
     # TODO: Update comment
     """ Class that represents single entry (line) from pin output. The entry can contain information about routine or
     basic block.
@@ -97,7 +96,7 @@ class RawDataEntry:
     def time_delta(self, other) -> int:
         """ Calculates the time delta from two entries
 
-        :param RawDataEntry other: the data entry complementary to self
+        :param RawTimeDataEntry other: the data entry complementary to self
         :return int: time delta of the complementary entries
         """
         return abs(self.timestamp - other.timestamp)
@@ -123,7 +122,7 @@ class RawDataEntry:
             self.location != other.location
 
     def __repr__(self) -> str:
-        return ("RAW:\n"
+        return ("RAW time:\n"
                 f"\tgranularity: {'Routine' if self.granularity == Granularity.RTN else 'Basic Block'}\n"
                 f"\tlocation: {'Before' if self.location == Location.BEFORE else 'AFTER'}\n"
                 f"\tid: {self.id}\n"
@@ -131,20 +130,48 @@ class RawDataEntry:
                 f"\tpid: {self.pid}\n"
                 f"\ttimestamp: {self.timestamp}\n")
 
-    # def get_entry_in_context(self, program_data: Program) -> str:
-    #     # TODO: bring the entry into context with program information
-    #     return ("RAW:\n"
-    #             f"function_name: {self.name}\n"
-    #             f"granularity: {self.granularity}\n"
-    #             f"location: {self.location}\n"
-    #             f"function_id: {self.rtn_id}\n"
-    #             f"basic_block_id: {self.bbl_id}\n"
-    #             f"tid: {self.tid}\n"
-    #             f"pid: {self.pid}\n"
-    #             f"timestamp: {self.timestamp}\n"
-    #             f"source_line: {self.src_line}\n"
-    #             f"source_line_end: {self.src_line_end}\n"
-    #             f"source_file: {self.src_file}\n")
+
+@dataclass(eq=False, repr=False)
+class RawMemoryDataEntry:
+    # the before entry contains variable number of arguments at the end
+    FORMAT_BEFORE: ClassVar[List[str]] = ['address', 'name', 'parent_address', 'parent_name', 'tid', 'pid', 'source_file', 'source_lines']
+    FORMAT_AFTER: ClassVar[List[str]] = ['address', 'name', 'tid', 'pid', 'return_pointer']
+
+    address: int
+    name: str
+    tid: int
+    pid: int
+    location: Location
+
+    return_pointer: str | None = None
+    parent_address: int | None = None
+    parent_name: str | None = None
+    source_file: str | None = None
+    source_lines: List[int] = field(default_factory=list)
+
+    args: List[int] = field(default_factory=list)
+
+
+    def __eq__(self, other) -> bool:
+        return self.address == other.address and self.name == other.name and \
+               self.tid == other.tid and self.pid == other.pid and \
+               self.location != other.location
+
+    def __repr__(self):
+        repr_string: str = ("RAW memory:\n"
+                            f"\tlocation: {'Before' if self.location == Location.BEFORE else 'After'}\n"
+                            f"\taddress: {self.address}\n"
+                            f"\tname: {self.name}\n"
+                            f"\ttid: {self.tid}\n"
+                            f"\tpid: {self.pid}\n")
+        if self.location == Location.BEFORE:
+            repr_string += (f"\tparent: {self.parent_address} {self.parent_name}\n"
+                            f"\tsource location: {self.source_lines} {self.source_file}\n"
+                            f"\targs: {self.args}\n")
+        else:
+            repr_string += f"\treturn pointer: {self.return_pointer}\n"
+        return repr_string
+
 
 
 class Record(ABC):
@@ -163,19 +190,16 @@ class Record(ABC):
     :ivar str workload: the parameters with which was the program containing the routine/basic block executed
     """
 
-    def __init__(self, start_entry: RawDataEntry, end_entry: RawDataEntry, caller: str, workload: str):
+    def __init__(self, start_entry: RawTimeDataEntry, end_entry: RawTimeDataEntry, caller: str, workload: str):
         """
-        :param RawDataEntry start_entry: The entry at the beginning of a function
-        :param RawDataEntry end_entry: The entry at the end of the same function as start_entry
+        :param RawTimeDataEntry start_entry: The entry at the beginning of a function
+        :param RawTimeDataEntry end_entry: The entry at the end of the same function as start_entry
         :param str workload: the workload specification of the current run 
         """
-        #self.name = start_entry.name
         self.tid = start_entry.tid
         self.pid = start_entry.pid
         self.time_delta = start_entry.time_delta(end_entry)
         self.entry_timestamp = start_entry.timestamp
-        #self.src_line = start_entry.src_line
-        #self.src_file = start_entry.src_file
         self.caller = caller
 
         self.workload = workload
@@ -196,12 +220,12 @@ class FunctionCallRecord(Record):
     :ivar list args: the arguments passed to the routine in a list as FunctionArgument objects
     """
 
-    def __init__(self, start_entry: RawDataEntry, end_entry: RawDataEntry,
+    def __init__(self, start_entry: RawTimeDataEntry, end_entry: RawTimeDataEntry,
                  caller: str, call_order: int,
                  workload: str, program_data: ProgramData):
         """
-        :param RawDataEntry start_entry: The entry at the beginning of a function
-        :param RawDataEntry end_entry: The entry at the end of the same function as start_entry
+        :param RawTimeDataEntry start_entry: The entry at the beginning of a function
+        :param RawTimeDataEntry end_entry: The entry at the end of the same function as start_entry
         :param str workload: the workload specification of the current run
         """
         super().__init__(start_entry, end_entry, caller, workload)
@@ -265,11 +289,11 @@ class BasicBlockRecord(Record):
     :ivar int src_line_end: line number referring to location in source code where the basic block ends 
     """
 
-    def __init__(self, start_entry: RawDataEntry, end_entry: RawDataEntry, caller: str,
+    def __init__(self, start_entry: RawTimeDataEntry, end_entry: RawTimeDataEntry, caller: str,
                  workload: str, program_data: ProgramData):
         """
-        :param RawDataEntry start_entry: The entry at the beginning of a function
-        :param RawDataEntry end_entry: The entry at the end of the same function as start_entry
+        :param RawTimeDataEntry start_entry: The entry at the beginning of a function
+        :param RawTimeDataEntry end_entry: The entry at the end of the same function as start_entry
         :param str workload: the workload specification of the current run
         """
         super().__init__(start_entry, end_entry, caller, workload)
@@ -311,7 +335,7 @@ class BasicBlockRecord(Record):
                 f'instructions:     {self.instructions_count}\n')
 
 
-def _find_caller_name(function_calls_backlog: List[RawDataEntry], called_function_name: str, program_data: ProgramData) -> str:
+def _form_caller_name(function_calls_backlog: List[Tuple[RawTimeDataEntry, str]], called_function_name: str, program_data: ProgramData) -> str:
     # TODO: update comments
     """ Provided the function calls list find the function that called given function. Any recursion is
     traced back to the original caller.
@@ -324,25 +348,22 @@ def _find_caller_name(function_calls_backlog: List[RawDataEntry], called_functio
     if not function_calls_backlog:
         return ""
 
-    # TODO: remove
-    # Skip recursion
-    # idx = 0
-    # for fn in function_calls_backlog:
-    #     function_name = program_data.functions[fn.id].name
-    #     if function_name != called_function_name:
-    #         break
-    #     idx += 1
+    last_function_entry: Tuple[RawTimeDataEntry, str] = function_calls_backlog[-1]
+    last_function: RawTimeDataEntry = last_function_entry[0]
+    last_function_caller: str = last_function_entry[1]
+    last_function_name: str = program_data.functions[last_function.id].name
 
-    caller: str = ""
-    prev_function_name: str = called_function_name
-    for function_entry in reversed(function_calls_backlog[:-1]):
-        current_function_name: str = program_data.functions[function_entry.id].name
-        if prev_function_name == current_function_name:
-            continue  # skip recursion
-        caller += current_function_name + "#"
-        prev_function_name = current_function_name
+    if last_function_caller == "":
+        # root function - should be main
+        return last_function_name
 
-    return caller[:-1]
+    if last_function_caller.startswith((last_function_name, called_function_name)):
+        # TODO: do we need called function name at all?
+        # skips recursion by voiding sequences of same names in the caller field
+        return last_function_caller
+
+    # forms the caller name from the last entry in the backlog
+    return last_function_name + "#" + last_function_caller
 
 
 def _parse_source_files_table(file_descriptor) -> Tuple[List[str], str | None]:
@@ -416,7 +437,7 @@ def _parse_basic_blocks_table(file_descriptor) -> Tuple[Dict[int, BasicBlockData
         # Convert numerical values to int
         idx = 0
         # Base format values
-        for key in basic_block_entry_format[:-1]: # skips the source code lines which are handled after
+        for key in basic_block_entry_format[:-1]:  # skips the source code lines which are handled after
             entry[idx] = int(entry[idx]) if 'function_name' != key else entry[idx]
             idx += 1
 
@@ -471,50 +492,40 @@ def _parse_static_data_file(file_path: str, function_arguments_map: Dict[str, Fu
     return ProgramData(functions_data, basic_blocks_data, source_code_files)
 
 
-def _rindex(source: List[Any], element: Any) -> int:
+def _rindex(source: List[Tuple[RawTimeDataEntry, str]], element: RawTimeDataEntry) -> int:
     for index in range(len(source)-1, -1, -1):
-        if source[index] == element:
+        if source[index][0] == element:
             return index
     return -1
 
-
-def parse_data(dynamic_data_file: str, static_data_file: str, workload: str,
-               functions_information: list = []) -> Generator[Dict[str, Union[str, int]], None, None]:
-    """ Parses the raw data output from pin and creates Records from it
-    """
-
-    # Transform function information from DWARF debug info into a map based on name
-    function_arguments_map = {}
-    if functions_information:
-        for function_info in functions_information:
-            function_arguments_map[function_info.name] = function_info
-
-    # Combine the data collected by PIN with the DWARF info
-    program_data: ProgramData = _parse_static_data_file(static_data_file, function_arguments_map)
-    pprint.pprint(program_data)
-
-    # Parse the timestamps and argument values
-    print('parsing dynamic data')
+def _parse_time_mode(options: Dict[str, bool | str], dynamic_data_file: str, workload: str, program_data: ProgramData) -> Generator[Dict[str, Union[str, int]], None, None]:
     with open(dynamic_data_file, 'r') as raw_data:
-        backlog_rtn: List[RawDataEntry] = []
-        backlog_bbl: List[RawDataEntry] = []
+        backlog_rtn: List[Tuple[RawTimeDataEntry, str]] = []
+        backlog_bbl: List[Tuple[RawTimeDataEntry, str]] = []
 
         function_call_counter: int = 0
         entry_counter: int = 0
 
         for entry in raw_data:
             entry_counter += 1
-            current_data_entry: RawDataEntry = _parse_raw_entry(entry, program_data)
+            current_data_entry: RawTimeDataEntry = _parse_raw_entry(entry, program_data)
 
             # Decide which backlog to use based on the current data
-            backlog: List[RawDataEntry] = backlog_rtn if current_data_entry.is_function_granularity() else backlog_bbl
+            backlog: List[Tuple[RawTimeDataEntry, str]] = backlog_rtn if current_data_entry.is_function_granularity() else backlog_bbl
 
             if current_data_entry.is_located_before():
                 # The entry is opening a function or basic block - it is stored in
                 # the backlog until a complementary entry is found
+                function_caller_name: str = ''
                 if current_data_entry.is_function_granularity():
                     function_call_counter += 1
-                backlog.append(current_data_entry)
+                    current_function: FunctionData = program_data.functions[current_data_entry.id]
+                    function_caller_name = _form_caller_name(backlog_rtn, current_function.name, program_data)
+                else:
+                    current_basic_block: BasicBlockData = program_data.basic_blocks[current_data_entry.id]
+                    function_caller_name = _form_caller_name(backlog_rtn, current_basic_block.function_name, program_data)
+
+                backlog.append((current_data_entry, function_caller_name))
                 continue
 
             # The entry is closing a function or basic block - Search the backlog
@@ -524,19 +535,14 @@ def parse_data(dynamic_data_file: str, static_data_file: str, workload: str,
                 msg_to_stdout('[DEBUG]: Closing entry does not have a pair in the backlog.', 3)
                 continue
 
-            other_data_entry: RawDataEntry = backlog[other_data_entry_index]
+            other_data_entry, function_caller_name = backlog[other_data_entry_index]
 
             # Create new record from the pair of lines (entry point and the exit point)
             if current_data_entry.is_function_granularity():
-                current_function: FunctionData = program_data.functions[other_data_entry.id]
-                function_caller_name: str = _find_caller_name(backlog_rtn, current_function.name, program_data)
                 record = FunctionCallRecord(start_entry=other_data_entry, end_entry=current_data_entry,
                                             call_order=function_call_counter, caller=function_caller_name,
                                             workload=workload, program_data=program_data)
             else:
-                current_basic_block: BasicBlockData = program_data.basic_blocks[other_data_entry.id]
-                function_caller_name: str = _find_caller_name(backlog_rtn, current_basic_block.function_name, program_data)
-                function_caller_name = f"{current_basic_block.function_name}{'#' if function_caller_name else ''}{function_caller_name}"
                 record = BasicBlockRecord(start_entry=other_data_entry, end_entry=current_data_entry,
                                           caller=function_caller_name,
                                           workload=workload, program_data=program_data)
@@ -551,17 +557,153 @@ def parse_data(dynamic_data_file: str, static_data_file: str, workload: str,
         if backlog_bbl:
             msg_to_stdout(f'[DEBUG]: Basic blocks backlog contains {len(backlog_bbl)} unpaired entries.', 3)
             ids_set = set()
-            for basic_block in backlog_bbl:
+            for basic_block, caller in backlog_bbl:
                 ids_set.add(basic_block.id)
-                #msg_to_stdout(str(basic_block), 3)
             for bbl_id in ids_set:
                 print(program_data.basic_blocks[bbl_id])
 
 
+def _parse_memory_mode(dynamic_data_file: str, workload: str) -> Generator[Dict[str, Union[str, int]], None, None]:
+    with open(dynamic_data_file, 'r') as raw_data:
+        backlog: List[RawMemoryDataEntry] = []
 
-def _parse_raw_entry(raw_entry: str, program_data: ProgramData) -> RawDataEntry:
+        for entry in raw_data:
+
+            current_entry_data: List[str | int] = entry.strip().split(';')
+            current_entry_size: int = len(current_entry_data)
+
+            # convert numerical values to int
+            for idx in range(current_entry_size):
+                if current_entry_data[idx].isnumeric():
+                    current_entry_data[idx] = int(current_entry_data[idx])
+
+            if current_entry_size >= len(RawMemoryDataEntry.FORMAT_BEFORE):
+                # parse before entry
+                current_entry_base_data: List[str | int] = current_entry_data[:len(RawMemoryDataEntry.FORMAT_BEFORE)]
+                current_entry_arguments_data: List[str | int] = current_entry_data[len(RawMemoryDataEntry.FORMAT_BEFORE):]
+                data = dict(zip(RawMemoryDataEntry.FORMAT_BEFORE, current_entry_base_data))
+                data |= {'args': current_entry_arguments_data,
+                         'location': Location.BEFORE}
+                before_data_entry: RawMemoryDataEntry = RawMemoryDataEntry(**data)
+
+                if current_entry_data[1] in ['free', 'delete']:
+                    # yield the profile data since free and delete don't require after entry
+                    profile_data: Dict[str, str | int] = {
+                        'workload': workload,
+                        'type': 'memory',
+                        'amount': 0,
+                        'tid': before_data_entry.tid,
+                        'uid': f'{before_data_entry.name}#{before_data_entry.parent_name}',
+                        'caller': f'{before_data_entry.parent_name}',
+                        'source-lines': before_data_entry.source_lines,
+                        'source-file': before_data_entry.source_file,
+                        'arg_value#0': before_data_entry.args[0],
+                        'arg_type#0': 'void*',
+                        'arg_name#0': 'pointer_address'
+                    }
+                    yield profile_data
+                else:
+                    # save before entry to backlog
+                    backlog.append(before_data_entry)
+
+            elif current_entry_size == len(RawMemoryDataEntry.FORMAT_AFTER):
+
+                # parse after entry
+                data: Dict[str, str | int] = dict(zip(RawMemoryDataEntry.FORMAT_AFTER, current_entry_data))
+                data |= {'location': Location.AFTER}
+                after_data_entry: RawMemoryDataEntry = RawMemoryDataEntry(**data)
+
+                # match after entry to a before entry in backlog
+                before_data_entry: RawMemoryDataEntry | None = None
+                for index in range(len(backlog) - 1, -1, -1):
+                    if backlog[index] == after_data_entry:
+                        before_data_entry = backlog[index]
+                        backlog.pop(index)
+                        break
+
+                amount_based_on_entry_name: int = 0
+                if before_data_entry.name == 'malloc':
+                    amount_based_on_entry_name = before_data_entry.args[0]
+                elif before_data_entry.name == 'calloc':
+                    amount_based_on_entry_name = before_data_entry.args[0] * before_data_entry.args[1]
+                elif before_data_entry.name == 'realloc':
+                    amount_based_on_entry_name = before_data_entry.args[1]
+                elif before_data_entry.name == 'new':
+                    amount_based_on_entry_name = before_data_entry.args[0]
+
+                arg_info_based_on_entry_name: Dict[str, List[Tuple[str, str]]] = {
+                    'malloc': [('size_t', 'size')],
+                    'calloc': [('int', 'count'), ('size_t', 'size')],
+                    'realloc': [('void*', 'pointer_address'), ('size_t', 'size')],
+                    'new': [('size_t', 'size')]
+                }
+
+                # create profile data and yield it
+                profile_data: Dict[str, int | str] = {
+                    'workload': workload,
+                    'type': 'memory',
+                    'amount': amount_based_on_entry_name,
+                    'tid': before_data_entry.tid,
+                    'uid': f'{before_data_entry.name}#{before_data_entry.parent_name}',
+                    'caller': before_data_entry.parent_name,
+                    'source-lines': before_data_entry.source_lines,
+                    'source-file': before_data_entry.source_file,
+                    'return-value': after_data_entry.return_pointer,
+                    'return-value-type': 'void*'
+                }
+                for idx, arg_value in enumerate(before_data_entry.args):
+                    argument_info: Tuple[str, str] = arg_info_based_on_entry_name[before_data_entry.name][idx]
+                    profile_data[f'arg_value#{idx}'] = arg_value
+                    profile_data[f'arg_type#{idx}'] = argument_info[0]
+                    profile_data[f'arg_name#{idx}'] = argument_info[1]
+
+                yield profile_data
+            else:
+                # TODO: exception
+                Exception('Bad pintool output format!')
+        if backlog:
+            # NOTE: currently the pintool produces additional duplicate before entries for malloc that are not closed
+            # they are safely ignored in backlog without any information loss. Similarly, for new and delete there is a
+            # duplicate call of malloc and free respectively, these are kept for time being since their parent is
+            # specified as the new or delete, therefore they don't really introduce any confusion to the profile.
+            msg_to_stdout('[Debug]: Unpaired memory entries in backlog.', 3)
+            for entry in backlog:
+                print(entry)
+
+
+def _parse_instructions_mode(dynamic_data_file: str, workload: str, program_data: ProgramData) -> Generator[Dict[str, Union[str, int]], None, None]:
+    yield {'a': 'b'}
+
+
+def parse_data(options: Dict[str, Any], dynamic_data_file: str, static_data_file: str, workload: str,
+               functions_information: list = []) -> Generator[Dict[str, Union[str, int]], None, None]:
+    """ Parses the raw data output from pin and creates Records from it
+    """
+
+    # Transform function information from DWARF debug info into a map based on name
+    function_arguments_map = {}
+    if functions_information:
+        for function_info in functions_information:
+            function_arguments_map[function_info.name] = function_info
+
+    # Parse static data
+    # Combine the data collected by PIN with the DWARF info
+    program_data: ProgramData = _parse_static_data_file(static_data_file, function_arguments_map)
+    pprint.pprint(program_data)
+
+    # Parse dynamic data
+    if options['mode'] == 'instructions':
+        yield from _parse_instructions_mode(dynamic_data_file, workload, program_data)
+    elif options['mode'] == 'memory':
+        yield from _parse_memory_mode(dynamic_data_file, workload)
+    else:
+        yield from _parse_time_mode(options, dynamic_data_file, workload, program_data)
+
+
+def _parse_raw_entry(raw_entry: str, program_data: ProgramData) -> RawTimeDataEntry:
     # TODO: update comment
-    """ Parse a single entry (line) from data collected by pin into a RawDataEntry object. 
+    """ Parse a single entry (line) from data collected by pin into a RawTimeDataEntry object.
+    For now works only with time mode.
 
     :param str raw_entry: line from data collected by pin
     :param dict functions_map: information about functions gathered from debug information
@@ -570,14 +712,14 @@ def _parse_raw_entry(raw_entry: str, program_data: ProgramData) -> RawDataEntry:
 
     entry: List[str] = raw_entry.strip().split(';')
     data: Dict[str, int] = {}
-    data |= dict(zip(RawDataEntry.FORMAT[0], [int(flag) for flag in entry[0]]))
-    data |= dict(zip(RawDataEntry.FORMAT[1:], [int(element) for element in entry[1:]]))
-    data_entry: RawDataEntry = RawDataEntry(data)
+    data |= dict(zip(RawTimeDataEntry.FORMAT[0], [int(flag) for flag in entry[0]]))
+    data |= dict(zip(RawTimeDataEntry.FORMAT[1:], [int(element) for element in entry[1:]]))
+    data_entry: RawTimeDataEntry = RawTimeDataEntry(data)
 
-    if data_entry.is_function_granularity() and len(entry) > len(RawDataEntry.FORMAT):  # There are additional function arguments
+    if data_entry.is_function_granularity() and len(entry) > len(RawTimeDataEntry.FORMAT):  # There are additional function arguments
 
         function: FunctionData = program_data.functions[data_entry.id]
-        argument_values: List[str] = entry[len(RawDataEntry.FORMAT):]  # Values of function arguments collected by PIN
+        argument_values: List[str] = entry[len(RawTimeDataEntry.FORMAT):]  # Values of function arguments collected by PIN
 
         # Assign values to the argument info collected by the pyelftools
         for argument, value in zip(function.arguments, argument_values):

@@ -13,13 +13,15 @@ int main(int argc, char* argv[]) {
     dynamicData.open(DYNAMIC_DATA_FILE);
     staticData.open(STATIC_DATA_FILE);
 
-    {% if collect_basic_blocks -%}
+    {% if collect_basic_blocks or collect_basic_blocks_only -%}
     // Register a function to be called when new trace is about to be entered. The function will instrument it.
     TRACE_AddInstrumentFunction(instrumentBasicBlocksInTrace, 0);
     {% endif -%}
 
+    {% if not collect_basic_blocks_only -%}
     // Register a function to be called when new image is loaded. The function will instrument it.
     IMG_AddInstrumentFunction(instrumentRoutinesInImage, 0);
+    {% endif %}
 
     // Register Fini to be called when the application exits
     PIN_AddFiniFunction(fini, 0);

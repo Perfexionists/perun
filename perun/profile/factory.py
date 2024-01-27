@@ -45,9 +45,10 @@ class Profile(MutableMapping[str, Any]):
         "address",
         "timestamp",
         "exclusive",
+        "return-value"
     }
-    persistent = {'trace', 'type', 'subtype', 'uid', 'location',
-                  'source-file', 'source-lines', 'caller', 'instruction-count'}
+    persistent = {"trace", "type", "subtype", "uid", "location", "return-type",
+                  "source-file", "source-lines", "caller", "instruction-count"}
     independent = [
         "structure-unit-size",
         "snapshot",

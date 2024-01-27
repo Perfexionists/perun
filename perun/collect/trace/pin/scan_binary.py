@@ -5,6 +5,7 @@ from typing import List
 
 from perun.utils.exceptions import PinBinaryScanUnsuccessful
 
+#TODO: add typing
 
 class FunctionArgument:
 
@@ -55,6 +56,8 @@ def get_function_info_from_binary(filename: str) -> List[FunctionInfo]:
         dwarf_info = elffile.get_dwarf_info()
 
         functions = []
+        functions_cnt = 0
+        function_names = set()  # tuple[name, index]
         for compilation_unite in dwarf_info.iter_CUs():
             # Start with the top Debugging Information Entry (DIE), the root for this Compile Unit's DIE tree
             try:
@@ -63,7 +66,28 @@ def get_function_info_from_binary(filename: str) -> List[FunctionInfo]:
                 #FIXME exception - this fails sometimes (needs more testing to determine when)
                 raise PinBinaryScanUnsuccessful
 
-            functions += _get_function_info_from_die(top_DIE)
+            # FIXME: temporary solution for duplicate functions
+            new_functions = _get_function_info_from_die(top_DIE)
+            for function in new_functions:
+                found = False
+                for function_name, idx in function_names:
+                    if function_name == function.name:
+                        found = True
+                        same_function = functions[idx]
+                        for arg1, arg2 in zip(same_function.arguments, function.arguments):
+                            if arg2.name != arg1.name and arg1.name == '[No name in DWARF]':
+                                functions[idx] = function
+                                break
+                        break
+                if not found:
+                    functions.append(function)
+                    functions_cnt += 1
+                    function_names.add((function.name, functions_cnt-1))
+
+
+
+
+
 
     return functions
 
@@ -121,10 +145,9 @@ def _get_function_info_from_die(die: DIE) -> List[FunctionInfo]:
     """
 
     functions_in_die = []
+
     for child in die.iter_children():
-
         if child.tag == 'DW_TAG_subprogram':
-
             # Get function name
             try:
                 function_name_attribute = child.attributes['DW_AT_name']
@@ -139,8 +162,8 @@ def _get_function_info_from_die(die: DIE) -> List[FunctionInfo]:
 
             function_info = FunctionInfo(name=function_name, arguments=function_arguments) 
             functions_in_die.append(function_info)
+    return functions_in_die
 
-    return functions_in_die 
 
 
 def _get_type_from_die(type_die: DIE) -> str:

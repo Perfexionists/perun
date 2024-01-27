@@ -378,7 +378,15 @@ def teardown(**kwargs):
     "-cbb",
     is_flag=True,
     default=False,
-    help="Collect run-times of basic blocks.",
+    help="Collect run-times of basic blocks along with run-times of functions.",
+)
+@click.option(
+    "--collect-basic-blocks-only",
+    "-cbbo",
+    is_flag=True,
+    default=False,
+    help="Collect run-times of basic blocks only and infer the function runtimes "
+         "based on basic blocks (reduces collection overhead).",
 )
 @click.option(
     "--probed",
@@ -387,6 +395,13 @@ def teardown(**kwargs):
     default=False,
     help=("Perform collection using PIN's probed mode "
           "(can't be used when collection of basic blocks is enabled) [EXPERIMENTAL]."),
+)
+@click.option(
+    "--mode",
+    "-m",
+    type=str,
+    default='time',
+    help="Select what type of data to collect ['time', 'memory', 'instructions']",
 )
 @click.pass_context
 def trace(ctx, **kwargs):

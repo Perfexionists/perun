@@ -1,4 +1,4 @@
-{%- if collect_basic_blocks %}
+{%- if collect_basic_blocks or collect_basic_blocks_only %}
 {#- NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
 VOID instrumentBasicBlocksInTrace(TRACE trace, VOID *v) {
     RTN routine = TRACE_Rtn(trace);
@@ -48,6 +48,7 @@ VOID instrumentBasicBlocksInTrace(TRACE trace, VOID *v) {
 }
 {% endif -%}
 
+{%- if not collect_basic_blocks_only %}
 VOID instrumentRoutinesInImage(IMG img, VOID* v) {
     // Skip images that are not from main executable
     if (!IMG_IsMainExecutable(img)) { return; }
@@ -137,4 +138,4 @@ VOID instrumentRoutinesInImage(IMG img, VOID* v) {
         }
     }
 }
-
+{% endif -%}

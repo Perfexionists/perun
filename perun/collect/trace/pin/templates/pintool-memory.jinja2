@@ -1,0 +1,366 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "pin.H"
+
+#define MALLOC "malloc"
+#define FREE "free"
+#define CALLOC "calloc"
+#define REALLOC "realloc"
+#define NEW "_Znwm"
+#define DELETE "_ZdlPvm"
+#define OUT_FILE_PATH "{{ dynamic_data_file }}"
+
+PIN_MUTEX outFileLock;
+std::ofstream outFile;
+
+enum Granularity { G_RTN, G_BBL };
+enum Location { L_BEFORE, L_AFTER };
+
+// Function is called when the application exits and cleans up the used resources.
+VOID fini(INT32 code, VOID* v){
+    outFile.close();
+    PIN_MutexFini(&outFileLock);
+}
+
+// --- ANALYSIS ---
+// -- malloc
+VOID rtn_analysis_before_malloc(ADDRINT routineAddress, THREADID tid, size_t *arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "malloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg // allocated size
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+VOID rtn_analysis_after_malloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "malloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // return value
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+// -- calloc
+VOID rtn_analysis_before_calloc(ADDRINT routineAddress, THREADID tid, int *arg1, size_t *arg2, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "calloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg1 // count
+            << ";" << *arg2 // size
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+VOID rtn_analysis_after_calloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "calloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // return value
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+
+// -- realloc
+VOID rtn_analysis_before_realloc(ADDRINT routineAddress, THREADID tid, void **arg1, size_t *arg2, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "realloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg1 << std::dec // reallocation pointer
+            << ";" << *arg2 // size
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+VOID rtn_analysis_after_realloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "realloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // returned pointer
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+// -- free
+VOID rtn_analysis_before_free(ADDRINT routineAddress, THREADID tid, ADDRINT **arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "free"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg << std::dec // free pointer
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+// -- new
+VOID rtn_analysis_before_new(ADDRINT routineAddress, THREADID tid, size_t *arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "new"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg // size
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+VOID rtn_analysis_after_new(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val) {
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "new"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // returned pointer
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+// -- delete
+VOID rtn_analysis_before_delete(ADDRINT routineAddress, THREADID tid, ADDRINT **arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&outFileLock);
+    outFile << routineAddress // address
+            << ";" << "delete"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg << std::dec // deleted pointer
+            << std::endl;
+    outFile.flush();
+    PIN_MutexUnlock(&outFileLock);
+}
+
+// --- INSTRUMENTATION ---
+VOID instrumentRoutinesInImage(IMG img, VOID* v) {
+    // Find the malloc() function.
+    RTN mallocRtn = RTN_FindByName(img, MALLOC);
+    if (RTN_Valid(mallocRtn)) {
+        ADDRINT mallocRtnAddress = RTN_Address(mallocRtn);
+        RTN_Open(mallocRtn);
+        RTN_InsertCall(mallocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_malloc,
+                       IARG_ADDRINT, mallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(mallocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_malloc,
+                       IARG_ADDRINT, mallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(mallocRtn);
+    }
+
+    // Find the calloc() function.
+    RTN callocRtn = RTN_FindByName(img, CALLOC);
+    if (RTN_Valid(callocRtn)) {
+        ADDRINT callocRtnAddress = RTN_Address(callocRtn);
+        RTN_Open(callocRtn);
+        RTN_InsertCall(callocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_calloc,
+                       IARG_ADDRINT, callocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 1,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(callocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_calloc,
+                       IARG_ADDRINT, callocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(callocRtn);
+    }
+
+    // Find the realloc() function.
+    RTN reallocRtn = RTN_FindByName(img, REALLOC);
+    if (RTN_Valid(reallocRtn)) {
+        ADDRINT reallocRtnAddress = RTN_Address(reallocRtn);
+        RTN_Open(reallocRtn);
+        RTN_InsertCall(reallocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_realloc,
+                       IARG_ADDRINT, reallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 1,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(reallocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_realloc,
+                       IARG_ADDRINT, reallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(reallocRtn);
+    }
+
+
+    // Find the free() function.
+    RTN freeRtn = RTN_FindByName(img, FREE);
+    if (RTN_Valid(freeRtn)) {
+        ADDRINT freeRtnAddress = RTN_Address(freeRtn);
+        RTN_Open(freeRtn);
+        RTN_InsertCall(freeRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_free,
+                       IARG_ADDRINT, freeRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_Close(freeRtn);
+    }
+
+    // NOTE: The new operator calls malloc internally so it doesn't have to be
+    // instrumented although the instrumentation works as expected, only the
+    // name of the operator is cryptic.
+    RTN newRtn = RTN_FindByName(img, NEW);
+    if (RTN_Valid(newRtn)) {
+        ADDRINT newRtnAddress = RTN_Address(newRtn);
+        RTN_Open(newRtn);
+        RTN_InsertCall(newRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_new,
+                       IARG_ADDRINT, newRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(newRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_new,
+                       IARG_ADDRINT, newRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(newRtn);
+    }
+
+    // NOTE: The delete operator calls free internally, so it doesn't have to be
+    // instrumented although the instrumentation DOESN'T work as expected because
+    // the IPOINT_AFTER instrumentation doesn't trigger. Same as above the
+    // delete operator has different cryptic name in assembly.
+    RTN deleteRtn = RTN_FindByName(img, DELETE);
+    if (RTN_Valid(deleteRtn)) {
+        ADDRINT deleteRtnAddress = RTN_Address(deleteRtn);
+        RTN_Open(deleteRtn);
+        RTN_InsertCall(deleteRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_delete,
+                       IARG_ADDRINT, deleteRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_Close(deleteRtn);
+    }
+}
+
+
+int main(int argc, char* argv[]) {
+    // Initialize symbol table code, needed for routine instrumentation
+    PIN_InitSymbols();
+
+    //Initialize mutex locks for the shared output files
+    PIN_MutexInit(&outFileLock);
+
+    // Initialize pin
+    if (PIN_Init(argc, argv)) { return 1; }
+
+    // Open output files
+    outFile.open(OUT_FILE_PATH);
+
+    // Register a function to be called when new image is loaded. The function will instrument it.
+    IMG_AddInstrumentFunction(instrumentRoutinesInImage, 0);
+
+    // Register Fini to be called when the application exits
+    PIN_AddFiniFunction(fini, 0);
+
+    // Start the program, never returns
+    PIN_StartProgram();
+    return 0;
+}

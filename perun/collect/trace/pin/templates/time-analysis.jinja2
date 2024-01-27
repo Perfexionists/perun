@@ -1,4 +1,5 @@
 {#- NOTE: Probed mode doesn't support thread IDs - the PIN_GetTid() will return process ID instead, however to preserve the output format it is used#}
+{% if not collect_basic_blocks_only %}
 // Default analysis function for routines without collecting arguments
 VOID PIN_FAST_ANALYSIS_CALL routineAnalysis(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}, UINT32 location){
     UINT64 timeStamp = 0;
@@ -13,8 +14,9 @@ VOID PIN_FAST_ANALYSIS_CALL routineAnalysis(UINT32 routineMetadataIndex{% if not
     dynamicData.flush();
     PIN_MutexUnlock(&dynamicDataLock);
 }
+{% endif %}
 
-{%- if collect_basic_blocks %}
+{%- if collect_basic_blocks or collect_basic_blocks_only %}
 {#- NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
 // Default analysis function for basic blocks
 VOID PIN_FAST_ANALYSIS_CALL basicBlockAnalysis(ADDRINT basicBlockId, THREADID tid, UINT32 location, UINT32 isFunctionEnd) {
@@ -32,7 +34,7 @@ VOID PIN_FAST_ANALYSIS_CALL basicBlockAnalysis(ADDRINT basicBlockId, THREADID ti
 }
 {% endif -%}
 
-{%- if collect_arguments %}
+{%- if collect_arguments and not collect_basic_blocks_only %}
 // --- Analysis functions for routines with argument collection ---
 {%- for function in function_arguments_info %}
 VOID PIN_FAST_ANALYSIS_CALL routineAnalysisBefore_{{ function.name }}(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}{% for arg in function.arguments %}, {{ arg.type }} *arg{{ arg.index }}{% endfor %}){

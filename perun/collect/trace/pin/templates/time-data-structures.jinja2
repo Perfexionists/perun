@@ -11,6 +11,7 @@ public:
     SourceCodeLocation(INS instruction);
 };
 
+
 class SourceFilesMap {
 public:
     std::unordered_map<std::string, UINT32> sourceFiles;
@@ -25,7 +26,7 @@ public:
     std::string dumpMap();
 };
 
-
+{% if not collect_basic_blocks_ony %}
 class RoutineMetadata {
 public:
     ADDRINT address;
@@ -35,14 +36,15 @@ public:
 
     RoutineMetadata(RTN routine);
 };
+{% endif %}
 
-{% if collect_basic_blocks %}
+{% if collect_basic_blocks or collect_basic_blocks_only %}
 class BasicBlockMetadata {
 public:
     ADDRINT address;
     std::string routineName;
     UINT32 instructionsCount;
-    std::set<INT32> sourceCodeLines;
+    std::vector<INT32> sourceCodeLines;
     UINT32 sourceCodeFileId;
     int isFunctionEnd;
 
