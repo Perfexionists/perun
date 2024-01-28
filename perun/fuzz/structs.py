@@ -9,8 +9,8 @@ import os
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.utils import decorators
+from perun.utils.external import commands
 
 
 @dataclasses.dataclass
@@ -77,7 +77,7 @@ def get_gcov_version() -> int:
 
     :return: version of the gcov
     """
-    gcov_output, _ = utils.run_safely_external_command("gcov --version")
+    gcov_output, _ = commands.run_safely_external_command("gcov --version")
     return int((gcov_output.decode("utf-8").split("\n")[0]).split()[-1][0])
 
 

@@ -43,7 +43,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import helpers
+from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
@@ -88,7 +88,7 @@ def average_amount_threshold(
     for target_uid, target_average in target_averages.items():
         baseline_average = baseline_averages.get(target_uid, None)
         if baseline_average is not None:
-            difference_ratio = helpers.safe_division(target_average, baseline_average)
+            difference_ratio = common_kit.safe_division(target_average, baseline_average)
             if difference_ratio >= DEGRADATION_THRESHOLD:
                 change = PerformanceChange.Degradation
             elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:

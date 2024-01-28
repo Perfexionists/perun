@@ -1,7 +1,6 @@
 import os
 import pytest
 
-import perun.utils.helpers as helpers
 import perun.utils.streams as streams
 import perun.logic.store as store
 import perun.logic.index as index

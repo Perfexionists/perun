@@ -6,15 +6,14 @@ import os
 import sys
 import subprocess
 import pytest
-import inspect
 
 from click.testing import CliRunner
 
-import perun.utils as utils
 import perun.cli as cli
 import perun.fuzz.evaluate.by_coverage as coverage_fuzz
 import perun.fuzz.evaluate.by_perun as perun_fuzz
 from perun.fuzz.structs import CoverageConfiguration
+from perun.utils.external import commands
 
 import perun.testing.asserts as asserts
 
@@ -41,7 +40,7 @@ def test_fuzzing_coverage(capsys):
     command = " ".join([os.path.abspath(hang_test), num_workload])
     out, _ = capsys.readouterr()
 
-    utils.run_safely_external_command(command)
+    commands.run_safely_external_command(command)
     cov = coverage_fuzz.get_coverage_from_dir(os.getcwd(), coverage_config)
     assert cov != 0
 
@@ -531,7 +530,7 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     tail = os.path.join(examples, "tail", "tail")
 
     # Test when target testing returns error
-    old_run_process = utils.run_safely_external_command
+    old_run_process = commands.run_safely_external_command
 
     def patched_run_process(*_, **__):
         caller = sys._getframe().f_back.f_code.co_name
@@ -540,13 +539,13 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
         else:
             return old_run_process(*_, **__)
 
-    old_check_output = utils.get_stdout_from_external_command
+    old_check_output = commands.get_stdout_from_external_command
 
     def patched_check_output(*_, **__):
         return "real 0.01\nuser 0.00\nsys 0.00"
 
-    monkeypatch.setattr(utils, "run_safely_external_command", patched_run_process)
-    monkeypatch.setattr(utils, "get_stdout_from_external_command", patched_check_output)
+    monkeypatch.setattr(commands, "run_safely_external_command", patched_run_process)
+    monkeypatch.setattr(commands, "get_stdout_from_external_command", patched_check_output)
     result = runner.invoke(
         cli.fuzz_cmd,
         [
@@ -566,7 +565,7 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Faults: 0" not in result.output)
-    monkeypatch.setattr(utils, "run_safely_external_command", old_run_process)
+    monkeypatch.setattr(commands, "run_safely_external_command", old_run_process)
 
     # Test when target testing returns error
     old_target_perun_testing = perun_fuzz.target_testing
@@ -595,4 +594,4 @@ def test_fuzzing_errors(pcs_with_root, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, "target_testing", old_target_perun_testing)
-    monkeypatch.setattr(utils, "get_stdout_from_external_command", old_check_output)
+    monkeypatch.setattr(commands, "get_stdout_from_external_command", old_check_output)

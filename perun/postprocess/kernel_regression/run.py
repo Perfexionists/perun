@@ -13,7 +13,7 @@ import click
 from perun.logic import runner
 from perun.postprocess.kernel_regression import methods
 from perun.postprocess.regression_analysis import data_provider, tools
-from perun.utils import cli_helpers
+from perun.utils.common import cli_kit
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:
@@ -650,7 +650,7 @@ def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:
 
 
 @click.group(invoke_without_command=True)
-@cli_helpers.resources_key_options
+@cli_kit.resources_key_options
 @click.pass_context
 def kernel_regression(ctx: click.Context, **_: Any) -> None:
     """

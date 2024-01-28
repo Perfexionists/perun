@@ -5,7 +5,7 @@ than the remaining functions. The CG Projection family originates in the CG Shap
 modifies some of the approaches.
 """
 
-from perun.utils import partition_list
+from perun.utils.common.common_kit import partition_list
 
 
 def cg_top_down(call_graph, chain_length, keep_leaf):

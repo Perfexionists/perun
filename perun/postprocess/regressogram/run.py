@@ -14,7 +14,7 @@ from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, tools
 from perun.postprocess.regressogram import methods
 from perun.profile.factory import pass_profile, Profile
-from perun.utils import cli_helpers
+from perun.utils.common import cli_kit
 from perun.utils.structs import PostprocessStatus
 
 
@@ -77,7 +77,7 @@ def postprocess(
         "for points within each bucket of regressogram."
     ),
 )
-@cli_helpers.resources_key_options
+@cli_kit.resources_key_options
 @pass_profile
 def regressogram(profile: Profile, **kwargs: Any) -> None:
     """

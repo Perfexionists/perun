@@ -13,7 +13,7 @@ from typing import Any, Iterable
 
 # Perun Imports
 from perun.postprocess.regression_analysis import tools
-from perun.utils import helpers
+from perun.utils.common import common_kit
 
 
 def specific_quad_data(
@@ -181,7 +181,7 @@ def specific_quad_error(
     sse = y_sq_sum - coeffs[0] * y_sum - coeffs[1] * xy_sum - coeffs[2] * x_sq_y_sum
 
     # Compute the r^2
-    r_square = 1 - helpers.safe_division(sse, tss)
+    r_square = 1 - common_kit.safe_division(sse, tss)
 
     # Save the data
     data = dict(sse=sse, tss=tss, r_square=r_square)

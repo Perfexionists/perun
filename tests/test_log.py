@@ -13,7 +13,7 @@ import pytest
 import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.commands as commands
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     UnsupportedModuleException,
@@ -92,7 +92,7 @@ def test_log_short(pcs_single_prof, capsys):
         assert c_short_msg in out
 
     file = os.path.join(os.getcwd(), "file3")
-    helpers.touch_file(file)
+    common_kit.touch_file(file)
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
 

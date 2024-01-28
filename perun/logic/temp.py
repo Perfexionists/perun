@@ -63,7 +63,8 @@ import zlib
 
 # Perun Imports
 from perun.logic import index, pcs, store
-from perun.utils import exceptions, helpers, log as perun_log
+from perun.utils import exceptions, log as perun_log
+from perun.utils.common import common_kit
 
 # Valid protection levels of temporary files
 UNPROTECTED, PROTECTED = "unprotected", "protected"
@@ -169,7 +170,7 @@ def touch_temp_file(file_path: str, protect: bool = False) -> None:
     # Make sure that the directory hierarchy for the file exists
     touch_temp_dir(os.path.dirname(file_path))
 
-    helpers.touch_file(file_path)
+    common_kit.touch_file(file_path)
     # Register the file as protected if needed
     if protect:
         _add_to_index(file_path, protected=protect)

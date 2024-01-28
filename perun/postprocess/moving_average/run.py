@@ -14,7 +14,7 @@ import click
 from perun.logic import runner
 from perun.postprocess.moving_average import methods
 from perun.postprocess.regression_analysis import data_provider, tools
-from perun.utils import cli_helpers
+from perun.utils.common import cli_kit
 from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:
@@ -242,7 +242,7 @@ def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
         " If the number of possible observations smaller then result is NaN."
     ),
 )
-@cli_helpers.resources_key_options
+@cli_kit.resources_key_options
 @click.pass_context
 def moving_average(ctx: click.Context, **_: Any) -> None:
     """

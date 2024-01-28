@@ -14,7 +14,7 @@ from scipy import integrate
 # Perun Imports
 from perun.check import factory
 from perun.profile.factory import Profile
-from perun.utils import helpers
+from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 import perun.check.nonparam_helpers as nparam_helpers
 
@@ -237,12 +237,12 @@ def execute_analysis(
     partial_intervals = list(np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T)
 
     change_info_enum = nparam_helpers.classify_change(
-        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
+        common_kit.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE,
         _STATS_DIFF_CHANGE,
     )
     relative_error = round(
-        helpers.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
+        common_kit.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
     )
 
     return DetectionChangeResult(change_info_enum, relative_error, partial_intervals)

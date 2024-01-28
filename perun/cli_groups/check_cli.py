@@ -10,7 +10,8 @@ import click
 
 # Perun Imports
 from perun.logic import pcs, config as perun_config
-from perun.utils import cli_helpers, log
+from perun.utils import log
+from perun.utils.common import cli_kit
 import perun.check.factory as check
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 @click.option(
     "--compute-missing",
     "-c",
-    callback=cli_helpers.set_config_option_from_flag(
+    callback=cli_kit.set_config_option_from_flag(
         perun_config.runtime, "degradation.collect_before_check"
     ),
     is_flag=True,
@@ -136,7 +137,7 @@ def check_group(**_: Any) -> None:
     required=False,
     metavar="<hash>",
     nargs=1,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     default="HEAD",
 )
 def check_head(head_minor: str = "HEAD") -> None:
@@ -161,7 +162,7 @@ def check_head(head_minor: str = "HEAD") -> None:
     required=False,
     metavar="<hash>",
     nargs=1,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     default="HEAD",
 )
 def check_all(minor_head: str = "HEAD") -> None:
@@ -185,14 +186,14 @@ def check_all(minor_head: str = "HEAD") -> None:
     required=True,
     metavar="<baseline>",
     nargs=1,
-    callback=cli_helpers.lookup_any_profile_callback,
+    callback=cli_kit.lookup_any_profile_callback,
 )
 @click.argument(
     "target_profile",
     required=True,
     metavar="<target>",
     nargs=1,
-    callback=cli_helpers.lookup_any_profile_callback,
+    callback=cli_kit.lookup_any_profile_callback,
 )
 @click.option(
     "--minor",
@@ -200,7 +201,7 @@ def check_all(minor_head: str = "HEAD") -> None:
     nargs=1,
     default=None,
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     metavar="<hash>",
     help="Will check the index of different minor version <hash> during the profile lookup.",
 )

@@ -14,9 +14,10 @@ from typing import Any, Iterable, Protocol, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import config, pcs, runner, store
 from perun.utils import decorators, log
+from perun.utils.common import common_kit
 from perun.utils.structs import (
     DetectionChangeResult,
     DegradationInfo,
@@ -222,7 +223,7 @@ def degradation_between_profiles(
     """
     # We run all degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
-        yield from utils.dynamic_module_function_call(
+        yield from common_kit.dynamic_module_function_call(
             "perun.check",
             degradation_method,
             degradation_method,

@@ -8,7 +8,7 @@ well-established Loopus tool
 
 import perun.logic.runner as runner
 import perun.utils.log as log
-from perun.utils import get_module
+from perun.utils.common.common_kit import get_module
 from perun.collect.trace.optimizations.structs import Complexity
 
 

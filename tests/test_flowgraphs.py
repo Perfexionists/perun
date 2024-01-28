@@ -6,7 +6,7 @@ from click.testing import CliRunner
 import perun.view.flow.factory as flow_factory
 import perun.testing.utils as test_utils
 from perun import cli
-from perun.utils import view_helpers
+from perun.utils.common import view_kit
 from perun.testing import asserts
 
 import bokeh.plotting as bk_plot
@@ -136,5 +136,5 @@ def test_holoviews_flow(memory_profiles):
             "amount [B]",
             "?",
         )
-        view_helpers.save_view_graph(bargraph, "flow.html", False)
+        view_kit.save_view_graph(bargraph, "flow.html", False)
         assert "flow.html" in os.listdir(os.getcwd())

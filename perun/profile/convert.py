@@ -26,8 +26,7 @@ import pandas
 # Perun Imports
 from perun.postprocess.regression_analysis import transform
 from perun.profile import query
-from perun.utils import helpers
-
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -188,7 +187,7 @@ def flatten(flattened_value: Any) -> Any:
             nested_values.append((key, value))
         # Return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
-        nested_values.sort(key=helpers.uid_getter)
+        nested_values.sort(key=common_kit.uid_getter)
         return ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(flattened_value, list):

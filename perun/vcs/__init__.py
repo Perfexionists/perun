@@ -16,9 +16,9 @@ import inspect
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.logic import pcs
 from perun.utils import decorators, log as perun_log
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion, MajorVersion
@@ -67,7 +67,9 @@ def get_minor_head() -> str:
     """
     try:
         vcs_type, vcs_url = pcs.get_vcs_type_and_url()
-        return utils.dynamic_module_function_call("perun.vcs", vcs_type, "_get_minor_head", vcs_url)
+        return common_kit.dynamic_module_function_call(
+            "perun.vcs", vcs_type, "_get_minor_head", vcs_url
+        )
     except ValueError as value_error:
         perun_log.error(f"while fetching head minor version: {value_error}")
         return ""
@@ -90,7 +92,7 @@ def init(vcs_init_params: dict[str, Any]) -> bool:
         f"Initializing {vcs_type} version control params {vcs_path} and {vcs_init_params}",
         1,
     )
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_init", vcs_path, vcs_init_params
     )
 
@@ -111,7 +113,7 @@ def walk_minor_versions(head_minor_version: str) -> Iterator[MinorVersion]:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(f"Walking minor versions of type {vcs_type}", 1)
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_walk_minor_versions", vcs_path, head_minor_version
     )
 
@@ -125,7 +127,7 @@ def walk_major_versions() -> Iterator[MajorVersion]:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(f"Walking major versions of type {vcs_type}", 1)
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_walk_major_versions", vcs_path
     )
 
@@ -151,7 +153,7 @@ def get_minor_version_info(minor_version: str) -> MinorVersion:
         f"Getting minor version info of type {vcs_type} and args {vcs_path}, {minor_version}",
         1,
     )
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_get_minor_version_info", vcs_path, minor_version
     )
 
@@ -168,7 +170,7 @@ def minor_versions_diff(baseline_minor_version: str, target_minor_version: str) 
         f"{baseline_minor_version}:{target_minor_version}",
         1,
     )
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs",
         vcs_type,
         "_minor_versions_diff",
@@ -189,7 +191,7 @@ def get_head_major_version() -> str:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     perun_log.msg_to_stdout(f"Getting head major version of type {vcs_type}", 1)
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_get_head_major_version", vcs_path
     )
 
@@ -208,7 +210,7 @@ def check_minor_version_validity(minor_version: str) -> None:
         invalid in the context of the wrapped version control system.
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    utils.dynamic_module_function_call(
+    common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_check_minor_version_validity", vcs_path, minor_version
     )
 
@@ -228,7 +230,7 @@ def massage_parameter(parameter: str, parameter_type: Optional[str] = None) -> s
     :returns: string representation of parameter
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    return utils.dynamic_module_function_call(
+    return common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_massage_parameter", vcs_path, parameter, parameter_type
     )
 
@@ -247,7 +249,7 @@ def is_dirty() -> bool:
     :return: whether the given repository is dirty or not
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    return utils.dynamic_module_function_call("perun.vcs", vcs_type, "_is_dirty", vcs_path)
+    return common_kit.dynamic_module_function_call("perun.vcs", vcs_type, "_is_dirty", vcs_path)
 
 
 class CleanState:
@@ -295,7 +297,7 @@ def save_state() -> tuple[bool, str]:
     """
     # Todo: Check the vcs.fail_when_dirty and log error in the case
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    return utils.dynamic_module_function_call("perun.vcs", vcs_type, "_save_state", vcs_path)
+    return common_kit.dynamic_module_function_call("perun.vcs", vcs_type, "_save_state", vcs_path)
 
 
 def restore_state(saved: bool, state: str) -> None:
@@ -309,7 +311,7 @@ def restore_state(saved: bool, state: str) -> None:
     :param str state: the previous state of the repository
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
-    utils.dynamic_module_function_call(
+    common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_restore_state", vcs_path, saved, state
     )
 
@@ -324,6 +326,6 @@ def checkout(minor_version: str) -> None:
     """
     vcs_type, vcs_path = pcs.get_vcs_type_and_url()
     massaged_minor_version = massage_parameter(minor_version)
-    utils.dynamic_module_function_call(
+    common_kit.dynamic_module_function_call(
         "perun.vcs", vcs_type, "_checkout", vcs_path, massaged_minor_version
     )

@@ -4,13 +4,13 @@
 import os
 import json
 
-import perun.utils as utils
 import perun.utils.log as log
 import perun.collect.trace.collect_engine as engine
 import perun.collect.trace.ebpf.program as program
 import perun.logic.temp as temp
 import perun.utils.metrics as metrics
 from perun.collect.trace.watchdog import WATCH_DOG
+from perun.utils.external import environment, processes
 
 try:
     import bcc
@@ -84,8 +84,8 @@ class BpfEngine(engine.CollectEngine):
 
         WATCH_DOG.info("Starting up the eBPF collection process.")
         # Run the new ebpf process with sudo privileges
-        current_interpreter = utils.get_current_interpreter("3.6+")
-        with utils.nonblocking_subprocess(
+        current_interpreter = environment.get_current_interpreter("3.6+")
+        with processes.nonblocking_subprocess(
             f"sudo {current_interpreter} {_get_ebpf_file()} {self.runtime_conf}",
             {},
         ) as ebpf_proc:

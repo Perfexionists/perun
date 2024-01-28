@@ -8,7 +8,8 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun.utils import view_helpers, cli_helpers, log, helpers
+from perun.utils import log
+from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException
 import perun.profile.factory as profile_factory
 import perun.view.flow.factory as flow_factory
@@ -43,7 +44,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=False,
     default="sum",
     metavar="<aggregation_function>",
-    type=click.Choice(helpers.AGGREGATIONS),
+    type=click.Choice(common_kit.AGGREGATIONS),
     is_eager=True,
 )
 @click.option(
@@ -54,7 +55,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=True,
     metavar="<of_resource_key>",
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help=(
         "Sets key that is source of the data for the flow,"
         " i.e. what will be displayed on Y axis, e.g. the amount of"
@@ -69,7 +70,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=False,
     metavar="<through_key>",
     is_eager=True,
-    callback=cli_helpers.process_continuous_key,
+    callback=cli_kit.process_continuous_key,
     default="snapshots",
     help=(
         "Sets key that is source of the data value, i.e. the"
@@ -85,7 +86,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=True,
     metavar="<by_resource_key>",
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help=(
         "For each <by_resource_key> one graph will be output, e.g."
         " for each subtype or for each location of resource."
@@ -119,7 +120,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-xl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Sets the custom label on the X axis of the flow graph.",
 )
 @click.option(
@@ -127,7 +128,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-yl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Sets the custom label on the Y axis of the flow graph.",
 )
 @click.option(
@@ -201,7 +202,7 @@ def flow(
     `flow` interpretation possibilities.
     """
     try:
-        view_helpers.process_profile_to_graphs(
+        view_kit.process_profile_to_graphs(
             flow_factory, profile, filename, view_in_browser, **kwargs
         )
     except (InvalidParameterException, AttributeError) as iap_error:

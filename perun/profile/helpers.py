@@ -26,10 +26,11 @@ import time
 # Third-Party Imports
 
 # Perun Imports
-from perun import vcs, utils
+from perun import vcs
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
-from perun.utils import decorators, helpers, log as perun_log
+from perun.utils import decorators, log as perun_log
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     InvalidParameterException,
     MissingConfigSectionException,
@@ -75,7 +76,8 @@ def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     unit_params = unit_param_map.get(unit)
     if unit_params:
         return (
-            helpers.sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0]) or "_"
+            common_kit.sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0])
+            or "_"
         )
     else:
         return "_"
@@ -141,13 +143,13 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             (
                 r"%args%",
                 lambda scanner, token: "["
-                + helpers.sanitize_filepart(lookup_value(profile["header"], "args", "_"))
+                + common_kit.sanitize_filepart(lookup_value(profile["header"], "args", "_"))
                 + "]",
             ),
             (
                 r"%workload%",
                 lambda scanner, token: "["
-                + helpers.sanitize_filepart(
+                + common_kit.sanitize_filepart(
                     os.path.split(lookup_value(profile["header"], "workload", "_"))[-1]
                 )
                 + "]",
@@ -275,7 +277,7 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
-    collector = utils.get_module(".".join(["perun.collect", job.collector.name]))
+    collector = common_kit.get_module(".".join(["perun.collect", job.collector.name]))
 
     return {
         "type": collector.COLLECTOR_TYPE,
@@ -369,7 +371,7 @@ def extract_job_from_profile(profile: profiles.Profile) -> Job:
         posts.append(Unit(postprocessor["name"], postprocessor["params"]))
 
     cmd = profile["header"]["cmd"]
-    args = helpers.get_key_with_aliases(profile["header"], ("args", "params"))
+    args = common_kit.get_key_with_aliases(profile["header"], ("args", "params"))
     workload = profile["header"]["workload"]
     executable = Executable(cmd, args, workload)
 
@@ -562,7 +564,7 @@ class ProfileInfo:
         self.time = mtime
         self.type = profile_info["header"]["type"]
         self.cmd = profile_info["header"]["cmd"]
-        self.args = helpers.get_key_with_aliases(profile_info["header"], ("args", "params"))
+        self.args = common_kit.get_key_with_aliases(profile_info["header"], ("args", "params"))
         self.workload = profile_info["header"]["workload"]
         self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [

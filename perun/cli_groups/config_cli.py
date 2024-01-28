@@ -9,7 +9,8 @@ import click
 
 # Perun Imports
 from perun.logic import commands
-from perun.utils import cli_helpers, log as perun_log
+from perun.utils import log as perun_log
+from perun.utils.common import cli_kit
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     MissingConfigSectionException,
@@ -89,7 +90,7 @@ def config(ctx: click.Context, **kwargs: Any) -> None:
     required=True,
     metavar="<key>",
     type=click.STRING,
-    callback=cli_helpers.config_key_validation_callback,
+    callback=cli_kit.config_key_validation_callback,
 )
 @click.pass_context
 def config_get(ctx: click.Context, key: str) -> None:
@@ -130,7 +131,7 @@ def config_get(ctx: click.Context, key: str) -> None:
     required=True,
     metavar="<key>",
     type=click.STRING,
-    callback=cli_helpers.config_key_validation_callback,
+    callback=cli_kit.config_key_validation_callback,
 )
 @click.argument("value", required=True, metavar="<value>")
 @click.pass_context

@@ -16,9 +16,10 @@ import re
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import pcs, config as perun_config, store, index, temp, stats
-from perun.utils import helpers, log as perun_log, timestamps
+from perun.utils import log as perun_log, timestamps
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     ExternalEditorErrorException,
@@ -26,7 +27,8 @@ from perun.utils.exceptions import (
     InvalidTempPathException,
     ProtectedTempException,
 )
-from perun.utils.helpers import (
+from perun.utils.external import commands as external_commands
+from perun.utils.common.common_kit import (
     TEXT_EMPH_COLOUR,
     TEXT_ATTRS,
     TEXT_WARN_COLOUR,
@@ -93,7 +95,7 @@ def config_edit(store_type: str) -> None:
     editor = perun_config.lookup_key_recursively("general.editor")
     config_file = pcs.get_config_file(store_type)
     try:
-        utils.run_external_command([editor, config_file])
+        external_commands.run_external_command([editor, config_file])
     except Exception as inner_exception:
         raise ExternalEditorErrorException(editor, str(inner_exception))
 
@@ -137,13 +139,13 @@ def init_perun_at(
     """
     # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, ".perun")
-    helpers.touch_dir(perun_full_path)
-    helpers.touch_dir(os.path.join(perun_full_path, "objects"))
-    helpers.touch_dir(os.path.join(perun_full_path, "jobs"))
-    helpers.touch_dir(os.path.join(perun_full_path, "logs"))
-    helpers.touch_dir(os.path.join(perun_full_path, "cache"))
-    helpers.touch_dir(os.path.join(perun_full_path, "stats"))
-    helpers.touch_dir(os.path.join(perun_full_path, "tmp"))
+    common_kit.touch_dir(perun_full_path)
+    common_kit.touch_dir(os.path.join(perun_full_path, "objects"))
+    common_kit.touch_dir(os.path.join(perun_full_path, "jobs"))
+    common_kit.touch_dir(os.path.join(perun_full_path, "logs"))
+    common_kit.touch_dir(os.path.join(perun_full_path, "cache"))
+    common_kit.touch_dir(os.path.join(perun_full_path, "stats"))
+    common_kit.touch_dir(os.path.join(perun_full_path, "tmp"))
     # If the config does not exist, we initialize the new version
     if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
@@ -179,7 +181,7 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
 
     # Check if there exists perun directory above and initialize the new pcs
     try:
-        super_perun_dir = helpers.locate_perun_dir_on(dst)
+        super_perun_dir = common_kit.locate_perun_dir_on(dst)
         is_pcs_reinitialized = super_perun_dir == dst
         if not is_pcs_reinitialized:
             perun_log.warn(f"There exists super perun directory at {super_perun_dir}")
@@ -262,7 +264,7 @@ def add(
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
         perun_log.error(
-            f"could not register {helpers.str_to_plural(added_profile_count, 'profile')}"
+            f"could not register {common_kit.str_to_plural(added_profile_count, 'profile')}"
             f" in index: {added_profile_count - profile_names_len} failed"
         )
     perun_log.info(f"successfully registered {added_profile_count} profiles in index")
@@ -290,7 +292,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
         os.remove(pending_file)
         perun_log.info(
             "{}/{} deleted {} from pending jobs".format(
-                helpers.format_counter_number(i + 1, removed_profile_number),
+                common_kit.format_counter_number(i + 1, removed_profile_number),
                 removed_profile_number,
                 perun_log.in_color(os.path.split(pending_file)[1], "grey"),
             )
@@ -298,7 +300,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
 
     if removed_profile_number:
         result_string = perun_log.in_color(
-            f"{helpers.str_to_plural(removed_profile_number, 'profile')}",
+            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}",
             "white",
             ["bold"],
         )
@@ -1221,7 +1223,7 @@ def print_formatted_temp_files(
         # Print the size of each file
         if show_size:
             perun_log.info(
-                f"{perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)}",
+                f"{perun_log.in_color(perun_log.format_file_size(size), TEXT_EMPH_COLOUR)}",
                 end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
             )
         # Print the protection level of each file
@@ -1324,7 +1326,7 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
     # Separate the results with no files since they cannot be properly sorted but still need
     # to be printed
     record_size = itemgetter(0)
-    valid_results, empty_results = utils.partition_list(
+    valid_results, empty_results = common_kit.partition_list(
         results, lambda item: record_size(item) is not None
     )
 
@@ -1343,7 +1345,7 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
 
     # Format the size so that is's suitable for output
     final_results: list[tuple[str, str, str | int]] = [
-        (utils.format_file_size(size), version, file) for size, version, file in results
+        (perun_log.format_file_size(size), version, file) for size, version, file in results
     ]
     # Print all the results
     _print_stat_objects(final_results, properties)
@@ -1356,7 +1358,7 @@ def _print_total_size(total_size: int, enabled: bool) -> None:
     :param bool enabled: a flag describing if the total size should be displayed at all
     """
     if enabled:
-        formated_total_size = utils.format_file_size(total_size)
+        formated_total_size = perun_log.format_file_size(total_size)
         perun_log.info(
             f"Total size of all the displayed files / directories: "
             f"{perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)}"

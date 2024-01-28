@@ -8,7 +8,7 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun.utils import cli_helpers, view_helpers, helpers
+from perun.utils.common import cli_kit, common_kit, view_kit
 import perun.profile.factory as profile_factory
 import perun.view.scatter.factory as scatter_factory
 
@@ -43,7 +43,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     show_default=True,
     type=str,
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Data source for the scatter plot, i.e. what will be displayed on Y axis.",
 )
 @click.option(
@@ -55,7 +55,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     show_default=True,
     type=str,
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Keys that will be displayed on X axis of the scatter plot.",
 )
 # Bokeh graph specific
@@ -71,7 +71,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-xl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Label on the X axis of the scatter plot.",
 )
 @click.option(
@@ -79,7 +79,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-yl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Label on the Y axis of the scatter plot.",
 )
 @click.option(
@@ -150,5 +150,5 @@ def scatter(
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
     for uid, graph in graphs:
-        filename_uid = f"{filename}_{helpers.sanitize_filepart(uid)}.html"
-        view_helpers.save_view_graph(graph, filename_uid, view_in_browser)
+        filename_uid = f"{filename}_{common_kit.sanitize_filepart(uid)}.html"
+        view_kit.save_view_graph(graph, filename_uid, view_in_browser)

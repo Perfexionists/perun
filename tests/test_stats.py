@@ -4,7 +4,7 @@ import pathlib
 
 import perun.logic.stats as stats
 import perun.logic.store as store
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
 import perun.logic.index as index
@@ -285,7 +285,7 @@ def test_stats_files_delete(pcs_full_no_prof):
 
     # Try to delete a custom file
     custom_f = os.path.join(pcs.get_stats_directory(), minor_head[:2], minor_head[2:], "file.txt")
-    helpers.touch_file(custom_f)
+    common_kit.touch_file(custom_f)
     _check_objects(
         [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])],
         [],
@@ -376,8 +376,8 @@ def test_stats_directories_delete(pcs_full_no_prof):
     # Create two custom empty directories, two custom files and one more version directory
     os.mkdir(os.path.join(stats_dir, custom_dir))
     os.mkdir(os.path.join(stats_dir, custom_root_dir))
-    helpers.touch_file(os.path.join(stats_dir, custom_file))
-    helpers.touch_file(os.path.join(stats_dir, custom_root_file))
+    common_kit.touch_file(os.path.join(stats_dir, custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, custom_root_file))
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_head)
     stats.add_stats("middle_stats", ["1"], [{"value": 10}], minor_middle)
     _check_objects(
@@ -399,7 +399,7 @@ def test_stats_directories_delete(pcs_full_no_prof):
     # Try to delete another custom file within version directory
     stats.add_stats("custom_stats", ["1"], [{"value": 1}], minor_root)
     stats.delete_stats_file("custom_stats", minor_root, keep_directory=True)
-    helpers.touch_file(os.path.join(stats_dir, custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, custom_file))
     _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
     stats.delete_version_dirs([custom_file], False)
     _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
@@ -476,8 +476,8 @@ def test_stats_sync(pcs_full_no_prof):
     stats.delete_stats_file("middle_stats", minor_middle, True)
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:]))
     os.makedirs(os.path.join(stats_dir, stats_custom_dir))
-    helpers.touch_file(os.path.join(stats_dir, root_custom))
-    helpers.touch_file(os.path.join(stats_dir, head_custom))
+    common_kit.touch_file(os.path.join(stats_dir, root_custom))
+    common_kit.touch_file(os.path.join(stats_dir, head_custom))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index(
@@ -538,10 +538,10 @@ def test_stats_clean(pcs_full_no_prof):
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:], "custom_dir"))
     os.makedirs(os.path.join(stats_dir, nested_custom_dir))
     os.mkdir(os.path.join(stats_dir, "custom_stats_dir"))
-    helpers.touch_file(os.path.join(stats_dir, root_custom_file))
-    helpers.touch_file(os.path.join(stats_dir, head_custom_file))
-    helpers.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
-    helpers.touch_file(os.path.join(stats_dir, root_tricky))
+    common_kit.touch_file(os.path.join(stats_dir, root_custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, head_custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
+    common_kit.touch_file(os.path.join(stats_dir, root_tricky))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index(
@@ -612,9 +612,9 @@ def test_stats_clear(pcs_full_no_prof):
     stats.delete_stats_file("middle_stats", minor_middle, True)
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:], "custom_dir"))
     os.mkdir(os.path.join(stats_dir, "custom_stats_dir"))
-    helpers.touch_file(os.path.join(stats_dir, root_custom_file))
-    helpers.touch_file(os.path.join(stats_dir, head_custom_file))
-    helpers.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
+    common_kit.touch_file(os.path.join(stats_dir, root_custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, head_custom_file))
+    common_kit.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index(

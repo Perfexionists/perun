@@ -14,7 +14,7 @@ import numpy as np
 # Perun Imports
 from perun.postprocess.regression_analysis import data_provider
 from perun.profile import query, convert
-from perun.utils import view_helpers
+from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -48,9 +48,9 @@ def create_from_params(
     :param graph_title: title of the graph.
     :returns: UID and a Scatter plot with models, if there are any.
     """
-    view_helpers.lazy_init_holoviews()
+    view_kit.lazy_init_holoviews()
 
-    y_axis_label = view_helpers.add_y_units(profile["header"], of_key, y_axis_label)
+    y_axis_label = view_kit.add_y_units(profile["header"], of_key, y_axis_label)
     for data_slice, models_slice in _generate_plot_data_slices(profile):
         # Plot the points as a scatter plot
         scatter = hv.Scatter(data_slice, (per_key, x_axis_label), (of_key, y_axis_label))

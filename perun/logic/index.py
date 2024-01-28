@@ -18,7 +18,8 @@ import zlib
 
 # Perun Imports
 from perun.logic import pcs, store
-from perun.utils import helpers, log as perun_log, timestamps
+from perun.utils import log as perun_log, timestamps
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     EntryNotFoundException,
     MalformedIndexFileException,
@@ -375,7 +376,7 @@ def touch_index(index_path: str) -> None:
     :param str index_path: path to the index
     """
     if not os.path.exists(index_path):
-        helpers.touch_file(index_path)
+        common_kit.touch_file(index_path)
 
         # create the index
         with open(index_path, "wb") as index_handle:
@@ -575,7 +576,7 @@ def register_in_minor_index(
     """
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = store.split_object_name(base_dir, minor_version)
-    helpers.touch_dir(minor_dir)
+    common_kit.touch_dir(minor_dir)
     touch_index(minor_index_file)
 
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
@@ -650,7 +651,7 @@ def remove_from_index(
 
             perun_log.info(
                 "{}/{} deregistered {} from index".format(
-                    helpers.format_counter_number(i + 1, removed_profile_number),
+                    common_kit.format_counter_number(i + 1, removed_profile_number),
                     removed_profile_number,
                     perun_log.in_color(found_entry.path, "grey"),
                 )
@@ -669,7 +670,7 @@ def remove_from_index(
         index_handle.truncate()
     if removed_profile_number:
         result_string = perun_log.in_color(
-            f"{helpers.str_to_plural(removed_profile_number, 'profile')}",
+            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}",
             "white",
             ["bold"],
         )
@@ -711,7 +712,7 @@ def get_profile_number_for_minor(base_dir: str, minor_version: str) -> dict[str,
 
     if os.path.exists(minor_index_file):
         profile_numbers_per_type = {
-            profile_type: 0 for profile_type in helpers.SUPPORTED_PROFILE_TYPES
+            profile_type: 0 for profile_type in common_kit.SUPPORTED_PROFILE_TYPES
         }
 
         with open(minor_index_file, "rb") as index_handle:
@@ -721,7 +722,7 @@ def get_profile_number_for_minor(base_dir: str, minor_version: str) -> dict[str,
 
             # Check the types of the entry
             for entry in walk_index(index_handle):
-                if entry.type in helpers.SUPPORTED_PROFILE_TYPES:
+                if entry.type in common_kit.SUPPORTED_PROFILE_TYPES:
                     profile_numbers_per_type[entry.type] += 1
             return profile_numbers_per_type
     else:
@@ -740,7 +741,7 @@ def load_custom_index(index_path: str) -> dict[Any, Any]:
     """
     # Create and init the index file if it does not exist yet
     if not os.path.exists(index_path):
-        helpers.touch_file(index_path)
+        common_kit.touch_file(index_path)
         save_custom_index(index_path, {})
     # Open and load the file
     try:

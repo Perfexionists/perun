@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import perun.view.bars.factory as bars_factory
 import perun.testing.utils as test_utils
 from perun import cli
-from perun.utils import view_helpers
+from perun.utils.common import view_kit
 from perun.testing import asserts
 
 import bokeh.plotting as bk_plot
@@ -33,7 +33,7 @@ def test_bokeh_bars(memory_profiles):
             "amount [B]",
             "test",
         )
-        view_helpers.save_view_graph(bargraph, "bars.html", False)
+        view_kit.save_view_graph(bargraph, "bars.html", False)
         assert "bars.html" in os.listdir(os.getcwd())
 
 

@@ -25,8 +25,10 @@ from perun.collect.trace.values import (
     STAP_PHASES,
 )
 
-import perun.utils as utils
+from perun.utils.common import common_kit
+import perun.utils.log as perun_log
 import perun.utils.metrics as metrics
+from perun.utils.external import commands, processes
 from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
 from perun.utils.exceptions import (
     SystemTapStartupException,
@@ -191,9 +193,9 @@ class SystemTapEngine(engine.CollectEngine):
 
         # Run the compilation process
         # Fetch the password so that the preexec_fn doesn't halt
-        utils.run_safely_external_command("sudo sleep 0")
+        commands.run_safely_external_command("sudo sleep 0")
         # Run only the first 4 phases of the stap command, before actually running the collection
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             command + " -p 4",
             {"stderr": logfile, "stdout": PIPE, "preexec_fn": os.setpgrp},
             self._terminate_process,
@@ -249,7 +251,7 @@ class SystemTapEngine(engine.CollectEngine):
         :param Configuration config: the configuration object
         """
         WATCH_DOG.info("Starting up the SystemTap collection process.")
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             command,
             {"stderr": logfile, "preexec_fn": os.setpgrp},
             self._terminate_process,
@@ -291,7 +293,7 @@ class SystemTapEngine(engine.CollectEngine):
 
             :param str data_file: the name of the output data file
             """
-            data_size = utils.format_file_size(os.stat(data_file).st_size)
+            data_size = perun_log.format_file_size(os.stat(data_file).st_size)
             WATCH_DOG.info(
                 f"Command execution status update, collected raw data size so far: {data_size}"
             )
@@ -307,7 +309,7 @@ class SystemTapEngine(engine.CollectEngine):
         # Start the profiled command
         WATCH_DOG.info(f"Launching the profiled command '{self.executable.to_escaped_string()}'")
 
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             self.executable.to_escaped_string(),
             profiled_args,
             self._terminate_process,
@@ -380,7 +382,7 @@ class SystemTapEngine(engine.CollectEngine):
             # Form the module name which consists of the base module name and stapio PID
             module_name = f"{self.stap_module}__{self.stapio}"
             # Attempts to unload the module
-            utils.run_safely_external_command(f"sudo rmmod {module_name}", False)
+            commands.run_safely_external_command(f"sudo rmmod {module_name}", False)
             if not _wait_for_resource_release(_loaded_stap_kernel_modules, [module_name]):
                 WATCH_DOG.debug(f"Unloading the kernel module '{module_name}' failed")
         finally:
@@ -399,7 +401,7 @@ def _extract_usdt_probes(binary):
 
     :return str: the decoded standard output
     """
-    out, _ = utils.run_safely_external_command(
+    out, _ = commands.run_safely_external_command(
         f'sudo stap -l \'process("{binary}").mark("*")\'', False
     )
     return out.decode("utf-8")
@@ -566,7 +568,7 @@ def _extract_processes(extract_command):
                   attributes of the extracted processes
     """
     procs = []
-    out = utils.run_safely_external_command(extract_command, False)[0].decode("utf-8")
+    out = commands.run_safely_external_command(extract_command, False)[0].decode("utf-8")
     for line in out.splitlines():
         process_record = line.split()
 
@@ -602,7 +604,7 @@ def _loaded_stap_kernel_modules(module=None):
     extractor = f"lsmod | grep {module_filter} | awk '{{print $1}}'"
 
     # Run the command and save the found modules
-    out, _ = utils.run_safely_external_command(extractor, False)
+    out, _ = commands.run_safely_external_command(extractor, False)
     # Make sure that we have a list of unique modules
     modules = set()
     for line in out.decode("utf-8").splitlines():
@@ -673,7 +675,7 @@ def _check_used_resources(locks_dir):
     modules = _loaded_stap_kernel_modules()
 
     # Partition the locks into Systemtap and module locks
-    stap_locks, mod_locks = utils.partition_list(
+    stap_locks, mod_locks = common_kit.partition_list(
         active_locks, lambda lock: lock.type == LockType.SystemTap
     )
 

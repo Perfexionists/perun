@@ -9,7 +9,7 @@ import holoviews as hv
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import view_helpers
+from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -51,7 +51,7 @@ def create_from_params(
     :param graph_title: title of the graph.
     :returns: a constructed Overlay object containing the individual Area plots.
     """
-    view_helpers.lazy_init_holoviews()
+    view_kit.lazy_init_holoviews()
 
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
@@ -60,8 +60,8 @@ def create_from_params(
     )
 
     # Obtain colours, which will be sorted in reverse
-    key_colours = view_helpers.get_unique_colours_for_(
-        data_frame, by_key, sort_color_style=view_helpers.ColourSort.REVERSE
+    key_colours = view_kit.get_unique_colours_for_(
+        data_frame, by_key, sort_color_style=view_kit.ColourSort.REVERSE
     )
 
     # Construct the Area objects and combine them into an overlay
@@ -79,7 +79,7 @@ def create_from_params(
         tools=["zoom_in", "zoom_out"],
         responsive=True,
         xlabel=x_axis_label,
-        ylabel=view_helpers.add_y_units(profile["header"], of_key, y_axis_label),
+        ylabel=view_kit.add_y_units(profile["header"], of_key, y_axis_label),
         legend_position="top_left",
     )
     return flow_graph

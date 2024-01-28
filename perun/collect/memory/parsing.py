@@ -12,7 +12,7 @@ import re
 # Perun Imports
 from perun.collect.memory import syscalls
 from perun.profile import convert
-from perun.utils import helpers
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.utils.structs import Executable
@@ -37,14 +37,14 @@ def parse_stack(stack: list[str]) -> list[dict[str, Any]]:
 
         # parsing name of function,
         # it's the first word in the call record
-        func = helpers.safe_match(PATTERN_WORD, call, "<?>")
+        func = common_kit.safe_match(PATTERN_WORD, call, "<?>")
         # demangling name of function
         func = syscalls.demangle(func)
         call_data["function"] = func
 
         # parsing instruction pointer,
         # it's the first hexadecimal number in the call record
-        instruction_pointer = helpers.safe_match(PATTERN_HEXADECIMAL, call, "<?>")
+        instruction_pointer = common_kit.safe_match(PATTERN_HEXADECIMAL, call, "<?>")
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
@@ -54,7 +54,7 @@ def parse_stack(stack: list[str]) -> list[dict[str, Any]]:
         if ip_info[1] in ["?", "??"]:
             ip_info[1] = 0
         else:
-            ip_info[1] = helpers.safe_match(PATTERN_INT, ip_info[1], "<?>")
+            ip_info[1] = common_kit.safe_match(PATTERN_INT, ip_info[1], "<?>")
 
         call_data["source"] = ip_info[0]
         call_data["line"] = int(ip_info[1])
@@ -87,12 +87,12 @@ def parse_resources(allocation: list[str]) -> dict[str, Any]:
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
-    amount = helpers.safe_match(PATTERN_INT, allocation[1], "-1")
+    amount = common_kit.safe_match(PATTERN_INT, allocation[1], "-1")
     data["amount"] = int(amount)
 
     # parsing allocate function,
     # it's the first word on the second line
-    allocator = helpers.safe_match(PATTERN_WORD, allocation[1], "<?>")
+    allocator = common_kit.safe_match(PATTERN_WORD, allocation[1], "<?>")
     data["subtype"] = allocator
 
     # parsing address of allocated memory,
@@ -165,7 +165,7 @@ def parse_log(filename: str, executable: Executable, snapshots_interval: float) 
         if time_string.find(",") > 0:
             time_string = time_string.replace(",", ".")
 
-        time = Decimal(helpers.safe_match(PATTERN_TIME, time_string, "-1"))
+        time = Decimal(common_kit.safe_match(PATTERN_TIME, time_string, "-1"))
 
         while time > interval:
             snapshots.append(data)

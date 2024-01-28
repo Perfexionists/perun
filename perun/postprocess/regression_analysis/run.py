@@ -11,7 +11,8 @@ import click
 from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, methods, regression_models, tools
 from perun.profile.factory import pass_profile, Profile
-from perun.utils import cli_helpers, metrics
+from perun.utils import metrics
+from perun.utils.common import cli_kit
 from perun.utils.structs import PostprocessStatus
 
 
@@ -119,7 +120,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     default="structure-unit-size",
     nargs=1,
     metavar="<depending_on>",
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Sets the key that will be used as a source of independent variable.",
 )
 @click.option(
@@ -129,7 +130,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     nargs=1,
     metavar="<of_resource_key>",
     default="amount",
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Sets key for which we are finding the model.",
 )
 @pass_profile

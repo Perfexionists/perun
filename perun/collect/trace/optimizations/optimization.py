@@ -3,7 +3,7 @@
 
 import collections
 
-from perun.utils.helpers import sanitize_filepart
+from perun.utils.common.common_kit import sanitize_filepart
 from perun.utils.exceptions import SuppressedExceptions
 from perun.collect.trace.optimizations.structs import (
     Optimizations,

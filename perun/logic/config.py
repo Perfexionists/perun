@@ -21,7 +21,8 @@ from ruamel.yaml import YAML, scanner, comments
 
 # Perun Imports
 from perun.logic import config_templates
-from perun.utils import decorators, exceptions, helpers, log as perun_log, streams
+from perun.utils import decorators, exceptions, log as perun_log, streams
+from perun.utils.common import common_kit
 from perun.utils.exceptions import SuppressedExceptions
 
 
@@ -196,7 +197,7 @@ def init_shared_config_at(path: str) -> None:
     """
     if not path.endswith("shared.yml") and not path.endswith("shared.yaml"):
         path = os.path.join(path, "shared.yml")
-    helpers.touch_file(path)
+    common_kit.touch_file(path)
 
     shared_config = streams.safely_load_yaml_from_stream(
         """
@@ -251,7 +252,7 @@ def init_local_config_at(
     """
     if not path.endswith("local.yml") and not path.endswith("local.yaml"):
         path = os.path.join(path, "local.yml")
-    helpers.touch_file(path)
+    common_kit.touch_file(path)
 
     # Get configuration template
     predefined_config = config_templates.get_predefined_configuration(config_template, wrapped_vcs)
@@ -357,7 +358,7 @@ def lookup_shared_config_dir() -> str:
         )
         perun_log.error(err_msg)
 
-    helpers.touch_dir(perun_config_dir)
+    common_kit.touch_dir(perun_config_dir)
     return perun_config_dir
 
 
@@ -426,7 +427,7 @@ def get_hierarchy() -> Iterable[Config]:
     """
     yield runtime()
     with SuppressedExceptions(exceptions.NotPerunRepositoryException):
-        yield local(os.path.join(helpers.locate_perun_dir_on(os.getcwd()), ".perun"))
+        yield local(os.path.join(common_kit.locate_perun_dir_on(os.getcwd()), ".perun"))
     yield shared()
 
 

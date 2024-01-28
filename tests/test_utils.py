@@ -10,14 +10,13 @@ import sys
 
 import pytest
 
-import perun.utils as utils
 import perun.vcs as vcs
 import perun.collect as collect
 import perun.postprocess as postprocess
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit, cli_kit
 import perun.testing.asserts as asserts
 import perun.utils.log as log
 from perun.utils.exceptions import (
@@ -28,8 +27,8 @@ from perun.utils.exceptions import (
 )
 from perun.collect.trace.optimizations.structs import Complexity
 
-from perun.utils.structs import Unit, OrderedEnum
-from perun.utils.helpers import HandledSignals
+from perun.utils.structs import Unit, OrderedEnum, HandledSignals
+from perun.utils.external import environment, commands as external_commands, processes, executable
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -43,9 +42,9 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = utils.get_supported_module_names(package_name)
+    registered_modules = cli_kit.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
-        module = utils.get_module(module_name)
+        module = common_kit.get_module(module_name)
         for must_have_function_name in must_have_function_names:
             assert (
                 hasattr(module, must_have_function_name)
@@ -70,12 +69,12 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
         must_have_function_names(list): list of functions that the module from package has to have
           registered
     """
-    registered_modules = utils.get_supported_module_names(package_name)
+    registered_modules = cli_kit.get_supported_module_names(package_name)
     for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
         # Each module has to have run.py module
-        module = utils.get_module(module_name)
+        module = common_kit.get_module(module_name)
         assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
-        run_module = utils.get_module(".".join([module_name, "run"]))
+        run_module = common_kit.get_module(".".join([module_name, "run"]))
         for must_have_function_name in must_have_function_names:
             assert (
                 not must_have_function_name
@@ -168,20 +167,20 @@ def test_binaries_lookup():
         "universal_newlines": True,
         "stdout": subprocess.PIPE,
     }
-    with utils.nonblocking_subprocess("make", args) as p:
+    with processes.nonblocking_subprocess("make", args) as p:
         # Verify if the call is non blocking
         for _ in p.stdout:
             pass
 
     # Find all executables in tree with build directories
-    binaries = utils.get_project_elf_executables(testdir)
+    binaries = executable.get_project_elf_executables(testdir)
     assert len(binaries) == 2
     assert binaries[0].endswith("utils_tree/build/quicksort")
     assert binaries[1].endswith("utils_tree/build/_build/quicksort")
 
     # Find all executables with debug symbols in a tree that has no build directories
     testdir2 = os.path.join(testdir, "testdir")
-    binaries2 = utils.get_project_elf_executables(testdir2, True)
+    binaries2 = executable.get_project_elf_executables(testdir2, True)
     assert len(binaries2) == 2
     assert binaries2[0].endswith("utils_tree/testdir/quicksort")
     assert binaries2[1].endswith("utils_tree/testdir/nobuild/quicksort")
@@ -193,15 +192,15 @@ def test_binaries_lookup():
 def test_size_formatting():
     """Test the file size formatting"""
     # Test small size values
-    assert utils.format_file_size(148) == "   148 B  "
-    assert utils.format_file_size(1012) == "  1012 B  "
+    assert log.format_file_size(148) == "   148 B  "
+    assert log.format_file_size(1012) == "  1012 B  "
     # Test some larger values
-    assert utils.format_file_size(23456) == "  22.9 KiB"
-    assert utils.format_file_size(1054332440) == "1005.5 MiB"
+    assert log.format_file_size(23456) == "  22.9 KiB"
+    assert log.format_file_size(1054332440) == "1005.5 MiB"
     # Test some ridiculously large values
-    assert utils.format_file_size(8273428342423) == "   7.5 TiB"
-    assert utils.format_file_size(81273198731928371) == "72.2 PiB"
-    assert utils.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
+    assert log.format_file_size(8273428342423) == "   7.5 TiB"
+    assert log.format_file_size(81273198731928371) == "72.2 PiB"
+    assert log.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
 
 
 def test_nonblocking_subprocess():
@@ -222,21 +221,21 @@ def test_nonblocking_subprocess():
     target = os.path.join(target_dir, "tst_waiting")
     # Test the subprocess interruption with default termination handler
     with pytest.raises(SystemTapScriptCompilationException) as exception:
-        with utils.nonblocking_subprocess(target, {}):
+        with processes.nonblocking_subprocess(target, {}):
             raise SystemTapScriptCompilationException("testlog", 1)
     assert "compilation failure" in str(exception.value)
 
     # Test the subprocess interruption with custom termination handler with no parameters
     proc_dict = {}
     with pytest.raises(SystemTapStartupException) as exception:
-        with utils.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
+        with processes.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
             proc_dict["pid"] = waiting_process.pid
             raise SystemTapStartupException("testlog")
     assert "startup error" in str(exception.value)
 
     # Test the subprocess interruption with custom termination handler and custom parameter
     with pytest.raises(ResourceLockedException) as exception:
-        with utils.nonblocking_subprocess(
+        with processes.nonblocking_subprocess(
             target, {}, termination_wrapper, proc_dict
         ) as waiting_process:
             proc_dict["pid"] = waiting_process.pid
@@ -253,10 +252,10 @@ def test_signal_handler():
 def test_safe_key_get():
     """Tests the get_key_with_aliases functions"""
     test_dict = {"key": 1}
-    assert helpers.get_key_with_aliases(test_dict, ("hello", "key")) == 1
-    assert helpers.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"), 2) == 2
+    assert common_kit.get_key_with_aliases(test_dict, ("hello", "key")) == 1
+    assert common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"), 2) == 2
     with pytest.raises(KeyError):
-        helpers.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"))
+        common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"))
 
 
 def test_ordered_enum():
@@ -282,8 +281,8 @@ def test_ordered_enum():
 
 def test_get_interpreter():
     """Tests that the python interpreter can be obtained in reasonable format"""
-    assert re.search("python", utils.get_current_interpreter(required_version="3+"))
-    assert re.search("python", utils.get_current_interpreter(required_version="3"))
+    assert re.search("python", environment.get_current_interpreter(required_version="3+"))
+    assert re.search("python", environment.get_current_interpreter(required_version="3"))
 
 
 def test_common(capsys):
@@ -293,17 +292,17 @@ def test_common(capsys):
         for i in range(0, 10):
             yield i
 
-    chunks = list(map(list, utils.chunkify(simple_generator(), 2)))
+    chunks = list(map(list, common_kit.chunkify(simple_generator(), 2)))
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
     with pytest.raises(UnsupportedModuleFunctionException):
-        utils.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
+        common_kit.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
 
     with pytest.raises(SystemExit):
-        utils.get_supported_module_names("nonexisting")
+        cli_kit.get_supported_module_names("nonexisting")
 
     with pytest.raises(subprocess.CalledProcessError):
-        utils.run_safely_external_command("ls -3", quiet=False, check_results=True)
+        external_commands.run_safely_external_command("ls -3", quiet=False, check_results=True)
     out, _ = capsys.readouterr()
     assert "captured stdout" in out
 

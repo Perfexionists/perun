@@ -19,7 +19,7 @@ import numpy as np
 from perun.check import fast_check, linear_regression, polynomial_regression
 from perun.postprocess.regression_analysis import regression_models
 from perun.profile import query
-from perun.utils import helpers
+from perun.utils.common import common_kit
 from perun.utils.structs import (
     PerformanceChange,
     DegradationInfo,
@@ -138,7 +138,7 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
     plotter = model_handler["transformations"]["plot_model"]
 
     array_x_pts = plotter["model_x"](
-        model.x_start, model.x_end, SAMPLES, transform_by=helpers.identity
+        model.x_start, model.x_end, SAMPLES, transform_by=common_kit.identity
     )
 
     if model.type == "quadratic":
@@ -148,7 +148,7 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
             model.b1,
             model.b2,
             plotter["formula"],
-            transform_by=helpers.identity,
+            transform_by=common_kit.identity,
         )
     else:
         array_y_pts = plotter["model_y"](
@@ -157,7 +157,7 @@ def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
             model.b1,
             plotter["formula"],
             model_handler["f_x"],
-            transform_by=helpers.identity,
+            transform_by=common_kit.identity,
         )
 
     return array_y_pts, array_x_pts

@@ -13,7 +13,8 @@ import os
 
 # Perun Imports
 from perun.logic import config
-from perun.utils import helpers, decorators
+from perun.utils import decorators
+from perun.utils.common import common_kit
 from perun.utils.exceptions import NotPerunRepositoryException
 
 
@@ -39,7 +40,7 @@ def get_path() -> str:
     :return: string path where the perun instance is located
     :raises NotPerunRepositoryException: when we cannot locate perun on the current directory tree
     """
-    return os.path.join(helpers.locate_perun_dir_on(os.getcwd()), ".perun")
+    return os.path.join(common_kit.locate_perun_dir_on(os.getcwd()), ".perun")
 
 
 @decorators.singleton
@@ -88,7 +89,7 @@ def get_object_directory() -> str:
     :returns str: directory, where the objects are stored
     """
     object_directory = os.path.join(get_path(), "objects")
-    helpers.touch_dir(object_directory)
+    common_kit.touch_dir(object_directory)
     return object_directory
 
 
@@ -99,7 +100,7 @@ def get_log_directory() -> str:
     :return str: directory, where logs are stored
     """
     logs_directory = os.path.join(get_path(), "logs")
-    helpers.touch_dir(logs_directory)
+    common_kit.touch_dir(logs_directory)
     return logs_directory
 
 
@@ -110,7 +111,7 @@ def get_job_directory() -> str:
     :returns str: directory, where job outputs are stored
     """
     jobs_directory = os.path.join(get_path(), "jobs")
-    helpers.touch_dir(jobs_directory)
+    common_kit.touch_dir(jobs_directory)
     return jobs_directory
 
 
@@ -131,7 +132,7 @@ def get_stats_directory() -> str:
     :return str: path to the statistics directory
     """
     stats_directory = os.path.join(get_path(), "stats")
-    helpers.touch_dir(stats_directory)
+    common_kit.touch_dir(stats_directory)
     return stats_directory
 
 
@@ -152,7 +153,7 @@ def get_tmp_directory() -> str:
     :return str: path to the tmp directory
     """
     tmp_directory = os.path.join(get_path(), "tmp")
-    helpers.touch_dir(tmp_directory)
+    common_kit.touch_dir(tmp_directory)
     return tmp_directory
 
 

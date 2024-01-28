@@ -19,7 +19,8 @@ import zlib
 
 # Perun Imports
 from perun.profile.factory import Profile
-from perun.utils import log, helpers
+from perun.utils import log
+from perun.utils.common import common_kit
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.utils.structs import PerformanceChange, DegradationInfo
 
@@ -106,7 +107,7 @@ def add_loose_object_to_dir(base_dir: str, object_name: str, object_content: byt
     object_dir_full_path, object_file_full_path = split_object_name(base_dir, object_name)
 
     # Create the dir
-    helpers.touch_dir(object_dir_full_path)
+    common_kit.touch_dir(object_dir_full_path)
 
     # Write the content of the object
     # Note: That in some universe, there may become some collision, but in reality it should not
@@ -229,8 +230,8 @@ def save_degradation_list_for(
 
     # Store the changes in the file
     minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
-    helpers.touch_dir(minor_dir)
-    helpers.touch_file(minor_storage_file)
+    common_kit.touch_dir(minor_dir)
+    common_kit.touch_file(minor_storage_file)
     with open(minor_storage_file, "w") as write_handle:
         write_handle.write("\n".join(to_be_stored_changes))
 
@@ -241,7 +242,7 @@ def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:
     :param str line: input line from one change log
     :return: triple (degradation info, command string, minor version)
     """
-    if tokens := helpers.LINE_PARSING_REGEX.match(line):
+    if tokens := common_kit.LINE_PARSING_REGEX.match(line):
         deg_info = DegradationInfo(
             res=PerformanceChange[tokens.group("result")],
             t=tokens.group("type"),
@@ -274,8 +275,8 @@ def load_degradation_list_for(
     :return: list of triples (DegradationInfo, command string, minor version source)
     """
     minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
-    helpers.touch_dir(minor_dir)
-    helpers.touch_file(minor_storage_file)
+    common_kit.touch_dir(minor_dir)
+    common_kit.touch_file(minor_storage_file)
     with open(minor_storage_file, "r") as read_handle:
         lines = read_handle.readlines()
 
@@ -339,7 +340,7 @@ def load_profile_from_handle(
         # Check the header, if the body is not malformed
         if (
             prefix != "profile"
-            or profile_type not in helpers.SUPPORTED_PROFILE_TYPES
+            or profile_type not in common_kit.SUPPORTED_PROFILE_TYPES
             or len(body) != int(profile_size)
         ):
             raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")

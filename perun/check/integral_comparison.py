@@ -14,7 +14,7 @@ import numpy as np
 # Perun Imports
 from perun.check import factory, nonparam_helpers as nparam_helpers
 from perun.postprocess.regression_analysis import regression_models
-from perun.utils import helpers
+from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 if TYPE_CHECKING:
@@ -108,7 +108,7 @@ def execute_analysis(
         else compute_nparam_integral(x_pts, target_y_pts)
     )
 
-    rel_error = helpers.safe_division(
+    rel_error = common_kit.safe_division(
         float(target_integral - baseline_integral), float(baseline_integral)
     )
 

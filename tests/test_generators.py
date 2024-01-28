@@ -7,7 +7,7 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 import perun.utils.decorators as decorators
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 
 from perun.utils.structs import Unit, Executable, CollectStatus, Job
 from perun.workload.integer_generator import IntegerGenerator
@@ -167,7 +167,7 @@ def _generate_temp_files(temp_dir, num):
     :param num:
     :return:
     """
-    helpers.touch_dir(temp_dir)
+    common_kit.touch_dir(temp_dir)
     for i in range(num):
         temp_file = os.path.join(temp_dir, f"tmp{num}_{num * 10}")
         with open(temp_file, "w") as tmp_handle:
@@ -188,7 +188,9 @@ def test_external_generator(monkeypatch, capsys):
     def correct_generation(*_, **__):
         _generate_temp_files(target_dir, 3)
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", correct_generation)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", correct_generation
+    )
 
     for c_status, profile in external_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
@@ -197,7 +199,7 @@ def test_external_generator(monkeypatch, capsys):
 
     # Test when values are incorrectly paired in format
     target_dir = os.path.join(os.getcwd(), "test3")
-    helpers.touch_dir(target_dir)
+    common_kit.touch_dir(target_dir)
     external_generator = ExternalGenerator(
         file_job, "generate", target_dir, "tmp{rows}_{cols}_{chars}"
     )
@@ -212,9 +214,11 @@ def test_external_generator(monkeypatch, capsys):
         raise CalledProcessError(-1, "failed")
 
     target_dir = os.path.join(os.getcwd(), "test2")
-    helpers.touch_dir(target_dir)
+    common_kit.touch_dir(target_dir)
     external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
-    monkeypatch.setattr("perun.utils.run_safely_external_command", incorrect_generation)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", incorrect_generation
+    )
     profiles = list(external_generator.generate(runner.run_collector))
     assert len(profiles) == 1
     assert len(list(profiles[0][1].all_resources())) == 0

@@ -2,7 +2,7 @@
 
 import click
 
-from perun.utils.helpers import pass_profile
+from perun.utils.common.common_kit import pass_profile
 
 
 @click.command()

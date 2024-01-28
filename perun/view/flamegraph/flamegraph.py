@@ -10,8 +10,7 @@ import subprocess
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import helpers
-
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -36,7 +35,7 @@ def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     profile_type = header["type"]
     cmd, args, workload = (
         header["cmd"],
-        helpers.get_key_with_aliases(header, ("args", "params")),
+        common_kit.get_key_with_aliases(header, ("args", "params")),
         header["workload"],
     )
     title = f"{profile_type} consumption of {cmd} {args} {workload}"

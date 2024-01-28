@@ -47,10 +47,11 @@ import zlib
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import index, pcs, store
 from perun.profile import helpers
-from perun.utils import exceptions, helpers as utils_helpers, log as perun_log
+from perun.utils import exceptions, log as perun_log
+from perun.utils.common import common_kit
 from perun.utils.exceptions import SuppressedExceptions
 
 # Match the timestamp format of the profile names
@@ -386,7 +387,7 @@ def reset_stats(keep_directories: bool = False) -> None:
         # No need to keep the version directories, simply recreate the stats directory
         stats_dir = pcs.get_stats_directory()
         shutil.rmtree(stats_dir)
-        utils_helpers.touch_dir(stats_dir)
+        common_kit.touch_dir(stats_dir)
 
 
 def clean_stats(keep_custom: bool = False, keep_empty: bool = False) -> None:
@@ -406,7 +407,7 @@ def clean_stats(keep_custom: bool = False, keep_empty: bool = False) -> None:
     if not keep_custom:
         # Get the custom files and directories in the stats directory
         _, custom = _get_versions_in_stats_directory()
-        custom_files, custom_dirs = utils.partition_list(custom, os.path.isfile)
+        custom_files, custom_dirs = common_kit.partition_list(custom, os.path.isfile)
         # Use the reversed order to minimize the number of exceptions due to already deleted files
         _delete_stats_objects(reversed(custom_dirs), reversed(custom_files))
     if not keep_empty:
@@ -498,7 +499,7 @@ def _touch_minor_stats_directory(minor_version: str) -> str:
         _add_versions_to_index([_get_version_info(store.version_path_to_sha(lower_level_dir))])
 
     # Create the directory for storing statistics in the given minor version
-    utils_helpers.touch_dir(lower_level_dir)
+    common_kit.touch_dir(lower_level_dir)
     return lower_level_dir
 
 

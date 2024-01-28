@@ -5,7 +5,7 @@ from enum import Enum
 
 from perun.collect.trace.values import Strategy, DEFAULT_SAMPLE
 from perun.utils.exceptions import SuppressedExceptions
-from perun.utils import partition_list
+from perun.utils.common.common_kit import partition_list
 
 
 # TODO: change the API of probe retrieval to something universal and practical

@@ -13,8 +13,7 @@ import os
 import pprint
 
 import perun.logic.pcs as pcs
-import perun.utils as utils
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 import perun.utils.log as perun_log
 
 
@@ -71,7 +70,7 @@ class Watchdog:
         self.__logger.propagate = False
 
         # Prepare the directory for trace logs if it does not exist yet
-        helpers.touch_dir(os.path.split(self.logfile)[0])
+        common_kit.touch_dir(os.path.split(self.logfile)[0])
         # Create the file handler, log all the DEBUG messages for detailed diagnostic
         file_handler = logging.FileHandler(self.logfile)
         file_handler.setLevel(logging.DEBUG)
@@ -179,7 +178,7 @@ class Watchdog:
             return
 
         self.info(
-            f"SystemTap script '{script}', size '{utils.format_file_size(os.stat(script).st_size)}'"
+            f"SystemTap script '{script}', size '{perun_log.format_file_size(os.stat(script).st_size)}'"
         )
         self.info(f"Number of function locations: '{func_count}', usdt locations: '{usdt_count}'")
         self.info(f"Number of probe points in the script: '{_count_script_probes(script)}'")

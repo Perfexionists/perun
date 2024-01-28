@@ -22,7 +22,7 @@ import math
 
 # Perun Imports
 from perun.postprocess.regression_analysis import tools
-from perun.utils import helpers
+from perun.utils.common import common_kit
 
 
 def generic_compute_regression(
@@ -193,11 +193,13 @@ def generic_regression_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
-    s_xy = xy_sum - helpers.safe_division(x_sum, num_sqrt) * helpers.safe_division(y_sum, num_sqrt)
-    s_xx = x_sq_sum - (helpers.safe_division(x_sum, num_sqrt) ** 2)
+    s_xy = xy_sum - common_kit.safe_division(x_sum, num_sqrt) * common_kit.safe_division(
+        y_sum, num_sqrt
+    )
+    s_xx = x_sq_sum - (common_kit.safe_division(x_sum, num_sqrt) ** 2)
 
-    b_1 = helpers.safe_division(s_xy, s_xx)
-    b_0 = helpers.safe_division(y_sum - b_1 * x_sum, pts_num)
+    b_1 = common_kit.safe_division(s_xy, s_xx)
+    b_0 = common_kit.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
     return {"coeffs": [f_a(b_0), f_b(b_1)], "s_xy": s_xy, "s_xx": s_xx}
@@ -235,13 +237,13 @@ def generic_regression_error(
     :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
-    tss = y_sq_sum - (helpers.safe_division(y_sum, num_sqrt) ** 2)
+    tss = y_sq_sum - (common_kit.safe_division(y_sum, num_sqrt) ** 2)
 
     # Compute the RSS
-    rss = helpers.safe_division(s_xy, math.sqrt(s_xx)) ** 2
+    rss = common_kit.safe_division(s_xy, math.sqrt(s_xx)) ** 2
 
     # Compute the r^2
-    r_square = helpers.safe_division(rss, tss)
+    r_square = common_kit.safe_division(rss, tss)
 
     # Save the data
     data = dict(rss=rss, tss=tss, r_square=r_square)

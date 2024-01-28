@@ -13,7 +13,8 @@ import click
 
 # Perun Imports
 from perun.logic import commands, stats, temp
-from perun.utils import cli_helpers, log as perun_log, script_helpers as scripts
+from perun.utils import log as perun_log
+from perun.utils.common import cli_kit, script_kit as scripts
 from perun.utils.exceptions import ExternalEditorErrorException
 
 
@@ -214,7 +215,7 @@ def stats_group() -> None:
     default=None,
     metavar="<hash>",
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="Show stat files starting from a certain minor version (default is HEAD).",
 )
 @click.option(
@@ -273,7 +274,7 @@ def stats_list_files(**kwargs: Any) -> None:
     default=None,
     metavar="<hash>",
     is_eager=True,
-    callback=cli_helpers.lookup_minor_version_callback,
+    callback=cli_kit.lookup_minor_version_callback,
     help="Show minor versions starting from a certain minor version (default is HEAD).",
 )
 @click.option(
@@ -321,14 +322,14 @@ def stats_delete_group() -> None:
 
 
 @stats_delete_group.command("file")
-@click.argument("name", type=click.Path(), callback=cli_helpers.lookup_stats_file_callback)
+@click.argument("name", type=click.Path(), callback=cli_kit.lookup_stats_file_callback)
 @click.option(
     "--in-minor",
     "-m",
     default=None,
     metavar="<hash>",
     is_eager=True,
-    callback=cli_helpers.check_stats_minor_callback,
+    callback=cli_kit.check_stats_minor_callback,
     help=(
         "Delete the stats file in the specified minor version (HEAD if not specified) "
         'or across all the minor versions if set to ".".'
@@ -349,7 +350,7 @@ def stats_delete_file(**kwargs: Any) -> None:
 
 
 @stats_delete_group.command("minor")
-@click.argument("version", callback=cli_helpers.check_stats_minor_callback)
+@click.argument("version", callback=cli_kit.check_stats_minor_callback)
 @click.option(
     "--keep-directory",
     "-k",

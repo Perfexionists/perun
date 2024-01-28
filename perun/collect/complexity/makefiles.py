@@ -28,8 +28,8 @@ from typing import TextIO
 # Third-Party Imports
 
 # Perun Imports
-from perun import utils
 from perun.utils import log
+from perun.utils.external import commands
 
 # Cmake constants that may be changed
 CMAKE_VERSION = "3.15.0"
@@ -113,10 +113,10 @@ def build_executable(cmake_path: str, target_name: str) -> str:
     cmake_dir = os.path.dirname(cmake_path)
 
     # Try to execute the build commands
-    returncode = utils.run_external_command(["cmake", "."], cwd=cmake_dir, stdout=DEVNULL)
+    returncode = commands.run_external_command(["cmake", "."], cwd=cmake_dir, stdout=DEVNULL)
     if returncode != 0:
         raise CalledProcessError(returncode, "cmake")
-    returncode = utils.run_external_command(["make"], cwd=cmake_dir, stdout=DEVNULL)
+    returncode = commands.run_external_command(["make"], cwd=cmake_dir, stdout=DEVNULL)
     if returncode != 0:
         raise CalledProcessError(returncode, "make")
 

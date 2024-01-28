@@ -22,8 +22,7 @@ import operator
 # Third-Party Imports
 
 # Perun Imports
-from perun.utils import helpers
-
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -49,11 +48,11 @@ def flattened_values(root_key: Any, root_value: Any) -> Iterable[tuple[str, str 
         # Additionally return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
         if isinstance(root_key, str):
-            nested_values.sort(key=helpers.uid_getter)
+            nested_values.sort(key=common_kit.uid_getter)
             yield root_key, ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     elif isinstance(root_value, list):
         # Lists that represent variable length dictionary
-        if helpers.is_variable_len_dict(root_value):
+        if common_kit.is_variable_len_dict(root_value):
             dictionary = {v["name"]: v["value"] for v in root_value}
             yield from flattened_values(root_key, dictionary)
         # Lists are merged as comma separated keys

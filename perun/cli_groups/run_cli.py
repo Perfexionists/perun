@@ -8,9 +8,9 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun import utils
 from perun.logic import config as perun_config, runner
-from perun.utils import cli_helpers, log as perun_log
+from perun.utils import log as perun_log
+from perun.utils.common import cli_kit
 from perun.utils.structs import CollectStatus
 
 
@@ -19,7 +19,7 @@ from perun.utils.structs import CollectStatus
     "--output-filename-template",
     "-ot",
     default=None,
-    callback=cli_helpers.set_config_option_from_flag(
+    callback=cli_kit.set_config_option_from_flag(
         perun_config.runtime, "format.output_profile_template", str
     ),
     help=(
@@ -35,7 +35,7 @@ from perun.utils.structs import CollectStatus
     "minor_version_list",
     nargs=1,
     multiple=True,
-    callback=cli_helpers.minor_version_list_callback,
+    callback=cli_kit.minor_version_list_callback,
     default=["HEAD"],
     help="Specifies the head minor version, for which the profiles will be collected.",
 )
@@ -55,7 +55,7 @@ from perun.utils.structs import CollectStatus
     "-f",
     is_flag=True,
     default=False,
-    callback=cli_helpers.unsupported_option_callback,
+    callback=cli_kit.unsupported_option_callback,
     help="If set to true, then even if the repository is dirty, the changes will not be stashed",
 )
 @click.pass_context
@@ -137,7 +137,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=True,
     multiple=True,
-    type=click.Choice(utils.get_supported_module_names("collect")),
+    type=click.Choice(cli_kit.get_supported_module_names("collect")),
     help="Profiler used for collection of profiling data for the given <cmd>",
 )
 @click.option(
@@ -146,7 +146,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=2,
     required=False,
     multiple=True,
-    callback=cli_helpers.yaml_param_callback,
+    callback=cli_kit.yaml_param_callback,
     help="Additional parameters for the <collector> read from the file in YAML format",
 )
 @click.option(
@@ -155,7 +155,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=1,
     required=False,
     multiple=True,
-    type=click.Choice(utils.get_supported_module_names("postprocess")),
+    type=click.Choice(cli_kit.get_supported_module_names("postprocess")),
     help=(
         "After each collection of data will run <postprocessor> to "
         "postprocess the collected resources."
@@ -167,7 +167,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     nargs=2,
     required=False,
     multiple=True,
-    callback=cli_helpers.yaml_param_callback,
+    callback=cli_kit.yaml_param_callback,
     help="Additional parameters for the <postprocessor> read from the file in YAML format",
 )
 @click.pass_context

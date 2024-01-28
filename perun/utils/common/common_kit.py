@@ -3,6 +3,8 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Optional, Any, Iterable, Callable, Literal, TYPE_CHECKING
+import importlib
+import itertools
 import operator
 import os
 import re
@@ -16,6 +18,8 @@ from perun.utils.exceptions import (
     SignalReceivedException,
     NotPerunRepositoryException,
     SuppressedExceptions,
+    UnsupportedModuleException,
+    UnsupportedModuleFunctionException,
 )
 
 if TYPE_CHECKING:
@@ -44,50 +48,34 @@ ColorChoiceType = Literal[
 ]
 AttrChoiceType = Iterable[Literal["bold", "dark", "underline", "blink", "reverse", "concealed"]]
 
-# File system specific
-READ_CHUNK_SIZE = 1024
-
 # Other constants
-MAXIMAL_LINE_WIDTH = 60
 TEXT_ATTRS: Optional[AttrChoiceType] = None
 TEXT_EMPH_COLOUR: ColorChoiceType = "green"
 TEXT_WARN_COLOUR: ColorChoiceType = "red"
-AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
+AGGREGATIONS: tuple[str, ...] = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Profile specific stuff
-SUPPORTED_PROFILE_TYPES = ["memory", "mixed", "time"]
+SUPPORTED_PROFILE_TYPES: list[str] = ["memory", "mixed", "time"]
 PROFILE_TRACKED: ColorChoiceType = "white"
 PROFILE_UNTRACKED: ColorChoiceType = "red"
-PROFILE_MALFORMED = "malformed"
 PROFILE_TYPE_COLOURS: dict[str, ColorChoiceType] = {
     "time": "blue",
     "mixed": "cyan",
     "memory": "white",
-    PROFILE_MALFORMED: "red",
 }
-PROFILE_DELIMITER = "|"
+PROFILE_DELIMITER: str = "|"
 
 HEADER_ATTRS: AttrChoiceType = ["underline"]
 HEADER_COMMIT_COLOUR: ColorChoiceType = "green"
 HEADER_INFO_COLOUR: ColorChoiceType = "white"
 HEADER_SLASH_COLOUR: ColorChoiceType = "white"
 
-DESC_COMMIT_COLOUR: ColorChoiceType = "white"
-DESC_COMMIT_ATTRS: AttrChoiceType = ["dark", "bold"]
-
-# Raw output specific thing
-RAW_KEY_COLOUR: ColorChoiceType = "magenta"
-RAW_ITEM_COLOUR: ColorChoiceType = "yellow"
-RAW_ATTRS = None
-
 # Job specific
 COLLECT_PHASE_CMD: ColorChoiceType = "blue"
 COLLECT_PHASE_WORKLOAD: ColorChoiceType = "cyan"
 COLLECT_PHASE_COLLECT: ColorChoiceType = "magenta"
 COLLECT_PHASE_POSTPROCESS: ColorChoiceType = "yellow"
-COLLECT_PHASE_ERROR: ColorChoiceType = "red"
 COLLECT_PHASE_ATTRS: Optional[AttrChoiceType] = None
-COLLECT_PHASE_ATTRS_HIGH: Optional[AttrChoiceType] = None
 
 # Degradation specific
 CHANGE_CMD_COLOUR: ColorChoiceType = "magenta"
@@ -96,9 +84,9 @@ CHANGE_TYPE_COLOURS: dict[str, ColorChoiceType] = {
     "mixed": "cyan",
     "memory": "white",
 }
-DEGRADATION_ICON = "-"
-OPTIMIZATION_ICON = "+"
-LINE_PARSING_REGEX = re.compile(
+DEGRADATION_ICON: Literal["-"] = "-"
+OPTIMIZATION_ICON: Literal["+"] = "+"
+LINE_PARSING_REGEX: re.Pattern[Any] = re.compile(
     r"(?P<location>.+)\s"
     r"PerformanceChange[.](?P<result>[A-Za-z]+)\s"
     r"(?P<type>\S+)\s"
@@ -176,84 +164,7 @@ def format_counter_number(count: int, max_number: int) -> str:
     :param int max_number: the maximal number of counter
     :return:
     """
-    return "{:{decimal_width}d}".format(count, decimal_width=len(str(max_number)))
-
-
-class HandledSignals:
-    """Context manager for code blocks that need to handle one or more signals during their
-    execution.
-
-    The CM offers a default signal handler and a default handler exception. In this scenario, the
-    code execution is interrupted when the registered signals are encountered and - if provided -
-    a callback function is invoked.
-
-    After the callback, previous signal handlers are re-registered and the CM ends. If an exception
-    not related to the signal handling was encountered, it is re-raised after resetting the signal
-    handlers and (if set) invoking the callback function.
-
-    The callback function prototype is flexible, and the required arguments can be supplied by
-    the callback_args parameter. However, it should always accept the **kwargs arguments because
-    of the exc_type, exc_val and exc_tb arguments provided by the __exit__ function. This allows
-    the programmer to decide e.g. if certain parts of the callback code should be executed, based
-    on the raised exception - or the lack of an exception, that is.
-
-    A custom signal handler function can be supplied. In this case, the prototype should oblige
-    the rules of signal handling functions: func_name(signal_number, frame). If the custom signal
-    handling function uses a different exception then the default, it should be supplied to the CM
-    as well.
-
-    :ivar list signals: the list of signals that are being handled by the CM
-    :ivar function handler: the function used to handle the registered signals
-    :ivar exception handler_exc: the exception type related to the signal handler
-    :ivar function callback: the function that is always invoked during the CM exit
-    :ivar list callback_args: arguments for the callback function
-    :ivar list old_handlers: the list of previous signal handlers
-
-    """
-
-    __slots__ = ["signals", "handler", "handler_exc", "callback", "callback_args", "old_handlers"]
-
-    def __init__(self, *signals: int, **kwargs: Any) -> None:
-        """
-        :param signals: the identification of the handled signal, 'signal.SIG_' is recommended
-        :param kwargs: additional properties of the context manager
-        """
-        self.signals = signals
-        self.handler = kwargs.get("handler", default_signal_handler)
-        self.handler_exc = kwargs.get("handler_exception", SignalReceivedException)
-        self.callback = kwargs.get("callback")
-        self.callback_args = kwargs.get("callback_args", [])
-        self.old_handlers: list[int | None | Callable[[int, Optional[types.FrameType]], Any]] = []
-
-    def __enter__(self) -> "HandledSignals":
-        """The CM entry sentinel, register the new signal handlers and store the previous ones.
-
-        :return object: the CM instance
-        """
-        for sig in self.signals:
-            self.old_handlers.append(signal.signal(sig, self.handler))
-        return self
-
-    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
-        """The CM exit sentinel, perform the callback and reset the signal handlers.
-
-        :param type exc_type: the type of the exception
-        :param exception exc_val: the value of the exception
-        :param traceback exc_tb: the traceback of the exception
-        :return bool: True if the encountered exception should be ignored, False otherwise or if
-                      no exception was raised
-        """
-        # Ignore all the handled signals temporarily
-        for sig in self.signals:
-            signal.signal(sig, signal.SIG_IGN)
-        # Perform the callback
-        if self.callback:
-            self.callback(*self.callback_args, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
-        # Reset the signal handlers
-        for sig, sig_handler in zip(self.signals, self.old_handlers):
-            signal.signal(sig, sig_handler)
-        # Re-raise exceptions not related to signal handling done by the CM (e.g., SignalReceivedE.)
-        return isinstance(exc_val, self.handler_exc)
+    return f"{count:{len(str(max_number))}d}"
 
 
 def default_signal_handler(signum: int, frame: traceback.StackSummary) -> None:
@@ -445,3 +356,138 @@ def safe_division(dividend: float, divisor: float) -> float:
         return dividend / divisor
     except (ZeroDivisionError, ValueError):
         return dividend / tools.APPROX_ZERO
+
+
+def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
+    """Slice generator into multiple generators and each generator yields up to chunk_size items.
+
+    Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
+
+    Example: chunkify(it, 100); it generates a total of 450 elements:
+        _it0: 100,
+        _it1: 100,
+        _it2: 100,
+        _it3: 100,
+        _it4: 50
+
+    :param generator generator: a generator object
+    :param int chunk_size: the maximum size of each chunk
+    :return generator: a generator object
+    """
+    for first in generator:
+        yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))
+
+
+def abs_in_absolute_range(value: float, border: float) -> bool:
+    """Tests if value is in absolute range as follows:
+
+    -border <= value <= border
+
+    :param numeric value: tests if the
+    :param numeric border:
+    :return: true if the value is in absolute range
+    """
+    return -abs(border) <= value <= abs(border)
+
+
+def abs_in_relative_range(value: float, range_val: float, range_rate: float) -> bool:
+    """Tests if value is in relative range as follows:
+
+    (1 - range_rate) * range_val <= value <= (1 + range_rate) * range_val
+
+    :param numeric value: value we are testing if it is in the range
+    :param numeric range_val: value which gives the range
+    :param float range_rate: the rate in percents which specifies the range
+    :return: true if the value is in relative range
+    """
+    range_rate = range_rate if 0.0 <= range_rate <= 1.0 else 0.0
+    return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
+
+
+def merge_dictionaries(*args: dict[Any, Any]) -> dict[Any, Any]:
+    """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
+
+    :param list args: list of dictionaries
+    :return: one merged dictionary
+    """
+    res = {}
+    for dictionary in args:
+        res.update(dictionary)
+    return res
+
+
+def partition_list(
+    input_list: Iterable[Any], condition: Callable[[Any], bool]
+) -> tuple[list[Any], list[Any]]:
+    """Utility function for list partitioning on a condition so that the list is not iterated
+    twice and the condition is evaluated only once.
+
+    Based on a SO answer featuring multiple methods and their performance comparison:
+    'https://stackoverflow.com/a/31448772'
+
+    :param iterator input_list: the input list to be partitioned
+    :param function condition: the condition that should be evaluated on every list item
+    :return tuple: (list of items evaluated to True, list of items evaluated to False)
+    """
+    good, bad = [], []
+    for item in input_list:
+        if condition(item):
+            good.append(item)
+        else:
+            bad.append(item)
+    return good, bad
+
+
+def dynamic_module_function_call(
+    package_name: str, module_name: str, fun_name: str, *args: Any, **kwargs: Any
+) -> Any:
+    """Dynamically calls the function from other package with given arguments
+
+    Looks up dynamically the module of the @p module_name inside the @p package_name
+    package and calls its function @p fun_name with positional *args and keyword
+    **kwargs.
+
+    In case the module or function is missing, error is returned and program ends
+    TODO: Add dynamic checking for the possible malicious code
+
+    :param str package_name: name of the package, where the function we are calling is
+    :param str module_name: name of the module, to which the function corresponds
+    :param str fun_name: name of the function we are dynamically calling
+    :param list args: list of non-keyword arguments
+    :param dict kwargs: dictionary of keyword arguments
+    :return: whatever the wrapped function returns
+    """
+    function_location_path = ".".join([package_name, module_name])
+    try:
+        module = get_module(function_location_path)
+        module_function = getattr(module, fun_name)
+        return module_function(*args, **kwargs)
+    # Simply pass these exceptions higher however with different flavours:
+    # 1) When Import Error happens, this means, that some module is not found in Perun hierarchy,
+    #   hence, we are trying to call some collector/visualizer/postprocessor/vcs, which is not
+    #   implemented in Perun.
+    #
+    # 2) When Attribute Error happens, this means, that we have found supported module, but, there
+    #   is some functionality, that is missing in the module.
+    #
+    # Why reraise the exceptions? Because it is up to the higher levels to catch these exceptions
+    # and handle the errors their way. It should be different in CLI and in GUI, and they should
+    # be caught in right places.
+    except ImportError:
+        raise UnsupportedModuleException(module_name)
+    except AttributeError:
+        raise UnsupportedModuleFunctionException(fun_name, function_location_path)
+
+
+def get_module(module_name: str) -> types.ModuleType:
+    """Finds module by its name.
+
+    :param str module_name: dynamically load a module (but first check the cache)
+    :return: loaded module
+    """
+    if module_name not in MODULE_CACHE.keys():
+        MODULE_CACHE[module_name] = importlib.import_module(module_name)
+    return MODULE_CACHE[module_name]
+
+
+MODULE_CACHE: dict[str, types.ModuleType] = {}

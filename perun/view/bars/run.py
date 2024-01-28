@@ -10,7 +10,8 @@ import click
 # Perun Imports
 import perun.view.bars.factory as bars_factory
 import perun.profile.factory as profile_factory
-from perun.utils import cli_helpers, view_helpers, log, helpers
+from perun.utils import log
+from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException
 
 
@@ -43,7 +44,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=False,
     default="sum",
     metavar="<aggregation_function>",
-    type=click.Choice(helpers.AGGREGATIONS),
+    type=click.Choice(common_kit.AGGREGATIONS),
 )
 @click.option(
     "--of",
@@ -53,7 +54,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     required=True,
     metavar="<of_resource_key>",
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.",
 )
 @click.option(
@@ -64,7 +65,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     nargs=1,
     metavar="<per_resource_key>",
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Sets key that is source of values displayed on X axis of the bar graph.",
 )
 @click.option(
@@ -75,7 +76,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     nargs=1,
     metavar="<by_resource_key>",
     is_eager=True,
-    callback=cli_helpers.process_resource_key_param,
+    callback=cli_kit.process_resource_key_param,
     help="Sets the key that will be used either for stacking or grouping of values",
 )
 @click.option(
@@ -108,7 +109,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-xl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Sets the custom label on the X axis of the bar graph.",
 )
 @click.option(
@@ -116,7 +117,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     "-yl",
     metavar="<text>",
     default=None,
-    callback=cli_helpers.process_bokeh_axis_title,
+    callback=cli_kit.process_bokeh_axis_title,
     help="Sets the custom label on the Y axis of the bar graph.",
 )
 @click.option(
@@ -189,7 +190,7 @@ def bars(
     `bars` interpretation possibilities.
     """
     try:
-        view_helpers.process_profile_to_graphs(
+        view_kit.process_profile_to_graphs(
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except (InvalidParameterException, AttributeError) as iap_error:

@@ -64,7 +64,7 @@ import jinja2
 
 # Perun Imports
 from perun.utils import log
-from perun import utils
+from perun.utils.external import commands
 
 
 CONFIG_FILE_STRING = """
@@ -388,7 +388,7 @@ class UserConfiguration(DeveloperConfiguration):
         log.info("Looking up candidate executables")
         log.info("Try to compile binaries for the project by running make")
         try:
-            utils.run_safely_list_of_commands(["make"])
+            commands.run_safely_list_of_commands(["make"])
         except subprocess.CalledProcessError:
             log.info("Nothing to make...")
         executable_candidates = []

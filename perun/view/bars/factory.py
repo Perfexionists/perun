@@ -9,7 +9,7 @@ import holoviews as hv
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils import view_helpers
+from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -43,7 +43,7 @@ def create_from_params(
     :param graph_title: title of the graph.
     :returns: a constructed and configured Bar graph object.
     """
-    view_helpers.lazy_init_holoviews()
+    view_kit.lazy_init_holoviews()
 
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
@@ -62,11 +62,11 @@ def create_from_params(
     bars.opts(
         title=graph_title,
         xlabel=x_axis_label,
-        ylabel=view_helpers.add_y_units(profile["header"], of_key, y_axis_label),
+        ylabel=view_kit.add_y_units(profile["header"], of_key, y_axis_label),
         tools=["zoom_in", "zoom_out", "hover"],
         responsive=True,
         bar_width=1.0,
-        color=hv.Cycle(view_helpers.get_unique_colours_for_(data_frame, by_key)),
+        color=hv.Cycle(view_kit.get_unique_colours_for_(data_frame, by_key)),
         stacked=grouping_type == "stacked",
         multi_level=False,
     )

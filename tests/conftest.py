@@ -10,7 +10,7 @@ import git
 
 from typing import Iterable, Callable
 
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store
@@ -272,21 +272,21 @@ def pcs_with_degradations():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    helpers.touch_file(file1)
+    common_kit.touch_file(file1)
     repo.index.add([file1])
     root = repo.index.commit("root")
 
     # Create second commit
     repo.git.checkout("-b", "develop")
     file2 = os.path.join(pcs_path, "file2")
-    helpers.touch_file(file2)
+    common_kit.touch_file(file2)
     repo.index.add([file2])
     middle_head = repo.index.commit("second commit")
 
     # Create third commit
     repo.git.checkout(git_default_branch_name)
     file3 = os.path.join(pcs_path, "file3")
-    helpers.touch_file(file3)
+    common_kit.touch_file(file3)
     repo.index.add([file3])
     repo.index.commit("parallel commit")
     repo.git.merge("--no-ff", "develop")
@@ -328,12 +328,12 @@ def pcs_single_prof(stored_profile_pool):
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    helpers.touch_file(file1)
+    common_kit.touch_file(file1)
     repo.index.add([file1])
 
     # Create second commit
     file2 = os.path.join(pcs_path, "file2")
-    helpers.touch_file(file2)
+    common_kit.touch_file(file2)
     repo.index.add([file2])
     current_head = repo.index.commit("second commit")
 
@@ -376,13 +376,13 @@ def pcs_full(stored_profile_pool):
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    helpers.touch_file(file1)
+    common_kit.touch_file(file1)
     repo.index.add([file1])
     root = repo.index.commit("root")
 
     # Create second commit
     file2 = os.path.join(pcs_path, "file2")
-    helpers.touch_file(file2)
+    common_kit.touch_file(file2)
     repo.index.add([file2])
     current_head = repo.index.commit("second commit")
 
@@ -429,19 +429,19 @@ def pcs_full_no_prof():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    helpers.touch_file(file1)
+    common_kit.touch_file(file1)
     repo.index.add([file1])
     repo.index.commit("root")
 
     # Create second commit
     file2 = os.path.join(pcs_path, "file2")
-    helpers.touch_file(file2)
+    common_kit.touch_file(file2)
     repo.index.add([file2])
     repo.index.commit("second commit")
 
     # Create third commit
     file3 = os.path.join(pcs_path, "file3")
-    helpers.touch_file(file3)
+    common_kit.touch_file(file3)
     repo.index.add([file3])
     repo.index.commit("third commit")
 
@@ -488,7 +488,7 @@ def pcs_with_root():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    helpers.touch_file(file1)
+    common_kit.touch_file(file1)
     repo.index.add([file1])
     repo.index.commit("root")
 

@@ -9,8 +9,7 @@ from click.testing import CliRunner
 import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
-import perun.utils as utils
-import perun.utils.helpers as helpers
+from perun.utils.common import common_kit
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
@@ -21,6 +20,7 @@ from subprocess import SubprocessError
 
 from perun.profile.factory import Profile
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
+from perun.utils.external import commands
 from perun.workload.integer_generator import IntegerGenerator
 from subprocess import CalledProcessError
 
@@ -147,12 +147,12 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     def mocked_safe_external(*_, **__):
         return b"", b""
 
-    old_run = utils.run_external_command
+    old_run = commands.run_external_command
     old_cfg = configurator.create_runtime_config
-    old_safe_run = utils.run_safely_external_command
-    monkeypatch.setattr(utils, "run_external_command", _mocked_always_correct)
+    old_safe_run = commands.run_safely_external_command
+    monkeypatch.setattr(commands, "run_external_command", _mocked_always_correct)
     monkeypatch.setattr(configurator, "create_runtime_config", _mocked_always_correct)
-    monkeypatch.setattr(utils, "run_safely_external_command", mocked_safe_external)
+    monkeypatch.setattr(commands, "run_safely_external_command", mocked_safe_external)
 
     # Get the job.yml parameters
     script_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_complexity", "target")
@@ -189,7 +189,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
         else:
             return 0
 
-    monkeypatch.setattr(utils, "run_external_command", _mocked_external_command)
+    monkeypatch.setattr(commands, "run_external_command", _mocked_external_command)
     command = (
         [f"-c{job_params['target_dir']}", "complexity", f"-t{job_params['target_dir']}"]
         + files
@@ -200,12 +200,12 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     asserts.predicate_from_cli(
         result, "Command 'cmake' returned non-zero exit status 1" in result.output
     )
-    monkeypatch.setattr(utils, "run_external_command", mocked_make)
+    monkeypatch.setattr(commands, "run_external_command", mocked_make)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(
         result, "Command 'make' returned non-zero exit status 1" in result.output
     )
-    monkeypatch.setattr(utils, "run_external_command", _mocked_always_correct)
+    monkeypatch.setattr(commands, "run_external_command", _mocked_always_correct)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
@@ -221,7 +221,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
 
     # Simulate the failure of output processing
     # We mock some data to trace.log
-    helpers.touch_dir(os.path.join(job_params["target_dir"], "bin"))
+    common_kit.touch_dir(os.path.join(job_params["target_dir"], "bin"))
     with open(os.path.join(job_params["target_dir"], "bin", "trace.log"), "w") as mock_handle:
         mock_handle.write("a b c d\na b c d")
     old_record_processing = complexity._process_file_record
@@ -250,13 +250,13 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     def mock_raised_exception(*_, **__):
         raise CalledProcessError(-1, "failed")
 
-    monkeypatch.setattr(utils, "run_safely_external_command", mock_raised_exception)
+    monkeypatch.setattr(commands, "run_safely_external_command", mock_raised_exception)
     status, msg, _ = complexity.collect(Executable("pikachu"))
     assert status == CollectStatus.ERROR
     assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
-    monkeypatch.setattr(utils, "run_external_command", old_run)
-    monkeypatch.setattr(utils, "run_safely_external_command", old_safe_run)
+    monkeypatch.setattr(commands, "run_external_command", old_run)
+    monkeypatch.setattr(commands, "run_safely_external_command", old_safe_run)
     monkeypatch.setattr(configurator, "create_runtime_config", old_cfg)
 
 
@@ -428,12 +428,14 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
     assert status == CollectStatus.OK
     assert len(prof["global"]["resources"]) == 8
 
-    original_function = utils.run_safely_external_command
+    original_function = commands.run_safely_external_command
 
     def before_returning_error(cmd, **kwargs):
         raise SubprocessError("something happened")
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", before_returning_error
+    )
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
 
@@ -443,7 +445,9 @@ def test_collect_bounds(monkeypatch, pcs_with_root):
         else:
             original_function(cmd, **kwargs)
 
-    monkeypatch.setattr("perun.utils.run_safely_external_command", collect_returning_error)
+    monkeypatch.setattr(
+        "perun.utils.external.commands.run_safely_external_command", collect_returning_error
+    )
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR

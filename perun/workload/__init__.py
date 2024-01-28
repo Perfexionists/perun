@@ -14,10 +14,9 @@ You can use some basic generators specified in shared configurations called ``ba
 """
 from __future__ import annotations
 
-import perun.logic.config as config
-import perun.utils as utils
-
+from perun.logic import config
 from perun.utils import log, decorators
+from perun.utils.common import common_kit
 from perun.utils.structs import GeneratorSpec
 
 
@@ -49,7 +48,7 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
         generator_module = f"perun.workload.{spec['type'].lower()}_generator"
         constructor_name = f"{spec['type'].title()}Generator"
         try:
-            constructor = getattr(utils.get_module(generator_module), constructor_name)
+            constructor = getattr(common_kit.get_module(generator_module), constructor_name)
             spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
             log.info(".", end="")
         except (ImportError, AttributeError):

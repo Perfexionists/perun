@@ -10,10 +10,11 @@ import os
 import jinja2
 
 # Perun Imports
-from perun import utils
 from perun.logic import config
-from perun.utils import helpers, log
+from perun.utils import log
+from perun.utils.common import common_kit
 from perun.utils.exceptions import ExternalEditorErrorException
+from perun.utils.external import commands
 
 
 def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) -> None:
@@ -63,7 +64,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
     if "__init__" in "".join(list_of_templates):
         # We will initialize it in the isolate package
         target_dir = os.path.join(perun_dev_dir, template_type, kwargs["unit_name"])
-        helpers.touch_dir(target_dir)
+        common_kit.touch_dir(target_dir)
     else:
         target_dir = os.path.join(perun_dev_dir, template_type)
     log.info(f"Initializing new {template_type} module in {target_dir}")
@@ -89,9 +90,9 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         log.info("]")
 
     # Add the registration point to the set of file
-    successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "__init__.py"))
+    successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "../__init__.py"))
     if template_type in ("postprocess", "collect", "view"):
-        successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "__init__.py"))
+        successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "../__init__.py"))
     log.info(
         f"Please register your new module in '{template_type}/__init__.py' and/or 'utils/__init__.py'"
     )
@@ -101,6 +102,6 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         editor = config.lookup_key_recursively("general.editor")
         log.info(f"Opening created files and registration point in {editor}")
         try:
-            utils.run_external_command([editor] + successfully_created_files[::-1])
+            commands.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:
             raise ExternalEditorErrorException(editor, str(inner_exception))

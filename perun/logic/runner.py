@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
 import distutils.util as dutils
 import os
 import signal
@@ -12,22 +12,24 @@ import subprocess
 import click
 
 # Perun Imports
-from perun import utils, vcs
+from perun import vcs
 from perun.logic import commands, config, index, pcs
-from perun.utils import decorators, helpers, log, streams
+from perun.utils import decorators, log, streams
+from perun.utils.common import common_kit
 from perun.utils.exceptions import SignalReceivedException
-from perun.utils.helpers import (
+from perun.utils.external import commands as external_commands
+from perun.utils.common.common_kit import (
     COLLECT_PHASE_CMD,
     COLLECT_PHASE_COLLECT,
     COLLECT_PHASE_POSTPROCESS,
     COLLECT_PHASE_WORKLOAD,
     ColorChoiceType,
-    HandledSignals,
 )
 from perun.utils.structs import (
     CollectStatus,
     Executable,
     GeneratorSpec,
+    HandledSignals,
     Job,
     MinorVersion,
     PostprocessStatus,
@@ -146,7 +148,7 @@ def load_job_info_from_config() -> dict[str, Any]:
 
     info = {
         "cmd": local_config["cmds"],
-        "args": helpers.get_key_with_aliases(local_config, ("args", "params"), default=[]),
+        "args": common_kit.get_key_with_aliases(local_config, ("args", "params"), default=[]),
         "workload": local_config.get("workloads", [""]),
         "postprocessor": [post.get("name", "") for post in postprocessors],
         "collector": [collect.get("name", "") for collect in collectors],
@@ -161,6 +163,46 @@ def load_job_info_from_config() -> dict[str, Any]:
     return info
 
 
+@overload
+def create_empty_pass(
+    return_code: CollectStatus,
+) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning CollectStatus"""
+    pass
+
+
+@overload
+def create_empty_pass(
+    return_code: PostprocessStatus,
+) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning PostProcessStatus"""
+    pass
+
+
+def create_empty_pass(
+    return_code: CollectStatus | PostprocessStatus,
+) -> Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]]:
+    """Returns a function which will do nothing
+
+    This is used to handle collectors and postprocessors that do not have before or after phases.
+
+    :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
+    :return: function that does nothing
+    """
+
+    def empty_pass(
+        **kwargs: Any,
+    ) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
+        """Empty collection or postprocessing phase, doing nothing
+
+        :param dict kwargs: arguments of the phase
+        :return: return code, empty return message, non-modified arguments
+        """
+        return return_code, "", kwargs
+
+    return empty_pass
+
+
 def run_phase_function(report: RunnerReport, phase: str) -> None:
     """Runs the concrete phase function of the runner (collector or postprocessor)
 
@@ -173,7 +215,7 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     """
     phase_function: Callable[
         ..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]
-    ] = getattr(report.runner, phase, utils.create_empty_pass(report.ok_status))
+    ] = getattr(report.runner, phase, create_empty_pass(report.ok_status))
     runner_verb = report.runner_type[:-2]
     report.phase = phase
     try:
@@ -183,8 +225,8 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     except Exception as exc:
         report.status = report.error_status
         report.exception = exc
-        report.message = "error while {}{} phase: {}".format(
-            phase, ("_" + runner_verb) * (phase != runner_verb), str(exc)
+        report.message = (
+            f"error while {phase}{('_' + runner_verb) * (phase != runner_verb)} phase: {exc}"
         )
 
 
@@ -299,13 +341,13 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
 
     try:
-        collector_module = utils.get_module(f"perun.collect.{collector.name}.run")
+        collector_module = common_kit.get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
         log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = utils.merge_dictionaries(job._asdict(), collector.params)
+    job_params = common_kit.merge_dictionaries(job._asdict(), collector.params)
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
@@ -367,7 +409,7 @@ def run_postprocessor(
     )
 
     try:
-        postprocessor_module = utils.get_module(f"perun.postprocess.{postprocessor.name}.run")
+        postprocessor_module = common_kit.get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
         log.error(
             f"{postprocessor.name} postprocessor does not exist",
@@ -376,7 +418,9 @@ def run_postprocessor(
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
-    job_params = utils.merge_dict_range(job._asdict(), {"profile": prof}, postprocessor.params)
+    job_params = common_kit.merge_dictionaries(
+        job._asdict(), {"profile": prof}, postprocessor.params
+    )
     postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:
@@ -463,7 +507,7 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
         log.cprint(f"Running '{phase}' phase", phase_colour)
         log.newline()
         try:
-            utils.run_safely_list_of_commands(cmds)
+            external_commands.run_safely_list_of_commands(cmds)
         except subprocess.CalledProcessError as exception:
             error_command = str(exception.cmd)
             error_code = exception.returncode

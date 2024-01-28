@@ -13,8 +13,8 @@ from typing import Any, Iterable, TYPE_CHECKING
 from scipy import stats
 
 # Perun Imports
-from perun import utils
 from perun.check import fast_check, general_detection as detect
+from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 
 if TYPE_CHECKING:
@@ -77,22 +77,26 @@ def exec_linear_regression(
     change_type = ""
     if baseline_model.type == "linear" or baseline_model.type == "constant":
         if (
-            utils.abs_in_absolute_range(gradient, threshold)
+            common_kit.abs_in_absolute_range(gradient, threshold)
             and isinstance(diff_b0, float)
-            and utils.abs_in_relative_range(diff_b0, intercept, 0.05)
+            and common_kit.abs_in_relative_range(diff_b0, intercept, 0.05)
             and abs(diff_b0 - intercept) < 0.000000000001
         ):
             change_type = "constant"
-        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95:
+        elif (
+            common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95
+        ):
             change_type = "linear"
     else:
         if (
-            utils.abs_in_absolute_range(gradient, threshold)
+            common_kit.abs_in_absolute_range(gradient, threshold)
             and isinstance(diff_b0, float)
-            and utils.abs_in_relative_range(diff_b0, intercept, 0.05)
+            and common_kit.abs_in_relative_range(diff_b0, intercept, 0.05)
         ):
             change_type = "constant"
-        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95:
+        elif (
+            common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95
+        ):
             change_type = "linear"
 
     std_err_profile = fast_check.exec_fast_check(

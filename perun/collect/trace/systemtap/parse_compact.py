@@ -17,7 +17,7 @@ from perun.collect.trace.watchdog import WATCH_DOG
 import perun.collect.trace.values as vals
 from perun.collect.trace.optimizations.call_graph import CallGraphResource
 from perun.collect.trace.optimizations.optimization import build_stats_names
-from perun.utils import chunkify
+from perun.utils.common.common_kit import chunkify
 from perun.utils.exceptions import (
     SignalReceivedException,
     StatsFileNotFoundException,

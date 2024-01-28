@@ -10,7 +10,7 @@ from perun.collect.trace.probes import Probes
 from perun.collect.trace.values import OutputHandling
 
 from perun.utils.exceptions import InvalidBinaryException
-from perun.utils import find_executable
+from perun.utils.external.executable import find_executable
 from perun.logic import temp
 
 
