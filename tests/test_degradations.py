@@ -13,6 +13,8 @@ import perun.check.methods.best_model_order_equality as bmoe
 import perun.check.methods.fast_check as fast
 import perun.check.methods.exclusive_time_outliers as eto
 
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
+
 
 def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
     """Set of basic tests for testing degradation in concrete minor version point
@@ -216,3 +218,9 @@ def test_strategies():
         "cmd": "bogus",
     }
     assert not check.is_rule_applicable_for(rule, profile)
+
+
+def test_base_check():
+    """Dummy test, that base selection is correctly installed and cannot be instantiated"""
+    with pytest.raises(TypeError):
+        _ = AbstractBaseChecker()
