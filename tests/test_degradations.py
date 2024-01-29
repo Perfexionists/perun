@@ -74,7 +74,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
     assert err == ""
 
 
-def test_degradation_in_history(pcs_with_degradations, monkeypatch):
+def test_degradation_in_history(pcs_with_degradations):
     """Set of basic tests for testing degradation in while history
 
     Expects correct behaviour
