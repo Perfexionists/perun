@@ -22,7 +22,7 @@ from perun.logic import config
 from perun.postprocess.regression_analysis import regression_models
 from perun.profile import convert, query
 from perun.utils import log
-import perun.check.general_detection as detection
+import perun.check.detection_kit as detection
 import perun.postprocess.regressogram.methods as nparam_methods
 
 if TYPE_CHECKING:

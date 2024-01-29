@@ -13,7 +13,7 @@ import numpy as np
 
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
-from perun.check import factory, nonparam_helpers as nparam_helpers
+from perun.check import factory, nonparam_kit as nparam_helpers
 from perun.postprocess.regression_analysis import regression_models
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult

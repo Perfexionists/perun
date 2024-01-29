@@ -17,7 +17,7 @@ from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.profile.factory import Profile
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
-import perun.check.nonparam_helpers as nparam_helpers
+import perun.check.nonparam_kit as nparam_helpers
 
 if TYPE_CHECKING:
     import numpy.typing as npt

@@ -16,7 +16,7 @@ import numpy as np
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.logic import runner
 from perun.utils.structs import DegradationInfo, ClassificationMethod
-import perun.check.general_detection as detect
+import perun.check.detection_kit as detect
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

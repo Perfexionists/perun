@@ -49,7 +49,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.utils.structs import DegradationInfo, PerformanceChange
-import perun.check.general_detection as detection
+import perun.check.detection_kit as detection
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile

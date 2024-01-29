@@ -13,7 +13,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 from scipy import stats
 
 # Perun Imports
-from perun.check import general_detection as detect
+from perun.check import detection_kit as detect
 from perun.check.methods import fast_check
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.utils.common import common_kit
