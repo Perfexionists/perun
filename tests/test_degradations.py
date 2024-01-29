@@ -8,10 +8,10 @@ import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.check.factory as check
-import perun.check.average_amount_threshold as aat
-import perun.check.best_model_order_equality as bmoe
-import perun.check.fast_check as fast
-import perun.check.exclusive_time_outliers as eto
+import perun.check.methods.average_amount_threshold as aat
+import perun.check.methods.best_model_order_equality as bmoe
+import perun.check.methods.fast_check as fast
+import perun.check.methods.exclusive_time_outliers as eto
 
 
 def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):

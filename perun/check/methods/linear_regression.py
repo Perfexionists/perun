@@ -13,7 +13,8 @@ from typing import Any, Iterable, TYPE_CHECKING
 from scipy import stats
 
 # Perun Imports
-from perun.check import fast_check, general_detection as detect
+from perun.check import general_detection as detect
+from perun.check.methods import fast_check
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 

@@ -7,10 +7,10 @@ from __future__ import annotations
 # Perun Imports
 from perun.utils.structs import DegradationInfo
 from perun.utils.structs import PerformanceChange as pc
-import perun.check.integral_comparison as int_cmp
-import perun.check.linear_regression as lreg
-import perun.check.local_statistics as loc_stat
-import perun.check.polynomial_regression as preg
+import perun.check.methods.integral_comparison as int_cmp
+import perun.check.methods.linear_regression as lreg
+import perun.check.methods.local_statistics as loc_stat
+import perun.check.methods.polynomial_regression as preg
 
 
 _PREG_EXPECTED_RESULTS = [

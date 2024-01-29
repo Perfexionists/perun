@@ -16,7 +16,7 @@ from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
 import numpy as np
 
 # Perun Imports
-from perun.check import fast_check, linear_regression, polynomial_regression
+from perun.check.methods import linear_regression, polynomial_regression, fast_check
 from perun.postprocess.regression_analysis import regression_models
 from perun.profile import query
 from perun.utils.common import common_kit

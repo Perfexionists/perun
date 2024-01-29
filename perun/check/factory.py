@@ -214,7 +214,7 @@ def degradation_between_profiles(
     # We run all degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
         yield from common_kit.dynamic_module_function_call(
-            "perun.check",
+            "perun.check.methods",
             degradation_method,
             degradation_method,
             baseline_profile,
