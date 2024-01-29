@@ -8,10 +8,6 @@ import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.check.factory as check
-import perun.check.methods.average_amount_threshold as aat
-import perun.check.methods.best_model_order_equality as bmoe
-import perun.check.methods.fast_check as fast
-import perun.check.methods.exclusive_time_outliers as eto
 
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 
@@ -107,7 +103,11 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
     ]
 
     # Test degradation detection using ETO
-    result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[1]))
+    result = list(
+        check.run_degradation_check(
+            "exclusive_time_outliers", tracer_profiles[0], tracer_profiles[1]
+        )
+    )
     expected_changes = {
         check.PerformanceChange.TotalDegradation,
         check.PerformanceChange.NoChange,
@@ -115,7 +115,11 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
     assert expected_changes & set(r.result for r in result)
 
     # Test degradation detection using ETO on the same profile - no Degradation should be found.
-    result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[0]))
+    result = list(
+        check.run_degradation_check(
+            "exclusive_time_outliers", tracer_profiles[0], tracer_profiles[0]
+        )
+    )
     # We allow TotalDegradation and TotalOptimization since one them is always reported
     allowed = {
         check.PerformanceChange.NoChange,
@@ -127,27 +131,35 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
 
     # Cannot detect degradation using BMOE strategy betwen these pairs of profiles,
     # since the best models are same with good confidence
-    result = list(bmoe.best_model_order_equality(profiles[0], profiles[1]))
+    result = list(
+        check.run_degradation_check("best_model_order_equality", profiles[0], profiles[1])
+    )
     assert check.PerformanceChange.NoChange in [r.result for r in result]
 
     # Can detect degradation using BMOE strategy betwen these pairs of profiles
-    result = list(bmoe.best_model_order_equality(profiles[1], profiles[2]))
+    result = list(
+        check.run_degradation_check("best_model_order_equality", profiles[1], profiles[2])
+    )
     assert check.PerformanceChange.Degradation in [r.result for r in result]
 
-    result = list(bmoe.best_model_order_equality(profiles[0], profiles[2]))
+    result = list(
+        check.run_degradation_check("best_model_order_equality", profiles[0], profiles[2])
+    )
     assert check.PerformanceChange.Degradation in [r.result for r in result]
 
-    result = list(aat.average_amount_threshold(profiles[1], profiles[2]))
+    result = list(check.run_degradation_check("average_amount_threshold", profiles[1], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
 
     # Can detect optimizations both using BMOE and AAT and Fast
-    result = list(aat.average_amount_threshold(profiles[2], profiles[1]))
+    result = list(check.run_degradation_check("average_amount_threshold", profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
 
-    result = list(fast.fast_check(profiles[2], profiles[1]))
+    result = list(check.run_degradation_check("fast_check", profiles[2], profiles[1]))
     assert check.PerformanceChange.MaybeOptimization in [r.result for r in result]
 
-    result = list(bmoe.best_model_order_equality(profiles[2], profiles[1]))
+    result = list(
+        check.run_degradation_check("best_model_order_equality", profiles[2], profiles[1])
+    )
     assert check.PerformanceChange.Optimization in [r.result for r in result]
 
     # Try that we printed confidence
@@ -157,7 +169,7 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
     assert "with confidence" in out
 
     # Try that nothing is wrong when the average is 0.0
-    result = list(aat.average_amount_threshold(profiles[3], profiles[3]))
+    result = list(check.run_degradation_check("average_amount_threshold", profiles[3], profiles[3]))
     # Assert that DegradationInfo was yield
     assert result
     # Assert there was no change

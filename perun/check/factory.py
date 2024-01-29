@@ -17,8 +17,17 @@ from typing import Any, Iterable, Protocol, TYPE_CHECKING
 from perun import vcs
 from perun.logic import config, pcs, runner, store
 from perun.select.abstract_base_selection import AbstractBaseSelection
+from perun.check.methods import (
+    average_amount_threshold,
+    best_model_order_equality,
+    exclusive_time_outliers,
+    fast_check,
+    integral_comparison,
+    linear_regression,
+    local_statistics,
+    polynomial_regression,
+)
 from perun.utils import decorators, log
-from perun.utils.common import common_kit
 from perun.utils.structs import (
     DetectionChangeResult,
     DegradationInfo,
@@ -213,14 +222,51 @@ def degradation_between_profiles(
     """
     # We run all degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
-        yield from common_kit.dynamic_module_function_call(
-            "perun.check.methods",
-            degradation_method,
-            degradation_method,
-            baseline_profile,
-            target_profile,
-            models_strategy=models_strategy,
+        yield from run_degradation_check(
+            degradation_method, baseline_profile, target_profile, models_strategy=models_strategy
         )
+
+
+def run_degradation_check(
+    degradation_method: str, baseline_profile: Profile, target_profile: Profile, **kwargs
+) -> Iterable[DegradationInfo]:
+    """Factory for running degradations checks
+
+    Constructs from string an Checker object and runs the check method
+    """
+    if degradation_method == "average_amount_threshold":
+        yield from average_amount_threshold.AverageAmountThreshold().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "best_model_order_equality":
+        yield from best_model_order_equality.BestModelOrderEquality().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "exclusive_time_outliers":
+        yield from exclusive_time_outliers.ExclusiveTimeOutliers().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "fast_check":
+        yield from fast_check.FastCheck().check(baseline_profile, target_profile, **kwargs)
+    elif degradation_method == "integral_comparison":
+        yield from integral_comparison.IntegralComparison().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "linear_regression":
+        yield from linear_regression.LinearRegression().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "local_statistics":
+        yield from local_statistics.LocalStatistics().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    elif degradation_method == "polynomial_regression":
+        yield from polynomial_regression.PolynomialRegression().check(
+            baseline_profile, target_profile, **kwargs
+        )
+    else:
+        log.error(f"unknown degradation method: '{degradation_method}'")
+        yield
 
 
 @log.print_elapsed_time

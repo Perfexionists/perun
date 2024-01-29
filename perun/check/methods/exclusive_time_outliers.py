@@ -75,6 +75,7 @@ import pandas as pd
 from scipy import stats
 
 # Perun Imports
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.logic import config
 from perun.profile import convert
 from perun.utils.structs import DegradationInfo, PerformanceChange
@@ -93,21 +94,22 @@ STDDEV_CUTOFF = 2.0
 NS_TO_MS = 1000000
 
 
-def exclusive_time_outliers(
-    baseline_profile: Profile, target_profile: Profile, **_: Any
-) -> Iterable[DegradationInfo]:
-    """Checks the pair of (baseline, target) profiles for changes in function exclusive times.
+class ExclusiveTimeOutliers(AbstractBaseChecker):
+    def check(
+        self, baseline_profile: Profile, target_profile: Profile, **_: Any
+    ) -> Iterable[DegradationInfo]:
+        """Checks the pair of (baseline, target) profiles for changes in function exclusive times.
 
-    The method works by detecting 'exclusive time delta' outliers and classifying their severity
-    based on the outliers detection method that found them.
+        The method works by detecting 'exclusive time delta' outliers and classifying their severity
+        based on the outliers detection method that found them.
 
-    :param baseline_profile: baseline against which we are checking the degradation
-    :param target_profile: profile corresponding to the checked minor version
+        :param baseline_profile: baseline against which we are checking the degradation
+        :param target_profile: profile corresponding to the checked minor version
 
-    :return: a generator of found performance changes
-    """
-    diff_prof = DiffProfile(baseline_profile, target_profile)
-    yield from diff_prof.detect_changes()
+        :return: a generator of found performance changes
+        """
+        diff_prof = DiffProfile(baseline_profile, target_profile)
+        yield from diff_prof.detect_changes()
 
 
 class DiffProfile:

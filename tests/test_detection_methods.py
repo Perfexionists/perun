@@ -8,6 +8,7 @@ import itertools
 import os
 
 import perun.logic.store as store
+import perun.check.factory as check_factory
 from perun.utils.log import aggregate_intervals
 from perun.utils.structs import PerformanceChange
 from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED_RESULTS
@@ -67,7 +68,7 @@ def load_profiles(param):
 
 
 def check_degradation_result(baseline_profile, target_profile, expected_result, function):
-    result = list(function(baseline_profile, target_profile))
+    result = list(check_factory.run_degradation_check(function, baseline_profile, target_profile))
     assert expected_result["result"] & {r.result for r in result}
     assert expected_result["type"] & {r.type for r in result}
     assert expected_result["rate"] & {round(r.rate_degradation) for r in result}
@@ -101,7 +102,9 @@ def test_complex_detection_methods():
 
     for expected_results in NONPARAM_EXPECTED_RESULTS:
         degradation_list = list(
-            expected_results["function"](profiles[0], profiles[1], models_strategy="all-models")
+            check_factory.run_degradation_check(
+                expected_results["function"], profiles[0], profiles[1], models_strategy="all-models"
+            )
         )
         expected_result = expected_results["results"].pop(0)
         degradation_list.sort(key=lambda item: (item.location, item.from_baseline))
