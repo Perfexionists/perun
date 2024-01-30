@@ -106,9 +106,7 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
     :param int index: index in list `fuzz_stats` corresponding to stats of actual method
     :return int: number of generated mutations for rule
     """
-    if strategy == "unitary":
-        return 1
-    elif strategy == "proportional":
+    if strategy == "proportional":
         return min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE)
     elif strategy == "probabilistic":
         ratio = compute_safe_ratio(rule_set.hits[index], rule_set.hits[-1])
@@ -119,6 +117,7 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
         rand = randomizer.rand_from_range(0, 10) / 10
         return min(int(rule_set.hits[index]) + 1, MAX_FILES_PER_RULE) if rand <= ratio else 0
     else:
+        # Default, also holds for strategy == 'unitary'
         return 1
 
 

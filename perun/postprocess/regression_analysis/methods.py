@@ -379,8 +379,8 @@ def _bisection_solve_half_model(
         try:
             for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
                 yield submodel
+        # Too few submodel points to perform regression, use the half model instead
         except exceptions.InvalidPointsException:
-            # Too few submodel points to perform regression, use the half model instead
             yield half_model
     else:
         # The model is the same

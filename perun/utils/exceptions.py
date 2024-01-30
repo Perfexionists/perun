@@ -243,26 +243,6 @@ class UnsupportedModuleException(Exception):
         return f"Module '{self.module}' is not supported by Perun"
 
 
-class UnsupportedModuleFunctionException(Exception):
-    """Raised when supported module does not support the given function.
-
-    I.e. there is no implementation of the given function.
-    """
-
-    __slots__ = ["module", "func"]
-
-    def __init__(self, module: str, func: str) -> None:
-        """
-        :param str module: name of the module that does not support the given function
-        """
-        super().__init__("")
-        self.module = module
-        self.func = func
-
-    def __str__(self) -> str:
-        return f"Function '{self.module}' is not implemented within the '{self.func}' module"
-
-
 class DictionaryKeysValidationFailed(Exception):
     """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
 

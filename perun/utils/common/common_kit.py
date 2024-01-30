@@ -18,8 +18,6 @@ from perun.utils.exceptions import (
     SignalReceivedException,
     NotPerunRepositoryException,
     SuppressedExceptions,
-    UnsupportedModuleException,
-    UnsupportedModuleFunctionException,
 )
 
 if TYPE_CHECKING:

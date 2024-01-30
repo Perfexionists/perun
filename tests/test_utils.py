@@ -23,7 +23,6 @@ from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
     ResourceLockedException,
-    UnsupportedModuleFunctionException,
 )
 from perun.collect.trace.optimizations.structs import Complexity
 
@@ -43,7 +42,9 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
           registered
     """
     registered_modules = cli_kit.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+    for _, module_name, _ in pkgutil.iter_modules(
+        [os.path.dirname(package.__file__)], package.__name__ + "."
+    ):
         module = common_kit.get_module(module_name)
         for must_have_function_name in must_have_function_names:
             assert (
@@ -70,7 +71,9 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
           registered
     """
     registered_modules = cli_kit.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+    for _, module_name, _ in pkgutil.iter_modules(
+        [os.path.dirname(package.__file__)], package.__name__ + "."
+    ):
         # Each module has to have run.py module
         module = common_kit.get_module(module_name)
         assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
@@ -103,23 +106,6 @@ def test_get_supported_modules():
 
     Expecting no errors and every supported module registered in the function
     """
-    # Check that all of the internal modules (vcs) are properly registered and has interface for
-    # concrete functions.
-    assert_all_registered_modules(
-        "vcs",
-        vcs,
-        [
-            "_init",
-            "_get_minor_head",
-            "_walk_minor_versions",
-            "_walk_major_versions",
-            "_get_minor_version_info",
-            "_get_head_major_version",
-            "_check_minor_version_validity",
-            "_massage_parameter",
-        ],
-    )
-
     # Check that all of the CLI units (collectors, postprocessors and visualizations) are properly
     # registered.
     assert_all_registered_cli_units("collect", collect, ["collect"])
