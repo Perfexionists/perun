@@ -212,9 +212,4 @@ def selection(
     if selection_type == "whole_repository_selection":
         return whole_repository_selection.WholeRepositorySelection()
 
-    log.error(
-        f"'{selection_type}' is unsupported selection method. \n"
-        f"Choose one of ('whole_repository_selection')."
-    )
-    # Note, that in reality nothing is returned, this is only for typing check
-    return whole_repository_selection.WholeRepositorySelection()
+    raise UnsupportedModuleException(selection_type)
