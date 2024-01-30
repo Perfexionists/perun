@@ -10,6 +10,7 @@ import perun.logic.store as store
 import perun.check.factory as check
 
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
+from perun.utils.exceptions import UnsupportedModuleException
 
 
 def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
@@ -187,6 +188,10 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
         check.degradation_between_files(lhs, rhs, "HEAD", "all")
     _, err = capsys.readouterr()
     assert "incompatible configurations" in err
+
+    # Try that unknown
+    with pytest.raises(UnsupportedModuleException):
+        _ = list(check.run_degradation_check("unknown", profiles[3], profiles[3]))
 
 
 def test_strategies():

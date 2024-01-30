@@ -34,6 +34,7 @@ from perun.utils.structs import (
     MinorVersion,
     ModelRecord,
 )
+from perun.utils.exceptions import UnsupportedModuleException
 import perun.profile.helpers as profiles
 
 if TYPE_CHECKING:
@@ -55,7 +56,7 @@ class CallableDetectionMethod(Protocol):
         target_profile: Profile,
         **kwargs: Any,
     ) -> DetectionChangeResult:
-        pass
+        """Call Function"""
 
 
 def get_supported_detection_models_strategies() -> list[str]:
@@ -264,8 +265,7 @@ def run_degradation_check(
             baseline_profile, target_profile, **kwargs
         )
     else:
-        log.error(f"unknown degradation method: '{degradation_method}'")
-        yield
+        raise UnsupportedModuleException(f"{degradation_method}")
 
 
 @log.print_elapsed_time
