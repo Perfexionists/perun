@@ -15,7 +15,7 @@ import os
 # Perun Imports
 from perun.logic import config
 from perun.select import whole_repository_selection, abstract_base_selection
-from perun.utils import decorators, log
+from perun.utils import decorators
 from perun.utils.common import common_kit
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
 from perun.vcs.abstract_repository import AbstractRepository
