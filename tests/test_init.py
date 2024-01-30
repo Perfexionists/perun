@@ -4,13 +4,17 @@ Tests whether basic initialization, and re-initializations work, whether excepti
 when working within wrong scopes, how does perun copes with existing perun directories, etc.
 """
 
-import os
-
-import distutils.spawn as spawn
+# Standard Imports
+from distutils import spawn
 import git
+import os
 import pytest
+from git.exc import GitCommandError
 
-import perun.logic.commands as commands
+# Third-Party Imports
+
+# Perun Imports
+from perun.logic import commands
 from perun.utils.common import common_kit
 from perun.utils.exceptions import UnsupportedModuleException
 
@@ -256,11 +260,10 @@ def test_failed_init_vcs(monkeypatch, capsys):
     """
     pcs_path = os.getcwd()
 
-    def failing_init(*_):
-        """Errorous init, that returns false"""
-        return False
+    def raiseexc(*_):
+        raise GitCommandError("git", "pit")
 
-    monkeypatch.setattr("perun.vcs.init", failing_init)
+    monkeypatch.setattr("git.repo.base.Repo.init", raiseexc)
 
     # Try to call init, when patched init fails
     with pytest.raises(SystemExit):

@@ -11,7 +11,7 @@ to the project history and changes associated with specific project versions.
 import re
 import itertools
 
-import perun.vcs as vcs
+from perun.logic import pcs
 from perun.collect.trace.optimizations.structs import DiffCfgMode
 
 
@@ -435,7 +435,7 @@ def _parse_git_diff(funcs, version_1, version_2):
 
     :return set: a set of modified functions according to the git diff
     """
-    diff_output = vcs.minor_versions_diff(version_1, version_2)
+    diff_output = pcs.vcs().minor_versions_diff(version_1, version_2)
     modified_funcs = []
     # Iterate the lines and search for hunk headers
     for line in diff_output.splitlines():

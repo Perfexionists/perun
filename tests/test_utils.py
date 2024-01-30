@@ -286,9 +286,6 @@ def test_common(capsys):
     chunks = list(map(list, common_kit.chunkify(simple_generator(), 2)))
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
-    with pytest.raises(UnsupportedModuleFunctionException):
-        common_kit.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
-
     with pytest.raises(SystemExit):
         cli_kit.get_supported_module_names("nonexisting")
 

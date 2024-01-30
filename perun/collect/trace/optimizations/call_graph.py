@@ -4,7 +4,7 @@ easy manipulation with its structure.
 The Call Graph Structure stores the extracted call graph as well as the control flow graph.
 """
 
-import perun.vcs as vcs
+from perun.logic import pcs
 from perun.collect.trace.optimizations.call_graph_levels import (
     CGLevelMixin,
     LevelEstimator,
@@ -43,7 +43,7 @@ class CallGraphResource(CGLevelMixin):
         self.leaves = []
         self.depth = 0
         self.cfg = {}
-        self.minor = vcs.get_minor_head()
+        self.minor = pcs.vcs().get_minor_head()
         # TODO: metrics
         self.recursive = set()
 

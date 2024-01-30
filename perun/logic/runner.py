@@ -12,7 +12,7 @@ import subprocess
 import click
 
 # Perun Imports
-from perun import vcs
+from perun.vcs import vcs_kit
 from perun.logic import commands, config, index, pcs
 from perun.utils import decorators, log, streams
 from perun.utils.common import common_kit
@@ -444,7 +444,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     log.info(f"stored profile at: {os.path.relpath(full_profile_path)}")
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
-        dst = prof.get("origin", vcs.get_minor_head())
+        dst = prof.get("origin", pcs.vcs().get_minor_head())
         # FIXME: consider removing this
         commands.add([full_profile_path], dst, keep_profile=False)
     else:
@@ -576,9 +576,9 @@ def generate_jobs(
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
-    with vcs.CleanState():
+    with vcs_kit.CleanState():
         for minor_version in minor_version_list:
-            vcs.checkout(minor_version.checksum)
+            pcs.vcs().checkout(minor_version.checksum)
             run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
             yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
@@ -596,12 +596,12 @@ def generate_jobs_with_history(
     :param int number_of_jobs: number of jobs that will be run
     """
     with log.History(minor_version_list[0].checksum) as history:
-        with vcs.CleanState():
+        with vcs_kit.CleanState():
             for minor_version in minor_version_list:
                 history.progress_to_next_minor_version(minor_version)
                 log.newline()
                 history.finish_minor_version(minor_version, [])
-                vcs.checkout(minor_version.checksum)
+                pcs.vcs().checkout(minor_version.checksum)
                 run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
                 yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 log.newline()

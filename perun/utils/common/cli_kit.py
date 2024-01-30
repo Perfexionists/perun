@@ -23,7 +23,6 @@ import click
 import jinja2
 
 # Perun Imports
-from perun import vcs
 from perun.collect.trace.optimizations.optimization import Optimization
 from perun.collect.trace.optimizations.structs import CallGraphTypes
 from perun.logic import commands, store, stats, config, pcs
@@ -206,13 +205,13 @@ def minor_version_list_callback(
     """
     minors: list[MinorVersion] = []
     for minor_version in value or []:
-        massaged_version = vcs.massage_parameter(minor_version)
+        massaged_version = pcs.vcs().massage_parameter(minor_version)
         # If we should crawl all the parents, we collect them
         if ctx.params.get("crawl_parents", False):
-            minors.extend(vcs.walk_minor_versions(massaged_version))
+            minors.extend(pcs.vcs().walk_minor_versions(massaged_version))
         # Otherwise we retrieve the minor version info for the param
         else:
-            minors.append(vcs.get_minor_version_info(massaged_version))
+            minors.append(pcs.vcs().get_minor_version_info(massaged_version))
     return minors
 
 
@@ -441,7 +440,7 @@ def lookup_minor_version_callback(_: click.Context, __: click.Option, value: str
     """
     if value:
         try:
-            return vcs.massage_parameter(value)
+            return pcs.vcs().massage_parameter(value)
         except VersionControlSystemException as exception:
             raise click.BadParameter(str(exception))
     return value
@@ -462,7 +461,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     rev = None
     if len(parts) > 1:
         rev, value = parts[0], parts[1]
-        rev = vcs.massage_parameter(rev)
+        rev = pcs.vcs().massage_parameter(rev)
     # 0) First check if the value is tag or not
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
@@ -535,7 +534,7 @@ def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str
     :return: either the looked up path of the file or the original value if no lookup was performed
     """
     # Resolve the 'in_minor' to HEAD if not specified
-    in_minor = vcs.get_minor_head() if not ctx.params["in_minor"] else ctx.params["in_minor"]
+    in_minor = pcs.vcs().get_minor_head() if not ctx.params["in_minor"] else ctx.params["in_minor"]
     # Check the existence only for files with specific 'in_minor'
     if in_minor != ".":
         try:

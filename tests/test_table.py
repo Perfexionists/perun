@@ -4,7 +4,7 @@ import os
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.vcs as vcs
+from perun.logic import pcs
 import perun.testing.utils as test_utils
 import perun.testing.asserts as asserts
 
@@ -48,7 +48,7 @@ def test_table_cli(pcs_full):
 
     models_profile = test_utils.load_profilename("postprocess_profiles", "complexity-models.perf")
     added = test_utils.prepare_profile(
-        pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
+        pcs_full.get_job_directory(), models_profile, pcs.vcs().get_minor_head()
     )
     result = runner.invoke(cli.add, ["--keep-profile", f"{added}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)

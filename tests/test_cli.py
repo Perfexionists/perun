@@ -10,6 +10,8 @@ import shutil
 import time
 import warnings
 
+from git.exc import GitCommandError
+
 import pytest
 from click.testing import CliRunner
 
@@ -25,7 +27,6 @@ import perun.logic.temp as temp
 import perun.logic.stats as stats
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
-import perun.vcs as vcs
 import perun.logic.pcs as pcs
 
 from perun.utils.external import commands
@@ -1275,9 +1276,9 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
         shutil.rmtree(stuff)
 
     def raiseexc(*_):
-        raise exceptions.UnsupportedModuleFunctionException("git", "shit")
+        raise GitCommandError("git", "pit")
 
-    monkeypatch.setattr("perun.vcs.git._init", raiseexc)
+    monkeypatch.setattr("git.repo.base.Repo.init", raiseexc)
     result = runner.invoke(cli.init, [dst, "--vcs-type=git"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
@@ -1336,7 +1337,7 @@ def test_add_correct(pcs_with_root):
     valid_profile = test_utils.load_profilename("to_add_profiles", "new-prof-2-memory-basic.perf")
     runner = CliRunner()
     added_profile = test_utils.prepare_profile(
-        pcs_with_root.get_job_directory(), valid_profile, vcs.get_minor_head()
+        pcs_with_root.get_job_directory(), valid_profile, pcs.vcs().get_minor_head()
     )
     result = runner.invoke(cli.add, ["--keep-profile", f"{added_profile}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -2469,7 +2470,7 @@ def _get_vcs_versions():
 
     :return list: list of minor version checksums sorted as in the VCS.
     """
-    return [v.checksum for v in vcs.walk_minor_versions(vcs.get_minor_head())]
+    return [v.checksum for v in pcs.vcs().walk_minor_versions(pcs.vcs().get_minor_head())]
 
 
 def _normalize_stats_output(output, version_replacements):
