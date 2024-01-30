@@ -300,6 +300,15 @@ def failed(ending: str = "\n") -> None:
     print("]", end=ending)
 
 
+def skipped(ending: str = "\n") -> None:
+    """
+    :param str ending: end of the string, by default new line
+    """
+    print("[", end="")
+    cprint("skip", "grey", attrs=["bold"])
+    print("]", end=ending)
+
+
 def yes(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
@@ -544,6 +553,9 @@ def print_list_of_degradations(
     :param list degradation_list: list of found degradations
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
+    if not degradation_list:
+        info("no changes found")
+        return
 
     def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
         """Returns the location of the degradation from the tuple
