@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 # Standard Imports
-import git
 import operator
 import os
-import pytest
 
 # Third-Party Imports
+import git
+import pytest
 
 # Perun Imports
 from perun.vcs import vcs_kit
