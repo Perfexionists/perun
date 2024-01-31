@@ -15,6 +15,7 @@ import pytest
 
 # Perun Imports
 from perun import collect, postprocess, view
+from perun.fuzz import filetype
 from perun.logic import commands, config
 from perun.testing import asserts
 from perun.utils import log
@@ -317,3 +318,12 @@ def test_logger(capsys):
     assert stdout_log.seek(2) == 2
     assert not stdout_log.readable()
     assert not stdout_log.isatty()
+
+
+def test_filetypes(monkeypatch):
+    def patched_guess(_: str):
+        raise AttributeError("error")
+
+    monkeypatch.setattr("mimetypes.guess_type", patched_guess)
+
+    assert filetype.get_filetype("somefile") == (True, None)
