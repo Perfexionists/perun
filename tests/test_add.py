@@ -4,17 +4,18 @@ Tests basic functionality of adding profiles to initialized repositories, adding
 repositories, adding already added profiles, etc.
 """
 
+# Standard Imports
 import binascii
 import os
 
+# Third-Party Imports
 import git
-import perun.logic.store as store
-import perun.logic.index as index
 import pytest
 import termcolor
 
-import perun.logic.commands as commands
-import perun.utils.timestamps as timestamps
+# Perun Imports
+from perun.logic import store, index, commands
+from perun.utils import timestamps
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     UnsupportedModuleException,
@@ -22,7 +23,6 @@ from perun.utils.exceptions import (
     EntryNotFoundException,
     VersionControlSystemException,
 )
-
 import perun.testing.utils as test_utils
 
 

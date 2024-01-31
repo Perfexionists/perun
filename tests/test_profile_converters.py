@@ -3,9 +3,16 @@
 Tests basic functionality of creating other representations of profiles, like e.g for
 heap and heat map visualizations, etc.
 """
+from __future__ import annotations
+
+# Standard Imports
+
+# Third-Party Imports
 import pytest
-import perun.utils.exceptions as exceptions
-import perun.profile.convert as convert
+
+# Perun Imports
+from perun.profile import convert
+from perun.utils import exceptions
 import perun.testing.utils as test_utils
 
 

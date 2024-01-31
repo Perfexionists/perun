@@ -1,13 +1,16 @@
 """Basic testing for the flame graph generation"""
+from __future__ import annotations
 
+# Standard Imports
 import os
 
+# Third-Party Imports
 from click.testing import CliRunner
 
-import perun.cli as cli
-import perun.view.flamegraph.flamegraph as flamegraphs
-
-import perun.testing.asserts as asserts
+# Perun Imports
+from perun import cli
+from perun.testing import asserts
+from perun.view.flamegraph import flamegraph
 import perun.testing.utils as test_utils
 
 
@@ -21,7 +24,7 @@ def test_flame_graph(pcs_with_root, valid_profile_pool):
     memory_profile = test_utils.load_profile("to_add_profiles", "new-prof-2-memory-basic.perf")
 
     # First try to create the graph using the convential matters
-    flamegraphs.draw_flame_graph(memory_profile, "flame2.svg", 20)
+    flamegraph.draw_flame_graph(memory_profile, "flame2.svg", 20)
     assert "flame2.svg" in os.listdir(os.getcwd())
 
     # Next try to create it using the click

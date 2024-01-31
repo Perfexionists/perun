@@ -1,16 +1,19 @@
 """Basic tests for checking degradation between versions and profiles."""
+from __future__ import annotations
 
+# Standard Imports
 import os
+
+# Third-Party Imports
 import git
 import pytest
 
-import perun.utils.log as log
-import perun.logic.config as config
-import perun.logic.store as store
-import perun.check.factory as check
-
+# Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
+from perun.logic import config, store
+from perun.utils import log
 from perun.utils.exceptions import UnsupportedModuleException
+import perun.check.factory as check
 
 
 def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
@@ -44,7 +47,7 @@ def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
     head = str(git_repo.head.commit)
 
     check.degradation_in_minor(head)
-    out, err = capsys.readouterr()
+    _, err = capsys.readouterr()
     assert err == ""
 
     def raise_sysexit(*_):

@@ -3,15 +3,16 @@
 Tests whether basic initialization, and re-initializations work, whether exceptions are fired,
 when working within wrong scopes, how does perun copes with existing perun directories, etc.
 """
+from __future__ import annotations
 
 # Standard Imports
 from distutils import spawn
-import git
 import os
-import pytest
-from git.exc import GitCommandError
 
 # Third-Party Imports
+from git.exc import GitCommandError
+import git
+import pytest
 
 # Perun Imports
 from perun.logic import commands

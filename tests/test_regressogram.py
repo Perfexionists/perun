@@ -8,8 +8,14 @@ always.
 
 The postprocessby CLI is tested in test_cli module.
 """
+from __future__ import annotations
+
+# Standard Imports
+
+# Third-Party Imports
+
+# Perun Imports
 from perun.postprocess.regressogram.run import postprocess
-from perun.testing.utils import compare_results, generate_models_by_uid
 import perun.testing.utils as test_utils
 
 
@@ -36,7 +42,7 @@ def test_regressogram_method():
         # Expected successful analysis by non-parametric postprocessor
         assert code.value == 0
         # Obtaining generator of models from profile in the UID order
-        models = generate_models_by_uid(
+        models = test_utils.generate_models_by_uid(
             profile,
             "regressogram",
             ["exp::test1", "exp::test2", "exp::test3"],
@@ -56,7 +62,7 @@ def test_regressogram_method():
                     assert len(model[0][key]) == exp_result[key]
                 # Double comparison of individual values (r_square, x_start, x_end)
                 else:
-                    compare_results(model[0][key], exp_result[key], eps=0.00001)
+                    test_utils.compare_results(model[0][key], exp_result[key], eps=0.00001)
         # Remove generated models for next run of iteration
         profile["profile"]["models"].clear()
 

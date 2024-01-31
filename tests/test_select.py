@@ -1,4 +1,5 @@
 """Collections of test for perun.select package"""
+from __future__ import annotations
 
 # Standard Imports
 import git

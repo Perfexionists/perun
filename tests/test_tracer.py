@@ -1,23 +1,24 @@
-import shutil
-import os
-import glob
-import re
+"""Collection of tests for testing tracer"""
+from __future__ import annotations
 
+# Standard Imports
+import glob
+import os
+import re
+import shutil
+
+# Third-Party Imports
 from click.testing import CliRunner
 
-import perun.cli as cli
-from perun.logic.pcs import get_tmp_directory, get_log_directory
-import perun.logic.temp as temp
+# Perun Imports
+from perun import cli
+from perun.collect.trace.values import TraceRecord, RecordType, FileSize
+from perun.logic import config, locks, temp, pcs
+from perun.utils import decorators
+from perun.utils.exceptions import SystemTapStartupException
+from perun.utils.structs import CollectStatus
 import perun.collect.trace.run as trace_run
 import perun.collect.trace.systemtap.engine as stap
-import perun.logic.locks as locks
-import perun.utils.decorators as decorators
-import perun.logic.config as config
-
-from perun.utils.structs import CollectStatus
-from perun.utils.exceptions import SystemTapStartupException
-from perun.collect.trace.values import TraceRecord, RecordType, FileSize
-
 import perun.testing.utils as test_utils
 
 _mocked_stap_code = 0
@@ -34,7 +35,7 @@ def _mocked_stap2(self, **_):
     data_file = os.path.join(
         os.path.dirname(__file__), "sources", "collect_trace", _mocked_stap_file
     )
-    target_file = os.path.join(get_tmp_directory(), "trace", "files", _mocked_stap_file)
+    target_file = os.path.join(pcs.get_tmp_directory(), "trace", "files", _mocked_stap_file)
     shutil.copyfile(data_file, target_file)
     if self.data is not None:
         os.remove(self.data)
@@ -206,7 +207,7 @@ def _get_latest_collect_script():
 
     # Get all stap script in the directory and find the last one,
     # which will be then analyzed for correctness
-    script_dir = os.path.join(get_tmp_directory(), "trace", "files")
+    script_dir = os.path.join(pcs.get_tmp_directory(), "trace", "files")
     scripts = glob.glob(os.path.join(script_dir, "collect_script_*.stp"))
     # Find the newest script in the directory
     latest = scripts[0]
@@ -413,7 +414,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
         cli.collect,
         [f"-c{target}", "trace", "-g", "-2", "-w", "-q", "-k"] + binary + func,
     )
-    log_path = os.path.join(get_log_directory(), "trace")
+    log_path = os.path.join(pcs.get_log_directory(), "trace")
     logs = glob.glob(os.path.join(log_path, "trace_*.txt"))
     assert len(logs) == 1
     assert "Attempting to build the probes configuration" not in result.output
@@ -428,7 +429,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
     assert result.exit_code == 0
     # Try it the other way around
     result = runner.invoke(cli.collect, [f"-c{target}", "trace", "-o", "capture", "-k"] + func)
-    files_path = os.path.join(get_tmp_directory(), "trace", "files")
+    files_path = os.path.join(pcs.get_tmp_directory(), "trace", "files")
     capture = glob.glob(os.path.join(files_path, "collect_capture_*.txt"))
     # Two previous tests and this one kept the capture files
     assert len(capture) == 3

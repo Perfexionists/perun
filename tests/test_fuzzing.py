@@ -1,21 +1,24 @@
 """
 Basic tests for fuzz-testing mode of perun
 """
+from __future__ import annotations
 
+# Standard Imports
 import os
 import sys
 import subprocess
-import pytest
 
+# Third-Party Imports
+import pytest
 from click.testing import CliRunner
 
-import perun.cli as cli
+# Perun Imports
+from perun import cli
+from perun.fuzz.structs import CoverageConfiguration
+from perun.testing import asserts
+from perun.utils.external import commands
 import perun.fuzz.evaluate.by_coverage as coverage_fuzz
 import perun.fuzz.evaluate.by_perun as perun_fuzz
-from perun.fuzz.structs import CoverageConfiguration
-from perun.utils.external import commands
-
-import perun.testing.asserts as asserts
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -38,7 +41,7 @@ def test_fuzzing_coverage(capsys):
     coverage_fuzz.prepare_workspace(gcno_files_path)
 
     command = " ".join([os.path.abspath(hang_test), num_workload])
-    out, _ = capsys.readouterr()
+    _ = capsys.readouterr()
 
     commands.run_safely_external_command(command)
     cov = coverage_fuzz.get_coverage_from_dir(os.getcwd(), coverage_config)

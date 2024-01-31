@@ -1,4 +1,5 @@
 """Basic tests for checking the correctness of the VCS modules"""
+from __future__ import annotations
 
 # Standard Imports
 import git

@@ -1,10 +1,16 @@
 """
 Testing basic functionality of metrics module
 """
+from __future__ import annotations
 
+# Standard Imports
 import os
+
+# Third-Party Imports
 import pytest
-import perun.utils.metrics as metrics
+
+# Perun Imports
+from perun.utils import metrics
 
 
 @pytest.mark.usefixtures("cleandir")

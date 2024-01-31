@@ -2,16 +2,18 @@
 
 Tests adding and getting keys from local and global configurations.
 """
+from __future__ import annotations
 
-import pytest
+# Standard Imports
 import random
 import os
 
+# Third-Party Imports
 from ruamel.yaml import scanner
+import pytest
 
-import perun.logic.commands as commands
-import perun.logic.config as config
-
+# Perun Imports
+from perun.logic import commands, config
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     MissingConfigSectionException,
@@ -215,7 +217,7 @@ def test_config_errors(monkeypatch, capsys, tmpdir):
     with pytest.raises(SystemExit):
         config.read_config_from("dummy")
     _, err = capsys.readouterr()
-    assert "corrupted configuration file: 'dummy'"
+    assert "corrupted configuration file 'dummy'" in err
 
     def raise_io_error(*_, **__):
         raise IOError

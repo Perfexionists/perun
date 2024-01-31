@@ -3,15 +3,20 @@
 Tests whether the change is correctly detected and classified. All types of models
 are tested to the three types of changes.
 """
+from __future__ import annotations
 
+# Standard Imports
 import itertools
 import os
 
-import perun.logic.store as store
-import perun.check.factory as check_factory
+# Third-Party Imports
+
+# Perun Imports
+from perun.logic import store
+from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED_RESULTS
 from perun.utils.log import aggregate_intervals
 from perun.utils.structs import PerformanceChange
-from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED_RESULTS
+import perun.check.factory as check_factory
 
 
 def load_profiles(param):
@@ -108,7 +113,7 @@ def test_complex_detection_methods():
         )
         expected_result = expected_results["results"].pop(0)
         degradation_list.sort(key=lambda item: (item.location, item.from_baseline))
-        for location, changes in itertools.groupby(
+        for _, changes in itertools.groupby(
             degradation_list, lambda item: (item.location, item.from_baseline)
         ):
             for test_deg_info in changes:

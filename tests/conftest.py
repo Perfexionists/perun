@@ -1,27 +1,23 @@
 """Shared fixtures for the testing of functionality of Perun commands."""
+from __future__ import annotations
 
+# Standard Imports
+from typing import Iterable, Callable
 import glob
 import os
 import shutil
 import subprocess
 import tempfile
 
+# Third-Party Imports
 import git
-
-from typing import Iterable, Callable
-
-from perun.utils.common import common_kit
-import perun.utils.log as log
-import perun.logic.pcs as pcs
-import perun.logic.store as store
-import perun.cli as cli
 import pytest
 
-import perun.logic.commands as commands
-import perun.utils.decorators as decorators
-import perun.utils.streams as streams
-import perun.utils.metrics as metrics
-
+# Perun Imports
+from perun import cli
+from perun.logic import commands, pcs, store
+from perun.utils import decorators, log, metrics, streams
+from perun.utils.common import common_kit
 import perun.testing.utils as test_utils
 
 

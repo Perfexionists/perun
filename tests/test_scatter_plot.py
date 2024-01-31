@@ -1,10 +1,14 @@
 """ Basic tests for scatter plot visualization """
+from __future__ import annotations
 
+# Standard Imports
 import os
 
+# Third-Party Imports
 from click.testing import CliRunner
 
-import perun.cli as cli
+# Perun Imports
+from perun import cli
 import perun.view.scatter.factory as scatter
 import perun.testing.utils as test_utils
 

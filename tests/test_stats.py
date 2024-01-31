@@ -1,13 +1,17 @@
+"""Collection of tests for stats module"""
+from __future__ import annotations
+
+# Standard Imports
 import os
-import pytest
 import pathlib
 
-import perun.logic.stats as stats
-import perun.logic.store as store
+# Third-Party Imports
+import pytest
+
+# Perun Imports
+from perun.utils import exceptions
 from perun.utils.common import common_kit
-import perun.logic.pcs as pcs
-import perun.logic.index as index
-import perun.utils.exceptions as exceptions
+from perun.logic import index, pcs, stats, store
 
 
 def test_stats_filenames(pcs_full):
@@ -652,7 +656,7 @@ def _fake_checksums(source, count, collisions):
     :return list: the requested number of SHA-1 checksums
     """
     results = []
-    for i in range(count):
+    for _ in range(count):
         attempt = store.compute_checksum(source.encode())
         while attempt in collisions or attempt in results:
             attempt = store.compute_checksum(attempt.encode())

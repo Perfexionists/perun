@@ -6,14 +6,17 @@ Sources (if any) to examples are provided in the test functions.
 
 The postprocessby CLI is tested in test_cli module.
 """
+from __future__ import annotations
 
+# Standard Imports
+
+# Third-Party Imports
 import pytest
 
-import perun.utils.exceptions as exceptions
+# Perun Imports
 from perun.postprocess.regression_analysis.run import postprocess
+from perun.utils import exceptions, metrics
 import perun.testing.utils as test_utils
-from perun.testing.utils import compare_results, generate_models_by_uid
-import perun.utils.metrics as metrics
 
 
 def test_incorrect_calls():
@@ -60,7 +63,9 @@ def test_const_model(pcs_with_root):
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(profile, "constant", ["const::test1", "const::test2"])
+    models = test_utils.generate_models_by_uid(
+        profile, "constant", ["const::test1", "const::test2"]
+    )
 
     # Example no. 1:
     # constant line: y = 3
@@ -69,9 +74,9 @@ def test_const_model(pcs_with_root):
     #   b = b1 = 0.0
     #   r^2    = 1.0 - linear regression model is not matching
     model = next(models)[0]
-    compare_results(model["r_square"], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 3.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.0)
+    test_utils.compare_results(model["r_square"], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 3.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.0)
 
     # Example no. 2:
     # linear line: x
@@ -80,9 +85,9 @@ def test_const_model(pcs_with_root):
     #   b = b1 = 0.0
     #   r^2    = 0.0 - linear regression model is perfect match
     model = next(models)[0]
-    compare_results(model["r_square"], 0.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 5.5)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.0)
+    test_utils.compare_results(model["r_square"], 0.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 5.5)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.0)
     assert metrics.read_metric("constant_model") == 1
     metrics.Metrics.enabled = prev_enabled
 
@@ -108,7 +113,9 @@ def test_linear_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(profile, "linear", ["linear::test1", "linear::test2"])
+    models = test_utils.generate_models_by_uid(
+        profile, "linear", ["linear::test1", "linear::test2"]
+    )
 
     # Example no. 1:
     # source: Probability and Statistics for Engineering and the Sciences, 8th ed., example 12.4
@@ -117,9 +124,13 @@ def test_linear_model():
     #   b = b1 = -0.20938742
     #   r^2    = 0.791
     model = next(models)[0]
-    compare_results(model["r_square"], 0.791, 0.001)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 75.212432)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], -0.20938742)
+    test_utils.compare_results(model["r_square"], 0.791, 0.001)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 75.212432
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], -0.20938742
+    )
 
     # Example no. 2:
     # linear line: 8 + 2.5x
@@ -128,9 +139,9 @@ def test_linear_model():
     #   b = b1 = 2.5
     #   r^2    = 1.0
     model = next(models)[0]
-    compare_results(model["r_square"], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 8)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 2.5)
+    test_utils.compare_results(model["r_square"], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 8)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 2.5)
 
 
 def test_quad_model_using_power():
@@ -154,7 +165,7 @@ def test_quad_model_using_power():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(profile, "quadratic", ["quad::test1"])
+    models = test_utils.generate_models_by_uid(profile, "quadratic", ["quad::test1"])
 
     # Example no. 1:
     # source: https://mathbits.com/MathBits/TISection/Statistics2/quadratic.html
@@ -164,10 +175,16 @@ def test_quad_model_using_power():
     #   c = b2 = -0.173714
     #   r^2    = 0.981224
     model = next(models)[0]
-    compare_results(model["r_square"], 0.981224)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], -21.897744)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 14.521171)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b2"][0], -0.173714)
+    test_utils.compare_results(model["r_square"], 0.981224)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], -21.897744
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 14.521171
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b2"][0], -0.173714
+    )
 
 
 def test_log_model():
@@ -191,7 +208,7 @@ def test_log_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(profile, "logarithmic", ["log::test1", "log::test2"])
+    models = test_utils.generate_models_by_uid(profile, "logarithmic", ["log::test1", "log::test2"])
 
     # Example no. 1:
     # link: 'https://mathbits.com/MathBits/TISection/Statistics2/logarithmic.htm'
@@ -200,9 +217,13 @@ def test_log_model():
     #   b = b1 = 6.108
     #   r^2    = 0.9863058
     model = next(models)[0]
-    compare_results(model["r_square"], 0.9863058)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 6.099, 0.01)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 6.108, 0.01)
+    test_utils.compare_results(model["r_square"], 0.9863058)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 6.099, 0.01
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 6.108, 0.01
+    )
 
     # Example no. 2:
     # logarithmic curve: 0 + 0.434294482 * ln(x)
@@ -211,9 +232,11 @@ def test_log_model():
     #   b = b1 = 0.434294482
     #   r^2    = 1.0
     model = next(models)[0]
-    compare_results(model["r_square"], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.434294482)
+    test_utils.compare_results(model["r_square"], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.434294482
+    )
 
 
 def test_power_model():
@@ -237,7 +260,9 @@ def test_power_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(profile, "power", ["pow::test1", "pow::test2", "pow::test3"])
+    models = test_utils.generate_models_by_uid(
+        profile, "power", ["pow::test1", "pow::test2", "pow::test3"]
+    )
 
     # Example no. 1:
     # link: 'http://www.real-statistics.com/regression/power-regression/'
@@ -246,9 +271,13 @@ def test_power_model():
     #   b = b1 = 0.23438143
     #   r^2    = 0.56822483
     model = next(models)[0]
-    compare_results(model["r_square"], 0.56822483)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 16.6575389)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.23438143)
+    test_utils.compare_results(model["r_square"], 0.56822483)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 16.6575389
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.23438143
+    )
 
     # Example no. 2:
     # link: 'https://mathbits.com/MathBits/TISection/Statistics2/power.htm'
@@ -257,9 +286,13 @@ def test_power_model():
     #   b = b1 = 0.65949782
     #   r^2    = 0.999992507
     model = next(models)[0]
-    compare_results(model["r_square"], 0.999992507)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 24.12989312)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.65949782)
+    test_utils.compare_results(model["r_square"], 0.999992507)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 24.12989312
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 0.65949782
+    )
 
     # Example no. 3:
     # power curve: 3 * x^3
@@ -268,9 +301,9 @@ def test_power_model():
     #   b = b1 = 3
     #   r^2    = 1.0
     model = next(models)[0]
-    compare_results(model["r_square"], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 3.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 3.0)
+    test_utils.compare_results(model["r_square"], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 3.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 3.0)
 
 
 def test_exp_model():
@@ -294,7 +327,7 @@ def test_exp_model():
         per_key="structure-unit-size",
     )
     assert code.value == 0
-    models = generate_models_by_uid(
+    models = test_utils.generate_models_by_uid(
         profile, "exponential", ["exp::test1", "exp::test2", "exp::test3"]
     )
 
@@ -305,9 +338,13 @@ def test_exp_model():
     #   b = b1 = 1.023778
     #   r^2    = 0.9652
     model = next(models)[0]
-    compare_results(model["r_square"], 0.9652)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0.1377)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.023778)
+    test_utils.compare_results(model["r_square"], 0.9652)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 0.1377
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.023778
+    )
 
     # Example no. 2:
     # link: 'http://www.real-statistics.com/regression/exponential-regression-models/
@@ -317,9 +354,13 @@ def test_exp_model():
     #   b = b1 = 1.016221137
     #   r^2    = 0.88161289
     model = next(models)[0]
-    compare_results(model["r_square"], 0.88161289)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 14.0513516)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.016221137)
+    test_utils.compare_results(model["r_square"], 0.88161289)
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 14.0513516
+    )
+    test_utils.compare_results(
+        [c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 1.016221137
+    )
 
     # Example no. 3:
     # exponential curve y = 1 * 2^x
@@ -328,6 +369,6 @@ def test_exp_model():
     #   b - b1 = 2.0
     #   r^2    = 1.0
     model = next(models)[0]
-    compare_results(model["r_square"], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 1.0)
-    compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 2.0)
+    test_utils.compare_results(model["r_square"], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b0"][0], 1.0)
+    test_utils.compare_results([c["value"] for c in model["coeffs"] if c["name"] == "b1"][0], 2.0)

@@ -3,36 +3,29 @@
 Note that the functionality of the commands themselves are not tested,
 this is done in appropriate test files, only the API is tested."""
 
+# Standard Imports
 import os
-import git
 import re
 import shutil
 import time
 import warnings
 
-from git.exc import GitCommandError
-
-import pytest
+# Third-Party Imports
 from click.testing import CliRunner
+from git.exc import GitCommandError
+import git
+import pytest
 
-import perun.cli as cli
-import perun.cli_groups.utils_cli as utils_cli
-import perun.cli_groups.config_cli as config_cli
-import perun.cli_groups.run_cli as run_cli
-import perun.cli_groups.check_cli as check_cli
+# Perun Imports
+from perun import cli
+from perun.cli_groups import utils_cli, config_cli, run_cli, check_cli
+from perun.logic import config, pcs, stats, temp
+from perun.testing import asserts
+from perun.utils import exceptions, log
 from perun.utils.common import common_kit
-import perun.utils.log as log
-import perun.logic.config as config
-import perun.logic.temp as temp
-import perun.logic.stats as stats
-import perun.utils.exceptions as exceptions
-import perun.check.factory as check
-import perun.logic.pcs as pcs
-
 from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, RunnerReport
-
-import perun.testing.asserts as asserts
+import perun.check.factory as check
 import perun.testing.utils as test_utils
 
 

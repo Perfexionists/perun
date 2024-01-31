@@ -2,10 +2,15 @@
 
 Contains tests for query results of various valid / invalid profiles.
 """
+from __future__ import annotations
 
+# Standard Imports
+
+# Third-Party Imports
 import pytest
-import perun.profile.query as query
-import perun.profile.helpers as helpers
+
+# Perun Imports
+from perun.profile import query, helpers
 import perun.testing.utils as test_utils
 
 

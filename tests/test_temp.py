@@ -1,12 +1,16 @@
-import os
-import pytest
-import json
+"""Basic tests for testing temporary storage of Perun"""
+from __future__ import annotations
 
-import perun.logic.temp as temp
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.logic.pcs as pcs
-import perun.utils.exceptions as exceptions
+# Standard Imports
+import json
+import os
+
+# Third-Party Imports
+import pytest
+
+# Perun Imports
+from perun.logic import index, pcs, store, temp
+from perun.utils import exceptions
 
 
 def test_temp_invalid_paths(pcs_with_empty_git):
@@ -89,7 +93,7 @@ def test_temp_basics(pcs_with_empty_git):
     assert "is not a directory" in str(exc.value)
 
     # Test the Context Manager
-    with temp.TempFile("tmp.file") as tmp_file:
+    with temp.TempFile("tmp.file"):
         assert os.path.exists(os.path.join(".", ".perun", "tmp", "tmp.file"))
     assert not os.path.exists(os.path.join(".", ".perun", "tmp", "tmp.file"))
 

@@ -1,5 +1,7 @@
 """Basic tests for utility package and sanity checks"""
+from __future__ import annotations
 
+# Standard Imports
 import glob
 import pkgutil
 import os
@@ -8,24 +10,21 @@ import subprocess
 import signal
 import sys
 
+# Third-Party Imports
 import pytest
 
-import perun.vcs as vcs
-import perun.collect as collect
-import perun.postprocess as postprocess
-import perun.logic.config as config
-import perun.logic.commands as commands
-import perun.view as view
+# Perun Imports
+from perun import collect, postprocess, view
+from perun.logic import commands, config
+from perun.testing import asserts
+from perun.utils import log
 from perun.utils.common import common_kit, cli_kit
-import perun.testing.asserts as asserts
-import perun.utils.log as log
+from perun.collect.trace.optimizations.structs import Complexity
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
     ResourceLockedException,
 )
-from perun.collect.trace.optimizations.structs import Complexity
-
 from perun.utils.structs import Unit, OrderedEnum, HandledSignals
 from perun.utils.external import environment, commands as external_commands, processes, executable
 
