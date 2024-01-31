@@ -228,7 +228,7 @@ def degradation_between_profiles(
 
 
 def run_degradation_check(
-    degradation_method: str, baseline_profile: Profile, target_profile: Profile, **kwargs
+    degradation_method: str, baseline_profile: Profile, target_profile: Profile, **kwargs: Any
 ) -> Iterable[DegradationInfo]:
     """Factory for running degradations checks
 

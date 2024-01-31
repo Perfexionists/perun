@@ -12,7 +12,7 @@ import os
 # Third-Party Imports
 from git.exc import NoSuchPathError, InvalidGitRepositoryError, GitCommandError
 from git.repo.base import Repo
-from gitdb.exc import BadName
+from gitdb.exc import BadName  # type: ignore
 import git
 
 # Perun Imports
@@ -27,9 +27,9 @@ class GitRepository(AbstractRepository):
         self.vcs_path: str = vcs_path
         self._set_git_repo(vcs_path)
 
-        self.parse_commit_cache = {}
-        self.minor_version_validity_cache = set()
-        self.minor_version_info_cache = {}
+        self.parse_commit_cache: dict[str, MinorVersion] = {}
+        self.minor_version_validity_cache: set[str] = set()
+        self.minor_version_info_cache: dict[str, MinorVersion] = {}
 
     def _set_git_repo(self, vcs_path: str) -> None:
         self.valid_repo = GitRepository.contains_git_repo(vcs_path)

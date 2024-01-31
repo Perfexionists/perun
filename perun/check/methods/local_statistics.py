@@ -255,6 +255,7 @@ class LocalStatistics(AbstractBaseChecker):
         baseline_profile: Profile,
         target_profile: Profile,
         models_strategy: str = "best-model",
+        **__: Any,
     ) -> Iterable[DegradationInfo]:
         """
         The wrapper of `local_statistics` detection method. Method calls the general method
