@@ -233,7 +233,7 @@ def test_fuzzing_sigabort(pcs_with_root):
 
 
 @pytest.mark.usefixtures("cleandir")
-def test_fuzzing_hangs(pcs_with_root):
+def test_fuzzing_hangs(pcs_with_root, monkeypatch):
     """Runs basic tests for fuzzing CLI"""
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), "sources", "fuzz_examples")
@@ -271,6 +271,17 @@ def test_fuzzing_hangs(pcs_with_root):
     hang_test = os.path.join(examples, "hang-test", "hang")
 
     # Fixme: This test is shaky, and should be implemented in different way; it can sometimes fail with error
+    old_run_process = commands.run_safely_external_command
+
+    def patched_run_process(*_, **__):
+        caller = sys._getframe().f_back.f_code.co_name
+        if caller == "target_testing":
+            raise subprocess.TimeoutExpired("./hang-test", 10)
+        else:
+            return old_run_process(*_, **__)
+
+    monkeypatch.setattr(commands, "run_safely_external_command", patched_run_process)
+
     # during the initial testing
     result = runner.invoke(
         cli.fuzz_cmd,
@@ -282,7 +293,7 @@ def test_fuzzing_hangs(pcs_with_root):
             "--source-path", os.path.dirname(hang_test),
             "--gcno-path", os.path.dirname(hang_test),
             "--mutations-per-rule", "proportional",
-            "--hang-timeout", "0.05",
+            "--hang-timeout", "1",
             "--exec-limit", "1",
             "--no-plotting",
             "--collector-params", "time", "repeat: 1",
