@@ -39,26 +39,24 @@ def test_name_generation(capsys):
     Expecting correct outputs
     """
     rt_config = config.runtime()
-    rt_config.set("format.output_profile_template", "%collector%-of-%cmd%-%args%-%workload%")
+    rt_config.set("format.output_profile_template", "%collector%-of-%cmd%-%workload%")
     profile_name = profiles.generate_profile_name(
         {
             "header": {
-                "cmd": "./whatever/sub/fun/mybin",
-                "args": "-O2 -q",
+                "cmd": "./whatever/sub/fun/mybin -O2 -q",
                 "workload": "input.txt",
             },
             "collector_info": {"name": "memory", "params": {}},
         }
     )
-    assert profile_name == "memory-of-mybin-[-O2_-q]-[input.txt].perf"
+    assert profile_name == "memory-of-[mybin_-O2_-q]-[input.txt].perf"
 
     rt_config.set("format.output_profile_template", "%collector%-%postprocessors%-%origin%")
     profile_name = profiles.generate_profile_name(
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
             "header": {
-                "cmd": "./whatever/sub/fun/mybin",
-                "args": "-O2 -q",
+                "cmd": "./whatever/sub/fun/mybin -O2 -q",
                 "workload": "input.txt",
             },
             "postprocessors": [
@@ -79,8 +77,7 @@ def test_name_generation(capsys):
         {
             "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
             "header": {
-                "cmd": "./whatever/sub/fun/mybin",
-                "args": "-O2 -q",
+                "cmd": "./whatever/sub/fun/mybin -O2 -q",
                 "workload": "input.txt",
             },
             "postprocessors": [
@@ -99,8 +96,7 @@ def test_name_generation(capsys):
             {
                 "origin": "c4592b902b7c5773d20693021b76d83de63e4a3a",
                 "header": {
-                    "cmd": "./whatever/sub/fun/mybin",
-                    "args": "-O2 -q",
+                    "cmd": "./whatever/sub/fun/mybin -O2 -q",
                     "workload": "input.txt",
                 },
                 "postprocessors": [

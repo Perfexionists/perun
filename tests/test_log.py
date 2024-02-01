@@ -156,7 +156,7 @@ def test_internals(capsys, monkeypatch):
     # This test could be better
     monkeypatch.setattr("os.getcwd", patched_cwd)
     test_profile = {
-        "header": {"type": "memory", "cmd": "cmd", "args": "args", "workload": "w"},
+        "header": {"type": "memory", "cmd": "cmd", "workload": "w"},
         "collector_info": {"name": "n"},
         "postprocessors": [],
     }

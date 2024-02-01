@@ -24,8 +24,7 @@ def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
         "",
         {
             "vcs": {"type": "git", "url": "../"},
-            "cmds": ["ls"],
-            "args": ["-al"],
+            "cmds": ["ls -al"],
             "workloads": [".", ".."],
             "collectors": [{"name": "time", "params": {"warmup": 1, "repeat": 1}}],
             "postprocessors": [],

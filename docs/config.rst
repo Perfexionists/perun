@@ -145,7 +145,7 @@ List of Supported Options
     information according to the resulting profile. By default the following formatting string is
     set in the global configuration::
 
-        "%collector%-%cmd%-%args%-%workload%-%date%"
+        "%collector%-%cmd%-%workload%-%date%"
 
     The supported tags are as follows:
 
@@ -169,11 +169,6 @@ List of Supported Options
 
         Placeholder for the command that was profiled, i.e. some binary, script or command (refer
         to :munit:`cmds` or :doc:`jobs` for more details).
-
-    ``%args%``:
-
-        Placeholder for arguments that were supplied to the profiled command (refer to
-        :munit:`args` or :doc:`jobs` for more details).
 
     ``%workload%``:
 

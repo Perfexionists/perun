@@ -335,7 +335,6 @@ def test_fuzzing_incorrect(pcs_with_root):
     result = runner.invoke(
         cli.fuzz_cmd,
         [
-            "--args", "-al",
             "--output-dir", ".",
             "--input-sample", ".",
         ],
@@ -348,7 +347,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--output-dir", ".",
         ],
     )  # fmt: skip
@@ -360,7 +358,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
         ],
     )  # fmt: skip
@@ -372,7 +369,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--source-path", "WTF~~notexisting",
@@ -386,7 +382,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--gcno-path", "WTF~~notexisting",
@@ -400,7 +395,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--timeout", "not_number",
@@ -414,7 +408,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--hang-timeout", "0",
@@ -428,7 +421,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--max-size", "1.5",
@@ -442,7 +434,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--max-size-increase", "ola",
@@ -456,7 +447,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--max-size-ratio", "two_hundred",
@@ -470,7 +460,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--exec-limit", "1.6",
@@ -484,7 +473,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--interesting-files-limit", "-1",
@@ -498,7 +486,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--coverage-increase-rate", "notvalidfloat",
@@ -512,7 +499,6 @@ def test_fuzzing_incorrect(pcs_with_root):
         cli.fuzz_cmd,
         [
             "--cmd", "ls",
-            "--args", "-al",
             "--input-sample", ".",
             "--output-dir", ".",
             "--regex-rules", "e",

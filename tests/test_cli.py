@@ -1844,7 +1844,6 @@ def test_check_head(pcs_with_degradations, monkeypatch):
         {
             "vcs": {"type": "git", "url": "../"},
             "cmds": ["echo"],
-            "args": [""],
             "workloads": ["hello"],
             "collectors": [{"name": "time", "params": {"warmup": 1, "repeat": 1}}],
             "postprocessors": [],
@@ -1993,8 +1992,7 @@ def test_run(pcs_with_root, monkeypatch):
         "",
         {
             "vcs": {"type": "git", "url": "../"},
-            "cmds": ["ls"],
-            "args": ["-al"],
+            "cmds": ["ls -al"],
             "workloads": [".", ".."],
             "collectors": [{"name": "time", "params": {"warmup": 1, "repeat": 1}}],
             "postprocessors": [],
@@ -2079,7 +2077,6 @@ def test_error_runs(pcs_with_root, monkeypatch):
         "",
         {
             "vcs": {"type": "git", "url": "../"},
-            "args": ["-al"],
             "workloads": [".", ".."],
             "postprocessors": [{"name": "fokume", "params": {}}],
             "execute": {

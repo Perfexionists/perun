@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
 def construct_job_matrix(
     cmd: list[str],
-    args: list[str],
     workload: list[str],
     collector: list[str],
     postprocessor: list[str],
@@ -77,7 +76,6 @@ def construct_job_matrix(
     }
 
     :param list cmd: binary that will be run
-    :param list args: lists of additional arguments to the job
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -106,10 +104,7 @@ def construct_job_matrix(
     # Construct the actual job matrix
     matrix = {
         str(b): {
-            str(w): [
-                Job(c, posts, Executable(b, a, w)) for c in collector_pairs for a in args or [""]
-            ]
-            for w in workload
+            str(w): [Job(c, posts, Executable(b, w)) for c in collector_pairs] for w in workload
         }
         for b in cmd
     }
@@ -148,7 +143,6 @@ def load_job_info_from_config() -> dict[str, Any]:
 
     info = {
         "cmd": local_config["cmds"],
-        "args": common_kit.get_key_with_aliases(local_config, ("args", "params"), default=[]),
         "workload": local_config.get("workloads", [""]),
         "postprocessor": [post.get("name", "") for post in postprocessors],
         "collector": [collect.get("name", "") for collect in collectors],
@@ -374,7 +368,7 @@ def run_collector_from_cli_context(
     :param str collector_name: name of the collector that will be run
     :param dict collector_params: dictionary with collector params
     """
-    cmd, args, workload = ctx.obj["cmd"], ctx.obj["args"], ctx.obj["workload"]
+    cmd, workload = ctx.obj["cmd"], ctx.obj["workload"]
     minor_versions = ctx.obj["minor_version_list"]
     collector_params.update(ctx.obj["params"])
     run_params = {
@@ -382,7 +376,7 @@ def run_collector_from_cli_context(
         "profile_name": ctx.obj["profile_name"],
     }
     collect_status = run_single_job(
-        cmd, args, workload, [collector_name], [], minor_versions, **run_params
+        cmd, workload, [collector_name], [], minor_versions, **run_params
     )
     if collect_status != CollectStatus.OK:
         log.error("collection of profiles was unsuccessful")
@@ -616,7 +610,6 @@ def generate_jobs_with_history(
 
 def generate_profiles_for(
     cmd: list[str],
-    args: list[str],
     workload: list[str],
     collector: list[str],
     postprocessor: list[str],
@@ -629,7 +622,6 @@ def generate_profiles_for(
     since the generated profiles are not further used.
 
     :param list cmd: list of commands that will be run
-    :param list args: lists of additional arguments to the job
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -637,14 +629,13 @@ def generate_profiles_for(
     :param dict kwargs: dictionary of additional params for postprocessor and collector
     """
     job_matrix, number_of_jobs = construct_job_matrix(
-        cmd, args, workload, collector, postprocessor, **kwargs
+        cmd, workload, collector, postprocessor, **kwargs
     )
     yield from generate_jobs(minor_version_list, job_matrix, number_of_jobs)
 
 
 def run_single_job(
     cmd: list[str],
-    args: list[str],
     workload: list[str],
     collector: list[str],
     postprocessor: list[str],
@@ -654,7 +645,6 @@ def run_single_job(
 ) -> CollectStatus:
     """
     :param list cmd: list of commands that will be run
-    :param list args: lists of additional arguments to the job
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -665,7 +655,7 @@ def run_single_job(
         of collections or postprocessing failed
     """
     job_matrix, number_of_jobs = construct_job_matrix(
-        cmd, args, workload, collector, postprocessor, **kwargs
+        cmd, workload, collector, postprocessor, **kwargs
     )
     generator_function = generate_jobs_with_history if with_history else generate_jobs
     status = CollectStatus.OK

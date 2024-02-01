@@ -111,7 +111,7 @@ def get_initial_coverage(
     for seed in seeds:
         prepare_workspace(fuzzing_config.coverage.gcno_path)
 
-        command = " ".join([os.path.abspath(executable.cmd), executable.args, seed.path])
+        command = " ".join([os.path.abspath(executable.cmd), seed.path])
 
         try:
             commands.run_safely_external_command(command, timeout=timeout)
@@ -146,7 +146,7 @@ def target_testing(
     :return bool: true if the base coverage has just increased
     """
     prepare_workspace(config.coverage.gcno_path)
-    command = " ".join([executable.cmd, executable.args, workload.path])
+    command = " ".join([executable.cmd, workload.path])
 
     try:
         commands.run_safely_external_command(command, timeout=config.hang_timeout)

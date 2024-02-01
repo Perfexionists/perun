@@ -98,8 +98,6 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             Parameter of the collector given by concrete name
         `%cmd%`:
             Command of the job
-        `%args%`:
-            Arguments of the job
         `%workload%`:
             Workload of the job
         `%type%`:
@@ -136,14 +134,10 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             ),
             (
                 r"%cmd%",
-                lambda scanner, token: os.path.split(lookup_value(profile["header"], "cmd", "_"))[
-                    -1
-                ],
-            ),
-            (
-                r"%args%",
                 lambda scanner, token: "["
-                + common_kit.sanitize_filepart(lookup_value(profile["header"], "args", "_"))
+                + common_kit.sanitize_filepart(
+                    os.path.split(lookup_value(profile["header"], "cmd", "_"))[-1]
+                )
                 + "]",
             ),
             (
@@ -196,7 +190,6 @@ def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
             "header": {
                 "type": index_entry.type,
                 "cmd": index_entry.cmd,
-                "args": index_entry.args,
                 "workload": index_entry.workload,
             },
             "collector_info": {"name": index_entry.collector},
@@ -282,7 +275,6 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     return {
         "type": collector.COLLECTOR_TYPE,
         "cmd": job.executable.cmd,
-        "args": job.executable.args,
         "workload": job.executable.workload,
         "units": generate_units(collector),
     }
@@ -330,7 +322,7 @@ def to_string(profile: profiles.Profile) -> str:
     return json.dumps(profile.serialize())
 
 
-def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]:
+def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str]:
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple
@@ -340,19 +332,18 @@ def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]
     return (
         profile["collector_info"]["name"],
         profile_header.get("cmd", ""),
-        profile_header.get("args", ""),
         profile_header.get("workload", ""),
         ", ".join([postprocessor["name"] for postprocessor in profile["postprocessors"]]),
     )
 
 
-def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, str]) -> str:
+def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str]) -> str:
     """Converts tuple to command string
 
-    :param tuple config_tuple: tuple of (collector, cmd, args, workload, postprocessors)
+    :param tuple config_tuple: tuple of (collector, cmd, workload, postprocessors)
     :return: string representing the executed command
     """
-    return " ".join(filter(lambda x: x, config_tuple[1:4]))
+    return " ".join(filter(lambda x: x, config_tuple[1:3]))
 
 
 def extract_job_from_profile(profile: profiles.Profile) -> Job:
@@ -371,9 +362,8 @@ def extract_job_from_profile(profile: profiles.Profile) -> Job:
         posts.append(Unit(postprocessor["name"], postprocessor["params"]))
 
     cmd = profile["header"]["cmd"]
-    args = common_kit.get_key_with_aliases(profile["header"], ("args", "params"))
     workload = profile["header"]["workload"]
-    executable = Executable(cmd, args, workload)
+    executable = Executable(cmd, workload)
 
     return Job(collector, posts, executable)
 
@@ -533,7 +523,6 @@ class ProfileInfo:
         "time",
         "type",
         "cmd",
-        "args",
         "workload",
         "collector",
         "postprocessors",
@@ -564,7 +553,6 @@ class ProfileInfo:
         self.time = mtime
         self.type = profile_info["header"]["type"]
         self.cmd = profile_info["header"]["cmd"]
-        self.args = common_kit.get_key_with_aliases(profile_info["header"], ("args", "params"))
         self.workload = profile_info["header"]["workload"]
         self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [
@@ -574,7 +562,6 @@ class ProfileInfo:
         self.config_tuple = (
             self.collector,
             self.cmd,
-            self.args,
             self.workload,
             ",".join(self.postprocessors),
         )
@@ -612,7 +599,6 @@ class ProfileInfo:
         "type",
         "time",
         "cmd",
-        "args",
         "workload",
         "collector",
         "checksum",

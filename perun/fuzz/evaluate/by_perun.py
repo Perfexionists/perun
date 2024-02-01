@@ -47,7 +47,6 @@ def baseline_testing(
     base_pg = list(
         run.generate_profiles_for(
             [executable.cmd],
-            [executable.args],
             [seeds[0].path],
             [collector],
             postprocessor,
@@ -61,7 +60,6 @@ def baseline_testing(
         target_pg = list(
             run.generate_profiles_for(
                 [executable.cmd],
-                [executable.args],
                 [file.path],
                 [collector],
                 postprocessor,
@@ -101,7 +99,6 @@ def target_testing(
     target_pg = list(
         run.generate_profiles_for(
             [executable.cmd],
-            [executable.args],
             [workload.path],
             [collector],
             postprocessor,
