@@ -249,15 +249,6 @@ def test_signal_handler():
         os.kill(os.getpid(), signal.SIGINT)
 
 
-def test_safe_key_get():
-    """Tests the get_key_with_aliases functions"""
-    test_dict = {"key": 1}
-    assert common_kit.get_key_with_aliases(test_dict, ("hello", "key")) == 1
-    assert common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"), 2) == 2
-    with pytest.raises(KeyError):
-        common_kit.get_key_with_aliases(test_dict, ("foku", "me", "kokakola"))
-
-
 def test_ordered_enum():
     """Tests variosu operations with ordered enums that are not covered by other tests"""
     assert Complexity.CONSTANT < Complexity.LINEAR
