@@ -14,8 +14,12 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     log.info("Symbol discovery phase.")
     perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], kwargs["perf_report"])
     strace_symbols = symbols.get_ftrace_symbols()
+    # run: sudo bpftrace -l 'kprobe:*' > available_bpftrace_kprobe
     kprobe_symbols = symbols.get_bpftrace_symbols("available_bpftrace_kprobe", "kprobe")
+    # run: sudo bpftrace -l 'kfunc:*' > available_bpftrace_func
     kfunc_symbols = symbols.get_bpftrace_symbols("available_bpftrace_kfunc", "kfunc")
+    # run: 1. sudo cp /sys/kernel/tracing/available_filter_functions ./available_filter_functions
+    # 2. Change owner and permissions
     attachable = symbols.filter_available_symbols(
         perf_symbols, kprobe_symbols, exclude=symbols.exclude_btf_deny()
     )
