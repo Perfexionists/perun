@@ -4,9 +4,9 @@ from pathlib import Path
 import click
 
 from perun.logic import runner
+from perun.utils.external import commands
 from perun.utils.structs import CollectStatus
-from perun.utils import log, run_safely_external_command
-
+from perun.utils import log
 from perun.collect.ktrace import symbols, bpfgen, parser
 
 
@@ -30,7 +30,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps(kwargs["kernel_funcs"])
     bpfgen.generate_bpf_c(kwargs["cmd_name"], kwargs["func_to_idx"], kwargs["bpfring_size"])
     build_dir = Path(Path(__file__).resolve().parent, "bpf_build")
-    run_safely_external_command(f"make -C {build_dir}")
+    commands.run_safely_external_command(f"make -C {build_dir}")
     return CollectStatus.OK, "", dict(kwargs)
 
 

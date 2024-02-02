@@ -12,6 +12,7 @@ py3.install_sources(
 subdir('bounds')
 subdir('complexity')
 subdir('kperf')
+subdir('ktrace')
 subdir('memory')
 subdir('time')
 subdir('trace')
