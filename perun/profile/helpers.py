@@ -20,6 +20,7 @@ from typing import Any, TYPE_CHECKING
 import json
 import operator
 import os
+import pathlib
 import re
 import time
 
@@ -287,7 +288,19 @@ def generate_collector_info(job: Job) -> dict[str, Any]:
     :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun
         specification
     """
-    return {"name": job.collector.name, "params": job.collector.params}
+    def sanitize_value(value: Any) -> Any:
+        """Helper function for sanitizing selected values that are JSON-undumpable
+
+        :param value: anything
+        :return: either the value or string representation
+        """
+        if isinstance(value, (pathlib.Path,)):
+            return str(value)
+        return value
+    sanitized_params = {
+        k: sanitize_value(v) for k, v in job.collector.params.items()
+    }
+    return {"name": job.collector.name, "params": sanitized_params}
 
 
 def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:

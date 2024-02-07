@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import itertools
 import pathlib
 import struct
-from typing import Any, Generic, TypeVar, Type
+from typing import Any, Generic, TypeVar, Type, Literal
 from collections.abc import Iterator
 from abc import ABC, abstractmethod
 
@@ -18,7 +19,6 @@ DataT = TypeVar("DataT", bound="FuncData")
 
 
 class FuncData(ABC):
-
     @abstractmethod
     def update(self, inclusive_t: int, exclusive_t: int, callees_cnt: int) -> None:
         ...
@@ -168,23 +168,25 @@ def parse_traces(
 def traces_flat_to_pandas(trace_contexts: TraceContextsMap[FuncDataFlat]) -> pd.DataFrame:
     pandas_rows: list[tuple[Any, ...]] = []
     for func_name, trace, func_times in trace_contexts:
-        pandas_rows.append((
-            func_name,
-            " -> ".join(trace),
-            func_times.call_count,
-            func_times.callees_count,
-            func_times.callees_count / func_times.inclusive_time,
-            func_times.inclusive_time / NS_TO_MS,
-            func_times.inclusive_time / trace_contexts.total_runtime,
-            func_times.exclusive_time / NS_TO_MS,
-            func_times.exclusive_time / trace_contexts.total_runtime,
-            func_times.inclusive_time / func_times.call_count / NS_TO_MS,
-            func_times.exclusive_time / func_times.call_count / NS_TO_MS,
-            func_times.incl_t_min,
-            func_times.excl_t_min,
-            func_times.incl_t_max,
-            func_times.excl_t_max,
-        ))
+        pandas_rows.append(
+            (
+                func_name,
+                " -> ".join(trace),
+                func_times.call_count,
+                func_times.callees_count,
+                func_times.callees_count / func_times.inclusive_time,
+                func_times.inclusive_time / NS_TO_MS,
+                func_times.inclusive_time / trace_contexts.total_runtime,
+                func_times.exclusive_time / NS_TO_MS,
+                func_times.exclusive_time / trace_contexts.total_runtime,
+                func_times.inclusive_time / func_times.call_count / NS_TO_MS,
+                func_times.exclusive_time / func_times.call_count / NS_TO_MS,
+                func_times.incl_t_min,
+                func_times.excl_t_min,
+                func_times.incl_t_max,
+                func_times.excl_t_max,
+            )
+        )
     df = pd.DataFrame(
         pandas_rows,
         columns=[
@@ -203,36 +205,86 @@ def traces_flat_to_pandas(trace_contexts: TraceContextsMap[FuncDataFlat]) -> pd.
             "E Min",
             "I Max",
             "E Max",
-        ]
+        ],
     )
     df.sort_values(by=["Total Exclusive T [%]"], inplace=True, ascending=False)
     return df
 
 
+def append_resources(
+    func_name: str,
+    trace: tuple[str],
+    resources: list[dict[str, Any]],
+    times: list[int],
+    resource_type: Literal["exclusive", "inclusive"],
+) -> None:
+    """Helper function for simple clustering of the resources
+
+    :param func_name: name of the function for which the resources correspond
+    :param trace: tuple of function names corresponding to the trace of the resource
+    :param resources: resolting resources
+    :param times: measured inclusive/exlusive times
+    :param resource_type: type of resources added (currently supports inclusive or exclusive time
+    """
+    for _, group in itertools.groupby(times, lambda x: (len(str(x)), int(str(x)[0]))):
+        group = list(group)
+        resources.append(
+            {
+                "amount": group[0],
+                "uid": func_name,
+                "ncalls": len(group),
+                "type": "time",
+                "subytype": resource_type,
+                "trace": [{"func": f for f in trace}],
+            }
+        )
+
+
+def trace_details_to_resources(
+    trace_contexts: TraceContextsMap[FuncDataDetails],
+) -> list[dict[str, Any]]:
+    """Converts the traces into a list of resources saveable to Perun
+
+    :param trace_contexts: structure that holds trace context
+    :return: list of dictionaries, with key and values as needed by perun
+    """
+    resources = []
+    for func_name, trace, func_times in trace_contexts:
+        append_resources(func_name, trace, resources, func_times.inclusive_time, "inclusive")
+        append_resources(func_name, trace, resources, func_times.exclusive_time, "exclusive")
+    return resources
+
+
 def traces_details_to_pandas(trace_contexts: TraceContextsMap[FuncDataDetails]) -> pd.DataFrame:
     pandas_rows: list[tuple[Any, ...]] = []
     for func_name, trace, func_times in trace_contexts:
-        inclusive_t_stats = pd.Series(func_times.inclusive_time).describe(percentiles=[.10, .25, .50, .75, .90])
+        inclusive_t_stats = pd.Series(func_times.inclusive_time).describe(
+            percentiles=[0.10, 0.25, 0.50, 0.75, 0.90]
+        )
         inclusive_sum = sum(func_times.inclusive_time)
-        exclusive_t_stats = pd.Series(func_times.exclusive_time).describe(percentiles=[.10, .25, .50, .75, .90])
+        exclusive_t_stats = pd.Series(func_times.exclusive_time).describe(
+            percentiles=[0.10, 0.25, 0.50, 0.75, 0.90]
+        )
         exclusive_sum = sum(func_times.exclusive_time)
         incl_excl_flattened = [
             val / NS_TO_MS
             for incl_excl_tuple in zip(inclusive_t_stats.iloc[1:], exclusive_t_stats.iloc[1:])
             for val in incl_excl_tuple
         ]
-        pandas_rows.append((
-            func_name,
-            " -> ".join(trace),
-            int(inclusive_t_stats["count"]),
-            func_times.callees_count,
-            func_times.callees_count / len(func_times.inclusive_time),
-            inclusive_sum / NS_TO_MS,
-            inclusive_sum / trace_contexts.total_runtime,
-            exclusive_sum / NS_TO_MS,
-            exclusive_sum / trace_contexts.total_runtime,
-            *incl_excl_flattened,
-        ))
+        pandas_rows.append(
+            (
+                func_name,
+                " -> ".join(trace),
+                int(inclusive_t_stats["count"]),
+                func_times.callees_count,
+                func_times.callees_count / len(func_times.inclusive_time),
+                inclusive_sum / NS_TO_MS,
+                inclusive_sum / trace_contexts.total_runtime,
+                exclusive_sum / NS_TO_MS,
+                exclusive_sum / trace_contexts.total_runtime,
+                *incl_excl_flattened,
+            )
+        )
     log.cprintln("Parsing DONE. Transforming to Pandas.", colour="green")
     df = pd.DataFrame(
         pandas_rows,
@@ -264,7 +316,7 @@ def traces_details_to_pandas(trace_contexts: TraceContextsMap[FuncDataDetails]) 
             "E 90%",
             "I Max",
             "E Max",
-        ]
+        ],
     )
     df.sort_values(by=["Total Exclusive T [%]"], inplace=True, ascending=False)
     return df

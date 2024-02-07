@@ -1,7 +1,34 @@
+"""Collection of handing of eBPF primitives, i.e. symbols such as kprobes or kfuncs"""
 from __future__ import annotations
+
+# Standard Imports
+from typing import Literal
 from pathlib import Path
 
-from typing import Literal
+# Third-Party Imports
+# Perun Imports
+
+
+KernelSymbolType = Literal["kprobe", "kfunc", "ftrace"]
+
+
+def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]:
+    """Obtains available symbols for profiling for given kernel and given probe_type
+
+    :param kernel: identification of the kernel (as returned by `uname -r`)
+    :param probe_type: type fo the probes, one of the ('ftrace', 'kprobe' or 'kfunc')
+    :return: set of available symbols
+    """
+    # To obtain ftrace_symbols available to your system run the following:
+    #     1. sudo cp /sys/kernel/tracing/available_filter_functions ./available_filter_functions;
+    #     2. Change owner and permissions.
+    if probe_type == 'ftrace':
+        return get_ftrace_symbols()
+    # To obtain 'kprobes' or 'kfuncs' runs on of the following:
+    #     1. sudo bpftrace -l 'kprobe:*' > available_bpftrace_kprobe
+    #     2. sudo bpftrace -l 'kfunc:*' > available_bpftrace_func
+    else:
+        return get_bpftrace_symbols(f"symbols/{kernel}_bpftrace_{probe_type}", "kprobe")
 
 
 def parse_perf_events(cmd_filter: str, perf_file: Path) -> list[str]:
@@ -20,7 +47,7 @@ def parse_perf_events(cmd_filter: str, perf_file: Path) -> list[str]:
 
 
 def get_ftrace_symbols() -> set[str]:
-    tracing_file = Path(Path(__file__).resolve().parent, "available_filter_functions")
+    tracing_file = Path(Path(__file__).resolve().parent, "symbols/available_filter_functions")
     attachable: set[str] = set()
     with open(tracing_file, "r", encoding="utf-8") as attachable_handle:
         # The file is potentially big, read line by line

@@ -1,6 +1,7 @@
 """Collection of functions for running collectors and postprocessors"""
 from __future__ import annotations
 
+import sys
 # Standard Imports
 from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
 import distutils.util as dutils
