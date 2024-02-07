@@ -9,7 +9,7 @@ char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
-	__uint(max_entries, 16777216);
+	__uint(max_entries, 67108864);
 } rb SEC(".maps");
 
 uint64_t events_lost = 0;
@@ -91,8 +91,8 @@ int BPF_KRETPROBE(___pte_free_tlb_exit)
 	return 0;
 }
 
-SEC("kprobe/___slab_alloc")
-int BPF_KPROBE(___slab_alloc)
+SEC("kprobe/__alloc_pages")
+int BPF_KPROBE(__alloc_pages)
 {
 	pid_t pid;
 	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
@@ -118,59 +118,6 @@ int BPF_KPROBE(___slab_alloc)
 	return 0;
 }
 
-SEC("kretprobe/___slab_alloc")
-int BPF_KRETPROBE(___slab_alloc_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (1 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/__alloc_pages")
-int BPF_KPROBE(__alloc_pages)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (2 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
 SEC("kretprobe/__alloc_pages")
 int BPF_KRETPROBE(__alloc_pages_exit)
 {
@@ -186,7 +133,7 @@ int BPF_KRETPROBE(__alloc_pages_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (2 << 4) | 0x1;
+	e->data[0] = (1 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -213,7 +160,7 @@ int BPF_KPROBE(__anon_vma_interval_tree_augment_rotate)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (3 << 4);
+	e->data[0] = (2 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -239,7 +186,7 @@ int BPF_KRETPROBE(__anon_vma_interval_tree_augment_rotate_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (3 << 4) | 0x1;
+	e->data[0] = (2 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -266,7 +213,7 @@ int BPF_KPROBE(__cgroup_throttle_swaprate)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (4 << 4);
+	e->data[0] = (3 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -292,7 +239,7 @@ int BPF_KRETPROBE(__cgroup_throttle_swaprate_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (4 << 4) | 0x1;
+	e->data[0] = (3 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -319,7 +266,7 @@ int BPF_KPROBE(__cond_resched)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (5 << 4);
+	e->data[0] = (4 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -345,7 +292,7 @@ int BPF_KRETPROBE(__cond_resched_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (5 << 4) | 0x1;
+	e->data[0] = (4 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -372,7 +319,7 @@ int BPF_KPROBE(__count_memcg_events)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (6 << 4);
+	e->data[0] = (5 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -398,7 +345,7 @@ int BPF_KRETPROBE(__count_memcg_events_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (6 << 4) | 0x1;
+	e->data[0] = (5 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -425,7 +372,7 @@ int BPF_KPROBE(__handle_mm_fault)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (7 << 4);
+	e->data[0] = (6 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -451,7 +398,7 @@ int BPF_KRETPROBE(__handle_mm_fault_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (7 << 4) | 0x1;
+	e->data[0] = (6 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -478,7 +425,7 @@ int BPF_KPROBE(__mem_cgroup_charge)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (8 << 4);
+	e->data[0] = (7 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -504,7 +451,7 @@ int BPF_KRETPROBE(__mem_cgroup_charge_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (8 << 4) | 0x1;
+	e->data[0] = (7 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -531,7 +478,7 @@ int BPF_KPROBE(__mod_lruvec_page_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (9 << 4);
+	e->data[0] = (8 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -557,7 +504,7 @@ int BPF_KRETPROBE(__mod_lruvec_page_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (9 << 4) | 0x1;
+	e->data[0] = (8 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -584,7 +531,7 @@ int BPF_KPROBE(__mod_lruvec_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (10 << 4);
+	e->data[0] = (9 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -610,7 +557,7 @@ int BPF_KRETPROBE(__mod_lruvec_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (10 << 4) | 0x1;
+	e->data[0] = (9 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -637,7 +584,7 @@ int BPF_KPROBE(__mod_memcg_lruvec_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (11 << 4);
+	e->data[0] = (10 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -663,7 +610,7 @@ int BPF_KRETPROBE(__mod_memcg_lruvec_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (11 << 4) | 0x1;
+	e->data[0] = (10 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -690,7 +637,7 @@ int BPF_KPROBE(__mod_node_page_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (12 << 4);
+	e->data[0] = (11 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -716,7 +663,7 @@ int BPF_KRETPROBE(__mod_node_page_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (12 << 4) | 0x1;
+	e->data[0] = (11 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -743,7 +690,7 @@ int BPF_KPROBE(__mod_zone_page_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (13 << 4);
+	e->data[0] = (12 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -769,7 +716,7 @@ int BPF_KRETPROBE(__mod_zone_page_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (13 << 4) | 0x1;
+	e->data[0] = (12 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -796,7 +743,7 @@ int BPF_KPROBE(__next_zones_zonelist)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (14 << 4);
+	e->data[0] = (13 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -822,7 +769,7 @@ int BPF_KRETPROBE(__next_zones_zonelist_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (14 << 4) | 0x1;
+	e->data[0] = (13 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -849,7 +796,7 @@ int BPF_KPROBE(__page_set_anon_rmap)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (15 << 4);
+	e->data[0] = (14 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -875,113 +822,7 @@ int BPF_KRETPROBE(__page_set_anon_rmap_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (15 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/__pagevec_lru_add")
-int BPF_KPROBE(__pagevec_lru_add)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (16 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/__pagevec_lru_add")
-int BPF_KRETPROBE(__pagevec_lru_add_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (16 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/__slab_free")
-int BPF_KPROBE(__slab_free)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (17 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/__slab_free")
-int BPF_KRETPROBE(__slab_free_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (17 << 4) | 0x1;
+	e->data[0] = (14 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1008,7 +849,7 @@ int BPF_KPROBE(__tlb_remove_page_size)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (18 << 4);
+	e->data[0] = (15 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1034,60 +875,7 @@ int BPF_KRETPROBE(__tlb_remove_page_size_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (18 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/__unfreeze_partials")
-int BPF_KPROBE(__unfreeze_partials)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (19 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/__unfreeze_partials")
-int BPF_KRETPROBE(__unfreeze_partials_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (19 << 4) | 0x1;
+	e->data[0] = (15 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1114,7 +902,7 @@ int BPF_KPROBE(__vma_adjust)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (20 << 4);
+	e->data[0] = (16 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1140,7 +928,7 @@ int BPF_KRETPROBE(__vma_adjust_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (20 << 4) | 0x1;
+	e->data[0] = (16 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1167,7 +955,7 @@ int BPF_KPROBE(__x64_sys_mprotect)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (21 << 4);
+	e->data[0] = (17 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1193,7 +981,7 @@ int BPF_KRETPROBE(__x64_sys_mprotect_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (21 << 4) | 0x1;
+	e->data[0] = (17 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1220,7 +1008,7 @@ int BPF_KPROBE(_raw_spin_lock)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (22 << 4);
+	e->data[0] = (18 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1246,60 +1034,7 @@ int BPF_KRETPROBE(_raw_spin_lock_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (22 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/_raw_spin_unlock")
-int BPF_KPROBE(_raw_spin_unlock)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (23 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/_raw_spin_unlock")
-int BPF_KRETPROBE(_raw_spin_unlock_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (23 << 4) | 0x1;
+	e->data[0] = (18 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1326,7 +1061,7 @@ int BPF_KPROBE(acct_collect)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (24 << 4);
+	e->data[0] = (19 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1352,7 +1087,7 @@ int BPF_KRETPROBE(acct_collect_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (24 << 4) | 0x1;
+	e->data[0] = (19 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1379,7 +1114,7 @@ int BPF_KPROBE(add_mm_counter_fast)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (25 << 4);
+	e->data[0] = (20 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1405,60 +1140,7 @@ int BPF_KRETPROBE(add_mm_counter_fast_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (25 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/alloc_pages_vma")
-int BPF_KPROBE(alloc_pages_vma)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (26 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/alloc_pages_vma")
-int BPF_KRETPROBE(alloc_pages_vma_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (26 << 4) | 0x1;
+	e->data[0] = (20 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1485,7 +1167,7 @@ int BPF_KPROBE(anon_vma_interval_tree_insert)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (27 << 4);
+	e->data[0] = (21 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1511,60 +1193,7 @@ int BPF_KRETPROBE(anon_vma_interval_tree_insert_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (27 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/bad_range")
-int BPF_KPROBE(bad_range)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (28 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/bad_range")
-int BPF_KRETPROBE(bad_range_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (28 << 4) | 0x1;
+	e->data[0] = (21 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1591,7 +1220,7 @@ int BPF_KPROBE(cgroup_rstat_updated)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (29 << 4);
+	e->data[0] = (22 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1617,7 +1246,7 @@ int BPF_KRETPROBE(cgroup_rstat_updated_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (29 << 4) | 0x1;
+	e->data[0] = (22 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1644,7 +1273,7 @@ int BPF_KPROBE(change_protection)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (30 << 4);
+	e->data[0] = (23 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1670,7 +1299,7 @@ int BPF_KRETPROBE(change_protection_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (30 << 4) | 0x1;
+	e->data[0] = (23 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1697,7 +1326,7 @@ int BPF_KPROBE(charge_memcg)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (31 << 4);
+	e->data[0] = (24 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1723,7 +1352,7 @@ int BPF_KRETPROBE(charge_memcg_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (31 << 4) | 0x1;
+	e->data[0] = (24 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1750,7 +1379,7 @@ int BPF_KPROBE(cpuset_nodemask_valid_mems_allowed)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (32 << 4);
+	e->data[0] = (25 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1776,7 +1405,7 @@ int BPF_KRETPROBE(cpuset_nodemask_valid_mems_allowed_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (32 << 4) | 0x1;
+	e->data[0] = (25 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1803,7 +1432,7 @@ int BPF_KPROBE(down_read_trylock)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (33 << 4);
+	e->data[0] = (26 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1829,7 +1458,7 @@ int BPF_KRETPROBE(down_read_trylock_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (33 << 4) | 0x1;
+	e->data[0] = (26 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1856,7 +1485,7 @@ int BPF_KPROBE(down_write)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (34 << 4);
+	e->data[0] = (27 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1882,7 +1511,7 @@ int BPF_KRETPROBE(down_write_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (34 << 4) | 0x1;
+	e->data[0] = (27 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1909,7 +1538,7 @@ int BPF_KPROBE(find_vma)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (35 << 4);
+	e->data[0] = (28 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1935,7 +1564,7 @@ int BPF_KRETPROBE(find_vma_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (35 << 4) | 0x1;
+	e->data[0] = (28 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1962,7 +1591,7 @@ int BPF_KPROBE(flush_tlb_batched_pending)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (36 << 4);
+	e->data[0] = (29 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -1988,7 +1617,7 @@ int BPF_KRETPROBE(flush_tlb_batched_pending_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (36 << 4) | 0x1;
+	e->data[0] = (29 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2015,7 +1644,7 @@ int BPF_KPROBE(flush_tlb_func)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (37 << 4);
+	e->data[0] = (30 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2041,7 +1670,7 @@ int BPF_KRETPROBE(flush_tlb_func_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (37 << 4) | 0x1;
+	e->data[0] = (30 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2068,7 +1697,7 @@ int BPF_KPROBE(folio_add_lru)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (38 << 4);
+	e->data[0] = (31 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2094,7 +1723,7 @@ int BPF_KRETPROBE(folio_add_lru_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (38 << 4) | 0x1;
+	e->data[0] = (31 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2121,7 +1750,7 @@ int BPF_KPROBE(folio_lruvec_lock_irqsave)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (39 << 4);
+	e->data[0] = (32 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2147,7 +1776,7 @@ int BPF_KRETPROBE(folio_lruvec_lock_irqsave_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (39 << 4) | 0x1;
+	e->data[0] = (32 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2174,7 +1803,7 @@ int BPF_KPROBE(folio_mapping)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (40 << 4);
+	e->data[0] = (33 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2200,7 +1829,7 @@ int BPF_KRETPROBE(folio_mapping_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (40 << 4) | 0x1;
+	e->data[0] = (33 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2227,7 +1856,7 @@ int BPF_KPROBE(free_pcppages_bulk)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (41 << 4);
+	e->data[0] = (34 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2253,7 +1882,7 @@ int BPF_KRETPROBE(free_pcppages_bulk_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (41 << 4) | 0x1;
+	e->data[0] = (34 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2280,7 +1909,7 @@ int BPF_KPROBE(free_pgtables)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (42 << 4);
+	e->data[0] = (35 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2306,7 +1935,7 @@ int BPF_KRETPROBE(free_pgtables_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (42 << 4) | 0x1;
+	e->data[0] = (35 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2333,7 +1962,7 @@ int BPF_KPROBE(free_swap_cache)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (43 << 4);
+	e->data[0] = (36 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2359,60 +1988,7 @@ int BPF_KRETPROBE(free_swap_cache_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (43 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/free_unref_page_commit.constprop.0")
-int BPF_KPROBE(free_unref_page_commit_constprop_0)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (44 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/free_unref_page_commit.constprop.0")
-int BPF_KRETPROBE(free_unref_page_commit_constprop_0_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (44 << 4) | 0x1;
+	e->data[0] = (36 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2439,7 +2015,7 @@ int BPF_KPROBE(free_unref_page_list)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (45 << 4);
+	e->data[0] = (37 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2465,7 +2041,7 @@ int BPF_KRETPROBE(free_unref_page_list_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (45 << 4) | 0x1;
+	e->data[0] = (37 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2492,7 +2068,7 @@ int BPF_KPROBE(get_mem_cgroup_from_mm)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (46 << 4);
+	e->data[0] = (38 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2518,7 +2094,7 @@ int BPF_KRETPROBE(get_mem_cgroup_from_mm_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (46 << 4) | 0x1;
+	e->data[0] = (38 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2545,7 +2121,7 @@ int BPF_KPROBE(get_page_from_freelist)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (47 << 4);
+	e->data[0] = (39 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2571,7 +2147,7 @@ int BPF_KRETPROBE(get_page_from_freelist_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (47 << 4) | 0x1;
+	e->data[0] = (39 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2598,7 +2174,7 @@ int BPF_KPROBE(handle_mm_fault)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (48 << 4);
+	e->data[0] = (40 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2624,60 +2200,7 @@ int BPF_KRETPROBE(handle_mm_fault_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (48 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/ima_file_mprotect")
-int BPF_KPROBE(ima_file_mprotect)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (49 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/ima_file_mprotect")
-int BPF_KRETPROBE(ima_file_mprotect_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (49 << 4) | 0x1;
+	e->data[0] = (40 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2704,7 +2227,7 @@ int BPF_KPROBE(kmem_cache_alloc)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (50 << 4);
+	e->data[0] = (41 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2730,7 +2253,7 @@ int BPF_KRETPROBE(kmem_cache_alloc_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (50 << 4) | 0x1;
+	e->data[0] = (41 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2757,7 +2280,7 @@ int BPF_KPROBE(kthread_blkcg)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (51 << 4);
+	e->data[0] = (42 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2783,7 +2306,7 @@ int BPF_KRETPROBE(kthread_blkcg_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (51 << 4) | 0x1;
+	e->data[0] = (42 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2810,7 +2333,7 @@ int BPF_KPROBE(lock_page_memcg)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (52 << 4);
+	e->data[0] = (43 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2836,7 +2359,7 @@ int BPF_KRETPROBE(lock_page_memcg_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (52 << 4) | 0x1;
+	e->data[0] = (43 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2863,7 +2386,7 @@ int BPF_KPROBE(lru_cache_add)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (53 << 4);
+	e->data[0] = (44 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2889,7 +2412,7 @@ int BPF_KRETPROBE(lru_cache_add_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (53 << 4) | 0x1;
+	e->data[0] = (44 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2916,7 +2439,7 @@ int BPF_KPROBE(lru_cache_add_inactive_or_unevictable)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (54 << 4);
+	e->data[0] = (45 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -2942,60 +2465,7 @@ int BPF_KRETPROBE(lru_cache_add_inactive_or_unevictable_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (54 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/mem_cgroup_charge_statistics")
-int BPF_KPROBE(mem_cgroup_charge_statistics)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (55 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/mem_cgroup_charge_statistics")
-int BPF_KRETPROBE(mem_cgroup_charge_statistics_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (55 << 4) | 0x1;
+	e->data[0] = (45 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3022,7 +2492,7 @@ int BPF_KPROBE(mem_cgroup_from_task)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (56 << 4);
+	e->data[0] = (46 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3048,7 +2518,7 @@ int BPF_KRETPROBE(mem_cgroup_from_task_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (56 << 4) | 0x1;
+	e->data[0] = (46 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3075,7 +2545,7 @@ int BPF_KPROBE(mem_cgroup_update_lru_size)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (57 << 4);
+	e->data[0] = (47 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3101,7 +2571,7 @@ int BPF_KRETPROBE(mem_cgroup_update_lru_size_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (57 << 4) | 0x1;
+	e->data[0] = (47 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3128,7 +2598,7 @@ int BPF_KPROBE(memcg_check_events)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (58 << 4);
+	e->data[0] = (48 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3154,7 +2624,7 @@ int BPF_KRETPROBE(memcg_check_events_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (58 << 4) | 0x1;
+	e->data[0] = (48 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3181,7 +2651,7 @@ int BPF_KPROBE(mod_objcg_state)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (59 << 4);
+	e->data[0] = (49 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3207,7 +2677,7 @@ int BPF_KRETPROBE(mod_objcg_state_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (59 << 4) | 0x1;
+	e->data[0] = (49 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3234,7 +2704,7 @@ int BPF_KPROBE(native_flush_tlb_one_user)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (60 << 4);
+	e->data[0] = (50 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3260,7 +2730,7 @@ int BPF_KRETPROBE(native_flush_tlb_one_user_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (60 << 4) | 0x1;
+	e->data[0] = (50 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3287,7 +2757,7 @@ int BPF_KPROBE(obj_cgroup_charge)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (61 << 4);
+	e->data[0] = (51 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3313,7 +2783,7 @@ int BPF_KRETPROBE(obj_cgroup_charge_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (61 << 4) | 0x1;
+	e->data[0] = (51 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3340,7 +2810,7 @@ int BPF_KPROBE(page_add_new_anon_rmap)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (62 << 4);
+	e->data[0] = (52 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3366,7 +2836,7 @@ int BPF_KRETPROBE(page_add_new_anon_rmap_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (62 << 4) | 0x1;
+	e->data[0] = (52 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3393,7 +2863,7 @@ int BPF_KPROBE(page_counter_try_charge)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (63 << 4);
+	e->data[0] = (53 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3419,7 +2889,7 @@ int BPF_KRETPROBE(page_counter_try_charge_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (63 << 4) | 0x1;
+	e->data[0] = (53 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3446,7 +2916,7 @@ int BPF_KPROBE(page_remove_rmap)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (64 << 4);
+	e->data[0] = (54 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3472,7 +2942,7 @@ int BPF_KRETPROBE(page_remove_rmap_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (64 << 4) | 0x1;
+	e->data[0] = (54 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3499,7 +2969,7 @@ int BPF_KPROBE(pmd_install)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (65 << 4);
+	e->data[0] = (55 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3525,113 +2995,7 @@ int BPF_KRETPROBE(pmd_install_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (65 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/policy_node")
-int BPF_KPROBE(policy_node)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (66 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/policy_node")
-int BPF_KRETPROBE(policy_node_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (66 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/policy_nodemask")
-int BPF_KPROBE(policy_nodemask)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (67 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/policy_nodemask")
-int BPF_KRETPROBE(policy_nodemask_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (67 << 4) | 0x1;
+	e->data[0] = (55 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3658,7 +3022,7 @@ int BPF_KPROBE(rcu_sched_clock_irq)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (68 << 4);
+	e->data[0] = (56 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3684,7 +3048,7 @@ int BPF_KRETPROBE(rcu_sched_clock_irq_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (68 << 4) | 0x1;
+	e->data[0] = (56 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3711,7 +3075,7 @@ int BPF_KPROBE(release_pages)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (69 << 4);
+	e->data[0] = (57 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3737,60 +3101,7 @@ int BPF_KRETPROBE(release_pages_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (69 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/remove_vma")
-int BPF_KPROBE(remove_vma)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (70 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/remove_vma")
-int BPF_KRETPROBE(remove_vma_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (70 << 4) | 0x1;
+	e->data[0] = (57 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3817,7 +3128,7 @@ int BPF_KPROBE(rmqueue_bulk)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (71 << 4);
+	e->data[0] = (58 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3843,60 +3154,7 @@ int BPF_KRETPROBE(rmqueue_bulk_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (71 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/selinux_file_mprotect")
-int BPF_KPROBE(selinux_file_mprotect)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (72 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/selinux_file_mprotect")
-int BPF_KRETPROBE(selinux_file_mprotect_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (72 << 4) | 0x1;
+	e->data[0] = (58 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3923,7 +3181,7 @@ int BPF_KPROBE(try_charge_memcg)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (73 << 4);
+	e->data[0] = (59 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3949,7 +3207,7 @@ int BPF_KRETPROBE(try_charge_memcg_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (73 << 4) | 0x1;
+	e->data[0] = (59 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -3976,7 +3234,7 @@ int BPF_KPROBE(uncharge_folio)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (74 << 4);
+	e->data[0] = (60 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4002,7 +3260,7 @@ int BPF_KRETPROBE(uncharge_folio_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (74 << 4) | 0x1;
+	e->data[0] = (60 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4029,7 +3287,7 @@ int BPF_KPROBE(unlock_page_memcg)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (75 << 4);
+	e->data[0] = (61 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4055,7 +3313,7 @@ int BPF_KRETPROBE(unlock_page_memcg_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (75 << 4) | 0x1;
+	e->data[0] = (61 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4082,7 +3340,7 @@ int BPF_KPROBE(unmap_page_range)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (76 << 4);
+	e->data[0] = (62 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4108,7 +3366,7 @@ int BPF_KRETPROBE(unmap_page_range_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (76 << 4) | 0x1;
+	e->data[0] = (62 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4135,7 +3393,7 @@ int BPF_KPROBE(unmap_vmas)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (77 << 4);
+	e->data[0] = (63 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4161,7 +3419,7 @@ int BPF_KRETPROBE(unmap_vmas_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (77 << 4) | 0x1;
+	e->data[0] = (63 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4188,7 +3446,7 @@ int BPF_KPROBE(up_read)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (78 << 4);
+	e->data[0] = (64 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4214,7 +3472,7 @@ int BPF_KRETPROBE(up_read_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (78 << 4) | 0x1;
+	e->data[0] = (64 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4241,7 +3499,7 @@ int BPF_KPROBE(up_write)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (79 << 4);
+	e->data[0] = (65 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4267,7 +3525,7 @@ int BPF_KRETPROBE(up_write_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (79 << 4) | 0x1;
+	e->data[0] = (65 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4294,7 +3552,7 @@ int BPF_KPROBE(vm_area_dup)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (80 << 4);
+	e->data[0] = (66 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4320,7 +3578,7 @@ int BPF_KRETPROBE(vm_area_dup_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (80 << 4) | 0x1;
+	e->data[0] = (66 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4347,7 +3605,7 @@ int BPF_KPROBE(vm_normal_page)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (81 << 4);
+	e->data[0] = (67 << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
@@ -4373,113 +3631,7 @@ int BPF_KRETPROBE(vm_normal_page_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (81 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/vma_gap_callbacks_rotate")
-int BPF_KPROBE(vma_gap_callbacks_rotate)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (82 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/vma_gap_callbacks_rotate")
-int BPF_KRETPROBE(vma_gap_callbacks_rotate_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (82 << 4) | 0x1;
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kprobe/vmacache_find")
-int BPF_KPROBE(vmacache_find)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (83 << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
-SEC("kretprobe/vmacache_find")
-int BPF_KRETPROBE(vmacache_find_exit)
-{
-	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
-		return 0;
-	}
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = (83 << 4) | 0x1;
+	e->data[0] = (67 << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID

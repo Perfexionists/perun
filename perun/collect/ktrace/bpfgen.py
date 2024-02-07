@@ -1,9 +1,27 @@
+"""
+Generator of eBPF programs
+"""
+from __future__ import annotations
+
+# Standard Imports
 from pathlib import Path
 
+# Third-Party Imports
 import jinja2
+
+# Perun Imports
 
 
 def generate_bpf_c(cmd_name: str, symbol_map: dict[str, int], ring_size: int) -> None:
+    """Generates eBPF program for given command, symbol map and ring size
+
+    Increasing ring size, will lead to higher memory usage,
+    but might impact the throughput of handling events.
+
+    :param cmd_name: profiled command
+    :param symbol_map: map of functions to custom indexes for storing data
+    :param ring_size: size of the ring buffer in the eBPF program
+    """
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun.collect.ktrace", "templates"))
     bpf_template = env.get_template("bpf_template_kprobes.c")
     content = bpf_template.render(
