@@ -306,6 +306,11 @@ def test_log_common(capsys):
     assert "\x1b[1m\x1b[37mskipped\x1b[0m\n" in out
 
 
+def test_processes():
+    assert processes.is_process_running("init") == True
+    assert processes.is_process_running("nonexistent") == False
+
+
 def test_logger(capsys):
     stdout_log = log.Logger(sys.stdout)
 

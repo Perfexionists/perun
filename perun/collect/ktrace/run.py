@@ -3,7 +3,6 @@
 # Standard Imports
 from typing import Any
 from pathlib import Path
-import os
 import pickle
 import time
 
@@ -12,11 +11,13 @@ import click
 
 # Perun Imports
 from perun.logic import runner
-from perun.utils.external import commands
+from perun.utils.external import commands, processes
 from perun.utils.structs import CollectStatus
 from perun.utils import log
 from perun.collect.ktrace import symbols, bpfgen, interpret
 
+
+BUSY_WAIT: int = 5
 
 def get_kernel():
     """Returns the identification of the kernel
@@ -39,8 +40,9 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     )
 
     log.info(f"Found {len(attachable_symbols)} attachable symbols.")
-    for func in attachable_symbols:
-        log.info(f"  {func}")
+    if log.is_verbose_enough(log.VERBOSE_DEBUG):
+        for func in attachable_symbols:
+            log.info(f"  {func}")
     log.done()
 
     log.info("Creating and building the eBPF program", end="")
@@ -60,21 +62,41 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """In collect, we run the eBPF program
 
     Note, that currently we wait for user to run the results manually
+
+    :param kwargs: stash of shared values between the phases
+    :return: collection status (error or OK), error message (if error happened) and shared parameters
     """
-    raw_data_file = Path(Path(__file__).resolve().parent, "bpf_build", "output.log")
+    ktrace_coloured = log.in_color("ktrace", color='yellow', attribute_style=['bold'])
+    cmd_coloured = log.in_color(f"{kwargs['cmd_name']}")
 
-    log.info("Now you have to manually run the ktrace and the programs.")
-    log.info("ktrace will sleep for 10s and periodically test if you have run the program.")
-    log.info("お休み")
+    # First we wait for starting the ktrace
+    log.info(f"You can now run the '{ktrace_coloured}' (yourself).")
+    log.info(f"Waiting for {ktrace_coloured} to start", end='')
+    while True:
+        log.info('.', end='')
 
-    # TODO: rework this again, probably check that `ktrace` is running from ps -ax
+        if processes.is_process_running("ktrace"):
+            log.info('')
+            break
+        time.sleep(BUSY_WAIT)
+
+    log.info(f"{ktrace_coloured}: ", end='')
+    log.tag("running", "green")
+
+    log.info("")
+    log.info(f"You can now run the '{cmd_coloured}' (yourself).")
+    log.info(f"Waiting for {ktrace_coloured} to finish profiling '{cmd_coloured}'", end='')
 
     while True:
-        log.info("Sleeping...")
-        time.sleep(10)
-        if raw_data_file.exists():
-            log.info("Waking up from slumber")
+        log.info('.', end='')
+
+        if not processes.is_process_running("ktrace"):
+            log.info('')
             break
+        time.sleep(BUSY_WAIT)
+
+    log.info(f"Collection of '{cmd_coloured}'", end='')
+    log.done()
 
     return CollectStatus.OK, "", dict(kwargs)
 
