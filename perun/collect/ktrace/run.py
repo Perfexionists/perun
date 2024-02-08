@@ -3,7 +3,6 @@
 # Standard Imports
 from typing import Any
 from pathlib import Path
-import pickle
 import time
 
 # Third-Party Imports
@@ -69,6 +68,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """
     ktrace_coloured = log.in_color("ktrace", color="yellow", attribute_style=["bold"])
     cmd_coloured = log.in_color(f"{kwargs['cmd_name']}")
+    return CollectStatus.OK, "", dict(kwargs)
 
     # First we wait for starting the ktrace
     log.info(f"You can now run the '{ktrace_coloured}' (yourself).")
@@ -109,25 +109,42 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     raw_data_file = Path(Path(__file__).resolve().parent, "bpf_build", "output.log")
     output_file = Path(Path(__file__).resolve().parent, "bpf_build", "profile.csv")
 
-    parsed_traces = interpret.parse_traces(
-        raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails
-    )
-    trace_data = interpret.traces_details_to_pandas(parsed_traces)
-    trace_data.to_csv(output_file, index=False)
+    profile_output_type = kwargs["output_profile_type"]
+    save_intermediate = kwargs["save_intermediate_to_csv"]
 
-    log.info(
-        f"Saving traces to {log.in_color('tracedata.pickle', color='grey', attribute_style=['bold'])}"
-    )
-    with open("tracedata.pickle", "wb") as pickle_file:
-        pickle.dump(parsed_traces, pickle_file)
+    if profile_output_type == "flat":
+        flat_parsed_traces = interpret.parse_traces(
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataFlat
+        )
+        trace_data = interpret.traces_flat_to_pandas(flat_parsed_traces)
+        if save_intermediate:
+            trace_data.to_csv(output_file, index=False)
+            log.info(
+                f"Intermediate data saved to '{log.in_color(str(output_file), 'grey', attribute_style=['bold'])}'"
+            )
+        resources = interpret.pandas_to_resources(trace_data)
+        total_runtime = flat_parsed_traces.total_runtime
+    elif profile_output_type == "details":
+        detailed_parsed_traces = interpret.parse_traces(
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails
+        )
+        trace_data = interpret.traces_details_to_pandas(detailed_parsed_traces)
+        resources = interpret.pandas_to_resources(trace_data)
+        total_runtime = detailed_parsed_traces.total_runtime
+        if save_intermediate:
+            trace_data.to_csv(output_file, index=False)
+            log.info(
+                f"Intermediate data saved to '{log.in_color(str(output_file), 'grey', attribute_style=['bold'])}'"
+            )
+    else:
+        assert profile_output_type == "clustered"
+        detailed_parsed_traces = interpret.parse_traces(
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails
+        )
+        resources = interpret.trace_details_to_resources(detailed_parsed_traces)
+        total_runtime = detailed_parsed_traces.total_runtime
 
-    log.info(
-        f"Intermediate data saved to '{log.in_color(str(output_file), 'grey', attribute_style=['bold'])}'"
-    )
-
-    resources = interpret.trace_details_to_resources(parsed_traces)
-    kwargs["profile"] = {"global": {"time": parsed_traces.total_runtime, "resources": resources}}
-
+    kwargs["profile"] = {"global": {"time": total_runtime, "resources": resources}}
     return CollectStatus.OK, "", dict(kwargs)
 
 
@@ -139,9 +156,16 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 @click.argument("cmd-name")
 @click.argument("perf-report", type=click.Path(exists=True, path_type=Path))
 @click.option(
-    "--probe-type", "-s", type=click.Choice(["kprobe", "kfunc", "ftrace"]), default="kprobe"
+    "--probe-type", "-p", type=click.Choice(["kprobe", "kfunc", "ftrace"]), default="kprobe"
 )
 @click.option("--bpfring-size", "-s", type=int, default=4096 * 4096)  # add checks
+@click.option(
+    "--output-profile-type",
+    "-t",
+    type=click.Choice(["clustered", "details", "flat"]),
+    default="flat",
+)
+@click.option("--save-intermediate-to-csv", "-c", type=bool, default=False)
 @click.pass_context
 def ktrace(ctx, **kwargs):
     """Generates kernel traces for specific commands based on perf reports."""

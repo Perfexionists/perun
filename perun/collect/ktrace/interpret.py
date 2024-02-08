@@ -7,6 +7,7 @@ from typing import Any, Generic, TypeVar, Type, Literal
 from collections.abc import Iterator
 from abc import ABC, abstractmethod
 
+import pandas
 import pandas as pd
 
 from perun.utils import log
@@ -129,7 +130,7 @@ def parse_traces(
     with open(raw_data, "rb") as data_handle:
         # Special handling for the first line to get the first timestamp
         record = data_handle.read(16)
-        if record is None or record == b'':
+        if record is None or record == b"":
             log.warn("Empty log. Nothing to read")
             return trace_contexts
         _, _, trace_contexts.total_runtime = struct.unpack("iIQ", record)
@@ -237,10 +238,38 @@ def append_resources(
                 "uid": func_name,
                 "ncalls": len(group),
                 "type": "time",
-                "subytype": resource_type,
+                "subtype": resource_type,
                 "trace": [{"func": f for f in trace}],
             }
         )
+
+
+def pandas_to_resources(df: pandas.DataFrame) -> list[dict[str, Any]]:
+    """Transforms pandas dataframe to list of resources
+
+    :param df: pandas dataframe
+    :return: list of resources
+    """
+    resources = []
+    for _, row in df.iterrows():
+        function = row["Function"]
+        trace = row["Trace"].split(" -> ") if row["Trace"] else []
+        ncalls = row["Calls [#]"]
+
+        for col in df.columns:
+            if col in ("Function", "Trace", "Calls [#]"):
+                continue
+            resources.append(
+                {
+                    "amount": row[col],
+                    "uid": function,
+                    "ncalls": ncalls,
+                    "type": "time",
+                    "subtype": col,
+                    "trace": [{"func": f for f in trace}],
+                }
+            )
+    return resources
 
 
 def trace_details_to_resources(
