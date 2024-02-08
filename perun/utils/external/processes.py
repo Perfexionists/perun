@@ -62,12 +62,12 @@ def nonblocking_subprocess(
 
 def is_process_running(process_name: str) -> bool:
     """Checks whether process_name is running
-    
+
     1. Note, that this might not be fully sound if the process_name is not effectively descriptive
     2. Note, that while we do sanitize the process name, still this COULD BE DANGEROUS, please use this
     only if you know (at least a little) what you are doing!!!
-    
-    Courtesy of: https://stackoverflow.com/questions/62760000/fastest-way-to-detect-if-a-process-is-running 
+
+    Courtesy of: https://stackoverflow.com/questions/62760000/fastest-way-to-detect-if-a-process-is-running
 
     :param process_name: name of the process
     :return: true if the process is running, false otherwise
