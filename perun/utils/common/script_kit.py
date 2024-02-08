@@ -1,6 +1,7 @@
 """Contains helper scripts for creating units from templates."""
 from __future__ import annotations
 
+import re
 # Standard Imports
 from pathlib import Path
 from typing import Any
@@ -118,3 +119,24 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
             commands.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:
             raise ExternalEditorErrorException(editor, str(inner_exception))
+
+
+def may_contains_script_with_sudo(command: str) -> bool:
+    """Checks whether command contains running of the script with sudo commands
+
+    Note, this is limited to `.sh` scripts only and is "kindof" dumb,
+    hence, this might not be always correct.
+
+    :param command: run command
+    :return: true if the command may contains sudo
+    """
+    sudo_matcher = re.compile(r"^\s*(sudo|su)\s*")
+    try:
+        for script_path in re.findall(r"\S+\.sh", command):
+            with open(script_path, 'r') as script_handle:
+                for line in script_handle:
+                    if sudo_matcher.search(line):
+                        return True
+        return False
+    except (PermissionError, UnicodeDecodeError, FileNotFoundError):
+        return False
