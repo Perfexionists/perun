@@ -131,7 +131,6 @@ def parse_traces(
         # Special handling for the first line to get the first timestamp
         record = data_handle.read(16)
         if record is None or record == b"":
-            log.warn("Empty log. Nothing to read")
             return trace_contexts
         _, _, trace_contexts.total_runtime = struct.unpack("iIQ", record)
         ts: int
