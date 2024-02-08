@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 # Standard Imports
 from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
 import os
@@ -215,7 +214,8 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
         report.status = report.error_status
         report.exception = exc
         report.message = (
-            f"error while {phase}{('_' + runner_verb) * (phase != runner_verb)} phase: {exc}"
+            f"error while {phase}{('_' + runner_verb) * (phase != runner_verb)} phase: "
+            f"({type(exc).__name__}) {exc}"
         )
 
 

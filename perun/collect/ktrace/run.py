@@ -1,5 +1,5 @@
 """Main module of the ktrace, which specifies its phases"""
-
+import subprocess
 # Standard Imports
 from typing import Any
 from pathlib import Path
@@ -9,11 +9,12 @@ import time
 import click
 
 # Perun Imports
+from perun.collect.ktrace import symbols, bpfgen, interpret
 from perun.logic import runner
+from perun.utils import log
+from perun.utils.common import script_kit
 from perun.utils.external import commands, processes
 from perun.utils.structs import CollectStatus
-from perun.utils import log
-from perun.collect.ktrace import symbols, bpfgen, interpret
 
 
 BUSY_WAIT: int = 5
@@ -87,8 +88,27 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             break
         time.sleep(BUSY_WAIT)
 
-    log.minor_info(f"{ktrace_coloured}")
+    log.minor_info(f"The state of {ktrace_coloured}")
     log.tag("running", "green")
+
+    log.minor_info("Running the workload")
+    failed_reason = ""
+    if kwargs['executable']:
+        if script_kit.may_contains_script_with_sudo(str(kwargs['executable'])):
+            failed_reason = "the command might require sudo"
+            log.tag("failed", "red")
+        else:
+            try:
+                commands.run_safely_external_command(str(kwargs['executable']))
+                log.tag("finished", "green")
+            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+                failed_reason = f"the called process failed: {exc}"
+                log.tag("failed", "red")
+    else:
+        log.tag("skipped", "grey")
+        failed_reason = "command was not provided on CLI"
+    if failed_reason:
+        log.minor_info(f"The workload has to be run manually, since {failed_reason}", end="\n")
 
     log.minor_info(f"waiting for {ktrace_coloured} to finish profiling {cmd_coloured}", sep="")
 
