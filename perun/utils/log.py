@@ -309,6 +309,48 @@ def skipped(ending: str = "\n") -> None:
     print("]", end=ending)
 
 
+def major_info(msg: str, colour: ColorChoiceType = "blue") -> None:
+    """Prints major information, formatted in brackets [], in bold and optionally in color
+
+    :param msg: printed message
+    :param colour: optional colour
+    """
+    stripped_msg = msg.strip().title()
+    printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
+    info("")
+    info(printed_msg)
+    info("")
+
+
+def minor_info(msg: str, sep: str = "-", indent_level: int = 1, end: str = ""):
+    """Prints minor information, formatted with indent and starting with -
+
+    Note, that there are some sanitizations happening
+
+    :param msg: printed message, which will be stripped from whitespace and capitalized
+    :param sep: separator used to separate the info with its results
+    :param indent_level: indent of the information
+    :param end: ending of the message
+    """
+    msg = msg.strip().capitalize()
+    if end == "\n" and msg[-1] not in ".!;":
+        msg += "."
+    elif end == "" and sep != "" and msg[-1] != sep:
+        msg += f" {sep} "
+    info(" " * indent_level * 2 + " - " + msg, end)
+
+
+def tag(tag_str: str, colour: ColorChoiceType, ending: str = "\n") -> None:
+    """
+    :param tag_str: printed tag
+    :param colour: colour of the tag
+    :param str ending: end of the string, by default new line
+    """
+    print("[", end="")
+    cprint(tag_str.upper(), colour, attrs=["bold"])
+    print("]", end=ending)
+
+
 def yes(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
