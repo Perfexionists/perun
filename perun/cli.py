@@ -477,7 +477,7 @@ def remove(
     try:
         commands.remove_from_index(from_index_generator, minor)
         commands.remove_from_pending(from_jobs_generator)
-    except (NotPerunRepositoryException, EntryNotFoundException) as exception:
+    except (NotPerunRepositoryException) as exception:
         perun_log.error(f"could not remove profiles: {str(exception)}")
 
 

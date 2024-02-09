@@ -163,8 +163,7 @@ def init_perun_at(
     msg = "Reinitialized " if is_reinit else "Initialized "
     msg += perun_log.highlight("existing") if is_reinit else perun_log.highlight("empty")
     msg += f" Perun repository"
-    perun_log.minor_info(msg)
-    perun_log.info(f"{perun_log.path_style(perun_path)}")
+    perun_log.minor_info(msg, status=f"{perun_log.path_style(perun_path)}")
 
 
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
@@ -318,24 +317,24 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
 
     :param generator profile_generator: generator of profiles that will be removed from pending jobs
     """
+    perun_log.major_info("Removing from pending")
     removed_profile_number = len(profile_generator)
     for i, pending_file in enumerate(profile_generator):
+        count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
         os.remove(pending_file)
-        perun_log.info(
-            "{}/{} deleted {} from pending jobs".format(
-                common_kit.format_counter_number(i + 1, removed_profile_number),
-                removed_profile_number,
-                perun_log.in_color(os.path.split(pending_file)[1], "grey"),
-            )
+        perun_log.minor_info(
+            f"{count_status} {perun_log.path_style(pending_file)}",
+            status=f"{perun_log.success_highlight('deleted')}",
         )
 
     if removed_profile_number:
-        result_string = perun_log.in_color(
-            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}",
-            "white",
-            ["bold"],
+        perun_log.major_info("Summary")
+        result_string = perun_log.success_highlight(
+            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}"
         )
-        perun_log.info(f"successfully removed {result_string} from pending jobs")
+        perun_log.minor_info("Removal succeeded for", status=result_string)
+    else:
+        perun_log.minor_info("Nothing to remove", end="\n")
 
 
 def calculate_profile_numbers_per_type(

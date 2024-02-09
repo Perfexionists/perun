@@ -1548,7 +1548,8 @@ def test_remove_tag(pcs_single_prof):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ["0@i"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "1/1 deregistered" in result.output)
+    asserts.predicate_from_cli(result, "1/1" in result.output)
+    asserts.predicate_from_cli(result, "deregistered" in result.output)
 
 
 def test_remove_tag_range(pcs_full):
