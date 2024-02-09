@@ -320,7 +320,7 @@ def test_collect_trace(pcs_with_root, trace_collect_job):
 
     target_dir = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace")
     target = os.path.join(target_dir, "tst")
-    job_params = trace_collect_job[5]["collector_params"]["trace"]
+    job_params = trace_collect_job[4]["collector_params"]["trace"]
 
     # Test loading the trace parameters
     func = [f"-f{func}" for func in job_params["func"]]

@@ -60,10 +60,6 @@ The specification of the formatting string can contain the following special tag
     script that was executed and profiled using collector/profiler. Refer to :ref:`jobs-overview`
     for more information about profiling jobs and commands.
 
-``%args%``:
-    Lists the arguments (or parameters) which were passed to the profiled command. Refer to
-    :ref:`jobs-overview` for more information about profiling jobs and command arguments.
-
 ``%workload%``:
     List input workload which was passed to the profiled command, i.e. some inputs of the profiled
     program, script or binary. Refer to :ref:`jobs-overview` for more information about profiling

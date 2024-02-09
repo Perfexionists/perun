@@ -208,8 +208,8 @@ general:
 format:
     status: "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503"
     shortlog: "%checksum:6% (%stats%) %desc% %changes%"
-    output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
-    output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
+    output_profile_template: "%collector%-%cmd%-%workload%-%date%"
+    output_show_template: "%collector%-%cmd%-%workload%-%date%"
     sort_profiles_by: time
 
 degradation:

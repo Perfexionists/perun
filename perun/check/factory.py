@@ -80,7 +80,7 @@ def get_supported_detection_models_strategies() -> list[str]:
 
 def profiles_to_queue(
     minor_version: str,
-) -> dict[tuple[str, str, str, str, str], ProfileInfo]:
+) -> dict[tuple[str, str, str, str], ProfileInfo]:
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
     The map represents both the queue and also provides the mapping of configurations to profiles.

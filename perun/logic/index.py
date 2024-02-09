@@ -72,7 +72,6 @@ class BasicIndexEntry:
         # For backward compatibility, we set everything to 'unknown', but it is not stored in the index
         self.type = "??"
         self.cmd = "??"
-        self.args = "??"
         self.workload = "??"
         self.collector = "??"
         self.postprocessors: list[str] = []
@@ -167,7 +166,6 @@ class ExtendedIndexEntry(BasicIndexEntry):
         super().__init__(time, checksum, path, offset)
         self.type = profile["header"]["type"]
         self.cmd = profile["header"]["cmd"]
-        self.args = profile["header"].get("args", "")
         self.workload = profile["header"].get("workload", "")
         self.collector = profile["collector_info"]["name"]
         self.postprocessors = [postprocessor["name"] for postprocessor in profile["postprocessors"]]
@@ -235,7 +233,6 @@ class ExtendedIndexEntry(BasicIndexEntry):
 
         profile["header"]["type"] = store.read_string_from_handle(index_handle)
         profile["header"]["cmd"] = store.read_string_from_handle(index_handle)
-        profile["header"]["args"] = store.read_string_from_handle(index_handle)
         profile["header"]["workload"] = store.read_string_from_handle(index_handle)
         profile["collector_info"]["name"] = store.read_string_from_handle(index_handle)
         profile["postprocessors"] = [
@@ -259,7 +256,6 @@ class ExtendedIndexEntry(BasicIndexEntry):
         super().write_to(index_handle)
         store.write_string_to_handle(index_handle, self.type)
         store.write_string_to_handle(index_handle, self.cmd)
-        store.write_string_to_handle(index_handle, self.args)
         store.write_string_to_handle(index_handle, self.workload)
         store.write_string_to_handle(index_handle, self.collector)
         store.write_list_to_handle(index_handle, self.postprocessors)
@@ -275,7 +271,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
             self.path,
             self.offset,
             self.type,
-            " ".join([self.cmd, self.args, self.workload]),
+            " ".join([self.cmd, self.workload]),
             self.collector,
             " ".join(self.postprocessors),
         )

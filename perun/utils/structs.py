@@ -175,25 +175,22 @@ class RunnerReport:
 class Executable:
     """Represents executable command with arguments and workload
 
-    :ivar str cmd: command to be executed (i.e. script, binary, etc.)
-    :ivar str args: optional arguments of the command (such as -q, --pretty=no, etc.)
+    :ivar str cmd: command to be executed (i.e. script, binary, etc.); including arguments
     :ivar str workload: optional workloads (or inputs) of the command (i.e. files, whatever)
     :ivar str original_workload: workload that was used as an origin (stated from the configuration),
         note that this is to differentiate between actually generated workloads from generators and
         names of the generators.
     """
 
-    __slots__ = ["cmd", "args", "workload", "origin_workload"]
+    __slots__ = ["cmd", "workload", "origin_workload"]
 
-    def __init__(self, cmd: str, args: str = "", workload: str = "") -> None:
+    def __init__(self, cmd: str, workload: str = "") -> None:
         """Initializes the executable
 
         :param str cmd: command to be executed
-        :param str args: optional arguments of the command
         :param str workload: optional workloads of the command
         """
         self.cmd = cmd
-        self.args = args
         self.workload = workload
         self.origin_workload = workload
 
@@ -203,7 +200,6 @@ class Executable:
         :return: string representation of executable
         """
         executable = self.cmd
-        executable += " " + self.args if self.args else ""
         executable += " " + self.workload if self.workload else ""
         return executable
 
@@ -213,7 +209,6 @@ class Executable:
         :return: escaped string representation of executable
         """
         executable = shlex.quote(self.cmd)
-        executable += " " + self.args if self.args else ""
         executable += " " + self.workload if self.workload else ""
         return executable
 

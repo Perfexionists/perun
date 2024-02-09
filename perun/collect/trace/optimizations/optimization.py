@@ -604,7 +604,7 @@ def build_stats_names(config, cg_type=CallGraphTypes.STATIC):
     """
     binaries = sanitize_filepart("--".join([config.binary] + sorted(config.libs))).replace(".", "_")
     binaries_param = sanitize_filepart(
-        "--".join([arg for arg in [config.executable.args, config.executable.workload] if arg])
+        "--".join([arg for arg in [config.executable.workload] if arg])
     ).replace(".", "_")
     cg_prefix = "cg"
     if cg_type == CallGraphTypes.DYNAMIC:

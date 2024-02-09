@@ -151,7 +151,7 @@ def test_string_generator():
 def test_file_generator():
     """Tests file generator"""
     collector = Unit("time", {"warmup": 1, "repeat": 1})
-    executable = Executable("wc", "-l")
+    executable = Executable("wc -l")
     file_job = Job(collector, [], executable)
     file_generator = TextfileGenerator(file_job, 2, 5)
 
@@ -179,7 +179,7 @@ def test_external_generator(monkeypatch, capsys):
     """Tests external file generator"""
 
     collector = Unit("time", {"warmup": 1, "repeat": 1})
-    executable = Executable("wc", "-l")
+    executable = Executable("wc -l")
     file_job = Job(collector, [], executable)
     target_dir = os.path.join(os.getcwd(), "test")
     external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")

@@ -23,8 +23,6 @@ The actually set options are specified in the following table. When the option i
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
 | :cunit:`cmds`                             |               auto lookup              |               --              |     --     |
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
-| :cunit:`args`                             |                    --                  |               --              |     --     |
-+-------------------------------------------+----------------------------------------+-------------------------------+------------+
 | :cunit:`workloads`                        |               auto lookup              |               --              |     --     |
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
 | :cunit:`collectors`                       | :ref:`collectors-time`                 |               --              |     --     |
@@ -75,7 +73,7 @@ vcs:
 ## The following sets the executables (binaries / scripts).
 ## These will be profiled by selected collectors.
 {% if cmds is defined %}
-## Extend the following region with more executables to be profiled:
+## Extend the following region with more executable commands to be profiled:
 cmds:
 // for cmd in cmds:
   - {{ cmd }}
@@ -84,19 +82,6 @@ cmds:
 ## Uncomment and edit the following region:
 # cmds:
 #   - echo
-{% endif %}
-
-## The following sets argument configurations for the profiled executables
-{% if args is defined %}
-## Extend the following region to profile more configuration:
-args:
-// for arg in args
-  - {{ arg }}
-// endfor
-{% else %}
-## Uncomment and edit the following region:
-# args:
-#   - -e
 {% endif %}
 
 ## The following sets the profiling workload for given commands
@@ -318,8 +303,6 @@ class UserConfiguration(DeveloperConfiguration):
     |                                           | **user**                               |
     +-------------------------------------------+----------------------------------------+
     | :cunit:`cmds`                             |               auto lookup              |
-    +-------------------------------------------+----------------------------------------+
-    | :cunit:`args`                             |                    --                  |
     +-------------------------------------------+----------------------------------------+
     | :cunit:`workloads`                        |               auto lookup              |
     +-------------------------------------------+----------------------------------------+

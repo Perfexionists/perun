@@ -895,14 +895,6 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
 @cli.command("fuzz")
 @click.option("--cmd", "-b", nargs=1, required=True, help="The command which will be fuzzed.")
 @click.option(
-    "--args",
-    "-a",
-    nargs=1,
-    required=False,
-    default="",
-    help="Arguments for the fuzzed command.",
-)
-@click.option(
     "--input-sample",
     "-w",
     nargs=1,
@@ -1169,9 +1161,9 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     required=False,
     help="Will not plot the interpretation of the fuzzing in form of graphs.",
 )
-def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
+def fuzz_cmd(cmd: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
-    kwargs["executable"] = Executable(cmd, args)
+    kwargs["executable"] = Executable(cmd)
     fuzz.run_fuzzing_for_command(**kwargs)
 
 
