@@ -297,7 +297,7 @@ def test_predicates(capsys):
 def test_log_common(capsys):
     log.skipped()
     out, _ = capsys.readouterr()
-    assert "[\x1b[1m\x1b[30mskip\x1b[0m]\n" in out
+    assert "\x1b[1m\x1b[37mskipped\x1b[0m\n" in out
 
 
 def test_logger(capsys):

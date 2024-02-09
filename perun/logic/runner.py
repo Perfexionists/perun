@@ -6,6 +6,7 @@ from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overl
 import distutils.util as dutils
 import os
 import signal
+import time
 import subprocess
 
 # Third-Party Imports
@@ -321,7 +322,6 @@ def run_all_phases_for(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("collect")
 def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, Any]]:
     """Run the job of collector of the given name.
 
@@ -332,7 +332,8 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     :param Job job: additional information about the running job
     :returns (int, dict): status of the collection, generated profile
     """
-    log.print_current_phase("Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT)
+    log.print_current_phase("Collecting by collector", collector.name, COLLECT_PHASE_COLLECT)
+    log.increase_indent()
 
     try:
         collector_module = common_kit.get_module(f"perun.collect.{collector.name}.run")
@@ -345,14 +346,23 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
+        log.minor_info(
+            f"Collecting from {log.cmd_style(job.executable.cmd)}",
+            status=log.failed_highlight("failed"),
+        )
         log.error(
             f"while collecting by {collector.name}: {collection_report.message}",
             recoverable=True,
             raised_exception=collection_report.exception,
         )
     else:
-        log.info(f"Successfully collected data from {job.executable.cmd}")
+        log.minor_info(
+            f"Collecting by {log.highlight(collector.name)} from {log.cmd_style(str(job.executable))}",
+            status=log.success_highlight("successful"),
+        )
 
+    log.newline()
+    log.decrease_indent()
     return cast(CollectStatus, collection_report.status), prof
 
 
@@ -383,7 +393,7 @@ def run_collector_from_cli_context(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("postprocess")
+@log.phase_function("postprocess")
 def run_postprocessor(
     postprocessor: Unit, job: Job, prof: dict[str, Any]
 ) -> tuple[PostprocessStatus, dict[str, Any]]:
@@ -398,9 +408,8 @@ def run_postprocessor(
     :param dict prof: dictionary with profile
     :returns (int, dict): status of the collection, postprocessed profile
     """
-    log.print_current_phase(
-        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
-    )
+    log.print_current_phase("Postprocessing data", postprocessor.name, COLLECT_PHASE_POSTPROCESS)
+    log.increase_indent()
 
     try:
         postprocessor_module = common_kit.get_module(f"perun.postprocess.{postprocessor.name}.run")
@@ -425,6 +434,7 @@ def run_postprocessor(
     else:
         log.info(f"Successfully postprocessed data by {postprocessor.name}")
 
+    log.decrease_indent()
     return cast(PostprocessStatus, postprocess_report.status), prof
 
 
@@ -441,7 +451,9 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     streams.store_json(full_profile.serialize(), full_profile_path)
     # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
-    log.info(f"stored profile at: {os.path.relpath(full_profile_path)}")
+    log.minor_info(
+        "stored generated profile ", status=f"{log.path_style(os.path.relpath(full_profile_path))}"
+    )
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get("origin", pcs.vcs().get_minor_head())
@@ -481,8 +493,6 @@ def run_postprocessor_on_profile(
     return p_status, processed_profile
 
 
-@log.print_elapsed_time
-@decorators.phase_function("prerun")
 def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -> None:
     """Runs the phase before the actual collection of the methods
 
@@ -498,10 +508,12 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
     phase_key = ".".join(["execute", phase]) if not phase.startswith("execute") else phase
     cmds = pcs.local_config().safe_get(phase_key, [])
     if cmds:
-        log.cprint(f"Running '{phase}' phase", phase_colour)
-        log.newline()
+        log.major_info("Prerun")
         try:
+            before = time.time()
             external_commands.run_safely_list_of_commands(cmds)
+            elapsed = time.time() - before
+            log.minor_info("Elapsed time", status=f"{elapsed:0.2f}s")
         except subprocess.CalledProcessError as exception:
             error_command = str(exception.cmd)
             error_code = exception.returncode
@@ -512,8 +524,6 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
             )
 
 
-@log.print_elapsed_time
-@decorators.phase_function("batch job run")
 def generate_jobs_on_current_working_dir(
     job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
 ) -> Iterable[tuple[CollectStatus, Profile, Job]]:
@@ -530,11 +540,12 @@ def generate_jobs_on_current_working_dir(
 
     log.print_job_progress.current_job = 1
     collective_status = CollectStatus.OK
-    log.newline()
+
+    log.major_info("Running Jobs")
     for job_cmd, workloads_per_cmd in job_matrix.items():
-        log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():
-            log.print_current_phase(" = processing generator {}", workload, COLLECT_PHASE_WORKLOAD)
+            log.print_current_phase("Collecting for command", job_cmd, COLLECT_PHASE_CMD)
+            log.print_current_phase("Generating by workload", workload, COLLECT_PHASE_WORKLOAD)
             # Prepare the specification
             generator_spec = workload_generators_specs.get(
                 workload, GeneratorSpec(SingletonGenerator, {"value": workload})
@@ -564,8 +575,6 @@ def generate_jobs_on_current_working_dir(
                         yield collective_status, prof, job
 
 
-@log.print_elapsed_time
-@decorators.phase_function("overall profiling")
 def generate_jobs(
     minor_version_list: list[MinorVersion],
     job_matrix: dict[str, dict[str, list[Job]]],
@@ -583,8 +592,6 @@ def generate_jobs(
             yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
-@log.print_elapsed_time
-@decorators.phase_function("overall profiling")
 def generate_jobs_with_history(
     minor_version_list: list[MinorVersion],
     job_matrix: dict[str, dict[str, list[Job]]],
@@ -654,6 +661,7 @@ def run_single_job(
     :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
         of collections or postprocessing failed
     """
+    log.major_info("Running From Single Job")
     job_matrix, number_of_jobs = construct_job_matrix(
         cmd, workload, collector, postprocessor, **kwargs
     )
@@ -675,6 +683,7 @@ def run_matrix_job(
     :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
         of collections or postprocessing failed
     """
+    log.major_info("Running Matrix Job")
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
     generator_function = generate_jobs_with_history if with_history else generate_jobs
     status = CollectStatus.OK

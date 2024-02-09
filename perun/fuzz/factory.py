@@ -454,7 +454,7 @@ def perform_baseline_coverage_testing(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("fuzz performance")
+@log.phase_function("fuzz performance")
 def run_fuzzing_for_command(
     executable: Executable,
     input_sample: list[str],

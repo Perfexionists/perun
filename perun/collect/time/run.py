@@ -36,7 +36,8 @@ def collect(
     :param dict _: dictionary with key, value options
     :return:
     """
-    log.info("Executing the warmup-phase ", end="")
+    log.major_info("Running time collector")
+    log.minor_info("Warming up", end="")
     for timing in range(0, warmup):
         command = " ".join(["time -p", str(executable)]).split(" ")
         commands.get_stdout_from_external_command(command).split("\n")
@@ -44,8 +45,8 @@ def collect(
         sys.stdout.flush()
     log.newline()
 
-    log.info(
-        f"Begin timing of {executable.cmd} {common_kit.str_to_plural(repeat, 'time')}",
+    log.minor_info(
+        f"Timing {executable.cmd} {common_kit.str_to_plural(repeat, 'time')}",
         end="",
     )
     times = []

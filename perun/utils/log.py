@@ -46,6 +46,7 @@ if TYPE_CHECKING:
 
 VERBOSITY: int = 0
 COLOR_OUTPUT: bool = True
+CURRENT_INDENT: int = 0
 
 # Enum of verbosity levels
 VERBOSE_DEBUG: int = 2
@@ -54,6 +55,18 @@ VERBOSE_RELEASE: int = 0
 
 SUPPRESS_WARNINGS: bool = False
 SUPPRESS_PAGING: bool = True
+
+
+def increase_indent() -> None:
+    """Increases the indent for minor and major steps"""
+    global CURRENT_INDENT
+    CURRENT_INDENT += 1
+
+
+def decrease_indent() -> None:
+    """Increases the indent for minor and major steps"""
+    global CURRENT_INDENT
+    CURRENT_INDENT -= 1
 
 
 def is_verbose_enough(verbosity_peak: int) -> bool:
@@ -244,7 +257,10 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoi
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in common_kit.py
     """
-    print(in_color(phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS))
+    minor_info(
+        in_color(phase_msg.strip().capitalize(), phase_colour, COLLECT_PHASE_ATTRS),
+        status=success_highlight(phase_unit),
+    )
 
 
 @decorators.static_variables(current_job=1)
@@ -254,7 +270,7 @@ def print_job_progress(overall_jobs: int) -> None:
     :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
-    print(f"[{str(percentage_done).rjust(3, ' ')}%] ", end="")
+    minor_info("Progress of the job", status=f"{str(percentage_done).rjust(3, ' ')}%")
     print_job_progress.current_job += 1
 
 
@@ -295,18 +311,21 @@ def failed(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print("[", end="")
-    cprint("FAILED", "red", attrs=["bold"])
-    print("]", end=ending)
+    info(failed_highlight("failed"), end=ending)
+
+
+def successful(ending: str = "\n") -> None:
+    """
+    :param str ending: end of the string, by default new line
+    """
+    info(success_highlight("sucessful"), end=ending)
 
 
 def skipped(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print("[", end="")
-    cprint("skip", "grey", attrs=["bold"])
-    print("]", end=ending)
+    info(in_color("skipped", color="light_grey", attribute_style=["bold"]), end=ending)
 
 
 def major_info(msg: str, colour: ColorChoiceType = "blue") -> None:
@@ -318,7 +337,7 @@ def major_info(msg: str, colour: ColorChoiceType = "blue") -> None:
     stripped_msg = msg.strip().title()
     printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
     info("")
-    info(printed_msg)
+    info(" " * CURRENT_INDENT * 2 + printed_msg)
     info("")
 
 
@@ -344,7 +363,7 @@ def minor_info(msg: str, status: str = "", sep: str = "-", indent_level: int = 1
     if status != "":
         msg += status
         end = "\n"
-    info(" " * indent_level * 2 + " - " + msg, end)
+    info(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
 
 
 def tag(tag_str: str, colour: ColorChoiceType, ending: str = "") -> str:
@@ -397,7 +416,7 @@ def cmd_style(cmd_str: str) -> str:
     :param cmd_str: string that corresponds to command that should be run in terminal
     :return: stylized command string
     """
-    return in_color(f"`{cmd_str}`", "grey")
+    return in_color(f"`{cmd_str}`", "light_grey")
 
 
 def highlight(highlighted_str: str) -> str:
@@ -789,14 +808,35 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         before = time.time()
         results = func(*args, **kwargs)
         elapsed = time.time() - before
-        print(
-            "[!] {} [{}] in {} [!]".format(
-                (func.phase_name if hasattr(func, "phase_name") else func.__name__).title(),
-                in_color("DONE", "green", ["bold"]),
-                in_color(f"{elapsed:0.2f}s", "white", ["bold"]),
-            )
-        )
+        minor_info("Elapsed time", status=f"{elapsed:0.2f}s")
+
         return results
+
+    return inner_wrapper
+
+
+def phase_function(phase_name: str) -> Callable[..., Any]:
+    """Sets the phase name for the given function
+
+    The phase name is output when the elapsed time is printed.
+
+    :param str phase_name: name of the phase to which the given function corresponds
+    :return: decorated function with new phase name
+    """
+
+    def inner_wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
+        """Inner wrapper of the decorated function
+
+        :param function func: function we are decorating with its phase name
+        :return: decorated function with new phase name
+        """
+
+        def innermost_wrapper(*args: Any, **kwargs: Any) -> Any:
+            """Innermost wrapper"""
+            major_info(phase_name)
+            return func(*args, **kwargs)
+
+        return innermost_wrapper
 
     return inner_wrapper
 

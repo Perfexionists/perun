@@ -178,7 +178,7 @@ def degradation_in_minor(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("check whole repository")
+@log.phase_function("check whole repository")
 def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     """Walks through the minor version starting from the given head, checking for degradation.
 
@@ -269,7 +269,7 @@ def run_degradation_check(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("check two profiles")
+@log.phase_function("check two profiles")
 def degradation_between_files(
     baseline_file: Profile,
     target_file: Profile,

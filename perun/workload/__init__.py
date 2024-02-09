@@ -39,10 +39,10 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
     specifications_from_config = config.gather_key_recursively("generators.workload")
     spec_map = {}
     warnings = []
-    log.info("Loading workload generator specifications ", end="")
+    log.minor_info("Loading workload generator specifications")
     for spec in specifications_from_config:
         if "id" not in spec.keys() or "type" not in spec.keys():
-            warnings.append("incorrect workload specification: missing 'id' or 'type'")
+            warnings.append((spec.get("id", "?"), "specification is missing 'id' or 'type' key"))
             log.info("F", end="")
             continue
         generator_module = f"perun.workload.{spec['type'].lower()}_generator"
@@ -52,16 +52,18 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
             spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
             log.info(".", end="")
         except (ImportError, AttributeError):
-            warnings.append(
-                f"incorrect workload generator '{spec['id']}': '{spec['type']}' is not valid workload type"
-            )
+            warnings.append((spec["id"], f"{spec['type']} is not valid workload type"))
             log.info("F", end="")
+    log.newline()
 
     # Print the warnings and badge
     if warnings:
-        log.failed()
-        log.info("\n".join(warnings))
+        log.minor_info("Workload generators", status=log.failed_highlight("failed"))
+        for workload_id, warning in warnings:
+            log.minor_info(
+                f"workload {log.highlight(workload_id)}", status=log.failed_highlight(warning)
+            )
     else:
-        log.done()
+        log.minor_info("Workload generators", status=log.success_highlight("loaded"))
 
     return spec_map

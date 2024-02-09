@@ -136,7 +136,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
         + samplings,
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "stored profile" in result.output)
+    asserts.predicate_from_cli(result, "Stored generated profile" in result.output)
 
 
 def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collect_job):
@@ -462,7 +462,7 @@ def test_collect_time(monkeypatch, pcs_with_root, capsys):
     # Assert outputs
     out, err = capsys.readouterr()
     assert err == ""
-    assert "Successfully collected data from echo" in out
+    assert "Collecting by time from `echo hello` - successful" in common_kit.escape_ansi(out)
 
     # Assert that just one profile was created
     # + 1 for index

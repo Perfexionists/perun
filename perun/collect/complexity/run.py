@@ -74,6 +74,7 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
                     string as a status message, mainly for error states
                     dict of modified kwargs with 'cmd' value representing the executable
     """
+    log.major_info("Preparing the instrumented executable")
     try:
         # Validate the inputs and dependencies first
         _validate_input(**kwargs)
@@ -87,28 +88,28 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
         )
 
         # Create the configuration cmake and build the configuration executable
-        log.cprint("Building the configuration executable...", "white")
+        log.minor_info("Building the configuration executable")
         cmake_path = makefiles.create_config_cmake(target_dir, files)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
-        log.done()
+        log.successful()
 
         # Extract some configuration data using the configuration executable
-        log.cprint("Extracting the configuration...", "white")
+        log.minor_info("Extracting the configuration")
         function_sym = symbols.extract_symbols(exec_path)
         include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
-        log.done()
+        log.successful()
 
         # Create the collector cmake and build the collector executable
-        log.cprint("Building the collector executable...", "white")
+        log.minor_info("Building the collector executable")
         cmake_path = makefiles.create_collector_cmake(target_dir, files, exclude_list)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
-        log.done()
+        log.successful()
 
         # Create the internal configuration file
-        log.cprint("Creating runtime config...", "white")
+        log.minor_info("Creating the runtime config")
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
-        log.done()
+        log.successful()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
@@ -119,7 +120,7 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
         UnicodeError,
         exceptions.UnexpectedPrototypeSyntaxError,
     ) as exception:
-        log.failed()
+        log.minor_info("Preparing the instrumented executable", log.failed_highlight("failed"))
         return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
@@ -133,12 +134,13 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
                     string as a status message, mainly for error states
                     dict of unmodified kwargs
     """
-    log.cprint("Running the collector...", "white")
+    log.major_info("Collecting Data")
     collect_dir = os.path.dirname(executable.cmd)
     # Run the command and evaluate the return code
+    log.minor_info("Collection of data")
     try:
         commands.run_safely_external_command(str(executable), cwd=collect_dir)
-        log.done()
+        log.successful()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:
         log.failed()
@@ -159,11 +161,12 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
                     string as a status message, mainly for error states
                     dict of modified kwargs with 'profile' value representing the resulting profile
     """
+    log.major_info("Creating profile")
     # Get the trace log path
-    log.cprint("Starting the post-processing phase...", "white")
     internal_filename = kwargs.get("internal_data_filename", configurator.DEFAULT_DATA_FILENAME)
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
+    log.minor_info("Symbol address map", status=log.success_highlight("extracted"))
 
     resources: list[dict[str, Any]] = []
     call_stack: list[ProfileRecord] = []
@@ -183,7 +186,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
                 err_msg += (
                     call_stack[-1].func + ", " + call_stack[-1].action if call_stack else "empty"
                 )
-                log.failed()
+                log.minor_info("Parsing log", status=log.failed_highlight("failed"))
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
 
             # Get the first and last record timestamps to determine the profiling time
@@ -191,6 +194,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
             if is_first_line:
                 is_first_line = False
                 profile_start = int(record.timestamp)
+    log.minor_info("Parsing log", status=log.success_highlight("sucessful"))
 
     # Update the profile dictionary
     kwargs["profile"] = {
@@ -199,7 +203,6 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
             "resources": resources,
         }
     }
-    log.done()
     return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
 
@@ -241,11 +244,12 @@ def _process_file_record(
 
 def _check_dependencies() -> None:
     """Validates that dependencies (cmake and make) are met"""
-    log.cprint("Checking dependencies...", "white")
-    log.newline()
-    log.cprint("make:", "white")
-    log.info("\t", end="")
+    log.minor_info("Checking dependencies", end="\n")
+    log.increase_indent()
+    log.minor_info("make")
+    all_found = True
     if not shutil.which("make"):
+        all_found = False
         log.no()
         log.error(
             "Could not find 'make'. Please, install the makefile package.",
@@ -253,15 +257,19 @@ def _check_dependencies() -> None:
         )
     else:
         log.yes()
-    log.cprint("cmake:", "white")
-    log.info("\t", end="")
+    log.minor_info("cmake")
     if not shutil.which("cmake"):
+        all_found = False
         log.no()
         log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
         log.yes()
-    log.newline()
-    log.done()
+    log.decrease_indent()
+
+    if all_found:
+        log.minor_info("dependencies", status=log.success_highlight("all found"))
+    else:
+        log.minor_info("dependencies", status=log.failed_highlight("not found"))
 
 
 def _validate_input(**kwargs: Any) -> None:
