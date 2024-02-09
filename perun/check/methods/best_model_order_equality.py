@@ -47,8 +47,9 @@ from typing import Any, Iterable, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.utils.structs import DegradationInfo, PerformanceChange
-import perun.check.general_detection as detection
+import perun.check.detection_kit as detection
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -65,45 +66,51 @@ MODEL_ORDERING = [
 ]
 
 
-def best_model_order_equality(
-    baseline_profile: Profile, target_profile: Profile, **_: Any
-) -> Iterable[DegradationInfo]:
-    """Checks between a pair of (baseline, target) profiles, whether there can be degradation detected
+class BestModelOrderEquality(AbstractBaseChecker):
+    def check(
+        self, baseline_profile: Profile, target_profile: Profile, **_: Any
+    ) -> Iterable[DegradationInfo]:
+        """Checks between a pair of (baseline, target) profiles, whether there can be degradation detected
 
-    This is based on simple heuristic, where for the same function models, we only check the order
-    of the best fit models. If these differ, we detect the possible degradation.
+        This is based on simple heuristic, where for the same function models, we only check the order
+        of the best fit models. If these differ, we detect the possible degradation.
 
-    :param dict baseline_profile: baseline against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version
-    :param dict _: unification with other detection methods (unused in this method)
-    :returns: tuple (degradation result, degradation location, degradation rate)
-    """
-    best_baseline_models = detection.get_filtered_best_models_of(baseline_profile, group="param")
-    best_target_models = detection.get_filtered_best_models_of(target_profile, group="param")
+        :param dict baseline_profile: baseline against which we are checking the degradation
+        :param dict target_profile: profile corresponding to the checked minor version
+        :param dict _: unification with other detection methods (unused in this method)
+        :returns: tuple (degradation result, degradation location, degradation rate)
+        """
+        best_baseline_models = detection.get_filtered_best_models_of(
+            baseline_profile, group="param"
+        )
+        best_target_models = detection.get_filtered_best_models_of(target_profile, group="param")
 
-    for uid, best_model in best_target_models.items():
-        best_baseline_model = best_baseline_models.get(uid)
-        if best_baseline_model:
-            confidence = min(best_baseline_model.r_square, best_model.r_square)
-            if confidence >= CONFIDENCE_THRESHOLD and best_baseline_model.type != best_model.type:
-                baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
-                target_ordering = MODEL_ORDERING.index(best_model.type)
-                if baseline_ordering > target_ordering:
-                    change = PerformanceChange.Optimization
+        for uid, best_model in best_target_models.items():
+            best_baseline_model = best_baseline_models.get(uid)
+            if best_baseline_model:
+                confidence = min(best_baseline_model.r_square, best_model.r_square)
+                if (
+                    confidence >= CONFIDENCE_THRESHOLD
+                    and best_baseline_model.type != best_model.type
+                ):
+                    baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
+                    target_ordering = MODEL_ORDERING.index(best_model.type)
+                    if baseline_ordering > target_ordering:
+                        change = PerformanceChange.Optimization
+                    else:
+                        change = PerformanceChange.Degradation
+                    degradation_rate = target_ordering - baseline_ordering
                 else:
-                    change = PerformanceChange.Degradation
-                degradation_rate = target_ordering - baseline_ordering
-            else:
-                change = PerformanceChange.NoChange
-                degradation_rate = 0
+                    change = PerformanceChange.NoChange
+                    degradation_rate = 0
 
-            yield DegradationInfo(
-                res=change,
-                t="model",
-                loc=uid,
-                fb=best_baseline_model.type,
-                tt=best_model.type,
-                rd=degradation_rate,
-                ct="r_square",
-                cr=confidence,
-            )
+                yield DegradationInfo(
+                    res=change,
+                    t="model",
+                    loc=uid,
+                    fb=best_baseline_model.type,
+                    tt=best_model.type,
+                    rd=degradation_rate,
+                    ct="r_square",
+                    cr=confidence,
+                )

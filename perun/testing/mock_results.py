@@ -7,10 +7,6 @@ from __future__ import annotations
 # Perun Imports
 from perun.utils.structs import DegradationInfo
 from perun.utils.structs import PerformanceChange as pc
-import perun.check.integral_comparison as int_cmp
-import perun.check.linear_regression as lreg
-import perun.check.local_statistics as loc_stat
-import perun.check.polynomial_regression as preg
 
 
 _PREG_EXPECTED_RESULTS = [
@@ -341,11 +337,11 @@ LOCAL_STATISTICS_RESULTS = [
 ]
 
 PARAM_EXPECTED_RESULTS = [
-    {"results": _PREG_EXPECTED_RESULTS, "function": preg.polynomial_regression},
-    {"results": _LREG_EXPECTED_RESULTS, "function": lreg.linear_regression},
+    {"results": _PREG_EXPECTED_RESULTS, "function": "polynomial_regression"},
+    {"results": _LREG_EXPECTED_RESULTS, "function": "linear_regression"},
 ]
 
 NONPARAM_EXPECTED_RESULTS = [
-    {"results": INTEGRAL_COMPARISON_RESULTS, "function": int_cmp.integral_comparison},
-    {"results": LOCAL_STATISTICS_RESULTS, "function": loc_stat.local_statistics},
+    {"results": INTEGRAL_COMPARISON_RESULTS, "function": "integral_comparison"},
+    {"results": LOCAL_STATISTICS_RESULTS, "function": "local_statistics"},
 ]

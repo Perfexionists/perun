@@ -14,10 +14,12 @@ import os
 
 # Perun Imports
 from perun.logic import config
-from perun.utils import decorators, log
-from perun.utils.common import common_kit
-from perun.utils.exceptions import NotPerunRepositoryException
 from perun.select import whole_repository_selection, abstract_base_selection
+from perun.utils import decorators
+from perun.utils.common import common_kit
+from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
+from perun.vcs.abstract_repository import AbstractRepository
+from perun.vcs.git_repository import GitRepository
 
 
 def get_safe_path(default: str) -> str:
@@ -43,6 +45,18 @@ def get_path() -> str:
     :raises NotPerunRepositoryException: when we cannot locate perun on the current directory tree
     """
     return os.path.join(common_kit.locate_perun_dir_on(os.getcwd()), ".perun")
+
+
+@decorators.singleton
+def vcs() -> AbstractRepository:
+    """Returns Repository object
+
+    :raises: UnsupportedModuleException when called with different type
+    """
+    vcs_type, vcs_url = get_vcs_type_and_url()
+    if vcs_type == "git":
+        return GitRepository(vcs_url)
+    raise UnsupportedModuleException(vcs_type)
 
 
 @decorators.singleton
@@ -198,9 +212,4 @@ def selection(
     if selection_type == "whole_repository_selection":
         return whole_repository_selection.WholeRepositorySelection()
 
-    log.error(
-        f"'{selection_type}' is unsupported selection method. \n"
-        f"Choose one of ('whole_repository_selection')."
-    )
-    # Note, that in reality nothing is returned, this is only for typing check
-    return whole_repository_selection.WholeRepositorySelection()
+    raise UnsupportedModuleException(selection_type)

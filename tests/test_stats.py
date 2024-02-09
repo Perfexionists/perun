@@ -1,14 +1,17 @@
+"""Collection of tests for stats module"""
+from __future__ import annotations
+
+# Standard Imports
 import os
-import pytest
 import pathlib
 
-import perun.logic.stats as stats
-import perun.logic.store as store
+# Third-Party Imports
+import pytest
+
+# Perun Imports
+from perun.utils import exceptions
 from perun.utils.common import common_kit
-import perun.vcs as vcs
-import perun.logic.pcs as pcs
-import perun.logic.index as index
-import perun.utils.exceptions as exceptions
+from perun.logic import index, pcs, stats, store
 
 
 def test_stats_filenames(pcs_full):
@@ -76,7 +79,7 @@ def test_basic_stats_operations(pcs_with_root):
     entry_3_new = {"simple": "values"}
 
     # Prepare git values
-    minor_head = vcs.get_minor_head()
+    minor_head = pcs.vcs().get_minor_head()
     minor_path = os.path.join(minor_head[:2], minor_head[2:])
     expected_stats_file = os.path.join(pcs.get_stats_directory(), minor_path, "custom_stats")
 
@@ -641,7 +644,7 @@ def _get_vcs_versions():
 
     :return list: list of minor version checksums sorted as in the VCS.
     """
-    return [v.checksum for v in vcs.walk_minor_versions(vcs.get_minor_head())]
+    return [v.checksum for v in pcs.vcs().walk_minor_versions(pcs.vcs().get_minor_head())]
 
 
 def _fake_checksums(source, count, collisions):
@@ -653,7 +656,7 @@ def _fake_checksums(source, count, collisions):
     :return list: the requested number of SHA-1 checksums
     """
     results = []
-    for i in range(count):
+    for _ in range(count):
         attempt = store.compute_checksum(source.encode())
         while attempt in collisions or attempt in results:
             attempt = store.compute_checksum(attempt.encode())

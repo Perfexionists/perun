@@ -13,28 +13,30 @@ import copy
 import numpy as np
 
 # Perun Imports
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.logic import runner
 from perun.utils.structs import DegradationInfo, ClassificationMethod
-import perun.check.general_detection as detect
+import perun.check.detection_kit as detect
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-def fast_check(
-    baseline_profile: Profile, target_profile: Profile, **_: Any
-) -> Iterable[DegradationInfo]:
-    """Temporary function, which call the general function and subsequently returns the
-    information about performance changes to calling function.
+class FastCheck(AbstractBaseChecker):
+    def check(
+        self, baseline_profile: Profile, target_profile: Profile, **_: Any
+    ) -> Iterable[DegradationInfo]:
+        """Temporary function, which call the general function and subsequently returns the
+        information about performance changes to calling function.
 
-    :param dict baseline_profile: base against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version
-    :param dict _: unification with other detection methods (unused in this method)
-    :returns: tuple (degradation result, degradation location, degradation rate, confidence)
-    """
-    return detect.general_detection(
-        baseline_profile, target_profile, ClassificationMethod.FastCheck
-    )
+        :param dict baseline_profile: base against which we are checking the degradation
+        :param dict target_profile: profile corresponding to the checked minor version
+        :param dict _: unification with other detection methods (unused in this method)
+        :returns: tuple (degradation result, degradation location, degradation rate, confidence)
+        """
+        return detect.general_detection(
+            baseline_profile, target_profile, ClassificationMethod.FastCheck
+        )
 
 
 def exec_fast_check(

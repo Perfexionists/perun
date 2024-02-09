@@ -27,16 +27,16 @@ PYTHON_VERSION = re.compile(r"^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\
 
 class Comparable(Protocol):
     def __le__(self, other: Any) -> bool:
-        pass
+        """"""
 
     def __lt__(self, other: Any) -> bool:
-        pass
+        """"""
 
     def __ge__(self, other: Any) -> bool:
-        pass
+        """"""
 
     def __gt__(self, other: Any) -> bool:
-        pass
+        """"""
 
 
 def get_current_interpreter(

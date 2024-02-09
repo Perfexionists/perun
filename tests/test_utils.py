@@ -1,5 +1,7 @@
 """Basic tests for utility package and sanity checks"""
+from __future__ import annotations
 
+# Standard Imports
 import glob
 import pkgutil
 import os
@@ -8,25 +10,22 @@ import subprocess
 import signal
 import sys
 
+# Third-Party Imports
 import pytest
 
-import perun.vcs as vcs
-import perun.collect as collect
-import perun.postprocess as postprocess
-import perun.logic.config as config
-import perun.logic.commands as commands
-import perun.view as view
+# Perun Imports
+from perun import collect, postprocess, view
+from perun.fuzz import filetype
+from perun.logic import commands, config
+from perun.testing import asserts
+from perun.utils import log
 from perun.utils.common import common_kit, cli_kit
-import perun.testing.asserts as asserts
-import perun.utils.log as log
+from perun.collect.trace.optimizations.structs import Complexity
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
     ResourceLockedException,
-    UnsupportedModuleFunctionException,
 )
-from perun.collect.trace.optimizations.structs import Complexity
-
 from perun.utils.structs import Unit, OrderedEnum, HandledSignals
 from perun.utils.external import environment, commands as external_commands, processes, executable
 
@@ -43,7 +42,9 @@ def assert_all_registered_modules(package_name, package, must_have_function_name
           registered
     """
     registered_modules = cli_kit.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+    for _, module_name, _ in pkgutil.iter_modules(
+        [os.path.dirname(package.__file__)], package.__name__ + "."
+    ):
         module = common_kit.get_module(module_name)
         for must_have_function_name in must_have_function_names:
             assert (
@@ -70,7 +71,9 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
           registered
     """
     registered_modules = cli_kit.get_supported_module_names(package_name)
-    for _, module_name, _ in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+    for _, module_name, _ in pkgutil.iter_modules(
+        [os.path.dirname(package.__file__)], package.__name__ + "."
+    ):
         # Each module has to have run.py module
         module = common_kit.get_module(module_name)
         assert hasattr(module, "run") and f"Missing module run.py in the '{package_name}' module"
@@ -103,23 +106,6 @@ def test_get_supported_modules():
 
     Expecting no errors and every supported module registered in the function
     """
-    # Check that all of the internal modules (vcs) are properly registered and has interface for
-    # concrete functions.
-    assert_all_registered_modules(
-        "vcs",
-        vcs,
-        [
-            "_init",
-            "_get_minor_head",
-            "_walk_minor_versions",
-            "_walk_major_versions",
-            "_get_minor_version_info",
-            "_get_head_major_version",
-            "_check_minor_version_validity",
-            "_massage_parameter",
-        ],
-    )
-
     # Check that all of the CLI units (collectors, postprocessors and visualizations) are properly
     # registered.
     assert_all_registered_cli_units("collect", collect, ["collect"])
@@ -286,9 +272,6 @@ def test_common(capsys):
     chunks = list(map(list, common_kit.chunkify(simple_generator(), 2)))
     assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
 
-    with pytest.raises(UnsupportedModuleFunctionException):
-        common_kit.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
-
     with pytest.raises(SystemExit):
         cli_kit.get_supported_module_names("nonexisting")
 
@@ -335,3 +318,12 @@ def test_logger(capsys):
     assert stdout_log.seek(2) == 2
     assert not stdout_log.readable()
     assert not stdout_log.isatty()
+
+
+def test_filetypes(monkeypatch):
+    def patched_guess(_: str):
+        raise AttributeError("error")
+
+    monkeypatch.setattr("mimetypes.guess_type", patched_guess)
+
+    assert filetype.get_filetype("somefile") == (True, None)

@@ -3,23 +3,26 @@
 Tests whether the log is correctly outputting the information about currently wrapped repository,
 and profiles assigned to minor versions.
 """
+from __future__ import annotations
 
+# Standard Imports
 import binascii
 import os
 
+# Third-Party Imports
 import git
 import pytest
 
-import perun.utils.decorators as decorators
-import perun.logic.config as config
-import perun.logic.commands as commands
+# Perun Imports
+from perun.logic import commands, config
+from perun.profile.helpers import ProfileInfo
+from perun.utils import decorators
 from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     UnsupportedModuleException,
 )
 from perun.utils.structs import MinorVersion, ProfileListConfig
-from perun.profile.helpers import ProfileInfo
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -61,7 +64,7 @@ def test_log_short_error(pcs_with_root, capsys, monkeypatch):
         commands.log(None, short=True)
 
     decorators.remove_from_function_args_cache("lookup_key_recursively")
-    out, err = capsys.readouterr()
+    _, err = capsys.readouterr()
     assert len(err) != 0
     assert "object does not contain 'notexist' attribute" in err
 

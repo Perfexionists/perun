@@ -47,12 +47,12 @@ import zlib
 # Third-Party Imports
 
 # Perun Imports
-from perun import vcs
 from perun.logic import index, pcs, store
 from perun.profile import helpers
 from perun.utils import exceptions, log as perun_log
 from perun.utils.common import common_kit
 from perun.utils.exceptions import SuppressedExceptions
+from perun.vcs import vcs_kit
 
 # Match the timestamp format of the profile names
 PROFILE_TIMESTAMP_REGEX = re.compile(r"(-?\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})")
@@ -132,7 +132,7 @@ def get_stats_file_path(
     return stats_file
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def find_minor_stats_directory(minor_version: str) -> tuple[bool, str]:
     """Finds the stats directory for the given minor version and checks its existence.
 
@@ -280,7 +280,7 @@ def delete_stats_file(
     os.remove(stats_file)
     if not keep_directory:
         # Delete the minor version directory if it is empty
-        minor_version = minor_version or vcs.get_minor_head()
+        minor_version = minor_version or pcs.vcs().get_minor_head()
         delete_version_dirs([minor_version], True)
 
 
@@ -299,7 +299,7 @@ def get_latest(
     :return dict: selected content (IDs) of the stats file, if found
     """
     versions = list_stat_versions()
-    if exclude_self and versions[0][0] == vcs.get_minor_head():
+    if exclude_self and versions[0][0] == pcs.vcs().get_minor_head():
         versions = versions[1:]
     # Traverse all the version directories and try to find it
     for version, _ in versions:
@@ -483,7 +483,7 @@ def _update_or_add_to_dict(dictionary: dict[str, Any], sid: str, extension: dict
         _add_to_dict(dictionary, sid, extension)
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def _touch_minor_stats_directory(minor_version: str) -> str:
     """Touches the stats directories - upper (first byte of the minor version SHA) and lower (the
     rest of the SHA bytes) levels.
@@ -564,13 +564,13 @@ def _get_version_candidates(minor_checksum: str, minor_date: str) -> list[str]:
     # Ignore some unexpected git corruption or the end of minor version history
     with SuppressedExceptions(exceptions.VersionControlSystemException, StopIteration):
         # Start iterating the minor versions at the supplied version
-        from_iter = vcs.walk_minor_versions(minor_checksum)
+        from_iter = pcs.vcs().walk_minor_versions(minor_checksum)
         # However, the first generator result is the version itself, skip it
         next(from_iter)
-        successor = vcs.get_minor_version_info(next(from_iter).checksum)
+        successor = pcs.vcs().get_minor_version_info(next(from_iter).checksum)
         while successor.date == minor_date:
             candidates.append(successor.checksum)
-            successor = vcs.get_minor_version_info(next(from_iter).checksum)
+            successor = pcs.vcs().get_minor_version_info(next(from_iter).checksum)
     return candidates
 
 
@@ -582,8 +582,8 @@ def _get_version_info(minor_version: Optional[str]) -> tuple[str, str]:
 
     :return tuple (str, str): the minor version details (checksum, date)
     """
-    vcs.check_minor_version_validity(minor_version)
-    minor_version_info = vcs.get_minor_version_info(minor_version)
+    pcs.vcs().check_minor_version_validity(minor_version)
+    minor_version_info = pcs.vcs().get_minor_version_info(minor_version)
     return minor_version_info.checksum, minor_version_info.date
 
 
@@ -663,7 +663,7 @@ def _slice_versions(
     try:
         # If not provided, the default start is at the HEAD
         if from_version is None:
-            from_version = vcs.get_minor_head()
+            from_version = pcs.vcs().get_minor_head()
         from_checksum, from_date = _get_version_info(from_version)
         # The list may not contain the exact version, try to find the closest one
         slice_location = _find_nearest_version(versions, from_checksum, from_date)

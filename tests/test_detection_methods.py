@@ -3,14 +3,20 @@
 Tests whether the change is correctly detected and classified. All types of models
 are tested to the three types of changes.
 """
+from __future__ import annotations
 
+# Standard Imports
 import itertools
 import os
 
-import perun.logic.store as store
+# Third-Party Imports
+
+# Perun Imports
+from perun.logic import store
+from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED_RESULTS
 from perun.utils.log import aggregate_intervals
 from perun.utils.structs import PerformanceChange
-from perun.testing.mock_results import PARAM_EXPECTED_RESULTS, NONPARAM_EXPECTED_RESULTS
+import perun.check.factory as check_factory
 
 
 def load_profiles(param):
@@ -67,7 +73,7 @@ def load_profiles(param):
 
 
 def check_degradation_result(baseline_profile, target_profile, expected_result, function):
-    result = list(function(baseline_profile, target_profile))
+    result = list(check_factory.run_degradation_check(function, baseline_profile, target_profile))
     assert expected_result["result"] & {r.result for r in result}
     assert expected_result["type"] & {r.type for r in result}
     assert expected_result["rate"] & {round(r.rate_degradation) for r in result}
@@ -101,11 +107,13 @@ def test_complex_detection_methods():
 
     for expected_results in NONPARAM_EXPECTED_RESULTS:
         degradation_list = list(
-            expected_results["function"](profiles[0], profiles[1], models_strategy="all-models")
+            check_factory.run_degradation_check(
+                expected_results["function"], profiles[0], profiles[1], models_strategy="all-models"
+            )
         )
         expected_result = expected_results["results"].pop(0)
         degradation_list.sort(key=lambda item: (item.location, item.from_baseline))
-        for location, changes in itertools.groupby(
+        for _, changes in itertools.groupby(
             degradation_list, lambda item: (item.location, item.from_baseline)
         ):
             for test_deg_info in changes:

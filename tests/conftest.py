@@ -1,28 +1,23 @@
 """Shared fixtures for the testing of functionality of Perun commands."""
+from __future__ import annotations
 
+# Standard Imports
+from typing import Iterable, Callable
 import glob
 import os
 import shutil
 import subprocess
 import tempfile
 
+# Third-Party Imports
 import git
-
-from typing import Iterable, Callable
-
-from perun.utils.common import common_kit
-import perun.utils.log as log
-import perun.logic.pcs as pcs
-import perun.logic.store as store
-import perun.cli as cli
 import pytest
 
-import perun.logic.commands as commands
-import perun.utils.decorators as decorators
-import perun.utils.streams as streams
-import perun.utils.metrics as metrics
-import perun.vcs as vcs
-
+# Perun Imports
+from perun import cli
+from perun.logic import commands, pcs, store
+from perun.utils import decorators, log, metrics, streams
+from perun.utils.common import common_kit
 import perun.testing.utils as test_utils
 
 
@@ -261,7 +256,7 @@ def pcs_with_degradations():
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -317,7 +312,7 @@ def pcs_single_prof(stored_profile_pool):
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -365,7 +360,7 @@ def pcs_full(stored_profile_pool):
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -418,7 +413,7 @@ def pcs_full_no_prof():
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -458,7 +453,7 @@ def pcs_with_empty_git():
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     yield pcs
 
@@ -477,7 +472,7 @@ def pcs_with_root():
     commands.init_perun_at(pcs_path, False, {"vcs": {"url": "../", "type": "git"}})
 
     # Initialize git
-    vcs.init({})
+    pcs.vcs().init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)

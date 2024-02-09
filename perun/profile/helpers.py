@@ -26,7 +26,6 @@ import time
 # Third-Party Imports
 
 # Perun Imports
-from perun import vcs
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
 from perun.utils import decorators, log as perun_log
@@ -37,6 +36,7 @@ from perun.utils.exceptions import (
     TagOutOfRangeException,
 )
 from perun.utils.structs import Unit, Executable, Job
+from perun.vcs import vcs_kit
 
 if TYPE_CHECKING:
     import types
@@ -202,7 +202,7 @@ def load_list_for_minor_version(minor_version: str) -> list["ProfileInfo"]:
     return profile_info_list
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def get_nth_profile_of(position: int, minor_version: str) -> str:
     """Returns the profile at nth position in the index
 
@@ -219,7 +219,7 @@ def get_nth_profile_of(position: int, minor_version: str) -> str:
         raise TagOutOfRangeException(position, len(registered_profiles) - 1, "i")
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def find_profile_entry(profile: str, minor_version: str) -> index.BasicIndexEntry:
     """Finds the profile entry within the index file of the minor version.
 
@@ -306,7 +306,7 @@ def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Pr
     :param Job job: job with information about the computed profile
     :returns dict: valid profile JSON file
     """
-    profile.update({"origin": vcs.get_minor_head()})
+    profile.update({"origin": pcs.vcs().get_minor_head()})
     profile.update({"header": generate_header_for_profile(job)})
     profile.update({"collector_info": generate_collector_info(job)})
     profile.update({"postprocessors": generate_postprocessor_info(job)})

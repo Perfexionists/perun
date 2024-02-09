@@ -3,16 +3,19 @@
 Tests removing of profiles, within and outside of the scope of the wrapped perun system,
 removing nonexistent profiles, etc.
 """
+from __future__ import annotations
 
+# Standard Imports
 import os
 
+# Third-Party Imports
 import git
 import pytest
 
-import perun.logic.commands as commands
+# Perun Imports
+from perun.logic import commands
 from perun.utils.common import common_kit
 from perun.utils.exceptions import NotPerunRepositoryException, EntryNotFoundException
-
 import perun.testing.utils as test_utils
 
 

@@ -16,7 +16,6 @@ import re
 # Third-Party Imports
 
 # Perun Imports
-from perun import vcs
 from perun.logic import pcs, config as perun_config, store, index, temp, stats
 from perun.utils import log as perun_log, timestamps
 from perun.utils.common import common_kit
@@ -42,6 +41,7 @@ from perun.utils.common.common_kit import (
     ColorChoiceType,
 )
 from perun.utils.structs import ProfileListConfig, MinorVersion
+from perun.vcs import vcs_kit
 import perun.profile.helpers as profile
 
 if TYPE_CHECKING:
@@ -193,14 +193,14 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     # If the wrapped repo could not be initialized we end with error. The user should adjust this
     # himself and fix it in the config. Note that this decision was made after tagit design,
     # where one needs to further adjust some options in initialized directory.
-    if vcs_type and not vcs.init(vcs_params):
+    if vcs_type and not pcs.vcs().init(vcs_params):
         err_msg = f"Could not initialize empty {vcs_type} repository at {vcs_path}.\n"
         err_msg += f"Either reinitialize perun with 'perun init' or initialize {vcs_type}"
         err_msg += "repository manually and fix the path to vcs in 'perun config --edit'"
         perun_log.error(err_msg)
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def add(
     profile_names: Collection[str],
     minor_version: str,
@@ -270,7 +270,7 @@ def add(
     perun_log.info(f"successfully registered {added_profile_count} profiles in index")
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def remove_from_index(profile_generator: Collection[str], minor_version: str) -> None:
     """Removes @p profile from the @p minor_version inside the @p pcs
 
@@ -381,7 +381,7 @@ output of status, log and others.
 
 
 @perun_log.paged_function(paging_switch=turn_off_paging_wrt_config("log"))
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def log(minor_version: str, short: bool = False, **_: Any) -> None:
     """Prints the log of the performance control system
 
@@ -397,7 +397,7 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
 
     # Print header for --short-minors
     if short:
-        minor_versions = list(vcs.walk_minor_versions(minor_version))
+        minor_versions = list(pcs.vcs().walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
         for mv_no, minor in enumerate(minor_versions):
             minor_versions[mv_no] = minor.to_short()
@@ -437,7 +437,7 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
         print_shortlog_minor_version_info_list(minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
-        for minor in vcs.walk_minor_versions(minor_version):
+        for minor in pcs.vcs().walk_minor_versions(minor_version):
             perun_log.cprintln(
                 f"Minor Version {minor.checksum}", TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS
             )
@@ -1084,8 +1084,8 @@ def status(short: bool = False, **_: Any) -> None:
     :param bool short: true if the output should be short (i.e. without some information)
     """
     # Obtain both of the heads
-    major_head = vcs.get_head_major_version()
-    minor_head = vcs.get_minor_head()
+    major_head = pcs.vcs().get_head_major_version()
+    minor_head = pcs.vcs().get_minor_head()
 
     # Print the status of major head.
     perun_log.info(
@@ -1100,7 +1100,7 @@ def status(short: bool = False, **_: Any) -> None:
     # Print in long format, the additional information about head commit, by default print
     if not short:
         perun_log.info("")
-        minor_version = vcs.get_minor_version_info(minor_head)
+        minor_version = pcs.vcs().get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
     # Print profiles
@@ -1125,7 +1125,7 @@ def status(short: bool = False, **_: Any) -> None:
         perun_log.print_list_of_degradations(degradation_list)
 
 
-@vcs.lookup_minor_version
+@vcs_kit.lookup_minor_version
 def load_profile_from_args(profile_name: str, minor_version: str) -> Optional[Profile]:
     """
     TODO: This needs to be properly refactored

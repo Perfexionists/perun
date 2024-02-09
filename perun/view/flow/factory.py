@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 class IntTableLike(Protocol):
     def get(self, key: int, default: int) -> int:
-        pass
+        """"""
 
 
 def create_from_params(

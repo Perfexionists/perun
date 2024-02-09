@@ -1,16 +1,21 @@
+"""Tests for flowgraph visualization"""
+from __future__ import annotations
+
+# Standard Imports
 import os
 
-import pytest
+# Third-Party Imports
 from click.testing import CliRunner
-
-import perun.view.flow.factory as flow_factory
-import perun.testing.utils as test_utils
-from perun import cli
-from perun.utils.common import view_kit
-from perun.testing import asserts
-
 import bokeh.plotting as bk_plot
 import holoviews as hv
+import pytest
+
+# Perun Imports
+from perun import cli
+from perun.testing import asserts
+from perun.utils.common import view_kit
+import perun.testing.utils as test_utils
+import perun.view.flow.factory as flow_factory
 
 
 def test_flow_cli(pcs_with_root, monkeypatch):

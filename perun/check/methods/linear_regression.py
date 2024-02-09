@@ -13,7 +13,9 @@ from typing import Any, Iterable, TYPE_CHECKING
 from scipy import stats
 
 # Perun Imports
-from perun.check import fast_check, general_detection as detect
+from perun.check import detection_kit as detect
+from perun.check.methods import fast_check
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, ClassificationMethod
 
@@ -24,21 +26,22 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-def linear_regression(
-    baseline_profile: Profile, target_profile: Profile, **_: Any
-) -> Iterable[DegradationInfo]:
-    """Temporary function, which call the general function and subsequently returns the
-    information about performance changes to calling function.
+class LinearRegression(AbstractBaseChecker):
+    def check(
+        self, baseline_profile: Profile, target_profile: Profile, **_: Any
+    ) -> Iterable[DegradationInfo]:
+        """Temporary function, which call the general function and subsequently returns the
+        information about performance changes to calling function.
 
-    :param dict baseline_profile: base against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version
-    :param dict _: unification with other detection methods (unused in this method)
-    :returns: tuple (degradation result, degradation location, degradation rate, confidence)
-    """
+        :param dict baseline_profile: base against which we are checking the degradation
+        :param dict target_profile: profile corresponding to the checked minor version
+        :param dict _: unification with other detection methods (unused in this method)
+        :returns: tuple (degradation result, degradation location, degradation rate, confidence)
+        """
 
-    return detect.general_detection(
-        baseline_profile, target_profile, ClassificationMethod.LinearRegression
-    )
+        return detect.general_detection(
+            baseline_profile, target_profile, ClassificationMethod.LinearRegression
+        )
 
 
 def exec_linear_regression(

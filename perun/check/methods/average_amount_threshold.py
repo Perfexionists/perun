@@ -42,6 +42,7 @@ from typing import Any, Iterable, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.profile import convert
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, PerformanceChange
@@ -66,41 +67,42 @@ def get_averages(profile: Profile) -> dict[str, float]:
     return data_frame.groupby("uid").mean(numeric_only=True).to_dict()["amount"]
 
 
-def average_amount_threshold(
-    baseline_profile: Profile, target_profile: Profile, **_: Any
-) -> Iterable[DegradationInfo]:
-    """Checks between a pair of (baseline, target) profiles, whether there can be degradation detected
+class AverageAmountThreshold(AbstractBaseChecker):
+    def check(
+        self, baseline_profile: Profile, target_profile: Profile, **_: Any
+    ) -> Iterable[DegradationInfo]:
+        """Checks between a pair of (baseline, target) profiles, whether there can be degradation detected
 
-    This is based on simple heuristic, where for the same function models, we only check the order
-    of the best fit models. If these differ, we detect the possible degradation.
+        This is based on simple heuristic, where for the same function models, we only check the order
+        of the best fit models. If these differ, we detect the possible degradation.
 
-    :param profiles.Profile baseline_profile: baseline against which we are checking the degradation
-    :param profiles.Profile target_profile: profile corresponding to the checked minor version
-    :param dict _: unification with other detection methods (unused in this method)
-    :returns: tuple (degradation result, degradation location, degradation rate)
-    """
-    baseline_averages = get_averages(baseline_profile)
-    target_averages = get_averages(target_profile)
+        :param profiles.Profile baseline_profile: baseline against which we are checking the degradation
+        :param profiles.Profile target_profile: profile corresponding to the checked minor version
+        :param dict _: unification with other detection methods (unused in this method)
+        :returns: tuple (degradation result, degradation location, degradation rate)
+        """
+        baseline_averages = get_averages(baseline_profile)
+        target_averages = get_averages(target_profile)
 
-    # Fixme: Temporary solution ;)
-    unit = list(baseline_profile["header"]["units"].values())[0]
-    resource_type = baseline_profile["header"]["type"]
-    for target_uid, target_average in target_averages.items():
-        baseline_average = baseline_averages.get(target_uid, None)
-        if baseline_average is not None:
-            difference_ratio = common_kit.safe_division(target_average, baseline_average)
-            if difference_ratio >= DEGRADATION_THRESHOLD:
-                change = PerformanceChange.Degradation
-            elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:
-                change = PerformanceChange.Optimization
-            else:
-                change = PerformanceChange.NoChange
+        # Fixme: Temporary solution ;)
+        unit = list(baseline_profile["header"]["units"].values())[0]
+        resource_type = baseline_profile["header"]["type"]
+        for target_uid, target_average in target_averages.items():
+            baseline_average = baseline_averages.get(target_uid, None)
+            if baseline_average is not None:
+                difference_ratio = common_kit.safe_division(target_average, baseline_average)
+                if difference_ratio >= DEGRADATION_THRESHOLD:
+                    change = PerformanceChange.Degradation
+                elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:
+                    change = PerformanceChange.Optimization
+                else:
+                    change = PerformanceChange.NoChange
 
-            yield DegradationInfo(
-                res=change,
-                t=resource_type,
-                loc=target_uid,
-                fb=f"{round(baseline_average, 2)}{unit}",
-                tt=f"{round(target_average, 2)}{unit}",
-                rd=difference_ratio,
-            )
+                yield DegradationInfo(
+                    res=change,
+                    t=resource_type,
+                    loc=target_uid,
+                    fb=f"{round(baseline_average, 2)}{unit}",
+                    tt=f"{round(target_average, 2)}{unit}",
+                    rd=difference_ratio,
+                )

@@ -12,7 +12,8 @@ from scipy import integrate
 import numpy as np
 
 # Perun Imports
-from perun.check import factory, nonparam_helpers as nparam_helpers
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
+from perun.check import factory, nonparam_kit as nparam_helpers
 from perun.postprocess.regression_analysis import regression_models
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
@@ -121,22 +122,26 @@ def execute_analysis(
     return DetectionChangeResult(change_info, round(rel_error if np.isfinite(rel_error) else 0, 2))
 
 
-def integral_comparison(
-    baseline_profile: Profile,
-    target_profile: Profile,
-    models_strategy: str = "best-model",
-) -> Iterable[DegradationInfo]:
-    """
-    The wrapper of `integral comparison` detection method. Method calls the general method
-    for running the detection between pairs of profile (baseline and target) and subsequently
-    returns the information about detected changes.
+class IntegralComparison(AbstractBaseChecker):
+    def check(
+        self,
+        baseline_profile: Profile,
+        target_profile: Profile,
+        models_strategy: str = "best-model",
+        **_: Any,
+    ) -> Iterable[DegradationInfo]:
+        """
+        The wrapper of `integral comparison` detection method. Method calls the general method
+        for running the detection between pairs of profile (baseline and target) and subsequently
+        returns the information about detected changes.
 
-    :param Profile baseline_profile: baseline profile against which we are checking the degradation
-    :param Profile target_profile: target profile corresponding to the checked minor version
-    :param str models_strategy: detection model strategy for obtains the relevant kind of models
-    :returns: tuple - degradation result (structure DegradationInfo)
-    """
-    for degradation_info in factory.run_detection_with_strategy(
-        execute_analysis, baseline_profile, target_profile, models_strategy
-    ):
-        yield degradation_info
+        :param Profile baseline_profile: baseline profile against which we are checking the degradation
+        :param Profile target_profile: target profile corresponding to the checked minor version
+        :param str models_strategy: detection model strategy for obtains the relevant kind of models
+        :param _: other kwgargs
+        :returns: tuple - degradation result (structure DegradationInfo)
+        """
+        for degradation_info in factory.run_detection_with_strategy(
+            execute_analysis, baseline_profile, target_profile, models_strategy
+        ):
+            yield degradation_info

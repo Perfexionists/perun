@@ -13,10 +13,11 @@ from scipy import integrate
 
 # Perun Imports
 from perun.check import factory
+from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.profile.factory import Profile
 from perun.utils.common import common_kit
 from perun.utils.structs import DegradationInfo, ModelRecord, DetectionChangeResult
-import perun.check.nonparam_helpers as nparam_helpers
+import perun.check.nonparam_kit as nparam_helpers
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -248,22 +249,25 @@ def execute_analysis(
     return DetectionChangeResult(change_info_enum, relative_error, partial_intervals)
 
 
-def local_statistics(
-    baseline_profile: Profile,
-    target_profile: Profile,
-    models_strategy: str = "best-model",
-) -> Iterable[DegradationInfo]:
-    """
-    The wrapper of `local_statistics` detection method. Method calls the general method
-    for running the detection between pairs of profile (baseline and target) and subsequently
-    returns the information about detected changes.
+class LocalStatistics(AbstractBaseChecker):
+    def check(
+        self,
+        baseline_profile: Profile,
+        target_profile: Profile,
+        models_strategy: str = "best-model",
+        **__: Any,
+    ) -> Iterable[DegradationInfo]:
+        """
+        The wrapper of `local_statistics` detection method. Method calls the general method
+        for running the detection between pairs of profile (baseline and target) and subsequently
+        returns the information about detected changes.
 
-    :param Profile baseline_profile: base against which we are checking the degradation
-    :param Profile target_profile: profile corresponding to the checked minor version
-    :param str models_strategy: detection model strategy for obtains the relevant kind of models
-    :returns: tuple - degradation result
-    """
-    for degradation_info in factory.run_detection_with_strategy(
-        execute_analysis, baseline_profile, target_profile, models_strategy
-    ):
-        yield degradation_info
+        :param Profile baseline_profile: base against which we are checking the degradation
+        :param Profile target_profile: profile corresponding to the checked minor version
+        :param str models_strategy: detection model strategy for obtains the relevant kind of models
+        :returns: tuple - degradation result
+        """
+        for degradation_info in factory.run_detection_with_strategy(
+            execute_analysis, baseline_profile, target_profile, models_strategy
+        ):
+            yield degradation_info

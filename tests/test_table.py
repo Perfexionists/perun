@@ -1,12 +1,16 @@
 """ Basic tests for table plot visualization """
+from __future__ import annotations
 
+# Standard Imports
 import os
+
+# Third-Party Imports
 from click.testing import CliRunner
 
-import perun.cli as cli
-import perun.vcs as vcs
-import perun.testing.utils as test_utils
-import perun.testing.asserts as asserts
+# Perun Imports
+from perun import cli
+from perun.logic import pcs
+from perun.testing import asserts, utils as test_utils
 
 
 TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], "references", "table_files")
@@ -48,7 +52,7 @@ def test_table_cli(pcs_full):
 
     models_profile = test_utils.load_profilename("postprocess_profiles", "complexity-models.perf")
     added = test_utils.prepare_profile(
-        pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
+        pcs_full.get_job_directory(), models_profile, pcs.vcs().get_minor_head()
     )
     result = runner.invoke(cli.add, ["--keep-profile", f"{added}"])
     asserts.predicate_from_cli(result, result.exit_code == 0)

@@ -1,11 +1,15 @@
+"""Collection of tests for testing the storage system of Perun"""
+from __future__ import annotations
+
+# Standard Imports
 import os
+
+# Third-Party Imports
 import pytest
 
-import perun.utils.streams as streams
-import perun.logic.store as store
-import perun.logic.index as index
-import perun.utils.exceptions as exceptions
-import perun.utils.timestamps as timestamps
+# Perun Imports
+from perun.logic import store, index
+from perun.utils import exceptions, timestamps, streams
 
 
 @pytest.mark.usefixtures("cleandir")

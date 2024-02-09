@@ -6,9 +6,9 @@ import signal
 
 from click.testing import CliRunner
 
-import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
+from perun.logic import pcs
 from perun.utils.common import common_kit
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
@@ -75,7 +75,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
 
     cmd, work, collectors, posts, config = complexity_collect_job
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    head = pcs.vcs().get_minor_version_info(pcs.vcs().get_minor_head())
     result = run.run_single_job(cmd, work, collectors, posts, [head], **config)
     assert result == CollectStatus.OK
 
@@ -263,7 +263,7 @@ def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collec
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    head = pcs.vcs().get_minor_version_info(pcs.vcs().get_minor_head())
     memory_collect_job += ([head],)
 
     run.run_single_job(*memory_collect_job)
@@ -342,7 +342,7 @@ def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collec
 def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_collect_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    head = pcs.vcs().get_minor_version_info(pcs.vcs().get_minor_head())
     memory_collect_job += ([head],)
 
     # Patch os.path.isfile so for libmalloc.so it returns, that it is missing forcing recompilation
@@ -455,7 +455,7 @@ def test_collect_time(monkeypatch, pcs_with_root, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
     before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    head = pcs.vcs().get_minor_version_info(pcs.vcs().get_minor_head())
 
     run.run_single_job(["echo"], ["hello"], ["time"], [], [head])
 
@@ -508,7 +508,7 @@ def test_integrity_tests(capsys):
 
 def test_teardown(pcs_with_root, monkeypatch, capsys):
     """Basic tests for integrity of the teardown phase"""
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    head = pcs.vcs().get_minor_version_info(pcs.vcs().get_minor_head())
     original_phase_f = run.run_phase_function
 
     # Assert that collection went OK and teardown returns error

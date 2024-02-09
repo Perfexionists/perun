@@ -494,9 +494,9 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         :param str target_colour: target colour to print target string
         :param str attrs: name of type attributes for the colouring
         """
-        print(baseline_str, end="")
+        info(baseline_str, end="")
         cprint(f"{deg_info.from_baseline}", colour=baseline_colour, attrs=attrs)
-        print(target_str, end="")
+        info(target_str, end="")
         cprint(f"{deg_info.to_target}", colour=target_colour, attrs=attrs)
 
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
@@ -506,13 +506,13 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     elif model_strategy in ("best-nonparam", "best-model", "best-both"):
         print_models_kinds(" base: ", "blue", " targ: ", "blue", ["bold"])
     elif model_strategy in ("all-nonparam", "all-param", "all-models"):
-        print(" model: ", end="")
+        info(" model: ", end="")
         cprint(f"{deg_info.from_baseline}", colour="blue", attrs=["bold"])
 
     if deg_info.confidence_type != "no":
-        print(" (with confidence ", end="")
+        info(" (with confidence ", end="")
         cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", ["bold"])
-        print(")", end="")
+        info(")", end="")
 
 
 def _print_partial_intervals(
@@ -569,12 +569,12 @@ def print_list_of_degradations(
     degradation_list.sort(key=keygetter)
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
-        print("at", end="")
+        info("at", end="")
         cprint(f" {location}", "white", attrs=["bold"])
-        print(":")
+        info(":")
         # Iterate and print everything
         for deg_info, cmd, __ in changes:
-            print("\u2514 ", end="")
+            info("\u2514 ", end="")
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
                 cprint(
                     f"{round(deg_info.rate_degradation, 2)}ms ({round(deg_info.rate_degradation_relative, 2)}%)",
@@ -583,9 +583,9 @@ def print_list_of_degradations(
                 )
             else:
                 cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", ["bold"])
-            print(": ", end="")
+            info(": ", end="")
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, "white"))
-            print(" ", end="")
+            info(" ", end="")
             cprint(
                 f"{CHANGE_STRINGS[deg_info.result]}",
                 CHANGE_COLOURS[deg_info.result],
@@ -595,9 +595,9 @@ def print_list_of_degradations(
                 _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
-            print(" (", end="")
+            info(" (", end="")
             cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, ["bold"])
-            print(")")
+            info(")")
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
             if len(deg_info.partial_intervals) > 0:

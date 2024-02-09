@@ -63,7 +63,6 @@ from perun.collect.trace.optimizations.structs import Parameters
 from perun.profile.factory import Profile
 from perun.utils.exceptions import (
     UnsupportedModuleException,
-    UnsupportedModuleFunctionException,
     NotPerunRepositoryException,
     IncorrectProfileFormatException,
     EntryNotFoundException,
@@ -286,11 +285,6 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
             msg = "\nIn order to automatically run jobs configure the matrix at:\n"
             msg += "\n" + (" " * 4) + ".perun/local.yml\n"
             perun_log.quiet_info(msg)
-    except (
-        UnsupportedModuleException,
-        UnsupportedModuleFunctionException,
-    ) as unsup_module_exp:
-        perun_log.error(f"while initializing perun: {str(unsup_module_exp)}")
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
