@@ -227,11 +227,16 @@ def add(
     :param bool force: if set to true, then the add will be forced, i.e. the check for origin will
         not be performed.
     """
+    perun_log.major_info("Adding profiles")
     added_profile_count = 0
     for profile_name in profile_names:
         # Test if the given profile exists (This should hold always, or not?)
+        reg_rel_path = os.path.relpath(profile_name)
         if not os.path.exists(profile_name):
-            perun_log.error(f"profile {profile_name} does not exists", recoverable=True)
+            perun_log.minor_info(
+                perun_log.path_style(f"{reg_rel_path}"), status=perun_log.failed_highlight("failed")
+            )
+            perun_log.minor_info("profile does not exists", indent_level=2, end="\n")
             continue
 
         # Load profile content
@@ -240,9 +245,17 @@ def add(
         unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile["origin"] != minor_version:
-            error_msg = f"cannot add profile '{profile_name}' to minor index of '{minor_version}':"
-            error_msg += f"profile originates from minor version '{unpacked_profile['origin']}'"
-            perun_log.error(error_msg, recoverable=True)
+            perun_log.minor_info(
+                perun_log.path_style(f"{reg_rel_path}"), status=perun_log.failed_highlight("failed")
+            )
+            perun_log.minor_info(
+                "current version", status=f"{perun_log.highlight(minor_version)}", indent_level=2
+            )
+            perun_log.minor_info(
+                "origin version",
+                status=f"{perun_log.highlight(unpacked_profile['origin'])}",
+                indent_level=2,
+            )
             continue
 
         # Remove origin from file
@@ -270,15 +283,22 @@ def add(
         if not keep_profile:
             os.remove(profile_name)
 
+        perun_log.minor_info(
+            perun_log.path_style(f"{reg_rel_path}"),
+            status=perun_log.success_highlight("registered"),
+        )
         added_profile_count += 1
 
     profile_names_len = len(profile_names)
+    perun_log.minor_info(
+        "Registration succeeded for",
+        status=f"{perun_log.success_highlight(common_kit.str_to_plural(added_profile_count, 'profile'))}",
+    )
     if added_profile_count != profile_names_len:
-        perun_log.error(
-            f"could not register {common_kit.str_to_plural(added_profile_count, 'profile')}"
-            f" in index: {added_profile_count - profile_names_len} failed"
+        failed_profile_count = common_kit.str_to_plural(
+            profile_names_len - added_profile_count, "profile"
         )
-    perun_log.info(f"successfully registered {added_profile_count} profiles in index")
+        perun_log.error(f"Registration failed for - {failed_profile_count}")
 
 
 @vcs_kit.lookup_minor_version
@@ -415,6 +435,7 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
         minor_version_maxima = calculate_maximal_lengths_for_object_list(
             minor_versions, MinorVersion.valid_fields()
         )
+
         # Update manually the maxima for the printed supported profile types, each requires two
         # characters and 9 stands for " profiles" string
 

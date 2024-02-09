@@ -16,6 +16,7 @@ import termcolor
 # Perun Imports
 from perun.logic import store, index, commands
 from perun.utils import timestamps
+from perun.utils.common import common_kit
 from perun.utils.exceptions import (
     NotPerunRepositoryException,
     UnsupportedModuleException,
@@ -264,8 +265,9 @@ def test_add_wrong_profile(pcs_full, error_profile_pool, capsys):
     after_count = test_utils.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
 
-    _, err = capsys.readouterr()
-    assert "notexisting.perf does not exist" in err
+    out, err = capsys.readouterr()
+    assert "Profile does not exist" in out
+    assert "Registration failed for - 1 profile" in common_kit.escape_ansi(err)
 
 
 def test_add_existing(pcs_full, valid_profile_pool, capsys):

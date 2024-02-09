@@ -598,9 +598,6 @@ def register_in_index(
     )
     write_entry_to_index(index_filename, entry)
 
-    reg_rel_path = os.path.relpath(registered_file)
-    perun_log.info(f"'{reg_rel_path}' successfully registered in minor version index")
-
 
 def remove_from_index(
     base_dir: str, minor_version: str, removed_file_generator: Collection[str]

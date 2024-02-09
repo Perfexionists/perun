@@ -1438,7 +1438,9 @@ def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", "--minor=HEAD"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{first_tagged}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{first_tagged} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", r"--minor=HEAD^{d"])
@@ -1480,19 +1482,25 @@ def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{first_sha}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{first_sha} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(result, f"originates from minor version '{parent}'" in result.output)
+    asserts.predicate_from_cli(
+        result, f"Origin version - {parent}" in common_kit.escape_ansi(result.output)
+    )
 
     # Check that force work as intented
     monkeypatch.setattr("click.confirm", lambda _: True)
     runner = CliRunner()
     result = runner.invoke(cli.add, ["--force", "0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{second_sha}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{second_sha} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     result = runner.invoke(cli.add, ["10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
@@ -1518,13 +1526,13 @@ def test_add_tag_range(pcs_with_root, valid_profile_pool):
     result = runner.invoke(cli.add, ["10@p-0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(
-        result, "successfully registered 0 profiles in index" in result.output
+        result, "Registration succeeded for - 0 profiles" in common_kit.escape_ansi(result.output)
     )
 
     result = runner.invoke(cli.add, ["0@p-10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(
-        result, "successfully registered 2 profiles in index" in result.output
+        result, "Registration succeeded for - 2 profiles" in common_kit.escape_ansi(result.output)
     )
 
     # Nothing should remain!

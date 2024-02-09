@@ -322,12 +322,16 @@ def major_info(msg: str, colour: ColorChoiceType = "blue") -> None:
     info("")
 
 
-def minor_info(msg: str, sep: str = "-", indent_level: int = 1, end: str = ""):
+def minor_info(msg: str, status: str = "", sep: str = "-", indent_level: int = 1, end: str = ""):
     """Prints minor information, formatted with indent and starting with -
 
-    Note, that there are some sanitizations happening
+    Note, that there are some sanitizations happening:
+      1. If we want to end the info in new line, we add the punctuations;
+      2. If we want to add some status, we add the separator
+      3. If we want to add some status, we add the separaror and also the ending
 
     :param msg: printed message, which will be stripped from whitespace and capitalized
+    :param status: status of the info
     :param sep: separator used to separate the info with its results
     :param indent_level: indent of the information
     :param end: ending of the message
@@ -337,6 +341,9 @@ def minor_info(msg: str, sep: str = "-", indent_level: int = 1, end: str = ""):
         msg += "."
     elif end == "" and sep != "" and msg[-1] != sep:
         msg += f" {sep} "
+    if status != "":
+        msg += status
+        end = "\n"
     info(" " * indent_level * 2 + " - " + msg, end)
 
 
@@ -400,6 +407,24 @@ def highlight(highlighted_str: str) -> str:
     :return: highlighted string
     """
     return in_color(highlighted_str, "blue", attribute_style=["bold"])
+
+
+def success_highlight(highlighted_str: str) -> str:
+    """Highlights of the string that is considered successful
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "green", attribute_style=["bold"])
+
+
+def failed_highlight(highlighted_str: str) -> str:
+    """Highlights of the string that is considered failure
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "red", attribute_style=["bold"])
 
 
 def in_color(
