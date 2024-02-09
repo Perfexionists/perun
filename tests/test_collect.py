@@ -496,13 +496,14 @@ def test_integrity_tests(capsys):
     mock_report = RunnerReport(complexity, "postprocessor", {"profile": {}})
     run.check_integrity_of_runner(complexity, "postprocessor", mock_report)
     out, err = capsys.readouterr()
-    assert "warning: complexity is missing postprocess() function" in out
+
+    assert "complexity is missing postprocess() function" in out
     assert "" == err
 
     mock_report = RunnerReport(complexity, "collector", {})
     run.check_integrity_of_runner(complexity, "collector", mock_report)
     out, err = capsys.readouterr()
-    assert "warning: collector complexity does not return any profile"
+    assert "collector complexity does not return any profile"
     assert "" == err
 
 
@@ -557,4 +558,4 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
     status = run.run_single_job(["echo"], ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()
-    assert "fatal: while collecting by time: received signal" in err
+    assert "while collecting by time: received signal" in err

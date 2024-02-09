@@ -282,9 +282,8 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
             # Run the interactive configuration of the local perun repository (populating .yml)
             configure_local_perun(dst)
         else:
-            msg = "\nIn order to automatically run jobs configure the matrix at:\n"
-            msg += "\n" + (" " * 4) + ".perun/local.yml\n"
-            perun_log.quiet_info(msg)
+            perun_log.minor_info(f"Local instance of Perun can now be (manually) configured")
+            perun_log.info(f"{perun_log.path_style('.perun/local.yml')}")
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):

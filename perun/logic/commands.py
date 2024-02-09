@@ -61,6 +61,7 @@ def config_get(store_type: str, key: str) -> None:
     :param str store_type: type of the store lookup (local, shared of recursive)
     :param str key: list of section delimited by dot (.)
     """
+    # Note, this is bare output, since, it "might" be used in scripts or CI or anything parsed
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     if store_type == "recursive":
@@ -77,10 +78,11 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     :param str key: list of section delimited by dot (.)
     :param object value: arbitrary value that will be set in the configuration
     """
+    perun_log.major_info("Config: Setting new key")
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     config_store.set(key, value)
-    perun_log.info(f"Value '{value}' set for key '{key}'")
+    perun_log.minor_info(f"Value '{value}' set for key '{key}'", end="\n")
 
 
 def config_edit(store_type: str) -> None:
@@ -109,6 +111,7 @@ def config_reset(store_type: str, config_template: str) -> None:
     :param str config_template: name of the template that we are resetting to
     :raises NotPerunRepositoryException: raised when we are outside of any perun scope
     """
+    perun_log.major_info(f"Config: Resetting {store_type} config")
     is_shared_config = store_type in ("shared", "global")
     if is_shared_config:
         shared_location = perun_config.lookup_shared_config_dir()
@@ -117,9 +120,10 @@ def config_reset(store_type: str, config_template: str) -> None:
         vcs_url, vcs_type = pcs.get_vcs_type_and_url()
         vcs_config = {"vcs": {"url": vcs_url, "type": vcs_type}}
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
-    perun_log.info(f"{'global' if is_shared_config else 'local'} configuration reset")
+
+    perun_log.minor_info(f"{'global' if is_shared_config else 'local'} configuration reset")
     if not is_shared_config:
-        perun_log.info(f" to {config_template}")
+        perun_log.info(f"to {config_template}")
 
 
 def init_perun_at(
@@ -150,14 +154,17 @@ def init_perun_at(
     if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
     else:
-        perun_log.info(
-            "configuration file already exists. Run ``perun config reset`` to reset"
-            " configuration to default state."
+        perun_log.minor_info(f"configuration file {perun_log.highlight('already exists')}")
+        perun_log.minor_info(
+            f"Run {perun_log.cmd_style('perun config reset')} to reset configuration to default state"
         )
 
     # Perun successfully created
-    msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
-    perun_log.msg_to_stdout(msg_prefix + f" Perun repository in {perun_path}", 0)
+    msg = "Reinitialized " if is_reinit else "Initialized "
+    msg += perun_log.highlight("existing") if is_reinit else perun_log.highlight("empty")
+    msg += f" Perun repository"
+    perun_log.minor_info(msg)
+    perun_log.info(f"{perun_log.path_style(perun_path)}")
 
 
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
@@ -171,6 +178,7 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     :param str configuration_template: name of the template that will be used for initialization
         of local configuration
     """
+    perun_log.major_info("Initializing Perun")
     # First init the wrapping repository well
     vcs_type = kwargs["vcs_type"]
     vcs_path = kwargs["vcs_path"] or dst
@@ -184,7 +192,10 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
         super_perun_dir = common_kit.locate_perun_dir_on(dst)
         is_pcs_reinitialized = super_perun_dir == dst
         if not is_pcs_reinitialized:
-            perun_log.warn(f"There exists super perun directory at {super_perun_dir}")
+            perun_log.warn(
+                f"There exists perun directory at {perun_log.path_style(super_perun_dir)}",
+                end="\n\n",
+            )
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 

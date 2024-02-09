@@ -125,10 +125,10 @@ def test_add_on_empty_repo(pcs_with_empty_git, valid_profile_pool, capsys):
     # Assert that the error message is OK
     _, err = capsys.readouterr()
     expected = (
-        "fatal: while fetching head minor version: "
+        "while fetching head minor version: "
         f"Reference at 'refs/heads/{git_default_branch_name}' does not exist"
     )
-    assert err.strip() == termcolor.colored(expected, "red", force_color=True)
+    assert termcolor.colored(expected, "red", force_color=True) in err.strip()
 
 
 def test_add_on_no_vcs(pcs_without_vcs, valid_profile_pool):

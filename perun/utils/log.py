@@ -219,7 +219,7 @@ def error(
     :param bool recoverable: whether we can recover from the error
     :param Exception raised_exception: exception that was raised before the error
     """
-    print(in_color(f"fatal: {msg}", "red"), file=sys.stderr)
+    print(f"{tag('error', 'red')} {in_color(msg, 'red')}", file=sys.stderr)
     if is_verbose_enough(VERBOSE_DEBUG):
         print_current_stack(raised_exception=raised_exception)
 
@@ -234,7 +234,7 @@ def warn(msg: str, end: str = "\n") -> None:
     :param str end:
     """
     if not SUPPRESS_WARNINGS:
-        print(f"warning: {msg}", end=end)
+        print(f"{tag('warning', 'yellow')} {msg}", end=end)
 
 
 def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoiceType) -> None:
@@ -340,15 +340,14 @@ def minor_info(msg: str, sep: str = "-", indent_level: int = 1, end: str = ""):
     info(" " * indent_level * 2 + " - " + msg, end)
 
 
-def tag(tag_str: str, colour: ColorChoiceType, ending: str = "\n") -> None:
+def tag(tag_str: str, colour: ColorChoiceType, ending: str = "") -> str:
     """
     :param tag_str: printed tag
     :param colour: colour of the tag
     :param str ending: end of the string, by default new line
+    :return: formatted tag
     """
-    print("[", end="")
-    cprint(tag_str.upper(), colour, attrs=["bold"])
-    print("]", end=ending)
+    return "[" + in_color(tag_str.upper(), colour, attribute_style=["bold"]) + "]"
 
 
 def yes(ending: str = "\n") -> None:
@@ -374,6 +373,33 @@ def newline() -> None:
     Prints blank line
     """
     print("")
+
+
+def path_style(path_str: str) -> str:
+    """Unified formatting and colouring of the path.
+
+    :param path_str: string that corresponds to path
+    :return: stylized path string
+    """
+    return in_color(path_str, "yellow", attribute_style=["bold"])
+
+
+def cmd_style(cmd_str: str) -> str:
+    """Unified formatting and colouring of the commands
+
+    :param cmd_str: string that corresponds to command that should be run in terminal
+    :return: stylized command string
+    """
+    return in_color(f"`{cmd_str}`", "grey")
+
+
+def highlight(highlighted_str: str) -> str:
+    """Highlights the string
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "blue", attribute_style=["bold"])
 
 
 def in_color(

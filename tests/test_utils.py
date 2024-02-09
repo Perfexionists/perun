@@ -140,7 +140,7 @@ def test_paging_and_config(monkeypatch, capsys):
     assert commands.turn_off_paging_wrt_config("status")
     assert commands.turn_off_paging_wrt_config("log")
     out, _ = capsys.readouterr()
-    assert "warn" in out and "missing ``general.paging``" in out
+    assert "warning" in out.lower() and "missing ``general.paging``" in out
 
 
 def test_binaries_lookup():

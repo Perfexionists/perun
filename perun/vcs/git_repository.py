@@ -65,13 +65,20 @@ class GitRepository(AbstractRepository):
                 and not os.listdir(self.vcs_path)
             ):
                 os.rmdir(self.vcs_path)
-            perun_log.error(f"while git init: {gce}", recoverable=True)
+            perun_log.error(f"while initializing git: {gce}", recoverable=True)
             return False
 
         if self.valid_repo:
-            perun_log.quiet_info(f"Reinitialized existing Git repository in {self.vcs_path}")
+            perun_log.minor_info(f"Reinitialized {perun_log.highlight('existing')} Git repository")
+            perun_log.info(
+                f"{perun_log.path_style(self.vcs_path)}",
+            )
         else:
-            perun_log.quiet_info(f"Initialized empty Git repository in {self.vcs_path}")
+            perun_log.minor_info(f"Initialized {perun_log.highlight('empty')} Git repository")
+            perun_log.info(
+                f"{perun_log.path_style(self.vcs_path)}",
+                end="\n",
+            )
         self._set_git_repo(self.vcs_path)
         return True
 
