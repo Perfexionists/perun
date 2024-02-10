@@ -328,13 +328,14 @@ def skipped(ending: str = "\n") -> None:
     info(in_color("skipped", color="light_grey", attribute_style=["bold"]), end=ending)
 
 
-def major_info(msg: str, colour: ColorChoiceType = "blue") -> None:
+def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = False) -> None:
     """Prints major information, formatted in brackets [], in bold and optionally in color
 
     :param msg: printed message
+    :param no_title: if set to true, then the title will be printed as it is
     :param colour: optional colour
     """
-    stripped_msg = msg.strip().title()
+    stripped_msg = msg.strip() if no_title else msg.strip().title()
     printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
     info("")
     info(" " * CURRENT_INDENT * 2 + printed_msg)
