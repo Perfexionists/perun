@@ -297,16 +297,6 @@ def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceTyp
     print(in_color(string, colour, attrs))
 
 
-def done(ending: str = "\n") -> None:
-    """Helper function that will print green done to the terminal
-
-    :param str ending: end of the string, by default new line
-    """
-    print("[", end="")
-    cprint("DONE", "green", attrs=["bold"])
-    print("]", end=ending)
-
-
 def failed(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
@@ -367,6 +357,18 @@ def minor_info(
         msg += status
         end = "\n"
     info(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
+
+
+def minor_info_fail(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+    """Helper function for shortening some messages"""
+    minor_info(msg, status=failed_highlight("failed"), sep=sep, indent_level=indent_level, end=end)
+
+
+def minor_info_success(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+    """Helper function for shortening some messages"""
+    minor_info(
+        msg, status=success_highlight("succeeded"), sep=sep, indent_level=indent_level, end=end
+    )
 
 
 def tag(tag_str: str, colour: ColorChoiceType, ending: str = "") -> str:

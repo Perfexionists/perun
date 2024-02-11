@@ -41,10 +41,12 @@ def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: Te
     :param File file_handle: file, where the anomalies are written
     """
     if anomalies:
+        log.minor_info(f"Saving {log.highlight(anomaly_type + 's')}")
         file_handle.write(f"{anomaly_type.capitalize()}s:\n")
         for anomaly in anomalies:
             file_handle.write(anomaly.path + " " + str(anomaly.history) + "\n")
-            log.info(".")
+            log.info(".", end="")
+        log.newline()
 
 
 def save_time_series(file_handle: TextIO, time_series: TimeSeries) -> None:
@@ -55,7 +57,6 @@ def save_time_series(file_handle: TextIO, time_series: TimeSeries) -> None:
     """
     for x_value, y_value in zip(time_series.x_axis, time_series.y_axis):
         file_handle.write(str(x_value) + " " + str(y_value) + "\n")
-        log.info(".")
 
 
 def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
@@ -64,14 +65,16 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     :param str log_dir: path to the output log directory
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     """
-    log.info("Saving log files")
     deg_data_file = open(log_dir + "/degradation_plot_data.txt", "w")
     cov_data_file = open(log_dir + "/coverage_plot_data.txt", "w")
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
     save_time_series(deg_data_file, fuzz_progress.deg_time_series)
+    log.minor_info_success("Saving degradation time series")
     save_time_series(cov_data_file, fuzz_progress.cov_time_series)
+    log.minor_info_success("Saving coverage time series")
 
+    log.minor_info("Saving log files")
     for mut in fuzz_progress.parents:
         results_data_file.write(
             str(mut.fitness)
@@ -85,13 +88,11 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
             + str(mut.history)
             + "\n"
         )
-        log.info(".")
-    log.done()
+        log.info(".", end="")
+    log.newline()
 
     save_anomalies(fuzz_progress.hangs, "hang", results_data_file)
-    log.done()
     save_anomalies(fuzz_progress.faults, "fault", results_data_file)
-    log.done()
 
     deg_data_file.close()
     cov_data_file.close()
@@ -258,12 +259,15 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     :param FuzzingProgress fuzz_progress: collection of statistics of fuzzing process
     :param str diffs_dir: path to the directory where diffs will be stored
     """
-    log.info("Computing deltas")
-    for mutations in [
-        fuzz_progress.final_results,
-        fuzz_progress.faults,
-        fuzz_progress.hangs,
+    log.minor_info("Computing deltas", end="\n")
+    log.increase_indent()
+    for mutation_type, mutations in [
+        ("Final", fuzz_progress.final_results),
+        ("Faults", fuzz_progress.faults),
+        ("Hangs", fuzz_progress.hangs),
     ]:
+        if mutations:
+            log.minor_info(mutation_type)
         for res in mutations:
             if res.predecessor is not None:
                 pred = streams.safely_load_file(res.predecessor.path)
@@ -291,5 +295,7 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
 
                 open(diff_file_name, "w").writelines(diff)
                 filesystem.move_file_to(diff_file_name, diffs_dir)
-                log.info(".")
-    log.done()
+                log.info(".", end="")
+        if mutations:
+            log.newline()
+    log.decrease_indent()

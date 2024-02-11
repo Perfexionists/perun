@@ -77,7 +77,6 @@ def before(executable, **kwargs):
     WATCH_DOG.log_variable("before::kwargs::config", config.__dict__)
     WATCH_DOG.log_variable("before::kwargs::probes", kwargs["probes"].__dict__)
 
-    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
@@ -102,7 +101,6 @@ def collect(**kwargs):
     config.engine.collect(**kwargs)
     metrics.end_timer("collect_time")
 
-    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
@@ -134,7 +132,6 @@ def after(**kwargs):
         kwargs["profile"] = kwargs["config"].engine.transform(**kwargs)
 
     WATCH_DOG.info("Data processing finished.")
-    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
@@ -164,7 +161,6 @@ def teardown(**kwargs):
 
     metrics.end_timer("total_time")
     # metrics.save()
-    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 

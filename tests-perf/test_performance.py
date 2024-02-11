@@ -37,7 +37,6 @@ def run_benchmark(benchmark_dir, performance_tests):
     for bench in os.listdir(benchmark_dir):
         log.info(" > {}".format(log.in_color(bench, "yellow")))
         results.append(performance_test(benchmark_dir, bench, store_dir, executed_tests))
-        log.done()
     log.info("")
     log.info("")
     headers = ["file"] + [pt for pt in possible_tests if pt in executed_tests]

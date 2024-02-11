@@ -370,7 +370,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_col
     # Try issue, when the libmalloc library is not there
     run.run_single_job(*memory_collect_job)
     out, _ = capsys.readouterr()
-    assert "Missing compiled dynamic library" in out
+    assert "Dynamic library libmalloc - not found" in common_kit.escape_ansi(out)
 
     # Try compiling again, but now with an error during the compilation
     return_code_for_make = 1
@@ -387,7 +387,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_col
     monkeypatch.setattr("perun.collect.memory.parsing.parse_log", patched_parse)
     run.run_single_job(*memory_collect_job)
     _, err = capsys.readouterr()
-    assert "Problems while parsing log file: " in err
+    assert "Could not parse the log file due to" in err
 
     def patched_run(_):
         return 42, "dummy"
