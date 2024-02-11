@@ -18,7 +18,7 @@ from perun.utils.structs import PerformanceChange
 if TYPE_CHECKING:
     from perun.fuzz.structs import Mutation
     from perun.profile.factory import Profile
-    from perun.utils.structs import Executable, MinorVersion, CollectStatus
+    from perun.utils.structs import Executable, MinorVersion, CollectStatus, Job
 
 
 DEGRADATION_RATIO_THRESHOLD = 0.0
@@ -31,7 +31,7 @@ def baseline_testing(
     postprocessor: list[str],
     minor_version_list: list[MinorVersion],
     **kwargs: Any,
-) -> Iterable[tuple[CollectStatus, Profile, str]]:
+) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """Generates a profile for specified command with init seeds, compares each other.
 
     :param Executable executable: called command with arguments
@@ -80,7 +80,7 @@ def target_testing(
     collector: str,
     postprocessor: list[str],
     minor_version_list: list[MinorVersion],
-    base_result: Iterable[tuple[CollectStatus, Profile, str]],
+    base_result: Iterable[tuple[CollectStatus, Profile, Job]],
     **kwargs: Any,
 ) -> bool:
     """Generates a profile for specified command with fuzzed workload, compares with
@@ -112,8 +112,8 @@ def target_testing(
 
 
 def check_for_change(
-    base_pg: Iterable[tuple[CollectStatus, Profile, str]],
-    target_pg: Iterable[tuple[CollectStatus, Profile, str]],
+    base_pg: Iterable[tuple[CollectStatus, Profile, Job]],
+    target_pg: Iterable[tuple[CollectStatus, Profile, Job]],
     method: str = "best-model",
 ) -> float:
     """Function that randomly choose an index from list.

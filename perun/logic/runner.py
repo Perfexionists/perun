@@ -622,7 +622,7 @@ def generate_profiles_for(
     postprocessor: list[str],
     minor_version_list: list[MinorVersion],
     **kwargs: Any,
-) -> Iterable[tuple[CollectStatus, Profile, str]]:
+) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """Helper generator, that takes job specification and continuously generates profiles
 
     This is mainly used for fuzzing, which requires to handle the profiles without any storage,

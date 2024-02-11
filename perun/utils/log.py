@@ -342,7 +342,9 @@ def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = Fals
     info("")
 
 
-def minor_info(msg: str, status: str = "", sep: str = "-", indent_level: int = 1, end: str = ""):
+def minor_info(
+    msg: str, status: str = "", sep: str = "-", indent_level: int = 1, end: str = ""
+) -> None:
     """Prints minor information, formatted with indent and starting with -
 
     Note, that there are some sanitizations happening:
