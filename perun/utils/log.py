@@ -298,20 +298,6 @@ def tick(tick_symbol=".") -> None:
     print(tick_symbol, end="")
 
 
-def failed(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    info(failed_highlight("failed"), end=ending)
-
-
-def successful(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    info(success_highlight("sucessful"), end=ending)
-
-
 def skipped(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
