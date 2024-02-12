@@ -190,7 +190,7 @@ def print_legend(rule_set: RuleSet) -> None:
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
     """
     log.minor_info("Statistics of rule set", end="\n\n")
-    log.info(
+    log.write(
         tabulate.tabulate(
             [[i, rule_set.hits[i], method[1]] for (i, method) in enumerate(rule_set.rules)],
             headers=["id", "Rule Efficiency", "Description"],

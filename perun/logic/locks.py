@@ -151,7 +151,7 @@ class ResourceLock:
                 )
                 raise ResourceLockedException(self.name, active_lock.pid)
             # If not, remove the lock file and report the obsolete lock
-            WATCH_DOG.info(
+            WATCH_DOG.write(
                 "Encountered obsolete lock file that should have been deleted during teardown: "
                 f"Resource '{self.name}', pid '{active_lock.pid}'. Attempting to remove the lock."
             )

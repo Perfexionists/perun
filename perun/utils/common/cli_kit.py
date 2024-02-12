@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
     """Prints current version of Perun and ends"""
     if value:
-        log.info(f"Perun {perun.__version__}")
+        log.write(f"Perun {perun.__version__}")
         exit(0)
 
 

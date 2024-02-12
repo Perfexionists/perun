@@ -239,7 +239,7 @@ def ebpf_runner():
         if poll_duration * 1000 > _BPF_POLL_SLEEP * 0.25:
             break
     time.sleep(_BPF_SLEEP)
-    log.info(f"Lost: {BPF_CTX.lost} records")
+    log.write(f"Lost: {BPF_CTX.lost} records")
     BPF_CTX.data.close()
     temp.store_temp("ebpf:profiled_command.json", profiled_time, json_format=True)
 

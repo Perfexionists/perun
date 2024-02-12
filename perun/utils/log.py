@@ -207,7 +207,7 @@ def print_current_stack(
     print(in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr)
 
 
-def info(msg: str, end: str = "\n") -> None:
+def write(msg: str, end: str = "\n") -> None:
     """
     :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     :param str end:
@@ -302,7 +302,7 @@ def skipped(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    info(in_color("skipped", color="light_grey", attribute_style=["bold"]), end=ending)
+    write(in_color("skipped", color="light_grey", attribute_style=["bold"]), end=ending)
 
 
 def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = False) -> None:
@@ -314,9 +314,9 @@ def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = Fals
     """
     stripped_msg = msg.strip() if no_title else msg.strip().title()
     printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
-    info("")
-    info(" " * CURRENT_INDENT * 2 + printed_msg)
-    info("")
+    write("")
+    write(" " * CURRENT_INDENT * 2 + printed_msg)
+    write("")
 
 
 def minor_info(
@@ -343,7 +343,7 @@ def minor_info(
     if status != "":
         msg += status
         end = "\n"
-    info(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
+    write(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
 
 
 def minor_fail(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
@@ -580,9 +580,9 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         :param str target_colour: target colour to print target string
         :param str attrs: name of type attributes for the colouring
         """
-        info(baseline_str, end="")
+        write(baseline_str, end="")
         cprint(f"{deg_info.from_baseline}", colour=baseline_colour, attrs=attrs)
-        info(target_str, end="")
+        write(target_str, end="")
         cprint(f"{deg_info.to_target}", colour=target_colour, attrs=attrs)
 
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
@@ -592,13 +592,13 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     elif model_strategy in ("best-nonparam", "best-model", "best-both"):
         print_models_kinds(" base: ", "blue", " targ: ", "blue", ["bold"])
     elif model_strategy in ("all-nonparam", "all-param", "all-models"):
-        info(" model: ", end="")
+        write(" model: ", end="")
         cprint(f"{deg_info.from_baseline}", colour="blue", attrs=["bold"])
 
     if deg_info.confidence_type != "no":
-        info(" (with confidence ", end="")
+        write(" (with confidence ", end="")
         cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", ["bold"])
-        info(")", end="")
+        write(")", end="")
 
 
 def _print_partial_intervals(
@@ -640,7 +640,7 @@ def print_list_of_degradations(
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
     if not degradation_list:
-        info("no changes found")
+        write("no changes found")
         return
 
     def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
@@ -655,12 +655,12 @@ def print_list_of_degradations(
     degradation_list.sort(key=keygetter)
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
-        info("at", end="")
+        write("at", end="")
         cprint(f" {location}", "white", attrs=["bold"])
-        info(":")
+        write(":")
         # Iterate and print everything
         for deg_info, cmd, __ in changes:
-            info("\u2514 ", end="")
+            write("\u2514 ", end="")
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
                 cprint(
                     f"{round(deg_info.rate_degradation, 2)}ms ({round(deg_info.rate_degradation_relative, 2)}%)",
@@ -669,9 +669,9 @@ def print_list_of_degradations(
                 )
             else:
                 cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", ["bold"])
-            info(": ", end="")
+            write(": ", end="")
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, "white"))
-            info(" ", end="")
+            write(" ", end="")
             cprint(
                 f"{CHANGE_STRINGS[deg_info.result]}",
                 CHANGE_COLOURS[deg_info.result],
@@ -681,9 +681,9 @@ def print_list_of_degradations(
                 _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
-            info(" (", end="")
+            write(" (", end="")
             cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, ["bold"])
-            info(")")
+            write(")")
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
             if len(deg_info.partial_intervals) > 0:

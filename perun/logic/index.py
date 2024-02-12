@@ -347,12 +347,12 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
     index_version = store.read_int_from_handle(index_handle)
     number_of_entries = store.read_int_from_handle(index_handle)
 
-    perun_log.info(
+    perun_log.write(
         f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n"
     )
 
     for entry in walk_index(index_handle):
-        perun_log.info(str(entry))
+        perun_log.write(str(entry))
 
 
 def touch_index(index_path: str) -> None:

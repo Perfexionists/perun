@@ -141,7 +141,7 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     :param Configuration config: the configuration parameters
     :param Probes probes: the probes specification
     """
-    WATCH_DOG.info(f"Attempting to assembly the SystemTap script '{script_file}'")
+    WATCH_DOG.write(f"Attempting to assembly the SystemTap script '{script_file}'")
 
     # Add unique probe and sampling ID to the probes
     probes.add_probe_ids()
@@ -162,7 +162,7 @@ def assemble_system_tap_script(script_file, config, probes, **_):
         _add_program_probes(script_handle, probes, config.verbose_trace, timed_sampling)
 
     # Success
-    WATCH_DOG.info("SystemTap script successfully assembled")
+    WATCH_DOG.write("SystemTap script successfully assembled")
     WATCH_DOG.log_probes(len(probes.func), len(probes.usdt), script_file)
 
 

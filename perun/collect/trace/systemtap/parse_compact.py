@@ -133,7 +133,7 @@ def trace_to_profile(data_file, config, probes, **_):
         # Wait for the transformation process to finish
         profile_process.join(timeout=vals.CLEANUP_TIMEOUT)
         if profile_process.exitcode is None:
-            WATCH_DOG.info(
+            WATCH_DOG.write(
                 f"Failed to terminate the profile transformation process PID {profile_process.pid}."
             )
 
@@ -220,7 +220,7 @@ def process_records(data_file, config, probes):
             _build_alternative_cg(config, ctx)
 
     except Exception:
-        WATCH_DOG.info("Error while processing the raw trace output")
+        WATCH_DOG.write("Error while processing the raw trace output")
         WATCH_DOG.debug(f"Record: {record}")
         WATCH_DOG.debug(f"Context: {ctx}")
         raise
@@ -625,12 +625,12 @@ def parse_records(file_name, probes, verbose_trace):
             # We want to catch any error since parsing should be bullet-proof and should not crash
             except Exception:
                 corrupted_line = line.rstrip("\n")
-                WATCH_DOG.info(f"Corrupted data record on ln {cnt}: {corrupted_line}")
+                WATCH_DOG.write(f"Corrupted data record on ln {cnt}: {corrupted_line}")
                 yield {
                     "type": vals.RecordType.CORRUPT.value,
                     "tid": -1,
                     "timestamp": -1,
                     "id": -1,
                 }
-        WATCH_DOG.info(f"Parsed {cnt} records")
+        WATCH_DOG.write(f"Parsed {cnt} records")
         metrics.add_metric("records_count", cnt)
