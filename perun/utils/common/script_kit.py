@@ -95,7 +95,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
     successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "../__init__.py"))
     if template_type in ("postprocess", "collect", "view"):
         successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "../__init__.py"))
-    log.minor_info(f"New module has to be registered at", end=":\n")
+    log.minor_info("New module has to be registered at", end=":\n")
     log.increase_indent()
     log.minor_info(log.path_style(f"{os.path.join(template_type, '__init.py')}"), end="\n")
     log.minor_info(log.path_style(f"{os.path.join('utils', '__init.py')}"), end="\n")
@@ -104,7 +104,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
     # Unless specified in other way, open all of the files in the w.r.t the general.editor key
     if not no_edit:
         editor = config.lookup_key_recursively("general.editor")
-        log.minor_info(f"Opening the files in", status=f"{log.cmd_style(editor)}")
+        log.minor_info("Opening the files in", status=f"{log.cmd_style(editor)}")
         try:
             commands.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:

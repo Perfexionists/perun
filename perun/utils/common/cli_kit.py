@@ -486,7 +486,7 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
         return profile_from_index
 
     log.minor_info(f"file '{value}'", status=f"{log.failed_highlight('not found in index')}")
-    log.minor_info(f"Checking filesystem.", end="\n")
+    log.minor_info("Checking filesystem.", end="\n")
     # 2) Else lookup filenames and load the profile
     abs_path = lookup_profile_in_filesystem(value)
     if not os.path.exists(abs_path):
@@ -780,7 +780,7 @@ def generate_cli_dump(
 
     with open(dump_file, "w") as dump_handle:
         dump_handle.write(output)
-    log.minor_info(f"Saved dump", status=f"{log.path_style(dump_file)}")
+    log.minor_info("Saved dump", status=f"{log.path_style(dump_file)}")
 
 
 def set_optimization(_: click.Context, param: click.Argument, value: str) -> str:

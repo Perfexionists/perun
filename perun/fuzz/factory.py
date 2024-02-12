@@ -211,31 +211,31 @@ def print_results(
     """
     log.major_info("Summary of Fuzzing")
     log.minor_info(
-        f"Fuzzing time", status=f"{fuzzing_report.end_time - fuzzing_report.start_time:.2f}s"
+        "Fuzzing time", status=f"{fuzzing_report.end_time - fuzzing_report.start_time:.2f}s"
     )
-    log.minor_info(f"Coverage testing", status=f"{fuzzing_config.coverage_testing}")
+    log.minor_info("Coverage testing", status=f"{fuzzing_config.coverage_testing}")
     log.increase_indent()
     if fuzzing_config.coverage_testing:
         log.minor_info(
-            f"Program executions for coverage testing", status=f"{fuzzing_report.cov_execs}"
+            "Program executions for coverage testing", status=f"{fuzzing_report.cov_execs}"
         )
         log.minor_info(
-            f"Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
+            "Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
         )
         log.minor_info(
-            f"Total program tests",
+            "Total program tests",
             status=f"{fuzzing_report.perun_execs + fuzzing_report.cov_execs}",
         )
-        log.minor_info(f"Maximum coverage ratio", status=f"{fuzzing_report.max_cov}")
+        log.minor_info("Maximum coverage ratio", status=f"{fuzzing_report.max_cov}")
     else:
         log.minor_info(
-            f"Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
+            "Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
         )
     log.decrease_indent()
-    log.minor_info(f"Founded degradation mutations", status=f"{fuzzing_report.degradations}")
-    log.minor_info(f"Hangs", status=f"{fuzzing_report.hangs}")
-    log.minor_info(f"Faults", status=f"{fuzzing_report.faults}")
-    log.minor_info(f"Worst-case mutation", status=f"{log.path_style(fuzzing_report.worst_case)}")
+    log.minor_info("Founded degradation mutations", status=f"{fuzzing_report.degradations}")
+    log.minor_info("Hangs", status=f"{fuzzing_report.hangs}")
+    log.minor_info("Faults", status=f"{fuzzing_report.faults}")
+    log.minor_info("Worst-case mutation", status=f"{log.path_style(fuzzing_report.worst_case)}")
     print_legend(rule_set)
 
 
