@@ -162,7 +162,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
     internal_filename = kwargs.get("internal_data_filename", configurator.DEFAULT_DATA_FILENAME)
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
-    log.minor_status("Symbol address map", status=log.success_highlight("extracted"))
+    log.minor_success("Symbol address map", "extracted")
 
     resources: list[dict[str, Any]] = []
     call_stack: list[ProfileRecord] = []
@@ -245,25 +245,25 @@ def _check_dependencies() -> None:
     all_found = True
     if not shutil.which("make"):
         all_found = False
-        log.minor_status("make", status=log.failed_highlight("not found"))
+        log.minor_fail("make", "not found")
         log.error(
             "Could not find 'make'. Please, install the makefile package.",
             recoverable=True,
         )
     else:
-        log.minor_status("make", status=log.success_highlight("found"))
+        log.minor_success("make", "found")
     if not shutil.which("cmake"):
         all_found = False
-        log.minor_status("cmake", status=log.failed_highlight("not found"))
+        log.minor_fail("cmake", "not found")
         log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
-        log.minor_status("cmake", status=log.success_highlight("found"))
+        log.minor_success("cmake", "found")
     log.decrease_indent()
 
     if all_found:
-        log.minor_status("dependencies", status=log.success_highlight("all found"))
+        log.minor_success("dependencies", "all found")
     else:
-        log.minor_status("dependencies", status=log.failed_highlight("not found"))
+        log.minor_fail("dependencies", "not found")
 
 
 def _validate_input(**kwargs: Any) -> None:

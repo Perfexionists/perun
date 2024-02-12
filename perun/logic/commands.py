@@ -282,10 +282,7 @@ def add(
         if not keep_profile:
             os.remove(profile_name)
 
-        perun_log.minor_status(
-            perun_log.path_style(f"{reg_rel_path}"),
-            status=perun_log.success_highlight("registered"),
-        )
+        perun_log.minor_success(perun_log.path_style(f"{reg_rel_path}"), "registered")
         added_profile_count += 1
 
     profile_names_len = len(profile_names)
@@ -322,10 +319,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
     for i, pending_file in enumerate(profile_generator):
         count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
         os.remove(pending_file)
-        perun_log.minor_status(
-            f"{count_status} {perun_log.path_style(pending_file)}",
-            status=f"{perun_log.success_highlight('deleted')}",
-        )
+        perun_log.minor_fail(f"{count_status} {perun_log.path_style(pending_file)}", "deleted")
 
     if removed_profile_number:
         perun_log.major_info("Summary")

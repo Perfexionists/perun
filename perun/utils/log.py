@@ -252,7 +252,7 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoi
     """
     minor_status(
         in_color(phase_msg.strip().capitalize(), phase_colour, COLLECT_PHASE_ATTRS),
-        status=success_highlight(phase_unit),
+        status=highlight(phase_unit),
     )
 
 
@@ -346,14 +346,14 @@ def minor_info(msg: str, end: str = "") -> None:
     write(" " * CURRENT_INDENT * 2 + f" - {msg}", end)
 
 
-def minor_fail(msg: str, sep: str = "-") -> None:
+def minor_fail(msg: str, fail_message: str = "failed", sep: str = "-") -> None:
     """Helper function for shortening some messages"""
-    minor_status(msg, status=failed_highlight("failed"), sep=sep)
+    minor_status(msg, status=failed_highlight(fail_message), sep=sep)
 
 
-def minor_success(msg: str, sep: str = "-") -> None:
+def minor_success(msg: str, success_message: str = "succeeded", sep: str = "-") -> None:
     """Helper function for shortening some messages"""
-    minor_status(msg, status=success_highlight("succeeded"), sep=sep)
+    minor_status(msg, status=success_highlight(success_message), sep=sep)
 
 
 def tag(tag_str: str, colour: ColorChoiceType) -> str:

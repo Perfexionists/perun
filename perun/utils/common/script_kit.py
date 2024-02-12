@@ -85,9 +85,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         # Render and write the template into the resulting file
         with open(os.path.join(target_dir, template_filename), "w") as template_handle:
             template_handle.write(env.get_template(template_file).render(**kwargs))
-        log.minor_status(
-            f"module {log.path_style(template_filename)}", status=log.success_highlight("created")
-        )
+        log.minor_success(f"module {log.path_style(template_filename)}", "created")
 
     log.decrease_indent()
 

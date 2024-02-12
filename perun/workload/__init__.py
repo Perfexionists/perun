@@ -60,10 +60,8 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
     if warnings:
         log.minor_fail("Workload generators")
         for workload_id, warning in warnings:
-            log.minor_status(
-                f"workload {log.highlight(workload_id)}", status=log.failed_highlight(warning)
-            )
+            log.minor_fail(f"workload {log.highlight(workload_id)}", warning)
     else:
-        log.minor_status("Workload generators", status=log.success_highlight("loaded"))
+        log.minor_success("Workload generators", "loaded")
 
     return spec_map

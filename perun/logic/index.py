@@ -645,14 +645,12 @@ def remove_from_index(
             try:
                 found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
                 removed_entries.append(found_entry)
-                perun_log.minor_status(
-                    f"{count_status} {perun_log.path_style(found_entry.path)}",
-                    status=f"{perun_log.success_highlight('deregistered')}",
+                perun_log.minor_success(
+                    f"{count_status} {perun_log.path_style(found_entry.path)}", "deregistered"
                 )
             except EntryNotFoundException:
-                perun_log.minor_status(
-                    f"{count_status} {perun_log.path_style(removed_file)}",
-                    status=f"{perun_log.failed_highlight('not found')}",
+                perun_log.minor_fail(
+                    f"{count_status} {perun_log.path_style(removed_file)}", "not found"
                 )
                 removed_profile_number -= 1
 
