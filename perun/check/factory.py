@@ -186,7 +186,7 @@ def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     log.major_info("Checking Whole History")
-    log.minor_info("This might take a while", end="\n")
+    log.minor_info("This might take a while")
     detected_changes = []
     version_selection: AbstractBaseSelection = pcs.selection()
     with log.History(head) as history:

@@ -250,7 +250,7 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoi
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in common_kit.py
     """
-    minor_info(
+    minor_status(
         in_color(phase_msg.strip().capitalize(), phase_colour, COLLECT_PHASE_ATTRS),
         status=success_highlight(phase_unit),
     )
@@ -263,7 +263,7 @@ def print_job_progress(overall_jobs: int) -> None:
     :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
-    minor_info("Progress of the job", status=f"{str(percentage_done).rjust(3, ' ')}%")
+    minor_status("Progress of the job", status=f"{str(percentage_done).rjust(3, ' ')}%")
     print_job_progress.current_job += 1
 
 
@@ -319,43 +319,41 @@ def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = Fals
     write("")
 
 
-def minor_info(
-    msg: str, status: str = "", sep: str = "-", indent_level: int = 1, end: str = ""
-) -> None:
-    """Prints minor information, formatted with indent and starting with -
+def minor_status(msg: str, status: str = "", sep: str = "-") -> None:
+    """Prints minor status containing of two pieces of informations: action and its status
 
-    Note, that there are some sanitizations happening:
-      1. If we want to end the info in new line, we add the punctuations;
-      2. If we want to add some status, we add the separator
-      3. If we want to add some status, we add the separaror and also the ending
+    It prints the status of some action, starting with `-` with indent and ending with newline.
 
     :param msg: printed message, which will be stripped from whitespace and capitalized
     :param status: status of the info
     :param sep: separator used to separate the info with its results
-    :param indent_level: indent of the information
+    """
+    write(" " * CURRENT_INDENT * 2 + f" - {msg.strip().capitalize()} {sep} {status}")
+
+
+def minor_info(msg: str, end: str = "") -> None:
+    """Prints minor information, formatted with indent and starting with -
+
+    Note, that there are some sanitizations happening:
+      1. If we want to end the info in new line, we add the punctuations;
+
+    :param msg: printed message, which will be stripped from whitespace and capitalized
     :param end: ending of the message
     """
     msg = msg.strip().capitalize()
     if end == "\n" and msg[-1] not in ".!;":
         msg += "."
-    elif end == "" and sep != "" and msg[-1] != sep:
-        msg += f" {sep} "
-    if status != "":
-        msg += status
-        end = "\n"
-    write(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
+    write(" " * CURRENT_INDENT * 2 + f" - {msg}", end)
 
 
-def minor_fail(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+def minor_fail(msg: str, sep: str = "-") -> None:
     """Helper function for shortening some messages"""
-    minor_info(msg, status=failed_highlight("failed"), sep=sep, indent_level=indent_level, end=end)
+    minor_status(msg, status=failed_highlight("failed"), sep=sep)
 
 
-def minor_success(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+def minor_success(msg: str, sep: str = "-") -> None:
     """Helper function for shortening some messages"""
-    minor_info(
-        msg, status=success_highlight("succeeded"), sep=sep, indent_level=indent_level, end=end
-    )
+    minor_status(msg, status=success_highlight("succeeded"), sep=sep)
 
 
 def tag(tag_str: str, colour: ColorChoiceType) -> str:
@@ -779,7 +777,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         before = time.time()
         results = func(*args, **kwargs)
         elapsed = time.time() - before
-        minor_info("Elapsed time", status=f"{elapsed:0.2f}s")
+        minor_status("Elapsed time", status=f"{elapsed:0.2f}s")
 
         return results
 

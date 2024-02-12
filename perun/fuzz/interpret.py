@@ -259,7 +259,7 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     :param FuzzingProgress fuzz_progress: collection of statistics of fuzzing process
     :param str diffs_dir: path to the directory where diffs will be stored
     """
-    log.minor_info("Computing deltas", end="\n")
+    log.minor_info("Computing deltas")
     log.increase_indent()
     for mutation_type, mutations in [
         ("Final", fuzz_progress.final_results),

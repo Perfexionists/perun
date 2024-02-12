@@ -282,7 +282,7 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
             # Run the interactive configuration of the local perun repository (populating .yml)
             configure_local_perun(dst)
         else:
-            perun_log.minor_info(
+            perun_log.minor_status(
                 "Local instance of Perun can now be (manually) configured",
                 status=f"{perun_log.path_style('.perun/local.yml')}",
             )

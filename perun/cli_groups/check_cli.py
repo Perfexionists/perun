@@ -116,18 +116,16 @@ def check_group(**_: Any) -> None:
     if should_precollect:
         log.major_info("Precollecting Profiles")
         collect_before_check = log.in_color("degradation.collect_before_check", "white", ["bold"])
-        log.minor_info(
+        log.minor_status(
             f"{log.highlight(collect_before_check)}", status=log.success_highlight("true")
         )
-        log.minor_info("Missing profiles will be now collected", end="\n")
+        log.minor_info("Missing profiles will be now collected")
         log.increase_indent()
-        log.minor_success(
-            f"Run {log.cmd_style('perun config edit')} to modify the job matrix", end="\n"
-        )
+        log.minor_success(f"Run {log.cmd_style('perun config edit')} to modify the job matrix")
         log.decrease_indent()
         if precollect_to_log:
             log_directory = log.in_color(pcs.get_log_directory(), "white", ["bold"])
-            log.minor_info(
+            log.minor_status(
                 "The progress will be stored in log", status=log.path_style(log_directory)
             )
         else:

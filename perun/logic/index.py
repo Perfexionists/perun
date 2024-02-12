@@ -615,7 +615,7 @@ def remove_from_index(
     # Nothing to remove
     removed_profile_number = len(removed_file_generator)
     if removed_profile_number == 0:
-        perun_log.minor_info("Nothing to remove", end="\n")
+        perun_log.minor_info("Nothing to remove")
         return
 
     # Get directory and index
@@ -645,12 +645,12 @@ def remove_from_index(
             try:
                 found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
                 removed_entries.append(found_entry)
-                perun_log.minor_info(
+                perun_log.minor_status(
                     f"{count_status} {perun_log.path_style(found_entry.path)}",
                     status=f"{perun_log.success_highlight('deregistered')}",
                 )
             except EntryNotFoundException:
-                perun_log.minor_info(
+                perun_log.minor_status(
                     f"{count_status} {perun_log.path_style(removed_file)}",
                     status=f"{perun_log.failed_highlight('not found')}",
                 )
@@ -673,9 +673,9 @@ def remove_from_index(
         result_string = perun_log.success_highlight(
             f"{common_kit.str_to_plural(removed_profile_number, 'profile')}"
         )
-        perun_log.minor_info("Removal succeeded for", status=result_string)
+        perun_log.minor_status("Removal succeeded for", status=result_string)
     else:
-        perun_log.minor_info("Nothing to remove", end="\n")
+        perun_log.minor_info("Nothing to remove")
 
 
 def get_profile_list_for_minor(base_dir: str, minor_version: str) -> list[BasicIndexEntry]:

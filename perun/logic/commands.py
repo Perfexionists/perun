@@ -82,7 +82,7 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     config_store.set(key, value)
-    perun_log.minor_info(f"Value '{value}' set for key '{key}'", end="\n")
+    perun_log.minor_info(f"Value '{value}' set for key '{key}'")
 
 
 def config_edit(store_type: str) -> None:
@@ -166,7 +166,7 @@ def init_perun_at(
     msg = "Reinitialized " if is_reinit else "Initialized "
     msg += perun_log.highlight("existing") if is_reinit else perun_log.highlight("empty")
     msg += " Perun repository"
-    perun_log.minor_info(msg, status=f"{perun_log.path_style(perun_path)}")
+    perun_log.minor_status(msg, status=f"{perun_log.path_style(perun_path)}")
 
 
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
@@ -236,7 +236,9 @@ def add(
         reg_rel_path = os.path.relpath(profile_name)
         if not os.path.exists(profile_name):
             perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
-            perun_log.minor_info("profile does not exists", indent_level=2, end="\n")
+            perun_log.increase_indent()
+            perun_log.minor_info("profile does not exists")
+            perun_log.decrease_indent()
             continue
 
         # Load profile content
@@ -246,13 +248,12 @@ def add(
 
         if not force and unpacked_profile["origin"] != minor_version:
             perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
-            perun_log.minor_info(
-                "current version", status=f"{perun_log.highlight(minor_version)}", indent_level=2
+            perun_log.minor_status(
+                "current version", status=f"{perun_log.highlight(minor_version)}"
             )
-            perun_log.minor_info(
+            perun_log.minor_status(
                 "origin version",
                 status=f"{perun_log.highlight(unpacked_profile['origin'])}",
-                indent_level=2,
             )
             continue
 
@@ -281,14 +282,14 @@ def add(
         if not keep_profile:
             os.remove(profile_name)
 
-        perun_log.minor_info(
+        perun_log.minor_status(
             perun_log.path_style(f"{reg_rel_path}"),
             status=perun_log.success_highlight("registered"),
         )
         added_profile_count += 1
 
     profile_names_len = len(profile_names)
-    perun_log.minor_info(
+    perun_log.minor_status(
         "Registration succeeded for",
         status=f"{perun_log.success_highlight(common_kit.str_to_plural(added_profile_count, 'profile'))}",
     )
@@ -321,7 +322,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
     for i, pending_file in enumerate(profile_generator):
         count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
         os.remove(pending_file)
-        perun_log.minor_info(
+        perun_log.minor_status(
             f"{count_status} {perun_log.path_style(pending_file)}",
             status=f"{perun_log.success_highlight('deleted')}",
         )
@@ -331,9 +332,9 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
         result_string = perun_log.success_highlight(
             f"{common_kit.str_to_plural(removed_profile_number, 'profile')}"
         )
-        perun_log.minor_info("Removal succeeded for", status=result_string)
+        perun_log.minor_status("Removal succeeded for", status=result_string)
     else:
-        perun_log.minor_info("Nothing to remove", end="\n")
+        perun_log.minor_info("Nothing to remove")
 
 
 def calculate_profile_numbers_per_type(

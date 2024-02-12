@@ -210,32 +210,32 @@ def print_results(
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
     """
     log.major_info("Summary of Fuzzing")
-    log.minor_info(
+    log.minor_status(
         "Fuzzing time", status=f"{fuzzing_report.end_time - fuzzing_report.start_time:.2f}s"
     )
-    log.minor_info("Coverage testing", status=f"{fuzzing_config.coverage_testing}")
+    log.minor_status("Coverage testing", status=f"{fuzzing_config.coverage_testing}")
     log.increase_indent()
     if fuzzing_config.coverage_testing:
-        log.minor_info(
+        log.minor_status(
             "Program executions for coverage testing", status=f"{fuzzing_report.cov_execs}"
         )
-        log.minor_info(
+        log.minor_status(
             "Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
         )
-        log.minor_info(
+        log.minor_status(
             "Total program tests",
             status=f"{fuzzing_report.perun_execs + fuzzing_report.cov_execs}",
         )
-        log.minor_info("Maximum coverage ratio", status=f"{fuzzing_report.max_cov}")
+        log.minor_status("Maximum coverage ratio", status=f"{fuzzing_report.max_cov}")
     else:
-        log.minor_info(
+        log.minor_status(
             "Program executions for performance testing", status=f"{fuzzing_report.perun_execs}"
         )
     log.decrease_indent()
-    log.minor_info("Founded degradation mutations", status=f"{fuzzing_report.degradations}")
-    log.minor_info("Hangs", status=f"{fuzzing_report.hangs}")
-    log.minor_info("Faults", status=f"{fuzzing_report.faults}")
-    log.minor_info("Worst-case mutation", status=f"{log.path_style(fuzzing_report.worst_case)}")
+    log.minor_status("Founded degradation mutations", status=f"{fuzzing_report.degradations}")
+    log.minor_status("Hangs", status=f"{fuzzing_report.hangs}")
+    log.minor_status("Faults", status=f"{fuzzing_report.faults}")
+    log.minor_status("Worst-case mutation", status=f"{log.path_style(fuzzing_report.worst_case)}")
     print_legend(rule_set)
 
 
@@ -515,12 +515,12 @@ def run_fuzzing_for_command(
     )
     log.minor_success("Perun-based testing on parent seeds")
 
-    log.minor_info("Rating parents", end="\n")
+    log.minor_info("Rating parents")
     # Rate seeds
     log.increase_indent()
     for parent_seed in parents:
         rate_parent(fuzz_progress, parent_seed)
-        log.minor_info(f"{log.path_style(parent_seed.path)}", status=f"{parent_seed.fitness}")
+        log.minor_status(f"{log.path_style(parent_seed.path)}", status=f"{parent_seed.fitness}")
     log.decrease_indent()
 
     save_state(fuzz_progress)
@@ -597,7 +597,7 @@ def run_fuzzing_for_command(
             )
             log.minor_success("Gathering using Perun-based testing")
 
-        log.minor_info("Evaluating mutations", end="\n")
+        log.minor_info("Evaluating mutations")
         log.increase_indent()
         for mutation in fuzz_progress.interesting_workloads:
             # creates copy of generator
@@ -622,7 +622,7 @@ def run_fuzzing_for_command(
             except Exception as exc:
                 log.warn(f"Executing binary raised an exception: {exc}")
 
-            log.minor_info(f"{mutation.path}", status=f"{mutation.fitness}")
+            log.minor_status(f"{mutation.path}", status=f"{mutation.fitness}")
             # in case of testing with coverage, parent will not be removed but used for mutation
             if not successful_result and not config.coverage_testing:
                 os.remove(mutation.path)

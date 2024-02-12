@@ -40,10 +40,10 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
     clang_bin = (
         _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
     )
-    log.minor_info(f"{log.highlight('clang')} found", status=log.path_style(clang_bin))
+    log.minor_status(f"{log.highlight('clang')} found", status=log.path_style(clang_bin))
     cmd = " ".join([clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
 
-    log.minor_info("Compiling source codes", status=f"{','.join(sources)}")
+    log.minor_status("Compiling source codes", status=f"{','.join(sources)}")
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
@@ -71,8 +71,8 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
 
-    log.minor_info(f"{log.highlight('Loopus')} found at", status=log.path_style(loopus_bin))
-    log.minor_info(
+    log.minor_status(f"{log.highlight('Loopus')} found at", status=log.path_style(loopus_bin))
+    log.minor_status(
         "Running Loopus on compiled source codes", status=f"{' '.join(source_filenames)}"
     )
 

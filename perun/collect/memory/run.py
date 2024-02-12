@@ -29,7 +29,7 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
     log.major_info("Building Instrumented Binary")
     pwd = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile(os.path.join(pwd, _lib_name)):
-        log.minor_info(
+        log.minor_status(
             f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}",
             status=log.failed_highlight("not found"),
         )
@@ -42,13 +42,13 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
         else:
             log.minor_success("Compiling from sources")
     else:
-        log.minor_info(
+        log.minor_status(
             f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}",
             status=log.success_highlight("found"),
         )
 
     if not syscalls.check_debug_symbols(executable.cmd):
-        log.minor_info(
+        log.minor_status(
             "Checking if binary contains debugging info", status=log.failed_highlight("not found")
         )
         error_msg = "Binary does not contain debug info section. "
@@ -56,7 +56,7 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
             f"Please recompile your project with debug options {log.cmd_style('(gcc -g | g++ -g)')}"
         )
         return CollectStatus.ERROR, error_msg, {}
-    log.minor_info(
+    log.minor_status(
         "Checking if binary contains debugging info", status=log.success_highlight("found")
     )
 

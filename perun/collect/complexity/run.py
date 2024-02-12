@@ -162,7 +162,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
     internal_filename = kwargs.get("internal_data_filename", configurator.DEFAULT_DATA_FILENAME)
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
-    log.minor_info("Symbol address map", status=log.success_highlight("extracted"))
+    log.minor_status("Symbol address map", status=log.success_highlight("extracted"))
 
     resources: list[dict[str, Any]] = []
     call_stack: list[ProfileRecord] = []
@@ -240,30 +240,30 @@ def _process_file_record(
 
 def _check_dependencies() -> None:
     """Validates that dependencies (cmake and make) are met"""
-    log.minor_info("Checking dependencies", end="\n")
+    log.minor_info("Checking dependencies")
     log.increase_indent()
     all_found = True
     if not shutil.which("make"):
         all_found = False
-        log.minor_info("make", status=log.failed_highlight("not found"))
+        log.minor_status("make", status=log.failed_highlight("not found"))
         log.error(
             "Could not find 'make'. Please, install the makefile package.",
             recoverable=True,
         )
     else:
-        log.minor_info("make", status=log.success_highlight("found"))
+        log.minor_status("make", status=log.success_highlight("found"))
     if not shutil.which("cmake"):
         all_found = False
-        log.minor_info("cmake", status=log.failed_highlight("not found"))
+        log.minor_status("cmake", status=log.failed_highlight("not found"))
         log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
-        log.minor_info("cmake", status=log.success_highlight("found"))
+        log.minor_status("cmake", status=log.success_highlight("found"))
     log.decrease_indent()
 
     if all_found:
-        log.minor_info("dependencies", status=log.success_highlight("all found"))
+        log.minor_status("dependencies", status=log.success_highlight("all found"))
     else:
-        log.minor_info("dependencies", status=log.failed_highlight("not found"))
+        log.minor_status("dependencies", status=log.failed_highlight("not found"))
 
 
 def _validate_input(**kwargs: Any) -> None:

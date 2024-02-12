@@ -409,15 +409,15 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
     if os.path.exists(profile_name):
         return profile_name
 
-    log.minor_info(f"file '{profile_name}'", status=f"{log.failed_highlight('does not exist')}")
-    log.minor_info("Checking pending jobs", end="\n")
+    log.minor_status(f"file '{profile_name}'", status=f"{log.failed_highlight('does not exist')}")
+    log.minor_info("Checking pending jobs")
     # 2) if it does not exist check pending
     job_dir = pcs.get_job_directory()
     job_path = os.path.join(job_dir, profile_name)
     if os.path.exists(job_path):
         return job_path
 
-    log.minor_info(
+    log.minor_status(
         f"file '{profile_name}'", status=f"{log.failed_highlight('not found in pending jobs')}"
     )
     # 3) if still not found, check recursively all candidates for match and ask for confirmation
@@ -485,8 +485,8 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     if profile_from_index:
         return profile_from_index
 
-    log.minor_info(f"file '{value}'", status=f"{log.failed_highlight('not found in index')}")
-    log.minor_info("Checking filesystem.", end="\n")
+    log.minor_status(f"file '{value}'", status=f"{log.failed_highlight('not found in index')}")
+    log.minor_info("Checking filesystem.")
     # 2) Else lookup filenames and load the profile
     abs_path = lookup_profile_in_filesystem(value)
     if not os.path.exists(abs_path):
@@ -780,7 +780,7 @@ def generate_cli_dump(
 
     with open(dump_file, "w") as dump_handle:
         dump_handle.write(output)
-    log.minor_info("Saved dump", status=f"{log.path_style(dump_file)}")
+    log.minor_status("Saved dump", status=f"{log.path_style(dump_file)}")
 
 
 def set_optimization(_: click.Context, param: click.Argument, value: str) -> str:

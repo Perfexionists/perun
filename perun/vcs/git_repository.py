@@ -69,12 +69,12 @@ class GitRepository(AbstractRepository):
             return False
 
         if self.valid_repo:
-            perun_log.minor_info(
+            perun_log.minor_status(
                 f"Reinitialized {perun_log.highlight('existing')} Git repository",
                 status=f"{perun_log.path_style(self.vcs_path)}",
             )
         else:
-            perun_log.minor_info(
+            perun_log.minor_status(
                 f"Initialized {perun_log.highlight('empty')} Git repository",
                 status=f"{perun_log.path_style(self.vcs_path)}",
             )

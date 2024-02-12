@@ -352,7 +352,7 @@ class UserConfiguration(DeveloperConfiguration):
 
         :return: list of candidate workloads
         """
-        log.minor_info("Looking for candidate workloads", end="\n")
+        log.minor_info("Looking for candidate workloads")
         workload_candidates = []
         for file in UserConfiguration._all_candidate_files(UserConfiguration.WORKLOAD_FOLDERS):
             workload_candidates.append(file)
@@ -368,14 +368,14 @@ class UserConfiguration(DeveloperConfiguration):
         :return: list of candidate executables
         """
         # Execute make before, in case there is nothing to make, then beat it
-        log.minor_info("Looking for candidate executables", end="\n")
+        log.minor_info("Looking for candidate executables")
         log.increase_indent()
         try:
             commands.run_safely_list_of_commands(["make"])
             log.minor_success(f"{log.cmd_style('make')}")
         except subprocess.CalledProcessError:
             log.minor_fail(f"{log.cmd_style('make')}")
-            log.minor_info("Nothing to make (probably)", end="\n")
+            log.minor_info("Nothing to make (probably)")
         log.decrease_indent()
         executable_candidates = []
         for file in UserConfiguration._all_candidate_files(UserConfiguration.EXECUTABLE_FOLDERS):

@@ -447,7 +447,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     streams.store_json(full_profile.serialize(), full_profile_path)
     # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
-    log.minor_info(
+    log.minor_status(
         "stored generated profile ", status=f"{log.path_style(os.path.relpath(full_profile_path))}"
     )
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
@@ -509,7 +509,7 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
             before = time.time()
             external_commands.run_safely_list_of_commands(cmds)
             elapsed = time.time() - before
-            log.minor_info("Elapsed time", status=f"{elapsed:0.2f}s")
+            log.minor_status("Elapsed time", status=f"{elapsed:0.2f}s")
         except subprocess.CalledProcessError as exception:
             error_command = str(exception.cmd)
             error_code = exception.returncode

@@ -84,7 +84,7 @@ def baseline_testing(
     """
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
-    log.minor_info(
+    log.minor_status(
         f"{log.highlight('gcov')} version", status=f"version {config.coverage.gcov_version}"
     )
 
@@ -108,7 +108,7 @@ def get_initial_coverage(
     coverages = []
 
     # run program with each seed
-    log.minor_info("Running program with seeds", end="\n")
+    log.minor_info("Running program with seeds")
     log.increase_indent()
     for seed in seeds:
         prepare_workspace(fuzzing_config.coverage.gcno_path)
