@@ -158,7 +158,6 @@ def check_head(head_minor: str = "HEAD") -> None:
 
     By default, the ``hash`` corresponds to the `head` of the current project.
     """
-    log.newline()
     check.degradation_in_minor(head_minor)
 
 
@@ -180,8 +179,6 @@ def check_all(minor_head: str = "HEAD") -> None:
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
-    log.major_info("Checking Whole History")
-    log.minor_info("This might take a while", end="\n")
     check.degradation_in_history(minor_head)
 
 
@@ -244,7 +241,6 @@ def check_profiles(
 
     """
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    log.newline()
     check.degradation_between_files(
         baseline_profile,
         target_profile,
