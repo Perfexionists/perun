@@ -311,7 +311,7 @@ def degradation_between_files(
         pcs.get_object_directory(), target_minor_version, detected_changes
     )
     log.newline()
-    log.print_list_of_degradations(detected_changes, models_strategy)
+    log.print_list_of_degradations(detected_changes)
     log.print_short_summary_of_degradations(detected_changes)
 
 

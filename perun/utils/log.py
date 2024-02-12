@@ -546,7 +546,7 @@ def print_short_change_string(counts: dict[str, int]) -> None:
     newline()
 
 
-def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
+def _print_models_info(deg_info: DegradationInfo) -> None:
     """
     The function prints information about both models from detection.
 
@@ -585,13 +585,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
 
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
 
-    if model_strategy == "best-param":
-        print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, ["bold"])
-    elif model_strategy in ("best-nonparam", "best-model", "best-both"):
-        print_models_kinds(" base: ", "blue", " targ: ", "blue", ["bold"])
-    elif model_strategy in ("all-nonparam", "all-param", "all-models"):
-        write(" model: ", end="")
-        cprint(f"{deg_info.from_baseline}", colour="blue", attrs=["bold"])
+    print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, ["bold"])
 
     if deg_info.confidence_type != "no":
         write(" (with confidence ", end="")
@@ -625,7 +619,6 @@ def _print_partial_intervals(
 
 def print_list_of_degradations(
     degradation_list: list[tuple[DegradationInfo, str, str]],
-    model_strategy: str = "best-model",
 ) -> None:
     """Prints list of found degradations grouped by location
 
@@ -635,7 +628,6 @@ def print_list_of_degradations(
       {result} from {from} -> to {to}
 
     :param list degradation_list: list of found degradations
-    :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
     if not degradation_list:
         write("no changes found")
@@ -676,7 +668,7 @@ def print_list_of_degradations(
                 ["bold"],
             )
             if deg_info.result != PerformanceChange.NoChange:
-                _print_models_info(deg_info, model_strategy)
+                _print_models_info(deg_info)
 
             # Print information about command that was executed
             write(" (", end="")
