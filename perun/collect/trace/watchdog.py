@@ -138,7 +138,7 @@ class Watchdog:
         """
         if not self.__enabled:
             if always and not self.quiet:
-                perun_log.info(msg)
+                perun_log.write(msg)
         else:
             # Transform the info message to a debug message if quiet is set
             if self.quiet:

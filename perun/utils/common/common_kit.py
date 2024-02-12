@@ -151,7 +151,7 @@ def str_to_plural(count: int, verb: str) -> str:
     :param int count: number of the verbs
     :param str verb: name of the verb we are creating a plural for
     """
-    return str(count) + " " + verb + "s" if count != 1 else verb
+    return str(count) + " " + (verb + "s" if count != 1 else verb)
 
 
 def format_counter_number(count: int, max_number: int) -> str:

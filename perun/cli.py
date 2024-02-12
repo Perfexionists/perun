@@ -282,9 +282,10 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None
             # Run the interactive configuration of the local perun repository (populating .yml)
             configure_local_perun(dst)
         else:
-            msg = "\nIn order to automatically run jobs configure the matrix at:\n"
-            msg += "\n" + (" " * 4) + ".perun/local.yml\n"
-            perun_log.quiet_info(msg)
+            perun_log.minor_status(
+                "Local instance of Perun can now be (manually) configured",
+                status=f"{perun_log.path_style('.perun/local.yml')}",
+            )
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
@@ -478,7 +479,7 @@ def remove(
     try:
         commands.remove_from_index(from_index_generator, minor)
         commands.remove_from_pending(from_jobs_generator)
-    except (NotPerunRepositoryException, EntryNotFoundException) as exception:
+    except (NotPerunRepositoryException) as exception:
         perun_log.error(f"could not remove profiles: {str(exception)}")
 
 

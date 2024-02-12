@@ -43,7 +43,7 @@ def test_rm_on_empty_repo(pcs_with_empty_git, capsys):
     # Test that nothing is printed on out and something is printed on err
     out, err = capsys.readouterr()
     assert out == ""
-    assert err != "" and "fatal" in err
+    assert err != "" and "error" in err.lower()
 
 
 def test_rm_no_profiles(pcs_full_no_prof, capsys):
@@ -77,12 +77,12 @@ def test_rm_nonexistent(pcs_single_prof, capsys):
     Expecting error message and nothing removed at all
     """
     before_count = test_utils.count_contents_on_path(pcs_single_prof.get_path())
-    with pytest.raises(EntryNotFoundException) as exc:
-        commands.remove_from_index(["nonexistent.perf"], None)
-    assert "'nonexistent.perf' not found in the index" in str(exc.value)
-
+    commands.remove_from_index(["nonexistent.perf"], None)
     out, _ = capsys.readouterr()
-    assert out == ""
+
+    assert "not found" in out
+    assert "deregistered" not in out and "deleted" not in out
+    assert "Nothing to remove" in out
 
     # Assert that nothing was removed
     after_count = test_utils.count_contents_on_path(pcs_single_prof.get_path())

@@ -136,7 +136,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
         + samplings,
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "stored profile" in result.output)
+    asserts.predicate_from_cli(result, "Stored generated profile" in result.output)
 
 
 def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collect_job):
@@ -370,7 +370,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_col
     # Try issue, when the libmalloc library is not there
     run.run_single_job(*memory_collect_job)
     out, _ = capsys.readouterr()
-    assert "Missing compiled dynamic library" in out
+    assert "Dynamic library libmalloc - not found" in common_kit.escape_ansi(out)
 
     # Try compiling again, but now with an error during the compilation
     return_code_for_make = 1
@@ -387,7 +387,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_col
     monkeypatch.setattr("perun.collect.memory.parsing.parse_log", patched_parse)
     run.run_single_job(*memory_collect_job)
     _, err = capsys.readouterr()
-    assert "Problems while parsing log file: " in err
+    assert "Could not parse the log file due to" in err
 
     def patched_run(_):
         return 42, "dummy"
@@ -462,7 +462,7 @@ def test_collect_time(monkeypatch, pcs_with_root, capsys):
     # Assert outputs
     out, err = capsys.readouterr()
     assert err == ""
-    assert "Successfully collected data from echo" in out
+    assert "Collecting by time from `echo hello` - succeeded" in common_kit.escape_ansi(out)
 
     # Assert that just one profile was created
     # + 1 for index
@@ -496,13 +496,14 @@ def test_integrity_tests(capsys):
     mock_report = RunnerReport(complexity, "postprocessor", {"profile": {}})
     run.check_integrity_of_runner(complexity, "postprocessor", mock_report)
     out, err = capsys.readouterr()
-    assert "warning: complexity is missing postprocess() function" in out
+
+    assert "complexity is missing postprocess() function" in out
     assert "" == err
 
     mock_report = RunnerReport(complexity, "collector", {})
     run.check_integrity_of_runner(complexity, "collector", mock_report)
     out, err = capsys.readouterr()
-    assert "warning: collector complexity does not return any profile"
+    assert "collector complexity does not return any profile"
     assert "" == err
 
 
@@ -557,4 +558,4 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
     status = run.run_single_job(["echo"], ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()
-    assert "fatal: while collecting by time: received signal" in err
+    assert "while collecting by time: received signal" in err

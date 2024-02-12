@@ -61,13 +61,14 @@ def config_get(store_type: str, key: str) -> None:
     :param str store_type: type of the store lookup (local, shared of recursive)
     :param str key: list of section delimited by dot (.)
     """
+    # Note, this is bare output, since, it "might" be used in scripts or CI or anything parsed
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     if store_type == "recursive":
         value = perun_config.lookup_key_recursively(key)
     else:
         value = config_store.get(key)
-    perun_log.info(f"{key}: {value}")
+    perun_log.write(f"{key}: {value}")
 
 
 def config_set(store_type: str, key: str, value: Any) -> None:
@@ -77,10 +78,11 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     :param str key: list of section delimited by dot (.)
     :param object value: arbitrary value that will be set in the configuration
     """
+    perun_log.major_info("Setting new key in Config")
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     config_store.set(key, value)
-    perun_log.info(f"Value '{value}' set for key '{key}'")
+    perun_log.minor_info(f"Value '{value}' set for key '{key}'")
 
 
 def config_edit(store_type: str) -> None:
@@ -109,6 +111,7 @@ def config_reset(store_type: str, config_template: str) -> None:
     :param str config_template: name of the template that we are resetting to
     :raises NotPerunRepositoryException: raised when we are outside of any perun scope
     """
+    perun_log.major_info(f"Resetting {store_type} config")
     is_shared_config = store_type in ("shared", "global")
     if is_shared_config:
         shared_location = perun_config.lookup_shared_config_dir()
@@ -117,9 +120,10 @@ def config_reset(store_type: str, config_template: str) -> None:
         vcs_url, vcs_type = pcs.get_vcs_type_and_url()
         vcs_config = {"vcs": {"url": vcs_url, "type": vcs_type}}
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
-    perun_log.info(f"{'global' if is_shared_config else 'local'} configuration reset")
+
+    perun_log.minor_info(f"{'global' if is_shared_config else 'local'} configuration reset")
     if not is_shared_config:
-        perun_log.info(f" to {config_template}")
+        perun_log.write(f" to {config_template}")
 
 
 def init_perun_at(
@@ -150,14 +154,16 @@ def init_perun_at(
     if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
     else:
-        perun_log.info(
-            "configuration file already exists. Run ``perun config reset`` to reset"
-            " configuration to default state."
+        perun_log.minor_info(f"configuration file {perun_log.highlight('already exists')}")
+        perun_log.minor_info(
+            f"Run {perun_log.cmd_style('perun config reset')} to reset configuration to default state",
         )
 
     # Perun successfully created
-    msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
-    perun_log.msg_to_stdout(msg_prefix + f" Perun repository in {perun_path}", 0)
+    msg = "Reinitialized " if is_reinit else "Initialized "
+    msg += perun_log.highlight("existing") if is_reinit else perun_log.highlight("empty")
+    msg += " Perun repository"
+    perun_log.minor_status(msg, status=f"{perun_log.path_style(perun_path)}")
 
 
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
@@ -171,6 +177,7 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     :param str configuration_template: name of the template that will be used for initialization
         of local configuration
     """
+    perun_log.major_info("Initializing Perun")
     # First init the wrapping repository well
     vcs_type = kwargs["vcs_type"]
     vcs_path = kwargs["vcs_path"] or dst
@@ -184,7 +191,10 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
         super_perun_dir = common_kit.locate_perun_dir_on(dst)
         is_pcs_reinitialized = super_perun_dir == dst
         if not is_pcs_reinitialized:
-            perun_log.warn(f"There exists super perun directory at {super_perun_dir}")
+            perun_log.warn(
+                f"There exists perun directory at {perun_log.path_style(super_perun_dir)}",
+                end="\n\n",
+            )
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 
@@ -216,11 +226,16 @@ def add(
     :param bool force: if set to true, then the add will be forced, i.e. the check for origin will
         not be performed.
     """
+    perun_log.major_info("Adding profiles")
     added_profile_count = 0
     for profile_name in profile_names:
         # Test if the given profile exists (This should hold always, or not?)
+        reg_rel_path = os.path.relpath(profile_name)
         if not os.path.exists(profile_name):
-            perun_log.error(f"profile {profile_name} does not exists", recoverable=True)
+            perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
+            perun_log.increase_indent()
+            perun_log.minor_info("profile does not exists")
+            perun_log.decrease_indent()
             continue
 
         # Load profile content
@@ -229,9 +244,14 @@ def add(
         unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile["origin"] != minor_version:
-            error_msg = f"cannot add profile '{profile_name}' to minor index of '{minor_version}':"
-            error_msg += f"profile originates from minor version '{unpacked_profile['origin']}'"
-            perun_log.error(error_msg, recoverable=True)
+            perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
+            perun_log.minor_status(
+                "current version", status=f"{perun_log.highlight(minor_version)}"
+            )
+            perun_log.minor_status(
+                "origin version",
+                status=f"{perun_log.highlight(unpacked_profile['origin'])}",
+            )
             continue
 
         # Remove origin from file
@@ -259,15 +279,19 @@ def add(
         if not keep_profile:
             os.remove(profile_name)
 
+        perun_log.minor_success(perun_log.path_style(f"{reg_rel_path}"), "registered")
         added_profile_count += 1
 
     profile_names_len = len(profile_names)
+    perun_log.minor_status(
+        "Registration succeeded for",
+        status=f"{perun_log.success_highlight(common_kit.str_to_plural(added_profile_count, 'profile'))}",
+    )
     if added_profile_count != profile_names_len:
-        perun_log.error(
-            f"could not register {common_kit.str_to_plural(added_profile_count, 'profile')}"
-            f" in index: {added_profile_count - profile_names_len} failed"
+        failed_profile_count = common_kit.str_to_plural(
+            profile_names_len - added_profile_count, "profile"
         )
-    perun_log.info(f"successfully registered {added_profile_count} profiles in index")
+        perun_log.error(f"Registration failed for - {failed_profile_count}")
 
 
 @vcs_kit.lookup_minor_version
@@ -287,24 +311,21 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
 
     :param generator profile_generator: generator of profiles that will be removed from pending jobs
     """
+    perun_log.major_info("Removing from pending")
     removed_profile_number = len(profile_generator)
     for i, pending_file in enumerate(profile_generator):
+        count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
         os.remove(pending_file)
-        perun_log.info(
-            "{}/{} deleted {} from pending jobs".format(
-                common_kit.format_counter_number(i + 1, removed_profile_number),
-                removed_profile_number,
-                perun_log.in_color(os.path.split(pending_file)[1], "grey"),
-            )
-        )
+        perun_log.minor_success(f"{count_status} {perun_log.path_style(pending_file)}", "deleted")
 
     if removed_profile_number:
-        result_string = perun_log.in_color(
-            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}",
-            "white",
-            ["bold"],
+        perun_log.major_info("Summary")
+        result_string = perun_log.success_highlight(
+            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}"
         )
-        perun_log.info(f"successfully removed {result_string} from pending jobs")
+        perun_log.minor_status("Removal succeeded for", status=result_string)
+    else:
+        perun_log.minor_info("Nothing to remove")
 
 
 def calculate_profile_numbers_per_type(
@@ -336,16 +357,16 @@ def print_profile_numbers(
     :param str line_ending: ending of the print (for different outputs of log and status)
     """
     if profile_numbers["all"]:
-        perun_log.info(f"{profile_numbers['all']} {profile_types} profiles (", end="")
+        perun_log.write(f"{profile_numbers['all']} {profile_types} profiles (", end="")
         first_printed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
             if not profile_numbers[profile_type]:
                 continue
-            perun_log.info(", " if first_printed else "", end="")
+            perun_log.write(", " if first_printed else "", end="")
             first_printed = True
             type_colour = PROFILE_TYPE_COLOURS[profile_type]
             perun_log.cprint(f"{profile_numbers[profile_type]} {profile_type}", type_colour)
-        perun_log.info(")", end=line_ending)
+        perun_log.write(")", end=line_ending)
     else:
         perun_log.cprintln(f"(no {profile_types} profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
@@ -404,6 +425,7 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
         minor_version_maxima = calculate_maximal_lengths_for_object_list(
             minor_versions, MinorVersion.valid_fields()
         )
+
         # Update manually the maxima for the printed supported profile types, each requires two
         # characters and 9 stands for " profiles" string
 
@@ -543,7 +565,7 @@ def print_shortlog_profile_list(
             # Non-token parts of the formatting string are printed as they are
             else:
                 perun_log.cprint(token, "white")
-        perun_log.info("")
+        perun_log.newline()
 
 
 def print_shortlog_token(
@@ -602,7 +624,7 @@ def print_changes_token(max_lengths: dict[str, int], minor_version: MinorVersion
         perun_log.count_degradations_per_group(degradations),
         width=max_lengths["changes"],
     )
-    perun_log.info(change_string, end="")
+    perun_log.write(change_string, end="")
 
 
 def print_stats_token(
@@ -621,7 +643,7 @@ def print_stats_token(
         pcs.get_object_directory(), minor_version.checksum
     )
     if tracked_profiles["all"]:
-        perun_log.info(
+        perun_log.write(
             perun_log.in_color(
                 "{:{}}".format(tracked_profiles["all"], max_lengths["all"]),
                 TEXT_EMPH_COLOUR,
@@ -632,7 +654,7 @@ def print_stats_token(
 
         # Print the coloured numbers
         for profile_type in SUPPORTED_PROFILE_TYPES:
-            perun_log.info(
+            perun_log.write(
                 "{}{}".format(
                     perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
                     perun_log.in_color(
@@ -643,9 +665,9 @@ def print_stats_token(
                 end="",
             )
 
-        perun_log.info(perun_log.in_color(" profiles", HEADER_INFO_COLOUR, TEXT_ATTRS), end="")
+        perun_log.write(perun_log.in_color(" profiles", HEADER_INFO_COLOUR, TEXT_ATTRS), end="")
     else:
-        perun_log.info(
+        perun_log.write(
             perun_log.in_color(
                 "--no--profiles--".center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
             ),
@@ -680,7 +702,7 @@ def print_shortlog_profile_list_header(
         else:
             # Print the rest (non-token stuff)
             perun_log.cprint(token, "white", HEADER_ATTRS)
-    perun_log.info("")
+    perun_log.newline()
 
 
 def print_shortlog_stats_header(max_lengths: dict[str, int]) -> None:
@@ -692,7 +714,7 @@ def print_shortlog_stats_header(max_lengths: dict[str, int]) -> None:
     """
     slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
     end_msg = perun_log.in_color(" profiles", HEADER_SLASH_COLOUR, HEADER_ATTRS)
-    perun_log.info(
+    perun_log.write(
         perun_log.in_color(
             "{0}{4}{1}{4}{2}{4}{3}{5}".format(
                 perun_log.in_color(
@@ -737,16 +759,16 @@ def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) 
     :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
-    perun_log.info(
+    perun_log.write(
         f"Author: {head_minor_version.author} <{head_minor_version.email}> {head_minor_version.date}"
     )
     for parent in head_minor_version.parents:
-        perun_log.info(f"Parent: {parent}")
-    perun_log.info("")
+        perun_log.write(f"Parent: {parent}")
+    perun_log.newline()
     indented_desc = "\n".join(
         map(lambda line: " " * (indent * 4) + line, head_minor_version.desc.split("\n"))
     )
-    perun_log.info(indented_desc)
+    perun_log.write(indented_desc)
 
 
 def print_other_formatting_string(
@@ -910,12 +932,12 @@ def print_status_profiles(
     :param list profiles: list of profiles
     """
     for profile_no, profile_info in enumerate(profiles):
-        perun_log.info(" ", end="")
+        perun_log.write(" ", end="")
         perun_log.cprint(
             f"{profile_no}@{list_config.id_char}".rjust(list_config.id_width + 2, " "),
             list_config.colour,
         )
-        perun_log.info(" ", end="")
+        perun_log.write(" ", end="")
         for token_type, token in fmt_tokens:
             if token_type == "fmt_string":
                 if m := FMT_REGEX.match(token):
@@ -933,7 +955,7 @@ def print_status_profiles(
                     perun_log.error(f"incorrect formatting token {token}")
             else:
                 perun_log.cprint(token, list_config.colour)
-        perun_log.info("")
+        perun_log.newline()
         if profile_no % 5 == 0 or profile_no == list_config.list_len - 1:
             perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
@@ -956,9 +978,9 @@ def print_status_profile_list_header(
     :param dict max_lengths: mapping of token types ot their maximal lengths for alignment
     """
     perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
-    perun_log.info(" ", end="")
+    perun_log.write(" ", end="")
     perun_log.cprint("id".center(list_config.id_width + 2, " "), list_config.colour)
-    perun_log.info(" ", end="")
+    perun_log.write(" ", end="")
     for token_type, token in fmt_tokens:
         if token_type == "fmt_string":
             if m := FMT_REGEX.match(token):
@@ -973,7 +995,7 @@ def print_status_profile_list_header(
         else:
             # Print the rest (non token stuff)
             perun_log.cprint(token, list_config.colour)
-    perun_log.info("")
+    perun_log.newline()
     perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
 
@@ -1088,18 +1110,18 @@ def status(short: bool = False, **_: Any) -> None:
     minor_head = pcs.vcs().get_minor_head()
 
     # Print the status of major head.
-    perun_log.info(
+    perun_log.write(
         f"On major version {perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)} ", end=""
     )
 
     # Print the index of the current head
-    perun_log.info(
+    perun_log.write(
         f"(minor version: {perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)})"
     )
 
     # Print in long format, the additional information about head commit, by default print
     if not short:
-        perun_log.info("")
+        perun_log.newline()
         minor_version = pcs.vcs().get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
@@ -1112,16 +1134,16 @@ def status(short: bool = False, **_: Any) -> None:
     )
     print_status_profile_list(minor_version_profiles, maxs, short)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
     print_status_profile_list(untracked_profiles, maxs, short, "untracked")
 
     # Print degradation info
     degradation_list = store.load_degradation_list_for(pcs.get_object_directory(), minor_head)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
     perun_log.print_short_summary_of_degradations(degradation_list)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
         perun_log.print_list_of_degradations(degradation_list)
 
 
@@ -1187,7 +1209,7 @@ def print_temp_files(root: str, **kwargs: Any) -> None:
         ]
     # If there are no files then abort the output
     if not tmp_files:
-        perun_log.info("== No results for the given parameters in the .perun/tmp/ directory ==")
+        perun_log.write("== No results for the given parameters in the .perun/tmp/ directory ==")
         return
 
     # First sort by the name
@@ -1221,19 +1243,19 @@ def print_formatted_temp_files(
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            perun_log.info(
+            perun_log.write(
                 f"{perun_log.in_color(perun_log.format_file_size(size), TEXT_EMPH_COLOUR)}",
                 end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
             )
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
-                perun_log.info(
+                perun_log.write(
                     f"{temp.UNPROTECTED}",
                     end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
                 )
             else:
-                perun_log.info(
+                perun_log.write(
                     f"{perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)}  ",
                     end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
                 )
@@ -1243,8 +1265,8 @@ def print_formatted_temp_files(
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            perun_log.info(f"{perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)}", end="")
-        perun_log.info(f"{os.path.basename(file_name)}")
+            perun_log.write(f"{perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)}", end="")
+        perun_log.write(f"{os.path.basename(file_name)}")
 
 
 def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) -> None:
@@ -1293,7 +1315,7 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
 
     # Abort the whole output if we have no versions
     if not versions:
-        perun_log.info("== No results for the given parameters in the .perun/stats/ directory ==")
+        perun_log.write("== No results for the given parameters in the .perun/stats/ directory ==")
         return
 
     results: list[tuple[Optional[float], str, str | int]] = []
@@ -1358,7 +1380,7 @@ def _print_total_size(total_size: int, enabled: bool) -> None:
     """
     if enabled:
         formated_total_size = perun_log.format_file_size(total_size)
-        perun_log.info(
+        perun_log.write(
             f"Total size of all the displayed files / directories: "
             f"{perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)}"
         )
@@ -1389,7 +1411,7 @@ def _print_stat_objects(
                 if record:
                     record += perun_log.in_color(" | ", TEXT_WARN_COLOUR)
                 record += perun_log.in_color(str(prop), TEXT_EMPH_COLOUR) if colored else str(prop)
-        perun_log.info(record)
+        perun_log.write(record)
 
 
 def delete_stats_file(name: str, in_minor: str, keep_directory: bool) -> None:

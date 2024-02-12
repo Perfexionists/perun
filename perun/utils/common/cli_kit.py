@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
     """Prints current version of Perun and ends"""
     if value:
-        log.info(f"Perun {perun.__version__}")
+        log.write(f"Perun {perun.__version__}")
         exit(0)
 
 
@@ -409,14 +409,15 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
     if os.path.exists(profile_name):
         return profile_name
 
-    log.info(f"file '{profile_name}' does not exist. Checking pending jobs...")
+    log.minor_fail(f"file '{profile_name}'", "does not exist")
+    log.minor_info("Checking pending jobs")
     # 2) if it does not exist check pending
     job_dir = pcs.get_job_directory()
     job_path = os.path.join(job_dir, profile_name)
     if os.path.exists(job_path):
         return job_path
 
-    log.info(f"file '{profile_name}' not found in pending jobs...")
+    log.minor_fail(f"file '{profile_name}'", "not found in pending jobs")
     # 3) if still not found, check recursively all candidates for match and ask for confirmation
     searched_regex = re.compile(profile_name)
     for root, _, files in os.walk(os.getcwd()):
@@ -482,7 +483,8 @@ def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str
     if profile_from_index:
         return profile_from_index
 
-    log.info(f"file '{value}' not found in index. Checking filesystem...")
+    log.minor_fail(f"file '{value}'", "not found in index")
+    log.minor_info("Checking filesystem.")
     # 2) Else lookup filenames and load the profile
     abs_path = lookup_profile_in_filesystem(value)
     if not os.path.exists(abs_path):
@@ -776,7 +778,7 @@ def generate_cli_dump(
 
     with open(dump_file, "w") as dump_handle:
         dump_handle.write(output)
-    log.info(f"Saved dump to '{dump_file}'")
+    log.minor_status("Saved dump", status=f"{log.path_style(dump_file)}")
 
 
 def set_optimization(_: click.Context, param: click.Argument, value: str) -> str:

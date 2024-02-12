@@ -166,24 +166,3 @@ def static_variables(**kwargs: Any) -> Callable[..., Any]:
         return func
 
     return inner_wrapper
-
-
-def phase_function(phase_name: str) -> Callable[..., Any]:
-    """Sets the phase name for the given function
-
-    The phase name is output when the elapsed time is printed.
-
-    :param str phase_name: name of the phase to which the given function corresponds
-    :return: decorated function with new phase name
-    """
-
-    def inner_wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
-        """Inner wrapper of the decorated function
-
-        :param function func: function we are decorating with its phase name
-        :return: decorated function with new phase name
-        """
-        func.phase_name = phase_name  # type: ignore
-        return func
-
-    return inner_wrapper

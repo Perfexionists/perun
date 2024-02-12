@@ -156,7 +156,7 @@ def test_inits(capsys, tmpdir):
     other_local_config = config.local(str(other_config))
 
     out, _ = capsys.readouterr()
-    assert "warn" in out
+    assert "warning" in out.lower()
     assert other_local_config.data == {}
     assert other_local_config.path == str(other_config)
     assert other_local_config.type == "local"

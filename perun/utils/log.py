@@ -46,6 +46,7 @@ if TYPE_CHECKING:
 
 VERBOSITY: int = 0
 COLOR_OUTPUT: bool = True
+CURRENT_INDENT: int = 0
 
 # Enum of verbosity levels
 VERBOSE_DEBUG: int = 2
@@ -54,6 +55,18 @@ VERBOSE_RELEASE: int = 0
 
 SUPPRESS_WARNINGS: bool = False
 SUPPRESS_PAGING: bool = True
+
+
+def increase_indent() -> None:
+    """Increases the indent for minor and major steps"""
+    global CURRENT_INDENT
+    CURRENT_INDENT += 1
+
+
+def decrease_indent() -> None:
+    """Increases the indent for minor and major steps"""
+    global CURRENT_INDENT
+    CURRENT_INDENT -= 1
 
 
 def is_verbose_enough(verbosity_peak: int) -> bool:
@@ -150,21 +163,6 @@ def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> 
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
-def info(msg: str, end: str = "\n") -> None:
-    """
-    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
-    :param str end:
-    """
-    print(f"{msg}", end=end)
-
-
-def quiet_info(msg: str) -> None:
-    """
-    :param str msg: info message to the stream that will be always shown
-    """
-    msg_to_stdout(msg, VERBOSE_RELEASE)
-
-
 def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     """Helper function for returning name and filename from frame.
 
@@ -209,6 +207,14 @@ def print_current_stack(
     print(in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr)
 
 
+def write(msg: str, end: str = "\n") -> None:
+    """
+    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
+    :param str end:
+    """
+    print(f"{msg}", end=end)
+
+
 def error(
     msg: str,
     recoverable: bool = False,
@@ -219,7 +225,7 @@ def error(
     :param bool recoverable: whether we can recover from the error
     :param Exception raised_exception: exception that was raised before the error
     """
-    print(in_color(f"fatal: {msg}", "red"), file=sys.stderr)
+    print(f"{tag('error', 'red')} {in_color(msg, 'red')}", file=sys.stderr)
     if is_verbose_enough(VERBOSE_DEBUG):
         print_current_stack(raised_exception=raised_exception)
 
@@ -234,7 +240,7 @@ def warn(msg: str, end: str = "\n") -> None:
     :param str end:
     """
     if not SUPPRESS_WARNINGS:
-        print(f"warning: {msg}", end=end)
+        print(f"{tag('warning', 'yellow')} {msg}", end=end)
 
 
 def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoiceType) -> None:
@@ -244,7 +250,10 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: ColorChoi
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in common_kit.py
     """
-    print(in_color(phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS))
+    minor_status(
+        in_color(phase_msg.strip().capitalize(), phase_colour, COLLECT_PHASE_ATTRS),
+        status=highlight(phase_unit),
+    )
 
 
 @decorators.static_variables(current_job=1)
@@ -254,7 +263,7 @@ def print_job_progress(overall_jobs: int) -> None:
     :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
-    print(f"[{str(percentage_done).rjust(3, ' ')}%] ", end="")
+    minor_status("Progress of the job", status=f"{str(percentage_done).rjust(3, ' ')}%")
     print_job_progress.current_job += 1
 
 
@@ -281,50 +290,80 @@ def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceTyp
     print(in_color(string, colour, attrs))
 
 
-def done(ending: str = "\n") -> None:
-    """Helper function that will print green done to the terminal
+def tick(tick_symbol: str = ".") -> None:
+    """Prints single dot or other symbol
 
-    :param str ending: end of the string, by default new line
+    :param tick_symbol: symbol printed as tick
     """
-    print("[", end="")
-    cprint("DONE", "green", attrs=["bold"])
-    print("]", end=ending)
-
-
-def failed(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    print("[", end="")
-    cprint("FAILED", "red", attrs=["bold"])
-    print("]", end=ending)
+    print(tick_symbol, end="")
 
 
 def skipped(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print("[", end="")
-    cprint("skip", "grey", attrs=["bold"])
-    print("]", end=ending)
+    write(in_color("skipped", color="light_grey", attribute_style=["bold"]), end=ending)
 
 
-def yes(ending: str = "\n") -> None:
+def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = False) -> None:
+    """Prints major information, formatted in brackets [], in bold and optionally in color
+
+    :param msg: printed message
+    :param no_title: if set to true, then the title will be printed as it is
+    :param colour: optional colour
     """
+    stripped_msg = msg.strip() if no_title else msg.strip().title()
+    printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
+    newline()
+    write(" " * CURRENT_INDENT * 2 + printed_msg)
+    newline()
+
+
+def minor_status(msg: str, status: str = "", sep: str = "-") -> None:
+    """Prints minor status containing of two pieces of information: action and its status
+
+    It prints the status of some action, starting with `-` with indent and ending with newline.
+
+    :param msg: printed message, which will be stripped from whitespace and capitalized
+    :param status: status of the info
+    :param sep: separator used to separate the info with its results
+    """
+    write(" " * CURRENT_INDENT * 2 + f" - {msg.strip().capitalize()} {sep} {status}")
+
+
+def minor_info(msg: str, end: str = "\n") -> None:
+    """Prints minor information, formatted with indent and starting with -
+
+    Note, that there are some sanitizations happening:
+      1. If we want to end the info in new line, we add the punctuations;
+
+    :param msg: printed message, which will be stripped from whitespace and capitalized
+    :param end: ending of the message
+    """
+    msg = msg.strip().capitalize()
+    if end == "\n" and msg[-1] not in ".!;":
+        msg += "."
+    write(" " * CURRENT_INDENT * 2 + f" - {msg}", end)
+
+
+def minor_fail(msg: str, fail_message: str = "failed") -> None:
+    """Helper function for shortening some messages"""
+    minor_status(msg, status=failed_highlight(fail_message))
+
+
+def minor_success(msg: str, success_message: str = "succeeded") -> None:
+    """Helper function for shortening some messages"""
+    minor_status(msg, status=success_highlight(success_message))
+
+
+def tag(tag_str: str, colour: ColorChoiceType) -> str:
+    """
+    :param tag_str: printed tag
+    :param colour: colour of the tag
     :param str ending: end of the string, by default new line
+    :return: formatted tag
     """
-    print("[", end="")
-    cprint("\u2714", "green", attrs=["bold"])
-    print("]", end=ending)
-
-
-def no(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    print("[", end="")
-    cprint("\u2717", "red", attrs=["bold"])
-    print("]", end=ending)
+    return "[" + in_color(tag_str.upper(), colour, attribute_style=["bold"]) + "]"
 
 
 def newline() -> None:
@@ -332,6 +371,51 @@ def newline() -> None:
     Prints blank line
     """
     print("")
+
+
+def path_style(path_str: str) -> str:
+    """Unified formatting and colouring of the path.
+
+    :param path_str: string that corresponds to path
+    :return: stylized path string
+    """
+    return in_color(path_str, "yellow", attribute_style=["bold"])
+
+
+def cmd_style(cmd_str: str) -> str:
+    """Unified formatting and colouring of the commands
+
+    :param cmd_str: string that corresponds to command that should be run in terminal
+    :return: stylized command string
+    """
+    return in_color(f"`{cmd_str}`", "light_grey")
+
+
+def highlight(highlighted_str: str) -> str:
+    """Highlights the string
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "blue", attribute_style=["bold"])
+
+
+def success_highlight(highlighted_str: str) -> str:
+    """Highlights of the string that is considered successful
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "green", attribute_style=["bold"])
+
+
+def failed_highlight(highlighted_str: str) -> str:
+    """Highlights of the string that is considered failure
+
+    :param highlighted_str: string that will be highlighted
+    :return: highlighted string
+    """
+    return in_color(highlighted_str, "red", attribute_style=["bold"])
 
 
 def in_color(
@@ -462,7 +546,7 @@ def print_short_change_string(counts: dict[str, int]) -> None:
     newline()
 
 
-def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
+def _print_models_info(deg_info: DegradationInfo) -> None:
     """
     The function prints information about both models from detection.
 
@@ -494,25 +578,19 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         :param str target_colour: target colour to print target string
         :param str attrs: name of type attributes for the colouring
         """
-        info(baseline_str, end="")
+        write(baseline_str, end="")
         cprint(f"{deg_info.from_baseline}", colour=baseline_colour, attrs=attrs)
-        info(target_str, end="")
+        write(target_str, end="")
         cprint(f"{deg_info.to_target}", colour=target_colour, attrs=attrs)
 
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
 
-    if model_strategy == "best-param":
-        print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, ["bold"])
-    elif model_strategy in ("best-nonparam", "best-model", "best-both"):
-        print_models_kinds(" base: ", "blue", " targ: ", "blue", ["bold"])
-    elif model_strategy in ("all-nonparam", "all-param", "all-models"):
-        info(" model: ", end="")
-        cprint(f"{deg_info.from_baseline}", colour="blue", attrs=["bold"])
+    print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, ["bold"])
 
     if deg_info.confidence_type != "no":
-        info(" (with confidence ", end="")
+        write(" (with confidence ", end="")
         cprint(f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", ["bold"])
-        info(")", end="")
+        write(")", end="")
 
 
 def _print_partial_intervals(
@@ -541,7 +619,6 @@ def _print_partial_intervals(
 
 def print_list_of_degradations(
     degradation_list: list[tuple[DegradationInfo, str, str]],
-    model_strategy: str = "best-model",
 ) -> None:
     """Prints list of found degradations grouped by location
 
@@ -551,10 +628,9 @@ def print_list_of_degradations(
       {result} from {from} -> to {to}
 
     :param list degradation_list: list of found degradations
-    :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
     if not degradation_list:
-        info("no changes found")
+        write("no changes found")
         return
 
     def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
@@ -569,12 +645,12 @@ def print_list_of_degradations(
     degradation_list.sort(key=keygetter)
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
-        info("at", end="")
+        write("at", end="")
         cprint(f" {location}", "white", attrs=["bold"])
-        info(":")
+        write(":")
         # Iterate and print everything
         for deg_info, cmd, __ in changes:
-            info("\u2514 ", end="")
+            write("\u2514 ", end="")
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
                 cprint(
                     f"{round(deg_info.rate_degradation, 2)}ms ({round(deg_info.rate_degradation_relative, 2)}%)",
@@ -583,21 +659,21 @@ def print_list_of_degradations(
                 )
             else:
                 cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", ["bold"])
-            info(": ", end="")
+            write(": ", end="")
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, "white"))
-            info(" ", end="")
+            write(" ", end="")
             cprint(
                 f"{CHANGE_STRINGS[deg_info.result]}",
                 CHANGE_COLOURS[deg_info.result],
                 ["bold"],
             )
             if deg_info.result != PerformanceChange.NoChange:
-                _print_models_info(deg_info, model_strategy)
+                _print_models_info(deg_info)
 
             # Print information about command that was executed
-            info(" (", end="")
+            write(" (", end="")
             cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, ["bold"])
-            info(")")
+            write(")")
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
             if len(deg_info.partial_intervals) > 0:
@@ -629,10 +705,7 @@ def aggregate_intervals(
     :return list: list of the aggregated partial intervals to print
     """
     # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
-    if isinstance(input_intervals, list):
-        intervals = np.array(input_intervals)
-    else:
-        intervals = input_intervals
+    intervals = np.array(input_intervals) if isinstance(input_intervals, list) else input_intervals
 
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
         """
@@ -696,13 +769,8 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         before = time.time()
         results = func(*args, **kwargs)
         elapsed = time.time() - before
-        print(
-            "[!] {} [{}] in {} [!]".format(
-                (func.phase_name if hasattr(func, "phase_name") else func.__name__).title(),
-                in_color("DONE", "green", ["bold"]),
-                in_color(f"{elapsed:0.2f}s", "white", ["bold"]),
-            )
-        )
+        minor_status("Elapsed time", status=f"{elapsed:0.2f}s")
+
         return results
 
     return inner_wrapper

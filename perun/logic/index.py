@@ -347,12 +347,12 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
     index_version = store.read_int_from_handle(index_handle)
     number_of_entries = store.read_int_from_handle(index_handle)
 
-    perun_log.info(
+    perun_log.write(
         f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n"
     )
 
     for entry in walk_index(index_handle):
-        perun_log.info(str(entry))
+        perun_log.write(str(entry))
 
 
 def touch_index(index_path: str) -> None:
@@ -598,9 +598,6 @@ def register_in_index(
     )
     write_entry_to_index(index_filename, entry)
 
-    reg_rel_path = os.path.relpath(registered_file)
-    perun_log.info(f"'{reg_rel_path}' successfully registered in minor version index")
-
 
 def remove_from_index(
     base_dir: str, minor_version: str, removed_file_generator: Collection[str]
@@ -618,6 +615,7 @@ def remove_from_index(
     # Nothing to remove
     removed_profile_number = len(removed_file_generator)
     if removed_profile_number == 0:
+        perun_log.minor_info("Nothing to remove")
         return
 
     # Get directory and index
@@ -626,6 +624,7 @@ def remove_from_index(
     if not os.path.exists(minor_version_index):
         raise EntryNotFoundException("", "empty index")
 
+    perun_log.major_info("Removing from index")
     # Lookup all entries for the given function
     with open(minor_version_index, "rb+") as index_handle:
         # Gather all entries from the index
@@ -642,16 +641,18 @@ def remove_from_index(
                 else:
                     return looked_entry.path == removed_file
 
-            found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
-            removed_entries.append(found_entry)
-
-            perun_log.info(
-                "{}/{} deregistered {} from index".format(
-                    common_kit.format_counter_number(i + 1, removed_profile_number),
-                    removed_profile_number,
-                    perun_log.in_color(found_entry.path, "grey"),
+            count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
+            try:
+                found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
+                removed_entries.append(found_entry)
+                perun_log.minor_success(
+                    f"{count_status} {perun_log.path_style(found_entry.path)}", "deregistered"
                 )
-            )
+            except EntryNotFoundException:
+                perun_log.minor_fail(
+                    f"{count_status} {perun_log.path_style(removed_file)}", "not found"
+                )
+                removed_profile_number -= 1
 
         # Update number of entries
         index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
@@ -664,17 +665,15 @@ def remove_from_index(
             entry.write_to(index_handle)
 
         index_handle.truncate()
+
+    perun_log.major_info("Summary")
     if removed_profile_number:
-        result_string = perun_log.in_color(
-            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}",
-            "white",
-            ["bold"],
+        result_string = perun_log.success_highlight(
+            f"{common_kit.str_to_plural(removed_profile_number, 'profile')}"
         )
-        perun_log.info(
-            "successfully deregistered {} from {} index".format(
-                result_string, perun_log.in_color(minor_version, "green")
-            )
-        )
+        perun_log.minor_status("Removal succeeded for", status=result_string)
+    else:
+        perun_log.minor_info("Nothing to remove")
 
 
 def get_profile_list_for_minor(base_dir: str, minor_version: str) -> list[BasicIndexEntry]:

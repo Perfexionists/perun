@@ -34,22 +34,25 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
 
     $ clang-3.5 -g -emit-llvm -c ${sources}
     """
+    log.major_info("Compiling to LLVM", no_title=True)
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
     include_path = os.path.join(pwd, "include")
     clang_bin = (
         _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
     )
+    log.minor_status(f"{log.highlight('clang')} found", status=log.path_style(clang_bin))
     cmd = " ".join([clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
-    log.info(f"Compiling source codes: {','.join(sources)}")
+
+    log.minor_status("Compiling source codes", status=f"{','.join(sources)}")
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
         commands.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
-        log.failed()
+        log.minor_fail("Compiling to LLVM")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
 
-    log.done()
+    log.minor_success("Compiling to LLVM")
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
@@ -61,13 +64,17 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
 
     Finally, parses the output of Loopus into a profile
     """
+    log.major_info("Running Loopus")
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
     loopus_bin = os.path.join(pwd, "loopus")
     source_filenames = [os.path.splitext(os.path.split(src)[1])[0] + _LLVM_EXT for src in sources]
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
 
-    log.info(f"Running Loopus on compiled source codes: {' '.join(source_filenames)}")
+    log.minor_status(f"{log.highlight('Loopus')} found at", status=log.path_style(loopus_bin))
+    log.minor_status(
+        "Running Loopus on compiled source codes", status=f"{' '.join(source_filenames)}"
+    )
 
     before_analysis = systime.time()
     try:
@@ -79,17 +86,18 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
         returned_out, _ = commands.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = returned_out.decode("utf-8")
     except SubprocessError as sub_err:
-        log.failed()
+        log.minor_fail("Collection of bounds")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
     overall_time = systime.time() - before_analysis
+    log.minor_success("Collection of bounds")
 
     # Parse the out, but first fix the one file analysis, which has different format
     if len(sources) == 1:
         out = f"file {source_filenames[0]}\n" + out
     source_map = {bc: src for (bc, src) in zip(source_filenames, sources)}
     resources = parser.parse_output(out, source_map)
+    log.minor_success("Parsing collected output")
 
-    log.done()
     return (
         CollectStatus.OK,
         "status message",

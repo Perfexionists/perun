@@ -114,21 +114,20 @@ def check_group(**_: Any) -> None:
         str(perun_config.lookup_key_recursively("degradation.log_collect", "false"))
     )
     if should_precollect:
+        log.major_info("Precollecting Profiles")
         collect_before_check = log.in_color("degradation.collect_before_check", "white", ["bold"])
-        true = log.in_color("true", "green", ["bold"])
-        log.info(f"{collect_before_check} is set to {true}. ", end="")
-        log.info("Missing profiles will be freshly collected with respect to the ", end="")
-        log.info(
-            "nearest job matrix (run `perun config edit` to modify the underlying job matrix)."
-        )
+        log.minor_success(f"{log.highlight(collect_before_check)}", "true")
+        log.minor_info("Missing profiles will be now collected")
+        log.increase_indent()
+        log.minor_info(f"Run {log.cmd_style('perun config edit')} to modify the job matrix")
+        log.decrease_indent()
         if precollect_to_log:
             log_directory = log.in_color(pcs.get_log_directory(), "white", ["bold"])
-            log.info(
-                f"The progress of the pre-collect phase will be stored in logs at {log_directory}."
+            log.minor_status(
+                "The progress will be stored in log", status=log.path_style(log_directory)
             )
         else:
-            black_hole = log.in_color("black hole", "white", ["bold"])
-            log.info(f"The progress of the pre-collect phase will be redirected to {black_hole}.")
+            log.minor_info(f"The progress will be redirected to {log.highlight('black hole')}")
 
 
 @check_group.command("head")
@@ -152,7 +151,6 @@ def check_head(head_minor: str = "HEAD") -> None:
 
     By default, the ``hash`` corresponds to the `head` of the current project.
     """
-    log.newline()
     check.degradation_in_minor(head_minor)
 
 
@@ -174,9 +172,6 @@ def check_all(minor_head: str = "HEAD") -> None:
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
-    log.info(
-        "[!] Running the degradation checks on the whole VCS history. This might take a while!\n"
-    )
     check.degradation_in_history(minor_head)
 
 
@@ -239,7 +234,6 @@ def check_profiles(
 
     """
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    log.newline()
     check.degradation_between_files(
         baseline_profile,
         target_profile,

@@ -29,19 +29,18 @@ def run_benchmark(benchmark_dir, performance_tests):
     """
     possible_tests = ("load", "query", "convert", "store")
     executed_tests = performance_tests or possible_tests
-    log.info("Running benchmark_dir: {}".format(log.in_color(benchmark_dir, "red")))
+    log.write("Running benchmark_dir: {}".format(log.in_color(benchmark_dir, "red")))
     results = []
     r, d = os.path.split(benchmark_dir)
     store_dir = os.path.join(r, "store-" + d)
     common_kit.touch_dir(store_dir)
     for bench in os.listdir(benchmark_dir):
-        log.info(" > {}".format(log.in_color(bench, "yellow")))
+        log.write(" > {}".format(log.in_color(bench, "yellow")))
         results.append(performance_test(benchmark_dir, bench, store_dir, executed_tests))
-        log.done()
-    log.info("")
-    log.info("")
+    log.write("")
+    log.write("")
     headers = ["file"] + [pt for pt in possible_tests if pt in executed_tests]
-    log.info(tabulate.tabulate(results, headers=headers, floatfmt=".2f"))
+    log.write(tabulate.tabulate(results, headers=headers, floatfmt=".2f"))
     with open(benchmark_dir + ".html", "w") as hh:
         hh.write(tabulate.tabulate(results, headers=headers, tablefmt="html", floatfmt=".2f"))
 
@@ -61,14 +60,14 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
     profile = store.load_profile_from_file(os.path.join(bench_dir, file), True)
     elapsed = time.time() - before
     results.append(elapsed)
-    log.info("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
+    log.write("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
 
     if "query" in executed_tests:
         before = time.time()
         _ = list(profile.all_resources())
         elapsed = time.time() - before
         results.append(elapsed)
-        log.info(
+        log.write(
             "Iterating all resources: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white"))
         )
 
@@ -77,7 +76,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
         _ = convert.resources_to_pandas_dataframe(profile)
         elapsed = time.time() - before
         results.append(elapsed)
-        log.info(
+        log.write(
             "Converting to dataframe: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white"))
         )
 
@@ -86,7 +85,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
         streams.store_json(profile.serialize(), os.path.join(store_dir, file))
         elapsed = time.time() - before
         results.append(elapsed)
-        log.info("Storing profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
+        log.write("Storing profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), "white")))
     return results
 
 
@@ -98,6 +97,6 @@ if __name__ == "__main__":
     else:
         run_benchmark(os.path.join("tests-perf", "monster-profiles"), performance_tests)
     benchmark_time = time.time() - start_time
-    log.info(
+    log.write(
         "Benchmark finished in {}".format(log.in_color("{:0.2f}s".format(benchmark_time), "white"))
     )

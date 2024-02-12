@@ -184,7 +184,7 @@ def test_regressogram_correct(pcs_single_prof):
             runner,
             regressogram_params + correct_test["params"],
             0,
-            correct_test.get("output", "Successfully postprocessed"),
+            correct_test.get("output", "succeeded"),
         )
 
 
@@ -202,14 +202,14 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
                     runner,
                     moving_average_params + moving_average_methods[n] + test["params"],
                     exit_code,
-                    test.get("output", "Successfully postprocessed"),
+                    test.get("output", "succeeded"),
                 )
         else:
             run_non_param_test(
                 runner,
                 moving_average_params + moving_average_methods[method_idx] + test["params"],
                 exit_code,
-                test.get("output", "Successfully postprocessed"),
+                test.get("output", "succeeded"),
             )
         method_idx += 1 if idx + 1 == tests_edge[method_idx] else 0
 
@@ -448,7 +448,7 @@ def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cpro
             runner,
             kernel_regression_params + kernel_regression_modes[mode_idx] + test["params"],
             exit_code,
-            test.get("output", "Successfully postprocessed"),
+            test.get("output", "succeeded"),
         )
         mode_idx += 1 if idx + 1 == tests_edge[mode_idx] else 0
 
@@ -1021,34 +1021,34 @@ def test_reg_analysis_correct(pcs_single_prof):
         [cprof_idx, "regression-analysis", "-m", "full", "-m", "iterative"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the full computation method with all models set as a default value
     result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "full"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the iterative method with all models
     result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "iterative"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the interval method with all models
     result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "interval"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the initial guess method with all models
     result = runner.invoke(
         cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "initial_guess"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the bisection method with all models
     result = runner.invoke(cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "bisection"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test the bisection method with more complex model
     pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
@@ -1057,14 +1057,14 @@ def test_reg_analysis_correct(pcs_single_prof):
         cli.postprocessby, [f"{complex_file}", "regression-analysis", "-m", "bisection"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test explicit models specification on full computation
     result = runner.invoke(
         cli.postprocessby, [cprof_idx, "regression-analysis", "-m", "full", "-r", "all"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test explicit models specification for multiple models
     result = runner.invoke(
@@ -1083,7 +1083,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test explicit models specification for all models
     result = runner.invoke(
@@ -1104,7 +1104,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test explicit models specification for all models values (also with 'all' value)
     result = runner.invoke(
@@ -1127,7 +1127,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test steps specification for full computation which has no effect
     result = runner.invoke(
@@ -1135,7 +1135,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         [cprof_idx, "regression-analysis", "-m", "full", "-r", "all", "-s", "100"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test reasonable steps value for iterative method
     result = runner.invoke(
@@ -1143,8 +1143,8 @@ def test_reg_analysis_correct(pcs_single_prof):
         [cprof_idx, "regression-analysis", "-m", "iterative", "-r", "all", "-s", "4"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, result.output.count("Too few point") == 5)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, result.output.count("too few point") == 5)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test too many steps output
     result = runner.invoke(
@@ -1161,8 +1161,8 @@ def test_reg_analysis_correct(pcs_single_prof):
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, result.output.count("Too few point") == 7)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, result.output.count("too few point") == 7)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test steps value clamping with iterative method
     result = runner.invoke(
@@ -1170,7 +1170,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         [cprof_idx, "regression-analysis", "-m", "iterative", "-r", "all", "-s", "-1"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
     # Test different arguments positions
     result = runner.invoke(
@@ -1178,7 +1178,7 @@ def test_reg_analysis_correct(pcs_single_prof):
         [cprof_idx, "regression-analysis", "-s", "2", "-r", "all", "-m", "full"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "Successfully postprocessed" in result.output)
+    asserts.predicate_from_cli(result, "succeeded" in result.output)
 
 
 def test_status_correct(pcs_single_prof):
@@ -1438,7 +1438,9 @@ def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", "--minor=HEAD"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{first_tagged}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{first_tagged} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p", r"--minor=HEAD^{d"])
@@ -1480,19 +1482,25 @@ def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{first_sha}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{first_sha} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ["0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(result, f"originates from minor version '{parent}'" in result.output)
+    asserts.predicate_from_cli(
+        result, f"Origin version - {parent}" in common_kit.escape_ansi(result.output)
+    )
 
     # Check that force work as intented
     monkeypatch.setattr("click.confirm", lambda _: True)
     runner = CliRunner()
     result = runner.invoke(cli.add, ["--force", "0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, f"'{second_sha}' successfully registered" in result.output)
+    asserts.predicate_from_cli(
+        result, f"{second_sha} - registered" in common_kit.escape_ansi(result.output)
+    )
 
     result = runner.invoke(cli.add, ["10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
@@ -1518,13 +1526,13 @@ def test_add_tag_range(pcs_with_root, valid_profile_pool):
     result = runner.invoke(cli.add, ["10@p-0@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(
-        result, "successfully registered 0 profiles in index" in result.output
+        result, "Registration succeeded for - 0 profiles" in common_kit.escape_ansi(result.output)
     )
 
     result = runner.invoke(cli.add, ["0@p-10@p"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(
-        result, "successfully registered 2 profiles in index" in result.output
+        result, "Registration succeeded for - 2 profiles" in common_kit.escape_ansi(result.output)
     )
 
     # Nothing should remain!
@@ -1540,7 +1548,8 @@ def test_remove_tag(pcs_single_prof):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ["0@i"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "1/1 deregistered" in result.output)
+    asserts.predicate_from_cli(result, "1/1" in result.output)
+    asserts.predicate_from_cli(result, "deregistered" in result.output)
 
 
 def test_remove_tag_range(pcs_full):

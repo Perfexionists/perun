@@ -77,7 +77,7 @@ def del_temp_files(
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     :param str output_dir: path to directory, where fuzzed files are stored
     """
-    log.info("Removing remaining mutations", end="")
+    log.minor_info("Removing mutations")
     for mutation in parents:
         if (
             mutation not in fuzz_progress.final_results
@@ -88,6 +88,5 @@ def del_temp_files(
         ):
             with exceptions.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
-                log.info(".")
-        log.info("-")
-    log.done()
+                log.tick()
+    log.newline()

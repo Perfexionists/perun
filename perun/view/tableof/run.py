@@ -47,7 +47,7 @@ def output_table_to(table: str, target: str, target_file: str) -> None:
         with open(target_file, "w") as wtf:
             wtf.write(table)
     else:
-        log.info(table)
+        log.write(table)
 
 
 def create_table_from(

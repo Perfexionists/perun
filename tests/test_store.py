@@ -29,7 +29,7 @@ def test_malformed_indexes(tmpdir, monkeypatch, capsys):
         with pytest.raises(SystemExit):
             print(list(index.walk_index(index_handle)))
     _, err = capsys.readouterr()
-    assert "fatal: malformed index file: too many or too few objects registered in index" in err
+    assert "malformed index file: too many or too few objects registered in index" in err
     monkeypatch.setattr("perun.logic.store.read_int_from_handle", old_read_int)
 
     monkeypatch.setattr("perun.logic.index.INDEX_VERSION", index.INDEX_VERSION - 1)

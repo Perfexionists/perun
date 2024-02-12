@@ -39,29 +39,29 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
     specifications_from_config = config.gather_key_recursively("generators.workload")
     spec_map = {}
     warnings = []
-    log.info("Loading workload generator specifications ", end="")
+    log.minor_info("Loading workload generator specifications")
     for spec in specifications_from_config:
         if "id" not in spec.keys() or "type" not in spec.keys():
-            warnings.append("incorrect workload specification: missing 'id' or 'type'")
-            log.info("F", end="")
+            warnings.append((spec.get("id", "?"), "specification is missing 'id' or 'type' key"))
+            log.tick("F")
             continue
         generator_module = f"perun.workload.{spec['type'].lower()}_generator"
         constructor_name = f"{spec['type'].title()}Generator"
         try:
             constructor = getattr(common_kit.get_module(generator_module), constructor_name)
             spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
-            log.info(".", end="")
+            log.tick()
         except (ImportError, AttributeError):
-            warnings.append(
-                f"incorrect workload generator '{spec['id']}': '{spec['type']}' is not valid workload type"
-            )
-            log.info("F", end="")
+            warnings.append((spec["id"], f"{spec['type']} is not valid workload type"))
+            log.tick("F")
+    log.newline()
 
     # Print the warnings and badge
     if warnings:
-        log.failed()
-        log.info("\n".join(warnings))
+        log.minor_fail("Workload generators")
+        for workload_id, warning in warnings:
+            log.minor_fail(f"workload {log.highlight(workload_id)}", warning)
     else:
-        log.done()
+        log.minor_success("Workload generators", "loaded")
 
     return spec_map

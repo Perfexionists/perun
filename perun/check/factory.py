@@ -144,6 +144,7 @@ def degradation_in_minor(
     :param bool quiet: if set to true then nothing will be printed
     :returns: list of found changes
     """
+    log.major_info(f"Checking Version {minor_version}")
     selection: AbstractBaseSelection = pcs.selection()
     minor_version_info = pcs.vcs().get_minor_version_info(minor_version)
 
@@ -178,13 +179,14 @@ def degradation_in_minor(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("check whole repository")
 def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     """Walks through the minor version starting from the given head, checking for degradation.
 
     :param str head: starting point of the checked history for degradation.
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
+    log.major_info("Checking Whole History")
+    log.minor_info("This might take a while")
     detected_changes = []
     version_selection: AbstractBaseSelection = pcs.selection()
     with log.History(head) as history:
@@ -269,7 +271,6 @@ def run_degradation_check(
 
 
 @log.print_elapsed_time
-@decorators.phase_function("check two profiles")
 def degradation_between_files(
     baseline_file: Profile,
     target_file: Profile,
@@ -286,6 +287,7 @@ def degradation_between_files(
     :param bool force: force profiles check despite different configurations
     :returns None: no return value
     """
+    log.major_info("Checking two compatible profiles")
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
@@ -309,7 +311,7 @@ def degradation_between_files(
         pcs.get_object_directory(), target_minor_version, detected_changes
     )
     log.newline()
-    log.print_list_of_degradations(detected_changes, models_strategy)
+    log.print_list_of_degradations(detected_changes)
     log.print_short_summary_of_degradations(detected_changes)
 
 

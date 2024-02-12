@@ -26,29 +26,33 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
     :param Executable executable: executable profiled command
     :returns tuple: (return code, status message, updated kwargs)
     """
+    log.major_info("Building Instrumented Binary")
     pwd = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile(os.path.join(pwd, _lib_name)):
-        log.warn(
-            f"Missing compiled dynamic library 'lib{os.path.splitext(_lib_name)[0]}'. Compiling from sources: ",
-            end="",
+        log.minor_fail(
+            f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}", "not found"
         )
         result = syscalls.init()
         if result:
-            log.failed()
+            log.minor_fail("Compiling from sources")
             error_msg = "Build of the library failed with error code: "
             error_msg += str(result)
             return CollectStatus.ERROR, error_msg, {}
         else:
-            log.done()
+            log.minor_success("Compiling from sources")
+    else:
+        log.minor_success(
+            f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}", "found"
+        )
 
-    log.info("Checking if binary contains debugging information: ", end="")
     if not syscalls.check_debug_symbols(executable.cmd):
-        log.failed()
-        error_msg = "Binary does not contain debug info section.\n"
-        error_msg += "Please recompile your project with debug options (gcc -g | g++ -g)"
+        log.minor_fail("Checking if binary contains debugging info", "not found")
+        error_msg = "Binary does not contain debug info section. "
+        error_msg += (
+            f"Please recompile your project with debug options {log.cmd_style('(gcc -g | g++ -g)')}"
+        )
         return CollectStatus.ERROR, error_msg, {}
-    log.done()
-    log.info("Finished preprocessing step!\n")
+    log.minor_success("Checking if binary contains debugging info", "found")
 
     return CollectStatus.OK, "", {}
 
@@ -59,16 +63,15 @@ def collect(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[
     :param Executable executable: executable profiled command
     :returns tuple: (return code, status message, updated kwargs)
     """
-    log.info("Collecting data: ", end="")
+    log.major_info("Collecting Performance data")
     result, collector_errors = syscalls.run(executable)
     if result:
-        log.failed()
+        log.minor_fail("Collection of the raw data")
         error_msg = "Execution of binary failed with error code: "
         error_msg += str(result) + "\n"
         error_msg += collector_errors
         return CollectStatus.ERROR, error_msg, {}
-    log.done()
-    log.info("Finished collection of the raw data!\n")
+    log.minor_success("Collection of the raw data")
     return CollectStatus.OK, "", {}
 
 
@@ -99,6 +102,7 @@ def after(
         excluding allocations in "f1" function,
         excluding allocators and unreachable records in call trace
     """
+    log.major_info("Creating Profile")
     include_all = kwargs.get("all", False)
     exclude_funcs = kwargs.get("no_func", [])
     exclude_sources = kwargs.get("no_source", [])
@@ -106,30 +110,26 @@ def after(
     try:
         profile = parser.parse_log(_tmp_log_filename, executable, sampling)
     except (IndexError, ValueError) as parse_err:
-        log.failed()
+        log.minor_fail("Parsing of log")
         return (
             CollectStatus.ERROR,
-            f"Problems while parsing log file: {parse_err}",
+            f"Could not parse the log file due to: {parse_err}",
             {},
         )
-    log.done()
+    log.minor_success("Parsing of log")
     filters.set_global_region(profile)
 
     if not include_all:
-        log.info("Filtering traces: ", end="")
         filters.remove_allocators(profile)
         filters.trace_filter(profile, function=["?"], source=["unreachable"])
-        log.done()
+        log.minor_success("Filtering traces")
 
     if exclude_funcs or exclude_sources:
-        log.info("Excluding functions and sources: ", end="")
         filters.allocation_filter(profile, function=exclude_funcs, source=exclude_sources)
-        log.done()
+        log.minor_success("Excluding functions")
 
-    log.info("Clearing records without assigned UID from profile: ", end="")
     filters.remove_uidless_records_from(profile)
-    log.done()
-    log.newline()
+    log.minor_success("Removing unassigned records")
 
     return CollectStatus.OK, "", {"profile": profile}
 

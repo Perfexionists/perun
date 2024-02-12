@@ -43,6 +43,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         """
         return template_name.startswith(template_type)
 
+    log.major_info("Creating Unit from Template")
     # Lookup the perun working dir according to the current file
     perun_dev_dir = os.path.abspath(os.path.join(os.path.split(__file__)[0], ".."))
     if (
@@ -55,6 +56,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
             "(either not writeable or does not exist)\n\n"
             "Perhaps you are not working from perun dev folder?"
         )
+    log.minor_status("Target Perun development dir", status=log.path_style(perun_dev_dir))
 
     # Initialize the jinja2 environment and load all templates for template_type set
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"), autoescape=True)
@@ -67,10 +69,11 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         common_kit.touch_dir(target_dir)
     else:
         target_dir = os.path.join(perun_dev_dir, template_type)
-    log.info(f"Initializing new {template_type} module in {target_dir}")
+    log.minor_status(f"Initializing new {template_type} module", status=log.path_style(target_dir))
 
     # Iterate through all templates and create the new files with rendered templates
     successfully_created_files = []
+    log.increase_indent()
     for template_file in list_of_templates:
         # Specify the target filename of the template file
         template_filename, _ = os.path.splitext(template_file)
@@ -79,28 +82,27 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         )
         template_filename += ".py"
         successfully_created_files.append(os.path.join(target_dir, template_filename))
-        log.info(f"> creating module '{template_filename}' from template", end="")
-
         # Render and write the template into the resulting file
         with open(os.path.join(target_dir, template_filename), "w") as template_handle:
             template_handle.write(env.get_template(template_file).render(**kwargs))
+        log.minor_success(f"module {log.path_style(template_filename)}", "created")
 
-        log.info(" [", end="")
-        log.done(ending="")
-        log.info("]")
+    log.decrease_indent()
 
     # Add the registration point to the set of file
     successfully_created_files.append(os.path.join(perun_dev_dir, template_type, "../__init__.py"))
     if template_type in ("postprocess", "collect", "view"):
         successfully_created_files.append(os.path.join(perun_dev_dir, "utils", "../__init__.py"))
-    log.info(
-        f"Please register your new module in '{template_type}/__init__.py' and/or 'utils/__init__.py'"
-    )
+    log.minor_info("New module has to be registered at", end=":\n")
+    log.increase_indent()
+    log.minor_info(log.path_style(f"{os.path.join(template_type, '__init.py')}"))
+    log.minor_info(log.path_style(f"{os.path.join('utils', '__init.py')}"))
+    log.decrease_indent()
 
     # Unless specified in other way, open all of the files in the w.r.t the general.editor key
     if not no_edit:
         editor = config.lookup_key_recursively("general.editor")
-        log.info(f"Opening created files and registration point in {editor}")
+        log.minor_status("Opening the files in", status=f"{log.cmd_style(editor)}")
         try:
             commands.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:
