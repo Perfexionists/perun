@@ -583,7 +583,7 @@ def generate_jobs(
     with vcs_kit.CleanState():
         for minor_version in minor_version_list:
             pcs.vcs().checkout(minor_version.checksum)
-            run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
+            run_prephase_commands("pre_run")
             yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
@@ -604,7 +604,7 @@ def generate_jobs_with_history(
                 log.newline()
                 history.finish_minor_version(minor_version, [])
                 pcs.vcs().checkout(minor_version.checksum)
-                run_prephase_commands("pre_run", COLLECT_PHASE_CMD)
+                run_prephase_commands("pre_run")
                 yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 log.newline()
                 history.flush(with_border=True)
