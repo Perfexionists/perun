@@ -43,16 +43,16 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
     log.minor_info(f"{log.highlight('clang')} found", status=log.path_style(clang_bin))
     cmd = " ".join([clang_bin] + ["-I", include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
 
-    log.minor_info(f"Compiling source codes", status=f"{','.join(sources)}")
+    log.minor_info("Compiling source codes", status=f"{','.join(sources)}")
     my_env = os.environ.copy()
     my_env["LD_LIBRARY_PATH"] = pwd
     try:
         commands.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
-        log.minor_info("Compiling to LLVM", status=log.failed_highlight("failed"))
+        log.minor_info_fail("Compiling to LLVM")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
 
-    log.minor_info("Compiling to LLVM", status=log.success_highlight("successful"))
+    log.minor_info_success("Compiling to LLVM")
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
@@ -86,17 +86,17 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
         returned_out, _ = commands.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = returned_out.decode("utf-8")
     except SubprocessError as sub_err:
-        log.minor_info("Collection of bounds", status=log.failed_highlight("failed"))
+        log.minor_info_fail("Collection of bounds")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
     overall_time = systime.time() - before_analysis
-    log.minor_info("Collection of bounds", status=log.success_highlight("successful"))
+    log.minor_info_success("Collection of bounds")
 
     # Parse the out, but first fix the one file analysis, which has different format
     if len(sources) == 1:
         out = f"file {source_filenames[0]}\n" + out
     source_map = {bc: src for (bc, src) in zip(source_filenames, sources)}
     resources = parser.parse_output(out, source_map)
-    log.minor_info("Parsing collected output", status=log.success_highlight("successful"))
+    log.minor_info_success("Parsing collected output")
 
     return (
         CollectStatus.OK,

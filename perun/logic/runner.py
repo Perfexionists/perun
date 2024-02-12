@@ -346,19 +346,15 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
-        log.minor_info(
-            f"Collecting from {log.cmd_style(job.executable.cmd)}",
-            status=log.failed_highlight("failed"),
-        )
+        log.minor_info_fail(f"Collecting from {log.cmd_style(job.executable.cmd)}")
         log.error(
             f"while collecting by {collector.name}: {collection_report.message}",
             recoverable=True,
             raised_exception=collection_report.exception,
         )
     else:
-        log.minor_info(
+        log.minor_info_success(
             f"Collecting by {log.highlight(collector.name)} from {log.cmd_style(str(job.executable))}",
-            status=log.success_highlight("successful"),
         )
 
     log.newline()

@@ -131,7 +131,6 @@ def check_group(**_: Any) -> None:
                 "The progress will be stored in log", status=log.path_style(log_directory)
             )
         else:
-            black_hole = log.in_color("black hole", "white", ["bold"])
             log.minor_info(
                 f"The progress will be redirected to {log.highlight('black hole')}", end="\n"
             )

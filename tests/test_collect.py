@@ -462,7 +462,7 @@ def test_collect_time(monkeypatch, pcs_with_root, capsys):
     # Assert outputs
     out, err = capsys.readouterr()
     assert err == ""
-    assert "Collecting by time from `echo hello` - successful" in common_kit.escape_ansi(out)
+    assert "Collecting by time from `echo hello` - succeeded" in common_kit.escape_ansi(out)
 
     # Assert that just one profile was created
     # + 1 for index

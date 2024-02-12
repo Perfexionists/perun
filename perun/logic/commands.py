@@ -154,9 +154,12 @@ def init_perun_at(
     if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
     else:
-        perun_log.minor_info(f"configuration file {perun_log.highlight('already exists')}")
         perun_log.minor_info(
-            f"Run {perun_log.cmd_style('perun config reset')} to reset configuration to default state"
+            f"configuration file {perun_log.highlight('already exists')}", end="\n"
+        )
+        perun_log.minor_info(
+            f"Run {perun_log.cmd_style('perun config reset')} to reset configuration to default state",
+            end="\n",
         )
 
     # Perun successfully created
@@ -232,9 +235,7 @@ def add(
         # Test if the given profile exists (This should hold always, or not?)
         reg_rel_path = os.path.relpath(profile_name)
         if not os.path.exists(profile_name):
-            perun_log.minor_info(
-                perun_log.path_style(f"{reg_rel_path}"), status=perun_log.failed_highlight("failed")
-            )
+            perun_log.minor_info_fail(perun_log.path_style(f"{reg_rel_path}"))
             perun_log.minor_info("profile does not exists", indent_level=2, end="\n")
             continue
 
@@ -244,9 +245,7 @@ def add(
         unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile["origin"] != minor_version:
-            perun_log.minor_info(
-                perun_log.path_style(f"{reg_rel_path}"), status=perun_log.failed_highlight("failed")
-            )
+            perun_log.minor_info_fail(perun_log.path_style(f"{reg_rel_path}"))
             perun_log.minor_info(
                 "current version", status=f"{perun_log.highlight(minor_version)}", indent_level=2
             )

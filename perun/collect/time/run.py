@@ -45,10 +45,7 @@ def collect(
         sys.stdout.flush()
     log.newline()
 
-    log.minor_info(
-        f"Timing {executable.cmd} {common_kit.str_to_plural(repeat, 'time')}",
-        end="",
-    )
+    log.minor_info(f"Timing {executable.cmd} {common_kit.str_to_plural(repeat, 'time')}")
     times = []
 
     before_timing = systime.time()

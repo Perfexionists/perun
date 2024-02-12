@@ -35,12 +35,12 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
         )
         result = syscalls.init()
         if result:
-            log.minor_info("Compiling from sources", status=log.failed_highlight("failed"))
+            log.minor_info_fail("Compiling from sources")
             error_msg = "Build of the library failed with error code: "
             error_msg += str(result)
             return CollectStatus.ERROR, error_msg, {}
         else:
-            log.minor_info("Compiling from sources", status=log.success_highlight("successful"))
+            log.minor_info_success("Compiling from sources")
     else:
         log.minor_info(
             f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}",
@@ -72,12 +72,12 @@ def collect(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[
     log.major_info("Collecting Performance data")
     result, collector_errors = syscalls.run(executable)
     if result:
-        log.minor_info("Collection of the raw data", status=log.failed_highlight("failed"))
+        log.minor_info_fail("Collection of the raw data")
         error_msg = "Execution of binary failed with error code: "
         error_msg += str(result) + "\n"
         error_msg += collector_errors
         return CollectStatus.ERROR, error_msg, {}
-    log.minor_info("Collection of the raw data", status=log.success_highlight("successful"))
+    log.minor_info_success("Collection of the raw data")
     return CollectStatus.OK, "", {}
 
 
