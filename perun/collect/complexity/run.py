@@ -242,24 +242,22 @@ def _check_dependencies() -> None:
     """Validates that dependencies (cmake and make) are met"""
     log.minor_info("Checking dependencies", end="\n")
     log.increase_indent()
-    log.minor_info("make")
     all_found = True
     if not shutil.which("make"):
         all_found = False
-        log.no()
+        log.minor_info("make", status=log.failed_highlight("not found"))
         log.error(
             "Could not find 'make'. Please, install the makefile package.",
             recoverable=True,
         )
     else:
-        log.yes()
-    log.minor_info("cmake")
+        log.minor_info("make", status=log.success_highlight("found"))
     if not shutil.which("cmake"):
         all_found = False
-        log.no()
+        log.minor_info("cmake", status=log.failed_highlight("not found"))
         log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
     else:
-        log.yes()
+        log.minor_info("cmake", status=log.success_highlight("found"))
     log.decrease_indent()
 
     if all_found:

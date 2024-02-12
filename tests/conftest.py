@@ -523,6 +523,7 @@ def setup():
 
     # Reset the verbosity to release
     log.VERBOSITY = 0
+    log.CURRENT_INDENT = 0
     # We disable the metrics by default, since they might slow down tests
     metrics.Metrics.enabled = False
     yield

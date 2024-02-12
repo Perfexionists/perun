@@ -163,14 +163,6 @@ def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> 
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
-def info(msg: str, end: str = "\n") -> None:
-    """
-    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
-    :param str end:
-    """
-    print(f"{msg}", end=end)
-
-
 def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     """Helper function for returning name and filename from frame.
 
@@ -213,6 +205,14 @@ def print_current_stack(
         if not any(filtering_conditions):
             reduced_trace.append(frame)
     print(in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr)
+
+
+def info(msg: str, end: str = "\n") -> None:
+    """
+    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
+    :param str end:
+    """
+    print(f"{msg}", end=end)
 
 
 def error(
@@ -290,7 +290,7 @@ def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceTyp
     print(in_color(string, colour, attrs))
 
 
-def tick(tick_symbol=".") -> None:
+def tick(tick_symbol: str = ".") -> None:
     """Prints single dot or other symbol
 
     :param tick_symbol: symbol printed as tick
@@ -358,7 +358,7 @@ def minor_info_success(msg: str, sep: str = "-", indent_level: int = 1, end: str
     )
 
 
-def tag(tag_str: str, colour: ColorChoiceType, ending: str = "") -> str:
+def tag(tag_str: str, colour: ColorChoiceType) -> str:
     """
     :param tag_str: printed tag
     :param colour: colour of the tag
@@ -366,24 +366,6 @@ def tag(tag_str: str, colour: ColorChoiceType, ending: str = "") -> str:
     :return: formatted tag
     """
     return "[" + in_color(tag_str.upper(), colour, attribute_style=["bold"]) + "]"
-
-
-def yes(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    print("[", end="")
-    cprint("\u2714", "green", attrs=["bold"])
-    print("]", end=ending)
-
-
-def no(ending: str = "\n") -> None:
-    """
-    :param str ending: end of the string, by default new line
-    """
-    print("[", end="")
-    cprint("\u2717", "red", attrs=["bold"])
-    print("]", end=ending)
 
 
 def newline() -> None:
