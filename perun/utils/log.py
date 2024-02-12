@@ -314,13 +314,13 @@ def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = Fals
     """
     stripped_msg = msg.strip() if no_title else msg.strip().title()
     printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"
-    write("")
+    newline()
     write(" " * CURRENT_INDENT * 2 + printed_msg)
-    write("")
+    newline()
 
 
 def minor_status(msg: str, status: str = "", sep: str = "-") -> None:
-    """Prints minor status containing of two pieces of informations: action and its status
+    """Prints minor status containing of two pieces of information: action and its status
 
     It prints the status of some action, starting with `-` with indent and ending with newline.
 
@@ -331,7 +331,7 @@ def minor_status(msg: str, status: str = "", sep: str = "-") -> None:
     write(" " * CURRENT_INDENT * 2 + f" - {msg.strip().capitalize()} {sep} {status}")
 
 
-def minor_info(msg: str, end: str = "") -> None:
+def minor_info(msg: str, end: str = "\n") -> None:
     """Prints minor information, formatted with indent and starting with -
 
     Note, that there are some sanitizations happening:
@@ -346,14 +346,14 @@ def minor_info(msg: str, end: str = "") -> None:
     write(" " * CURRENT_INDENT * 2 + f" - {msg}", end)
 
 
-def minor_fail(msg: str, fail_message: str = "failed", sep: str = "-") -> None:
+def minor_fail(msg: str, fail_message: str = "failed") -> None:
     """Helper function for shortening some messages"""
-    minor_status(msg, status=failed_highlight(fail_message), sep=sep)
+    minor_status(msg, status=failed_highlight(fail_message))
 
 
-def minor_success(msg: str, success_message: str = "succeeded", sep: str = "-") -> None:
+def minor_success(msg: str, success_message: str = "succeeded") -> None:
     """Helper function for shortening some messages"""
-    minor_status(msg, status=success_highlight(success_message), sep=sep)
+    minor_status(msg, status=success_highlight(success_message))
 
 
 def tag(tag_str: str, colour: ColorChoiceType) -> str:

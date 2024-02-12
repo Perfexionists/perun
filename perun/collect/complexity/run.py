@@ -93,7 +93,6 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
         log.minor_success("Building the configuration executable")
 
         # Extract some configuration data using the configuration executable
-        log.minor_info("Extracting the configuration")
         function_sym = symbols.extract_symbols(exec_path)
         include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
         log.minor_success("Extracting the configuration")

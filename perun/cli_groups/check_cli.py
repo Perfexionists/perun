@@ -119,7 +119,7 @@ def check_group(**_: Any) -> None:
         log.minor_success(f"{log.highlight(collect_before_check)}", "true")
         log.minor_info("Missing profiles will be now collected")
         log.increase_indent()
-        log.minor_success(f"Run {log.cmd_style('perun config edit')} to modify the job matrix")
+        log.minor_info(f"Run {log.cmd_style('perun config edit')} to modify the job matrix")
         log.decrease_indent()
         if precollect_to_log:
             log_directory = log.in_color(pcs.get_log_directory(), "white", ["bold"])
@@ -127,9 +127,7 @@ def check_group(**_: Any) -> None:
                 "The progress will be stored in log", status=log.path_style(log_directory)
             )
         else:
-            log.minor_info(
-                f"The progress will be redirected to {log.highlight('black hole')}", end="\n"
-            )
+            log.minor_info(f"The progress will be redirected to {log.highlight('black hole')}")
 
 
 @check_group.command("head")

@@ -78,7 +78,7 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     :param str key: list of section delimited by dot (.)
     :param object value: arbitrary value that will be set in the configuration
     """
-    perun_log.major_info("Config: Setting new key")
+    perun_log.major_info("Setting new key in Config")
     config_store = pcs.global_config() if store_type in ("shared", "global") else pcs.local_config()
 
     config_store.set(key, value)
@@ -111,7 +111,7 @@ def config_reset(store_type: str, config_template: str) -> None:
     :param str config_template: name of the template that we are resetting to
     :raises NotPerunRepositoryException: raised when we are outside of any perun scope
     """
-    perun_log.major_info(f"Config: Resetting {store_type} config")
+    perun_log.major_info(f"Resetting {store_type} config")
     is_shared_config = store_type in ("shared", "global")
     if is_shared_config:
         shared_location = perun_config.lookup_shared_config_dir()
@@ -123,7 +123,7 @@ def config_reset(store_type: str, config_template: str) -> None:
 
     perun_log.minor_info(f"{'global' if is_shared_config else 'local'} configuration reset")
     if not is_shared_config:
-        perun_log.write(f"to {config_template}")
+        perun_log.write(f" to {config_template}")
 
 
 def init_perun_at(
@@ -154,12 +154,9 @@ def init_perun_at(
     if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
     else:
-        perun_log.minor_info(
-            f"configuration file {perun_log.highlight('already exists')}", end="\n"
-        )
+        perun_log.minor_info(f"configuration file {perun_log.highlight('already exists')}")
         perun_log.minor_info(
             f"Run {perun_log.cmd_style('perun config reset')} to reset configuration to default state",
-            end="\n",
         )
 
     # Perun successfully created
@@ -319,7 +316,7 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
     for i, pending_file in enumerate(profile_generator):
         count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
         os.remove(pending_file)
-        perun_log.minor_fail(f"{count_status} {perun_log.path_style(pending_file)}", "deleted")
+        perun_log.minor_success(f"{count_status} {perun_log.path_style(pending_file)}", "deleted")
 
     if removed_profile_number:
         perun_log.major_info("Summary")

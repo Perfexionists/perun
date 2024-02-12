@@ -489,7 +489,7 @@ def run_postprocessor_on_profile(
     return p_status, processed_profile
 
 
-def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -> None:
+def run_prephase_commands(phase: str) -> None:
     """Runs the phase before the actual collection of the methods
 
     This command first retrieves the phase from the configuration, and runs
@@ -499,7 +499,6 @@ def run_prephase_commands(phase: str, phase_colour: ColorChoiceType = "white") -
     :cunit:`execute`.
 
     :param str phase: name of the phase commands
-    :param str phase_colour: colour for the printed phase
     """
     phase_key = ".".join(["execute", phase]) if not phase.startswith("execute") else phase
     cmds = pcs.local_config().safe_get(phase_key, [])
