@@ -70,11 +70,13 @@ def parse_allocation_location(trace: list[dict[str, Any]]) -> dict[str, Any]:
     :param list trace: list representing stack call trace
     :returns dict: first user's call to allocation
     """
+    result = {}
     for call in trace or []:
         source = call["source"]
         if source != "unreachable":
-            return call
-    return {}
+            result = call
+            break
+    return result
 
 
 def parse_resources(allocation: list[str]) -> dict[str, Any]:

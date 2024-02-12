@@ -34,6 +34,8 @@ def baseline_testing(
 ) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """Generates a profile for specified command with init seeds, compares each other.
 
+    TODO: This might need some checking and tweaking as I believe it is quite shady
+
     :param Executable executable: called command with arguments
     :param list seeds: list of workloads
     :param str collector: list of collectors

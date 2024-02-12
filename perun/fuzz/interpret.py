@@ -109,10 +109,12 @@ def get_time_for_value(
     :param list data: measured values (y-axis)
     :return int: time value from `time_data` according to measured value from `data`
     """
+    result = time_data[-1]
     for x, y in zip(time_data, data):
         if y >= value:
-            return x
-    return time_data[-1]
+            result = x
+            break
+    return result
 
 
 def lazy_initialize_matplotlib() -> None:

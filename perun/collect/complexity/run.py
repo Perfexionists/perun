@@ -254,7 +254,10 @@ def _check_dependencies() -> None:
     if not shutil.which("cmake"):
         all_found = False
         log.minor_fail("cmake", "not found")
-        log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
+        log.error(
+            "Could not find 'cmake'. Please, install `build-essentials` and `cmake` packages.",
+            recoverable=True,
+        )
     else:
         log.minor_success("cmake", "found")
     log.decrease_indent()
@@ -263,6 +266,7 @@ def _check_dependencies() -> None:
         log.minor_success("dependencies", "all found")
     else:
         log.minor_fail("dependencies", "not found")
+        log.error("Some dependencies were not satisfied: complexity cannot be run")
 
 
 def _validate_input(**kwargs: Any) -> None:
