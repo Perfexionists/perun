@@ -171,13 +171,6 @@ def info(msg: str, end: str = "\n") -> None:
     print(f"{msg}", end=end)
 
 
-def quiet_info(msg: str) -> None:
-    """
-    :param str msg: info message to the stream that will be always shown
-    """
-    msg_to_stdout(msg, VERBOSE_RELEASE)
-
-
 def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     """Helper function for returning name and filename from frame.
 
@@ -295,6 +288,14 @@ def cprintln(string: str, colour: ColorChoiceType, attrs: Optional[AttrChoiceTyp
     :param str attrs: name of additional attributes for the colouring
     """
     print(in_color(string, colour, attrs))
+
+
+def tick(tick_symbol=".") -> None:
+    """Prints single dot or other symbol
+
+    :param tick_symbol: symbol printed as tick
+    """
+    print(tick_symbol, end="")
 
 
 def failed(ending: str = "\n") -> None:
@@ -746,10 +747,7 @@ def aggregate_intervals(
     :return list: list of the aggregated partial intervals to print
     """
     # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
-    if isinstance(input_intervals, list):
-        intervals = np.array(input_intervals)
-    else:
-        intervals = input_intervals
+    intervals = np.array(input_intervals) if isinstance(input_intervals, list) else input_intervals
 
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
         """

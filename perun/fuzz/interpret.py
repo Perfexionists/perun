@@ -45,7 +45,7 @@ def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: Te
         file_handle.write(f"{anomaly_type.capitalize()}s:\n")
         for anomaly in anomalies:
             file_handle.write(anomaly.path + " " + str(anomaly.history) + "\n")
-            log.info(".", end="")
+            log.tick()
         log.newline()
 
 
@@ -88,7 +88,7 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
             + str(mut.history)
             + "\n"
         )
-        log.info(".", end="")
+        log.tick()
     log.newline()
 
     save_anomalies(fuzz_progress.hangs, "hang", results_data_file)
@@ -295,7 +295,7 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
 
                 open(diff_file_name, "w").writelines(diff)
                 filesystem.move_file_to(diff_file_name, diffs_dir)
-                log.info(".", end="")
+                log.tick()
         if mutations:
             log.newline()
     log.decrease_indent()

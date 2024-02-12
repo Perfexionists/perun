@@ -574,7 +574,7 @@ def print_shortlog_profile_list(
             # Non-token parts of the formatting string are printed as they are
             else:
                 perun_log.cprint(token, "white")
-        perun_log.info("")
+        perun_log.newline()
 
 
 def print_shortlog_token(
@@ -711,7 +711,7 @@ def print_shortlog_profile_list_header(
         else:
             # Print the rest (non-token stuff)
             perun_log.cprint(token, "white", HEADER_ATTRS)
-    perun_log.info("")
+    perun_log.newline()
 
 
 def print_shortlog_stats_header(max_lengths: dict[str, int]) -> None:
@@ -773,7 +773,7 @@ def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) 
     )
     for parent in head_minor_version.parents:
         perun_log.info(f"Parent: {parent}")
-    perun_log.info("")
+    perun_log.newline()
     indented_desc = "\n".join(
         map(lambda line: " " * (indent * 4) + line, head_minor_version.desc.split("\n"))
     )
@@ -964,7 +964,7 @@ def print_status_profiles(
                     perun_log.error(f"incorrect formatting token {token}")
             else:
                 perun_log.cprint(token, list_config.colour)
-        perun_log.info("")
+        perun_log.newline()
         if profile_no % 5 == 0 or profile_no == list_config.list_len - 1:
             perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
@@ -1004,7 +1004,7 @@ def print_status_profile_list_header(
         else:
             # Print the rest (non token stuff)
             perun_log.cprint(token, list_config.colour)
-    perun_log.info("")
+    perun_log.newline()
     perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
 
 
@@ -1130,7 +1130,7 @@ def status(short: bool = False, **_: Any) -> None:
 
     # Print in long format, the additional information about head commit, by default print
     if not short:
-        perun_log.info("")
+        perun_log.newline()
         minor_version = pcs.vcs().get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
@@ -1143,16 +1143,16 @@ def status(short: bool = False, **_: Any) -> None:
     )
     print_status_profile_list(minor_version_profiles, maxs, short)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
     print_status_profile_list(untracked_profiles, maxs, short, "untracked")
 
     # Print degradation info
     degradation_list = store.load_degradation_list_for(pcs.get_object_directory(), minor_head)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
     perun_log.print_short_summary_of_degradations(degradation_list)
     if not short:
-        perun_log.info("")
+        perun_log.newline()
         perun_log.print_list_of_degradations(degradation_list)
 
 

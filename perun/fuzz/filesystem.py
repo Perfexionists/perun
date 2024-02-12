@@ -88,5 +88,5 @@ def del_temp_files(
         ):
             with exceptions.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
-                log.info(".", end="")
+                log.tick()
     log.newline()

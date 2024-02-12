@@ -37,11 +37,11 @@ def collect(
     :return:
     """
     log.major_info("Running time collector")
-    log.minor_info("Warming up", end="")
+    log.minor_info("Warming up")
     for timing in range(0, warmup):
         command = " ".join(["time -p", str(executable)]).split(" ")
         commands.get_stdout_from_external_command(command).split("\n")
-        log.info(".", end="")
+        log.tick()
         sys.stdout.flush()
     log.newline()
 
@@ -63,7 +63,7 @@ def collect(
                 if len(t) == 2 and t[0] in TIME_TYPES
             ]
         )
-        log.info(".", end="")
+        log.tick()
         sys.stdout.flush()
     log.newline()
     overall_time = systime.time() - before_timing

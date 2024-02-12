@@ -393,7 +393,6 @@ def run_collector_from_cli_context(
 
 
 @log.print_elapsed_time
-@log.phase_function("postprocess")
 def run_postprocessor(
     postprocessor: Unit, job: Job, prof: dict[str, Any]
 ) -> tuple[PostprocessStatus, dict[str, Any]]:
@@ -427,12 +426,13 @@ def run_postprocessor(
     postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:
+        log.minor_info_fail(f"Postprocessing by {postprocessor.name}")
         log.error(
             f"while postprocessing by {postprocessor.name}: {postprocess_report.message}",
             recoverable=True,
         )
     else:
-        log.info(f"Successfully postprocessed data by {postprocessor.name}")
+        log.minor_info_success(f"Postprocessing by {postprocessor.name}")
 
     log.decrease_indent()
     return cast(PostprocessStatus, postprocess_report.status), prof

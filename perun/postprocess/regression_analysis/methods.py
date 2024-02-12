@@ -59,8 +59,10 @@ def compute(
                 result["method"] = method
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as exc:
-            log.info(f"unable to perform regression analysis on function '{chunk[2]}'.")
-            log.info(f"  - {exc}")
+            log.minor_info(
+                f"unable to perform regression analysis on function '{chunk[2]} due to: {exc}",
+                end="\n",
+            )
     # Compute the derived models
     for der in compute_derived(derived, analysis, **kwargs):
         analysis.append(der)

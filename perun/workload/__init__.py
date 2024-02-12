@@ -43,17 +43,17 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
     for spec in specifications_from_config:
         if "id" not in spec.keys() or "type" not in spec.keys():
             warnings.append((spec.get("id", "?"), "specification is missing 'id' or 'type' key"))
-            log.info("F", end="")
+            log.tick("F")
             continue
         generator_module = f"perun.workload.{spec['type'].lower()}_generator"
         constructor_name = f"{spec['type'].title()}Generator"
         try:
             constructor = getattr(common_kit.get_module(generator_module), constructor_name)
             spec_map[spec["id"]] = GeneratorSpec(constructor, spec)
-            log.info(".", end="")
+            log.tick()
         except (ImportError, AttributeError):
             warnings.append((spec["id"], f"{spec['type']} is not valid workload type"))
-            log.info("F", end="")
+            log.tick("F")
     log.newline()
 
     # Print the warnings and badge
