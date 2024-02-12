@@ -165,7 +165,7 @@ def init_perun_at(
     # Perun successfully created
     msg = "Reinitialized " if is_reinit else "Initialized "
     msg += perun_log.highlight("existing") if is_reinit else perun_log.highlight("empty")
-    msg += f" Perun repository"
+    msg += " Perun repository"
     perun_log.minor_info(msg, status=f"{perun_log.path_style(perun_path)}")
 
 
