@@ -235,7 +235,7 @@ def add(
         # Test if the given profile exists (This should hold always, or not?)
         reg_rel_path = os.path.relpath(profile_name)
         if not os.path.exists(profile_name):
-            perun_log.minor_info_fail(perun_log.path_style(f"{reg_rel_path}"))
+            perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
             perun_log.minor_info("profile does not exists", indent_level=2, end="\n")
             continue
 
@@ -245,7 +245,7 @@ def add(
         unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile["origin"] != minor_version:
-            perun_log.minor_info_fail(perun_log.path_style(f"{reg_rel_path}"))
+            perun_log.minor_fail(perun_log.path_style(f"{reg_rel_path}"))
             perun_log.minor_info(
                 "current version", status=f"{perun_log.highlight(minor_version)}", indent_level=2
             )

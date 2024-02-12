@@ -35,12 +35,12 @@ def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[s
         )
         result = syscalls.init()
         if result:
-            log.minor_info_fail("Compiling from sources")
+            log.minor_fail("Compiling from sources")
             error_msg = "Build of the library failed with error code: "
             error_msg += str(result)
             return CollectStatus.ERROR, error_msg, {}
         else:
-            log.minor_info_success("Compiling from sources")
+            log.minor_success("Compiling from sources")
     else:
         log.minor_info(
             f"Dynamic library {log.path_style('lib' + os.path.splitext(_lib_name)[0])}",
@@ -72,12 +72,12 @@ def collect(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[
     log.major_info("Collecting Performance data")
     result, collector_errors = syscalls.run(executable)
     if result:
-        log.minor_info_fail("Collection of the raw data")
+        log.minor_fail("Collection of the raw data")
         error_msg = "Execution of binary failed with error code: "
         error_msg += str(result) + "\n"
         error_msg += collector_errors
         return CollectStatus.ERROR, error_msg, {}
-    log.minor_info_success("Collection of the raw data")
+    log.minor_success("Collection of the raw data")
     return CollectStatus.OK, "", {}
 
 
@@ -116,26 +116,26 @@ def after(
     try:
         profile = parser.parse_log(_tmp_log_filename, executable, sampling)
     except (IndexError, ValueError) as parse_err:
-        log.minor_info_fail("Parsing of log")
+        log.minor_fail("Parsing of log")
         return (
             CollectStatus.ERROR,
             f"Could not parse the log file due to: {parse_err}",
             {},
         )
-    log.minor_info_success("Parsing of log")
+    log.minor_success("Parsing of log")
     filters.set_global_region(profile)
 
     if not include_all:
         filters.remove_allocators(profile)
         filters.trace_filter(profile, function=["?"], source=["unreachable"])
-        log.minor_info_success("Filtering traces")
+        log.minor_success("Filtering traces")
 
     if exclude_funcs or exclude_sources:
         filters.allocation_filter(profile, function=exclude_funcs, source=exclude_sources)
-        log.minor_info_success("Excluding functions")
+        log.minor_success("Excluding functions")
 
     filters.remove_uidless_records_from(profile)
-    log.minor_info_success("Removing unassigned records")
+    log.minor_success("Removing unassigned records")
 
     return CollectStatus.OK, "", {"profile": profile}
 

@@ -346,14 +346,14 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     collection_report, prof = run_all_phases_for(collector_module, "collector", job_params)
 
     if not collection_report.is_ok():
-        log.minor_info_fail(f"Collecting from {log.cmd_style(job.executable.cmd)}")
+        log.minor_fail(f"Collecting from {log.cmd_style(job.executable.cmd)}")
         log.error(
             f"while collecting by {collector.name}: {collection_report.message}",
             recoverable=True,
             raised_exception=collection_report.exception,
         )
     else:
-        log.minor_info_success(
+        log.minor_success(
             f"Collecting by {log.highlight(collector.name)} from {log.cmd_style(str(job.executable))}",
         )
 
@@ -422,13 +422,13 @@ def run_postprocessor(
     postprocess_report, prof = run_all_phases_for(postprocessor_module, "postprocessor", job_params)
 
     if not postprocess_report.is_ok() or not prof:
-        log.minor_info_fail(f"Postprocessing by {postprocessor.name}")
+        log.minor_fail(f"Postprocessing by {postprocessor.name}")
         log.error(
             f"while postprocessing by {postprocessor.name}: {postprocess_report.message}",
             recoverable=True,
         )
     else:
-        log.minor_info_success(f"Postprocessing by {postprocessor.name}")
+        log.minor_success(f"Postprocessing by {postprocessor.name}")
 
     log.decrease_indent()
     return cast(PostprocessStatus, postprocess_report.status), prof

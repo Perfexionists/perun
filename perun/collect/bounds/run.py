@@ -49,10 +49,10 @@ def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[
     try:
         commands.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
-        log.minor_info_fail("Compiling to LLVM")
+        log.minor_fail("Compiling to LLVM")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
 
-    log.minor_info_success("Compiling to LLVM")
+    log.minor_success("Compiling to LLVM")
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
@@ -86,17 +86,17 @@ def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict
         returned_out, _ = commands.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = returned_out.decode("utf-8")
     except SubprocessError as sub_err:
-        log.minor_info_fail("Collection of bounds")
+        log.minor_fail("Collection of bounds")
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
     overall_time = systime.time() - before_analysis
-    log.minor_info_success("Collection of bounds")
+    log.minor_success("Collection of bounds")
 
     # Parse the out, but first fix the one file analysis, which has different format
     if len(sources) == 1:
         out = f"file {source_filenames[0]}\n" + out
     source_map = {bc: src for (bc, src) in zip(source_filenames, sources)}
     resources = parser.parse_output(out, source_map)
-    log.minor_info_success("Parsing collected output")
+    log.minor_success("Parsing collected output")
 
     return (
         CollectStatus.OK,

@@ -90,23 +90,23 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
         # Create the configuration cmake and build the configuration executable
         cmake_path = makefiles.create_config_cmake(target_dir, files)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
-        log.minor_info_success("Building the configuration executable")
+        log.minor_success("Building the configuration executable")
 
         # Extract some configuration data using the configuration executable
         log.minor_info("Extracting the configuration")
         function_sym = symbols.extract_symbols(exec_path)
         include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
-        log.minor_info_success("Extracting the configuration")
+        log.minor_success("Extracting the configuration")
 
         # Create the collector cmake and build the collector executable
         cmake_path = makefiles.create_collector_cmake(target_dir, files, exclude_list)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
-        log.minor_info_success("Building the collector executable")
+        log.minor_success("Building the collector executable")
 
         # Create the internal configuration file
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
-        log.minor_info_success("Creating the runtime config")
+        log.minor_success("Creating the runtime config")
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
@@ -117,7 +117,7 @@ def before(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, d
         UnicodeError,
         exceptions.UnexpectedPrototypeSyntaxError,
     ) as exception:
-        log.minor_info_fail("Preparing the instrumented executable")
+        log.minor_fail("Preparing the instrumented executable")
         return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
@@ -136,10 +136,10 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
     # Run the command and evaluate the return code
     try:
         commands.run_safely_external_command(str(executable), cwd=collect_dir)
-        log.minor_info_success("Collection of data")
+        log.minor_success("Collection of data")
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:
-        log.minor_info_fail("Collection of data")
+        log.minor_fail("Collection of data")
         return (
             CollectStatus.ERROR,
             _COLLECTOR_STATUS_MSG[21] + f": {str(err)}",
@@ -182,7 +182,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
                 err_msg += (
                     call_stack[-1].func + ", " + call_stack[-1].action if call_stack else "empty"
                 )
-                log.minor_info_fail("Parsing log")
+                log.minor_fail("Parsing log")
                 return CollectStatus.ERROR, err_msg, dict(kwargs)
 
             # Get the first and last record timestamps to determine the profiling time
@@ -190,7 +190,7 @@ def after(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, di
             if is_first_line:
                 is_first_line = False
                 profile_start = int(record.timestamp)
-    log.minor_info_success("Parsing log")
+    log.minor_success("Parsing log")
 
     # Update the profile dictionary
     kwargs["profile"] = {

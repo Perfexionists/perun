@@ -346,12 +346,12 @@ def minor_info(
     info(" " * (indent_level + CURRENT_INDENT) * 2 + " - " + msg, end)
 
 
-def minor_info_fail(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+def minor_fail(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
     """Helper function for shortening some messages"""
     minor_info(msg, status=failed_highlight("failed"), sep=sep, indent_level=indent_level, end=end)
 
 
-def minor_info_success(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
+def minor_success(msg: str, sep: str = "-", indent_level: int = 1, end: str = "") -> None:
     """Helper function for shortening some messages"""
     minor_info(
         msg, status=success_highlight("succeeded"), sep=sep, indent_level=indent_level, end=end

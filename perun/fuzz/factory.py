@@ -370,7 +370,7 @@ def teardown(
             "time (s)",
             "degradations",
         )
-        log.minor_info_success(f"Plotting {log.highlight('degradations')} in time graph")
+        log.minor_success(f"Plotting {log.highlight('degradations')} in time graph")
         if config.coverage_testing:
             interpret.plot_fuzz_time_series(
                 fuzz_progress.cov_time_series,
@@ -379,7 +379,7 @@ def teardown(
                 "time (s)",
                 "executed lines ratio",
             )
-            log.minor_info_success(f"Plotting {log.highlight('coverage')} in time graph")
+            log.minor_success(f"Plotting {log.highlight('coverage')} in time graph")
     # Plot the differences between seeds and inferred mutation
     interpret.files_diff(fuzz_progress, output_dirs["diffs"])
     # Save log files
@@ -455,9 +455,9 @@ def perform_baseline_coverage_testing(
     try:
         # Note that evaluate workloads modifies config as a side effect
         base_cov = evaluate_workloads_by_coverage.baseline_testing(executable, parents, config)
-        log.minor_info_success("Coverage-based testing on parent seeds.")
+        log.minor_success("Coverage-based testing on parent seeds.")
     except TimeoutExpired:
-        log.minor_info_fail("Coverage-based testing on parent seeds.")
+        log.minor_fail("Coverage-based testing on parent seeds.")
         log.error(
             f"Timeout ({config.hang_timeout}s) reached when testing with initial files. "
             f"Adjust hang timeout using option --hang-timeout, resp. -h."
@@ -513,7 +513,7 @@ def run_fuzzing_for_command(
     base_result_profile = evaluate_workloads_by_perun.baseline_testing(
         executable, parents, collector, postprocessor, minor_version_list, **kwargs
     )
-    log.minor_info_success("Perun-based testing on parent seeds")
+    log.minor_success("Perun-based testing on parent seeds")
 
     log.minor_info("Rating parents", end="\n")
     # Rate seeds
@@ -587,7 +587,7 @@ def run_fuzzing_for_command(
 
             # adapting increase coverage ratio
             config.refine_coverage_rate(fuzz_progress.interesting_workloads)
-            log.minor_info_success("Gathering using coverage-based testing")
+            log.minor_success("Gathering using coverage-based testing")
 
         # not coverage testing, only performance testing
         else:
@@ -595,7 +595,7 @@ def run_fuzzing_for_command(
             fuzz_progress.interesting_workloads = fuzz(
                 current_workload, max_bytes, rule_set, config
             )
-            log.minor_info_success("Gathering using Perun-based testing")
+            log.minor_success("Gathering using Perun-based testing")
 
         log.minor_info("Evaluating mutations", end="\n")
         log.increase_indent()

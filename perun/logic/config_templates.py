@@ -372,9 +372,9 @@ class UserConfiguration(DeveloperConfiguration):
         log.increase_indent()
         try:
             commands.run_safely_list_of_commands(["make"])
-            log.minor_info_success(f"{log.cmd_style('make')}")
+            log.minor_success(f"{log.cmd_style('make')}")
         except subprocess.CalledProcessError:
-            log.minor_info_fail(f"{log.cmd_style('make')}")
+            log.minor_fail(f"{log.cmd_style('make')}")
             log.minor_info("Nothing to make (probably)", end="\n")
         log.decrease_indent()
         executable_candidates = []

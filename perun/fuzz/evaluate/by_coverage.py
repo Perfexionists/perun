@@ -117,9 +117,9 @@ def get_initial_coverage(
 
         try:
             commands.run_safely_external_command(command, timeout=timeout)
-            log.minor_info_success(f"{log.cmd_style(command)}")
+            log.minor_success(f"{log.cmd_style(command)}")
         except subprocess.CalledProcessError as serr:
-            log.minor_info_fail(f"{log.cmd_style(command)}")
+            log.minor_fail(f"{log.cmd_style(command)}")
             log.error("Initial testing with file " + seed.path + " caused " + str(serr))
         seed.cov = get_coverage_from_dir(os.getcwd(), fuzzing_config.coverage)
 

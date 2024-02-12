@@ -70,9 +70,9 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
     save_time_series(deg_data_file, fuzz_progress.deg_time_series)
-    log.minor_info_success("Saving degradation time series")
+    log.minor_success("Saving degradation time series")
     save_time_series(cov_data_file, fuzz_progress.cov_time_series)
-    log.minor_info_success("Saving coverage time series")
+    log.minor_success("Saving coverage time series")
 
     log.minor_info("Saving log files")
     for mut in fuzz_progress.parents:

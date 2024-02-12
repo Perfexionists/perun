@@ -121,7 +121,7 @@ def check_group(**_: Any) -> None:
         )
         log.minor_info("Missing profiles will be now collected", end="\n")
         log.increase_indent()
-        log.minor_info_success(
+        log.minor_success(
             f"Run {log.cmd_style('perun config edit')} to modify the job matrix", end="\n"
         )
         log.decrease_indent()
