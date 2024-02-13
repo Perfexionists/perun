@@ -1,5 +1,6 @@
 """Main module of the ktrace, which specifies its phases"""
 import subprocess
+
 # Standard Imports
 from typing import Any
 from pathlib import Path
@@ -46,21 +47,23 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         len_str = log.in_color(f"{len_no}", "green", attribute_style=["bold"])
     else:
         len_str = log.in_color(f"{len_no}", "red", attribute_style=["bold"])
-    log.info(f"found {len_str} attachable symbols")
+    log.increase_indent()
+    log.minor_info(f"found {len_str} attachable symbols")
+    log.decrease_indent()
     if log.is_verbose_enough(log.VERBOSE_DEBUG) and len_no > 0:
-        log.minor_info("Listing available probes", end="\n")
+        log.minor_info("Listing available probes")
+        log.increase_indent()
         for func in sorted(attachable_symbols):
-            log.minor_info(f"{func}", indent_level=2, end="\n")
+            log.minor_info(f"{func}")
+        log.decrease_indent()
 
-    log.minor_info("Generating the source of the eBPF program")
     kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps(attachable_symbols)
-    log.done()
+    log.minor_success("Generating the source of the eBPF program")
 
-    log.minor_info("Building the eBPF program")
     bpfgen.generate_bpf_c(kwargs["cmd_name"], kwargs["func_to_idx"], kwargs["bpfring_size"])
     build_dir = Path(Path(__file__).resolve().parent, "bpf_build")
     commands.run_safely_external_command(f"make -C {build_dir}")
-    log.done()
+    log.minor_success("Building the eBPF program")
 
     return CollectStatus.OK, "", dict(kwargs)
 
@@ -73,55 +76,52 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     :param kwargs: stash of shared values between the phases
     :return: collection status (error or OK), error message (if error happened) and shared parameters
     """
-    ktrace_coloured = log.in_color("ktrace", color="yellow", attribute_style=["bold"])
-    cmd_coloured = log.in_color(f"{kwargs['cmd_name']}", color="yellow", attribute_style=["bold"])
-
     log.major_info("Collecting performance data")
 
     # First we wait for starting the ktrace
-    log.minor_info(f"waiting for {ktrace_coloured} to start", sep="")
+    log.minor_info(f"waiting for {log.highlight('ktrace')} to start", end="")
     while True:
-        log.info(".", end="")
+        log.tick()
 
         if processes.is_process_running("ktrace"):
-            log.info("")
+            log.newline()
             break
         time.sleep(BUSY_WAIT)
 
-    log.minor_info(f"The state of {ktrace_coloured}")
-    log.tag("running", "green")
+    log.minor_success(f"{log.highlight('ktrace')}", "running")
 
-    log.minor_info("Running the workload")
     failed_reason = ""
-    if kwargs['executable']:
-        if script_kit.may_contains_script_with_sudo(str(kwargs['executable'])):
+    if kwargs["executable"]:
+        if script_kit.may_contains_script_with_sudo(str(kwargs["executable"])):
             failed_reason = "the command might require sudo"
-            log.tag("failed", "red")
+            log.minor_fail("Running the workload")
         else:
             try:
-                commands.run_safely_external_command(str(kwargs['executable']))
-                log.tag("finished", "green")
+                commands.run_safely_external_command(str(kwargs["executable"]))
+                log.minor_success("Running the workload", 'finished')
             except (subprocess.CalledProcessError, FileNotFoundError) as exc:
                 failed_reason = f"the called process failed: {exc}"
-                log.tag("failed", "red")
+                log.minor_fail("Running the workload")
     else:
-        log.tag("skipped", "grey")
+        log.minor_fail("Running the workload", "skipped")
         failed_reason = "command was not provided on CLI"
     if failed_reason:
         log.minor_info(f"The workload has to be run manually, since {failed_reason}", end="\n")
 
-    log.minor_info(f"waiting for {ktrace_coloured} to finish profiling {cmd_coloured}", sep="")
+    log.minor_info(
+        f"waiting for {log.highlight('ktrace')} to finish profiling {log.cmd_style(kwargs['cmd_name'])}",
+        end="",
+    )
 
     while True:
-        log.info(".", end="")
+        log.tick()
 
         if not processes.is_process_running("ktrace"):
-            log.info("")
+            log.newline()
             break
         time.sleep(BUSY_WAIT)
 
-    log.minor_info(f"collecting data for {cmd_coloured}")
-    log.done()
+    log.minor_success(f"collecting data for {log.cmd_style(kwargs['cmd_name'])}")
 
     return CollectStatus.OK, "", dict(kwargs)
 
@@ -136,7 +136,6 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     profile_output_type = kwargs["output_profile_type"]
     save_intermediate = kwargs["save_intermediate_to_csv"]
 
-    log.minor_info("generating profile")
     if profile_output_type == "flat":
         flat_parsed_traces = interpret.parse_traces(
             raw_data_file, kwargs["idx_to_func"], interpret.FuncDataFlat
@@ -162,14 +161,12 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         )
         resources = interpret.trace_details_to_resources(detailed_parsed_traces)
         total_runtime = detailed_parsed_traces.total_runtime
-    log.done()
+    log.minor_success("generating profile")
 
     if not resources:
         log.warn("no resources were generated (probably due to empty file?)")
     if save_intermediate and profile_output_type != "clustered":
-        log.minor_info(
-            f"intermediate data saved to {log.in_color(str(output_file), 'grey', attribute_style=['bold'])}", end="\n"
-        )
+        log.minor_status(f"intermediate data saved", f"{log.cmd_style(str(output_file))}")
     kwargs["profile"] = {"global": {"time": total_runtime, "resources": resources}}
     return CollectStatus.OK, "", dict(kwargs)
 
