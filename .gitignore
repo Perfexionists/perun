@@ -193,3 +193,6 @@ fabric.properties
 
 # Profiling
 prof/
+
+# eBPF generated
+*.bpf.c
