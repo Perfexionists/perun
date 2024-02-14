@@ -196,3 +196,4 @@ prof/
 
 # eBPF generated
 *.bpf.c
+perun/collect/ktrace/bpf_build/ktrace.bpf.c

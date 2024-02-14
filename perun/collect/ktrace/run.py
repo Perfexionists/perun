@@ -36,7 +36,25 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     log.major_info("Creating the profiling program")
 
     log.minor_info("Discovering available and attachable symbols")
-    perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], kwargs["perf_report"])
+    if kwargs["perf_report"] is None:
+        if kwargs["executable"] is None:
+            log.error(
+                "cannot collect perf events without executable. Run collection again with `-c cmd`."
+            )
+        log.minor_status(
+            "Source of perf events",
+            status=f"{log.cmd_style('perf record ' + str(kwargs['executable']) + '; perf report')}",
+        )
+        perf_output = symbols.compute_perf_events(
+            str(kwargs["executable"]), kwargs["repeat_perf"], kwargs["with_sudo"]
+        )
+        perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], perf_output)
+    else:
+        log.minor_status("Source of perf events", status=f"{log.path_style(kwargs['perf_report'])}")
+        with open(kwargs["perf_report"], "r", encoding="utf-8") as perf_handle:
+            perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], perf_handle)
+    log.minor_success(f"Parsing sampled {log.highlight('perf')} events")
+
     available_symbols = symbols.get_available_symbols(get_kernel(), kwargs["probe_type"])
     attachable_symbols = symbols.filter_available_symbols(
         perf_symbols, available_symbols, exclude=symbols.exclude_btf_deny()
@@ -98,7 +116,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         else:
             try:
                 commands.run_safely_external_command(str(kwargs["executable"]))
-                log.minor_success("Running the workload", 'finished')
+                log.minor_success("Running the workload", "finished")
             except (subprocess.CalledProcessError, FileNotFoundError) as exc:
                 failed_reason = f"the called process failed: {exc}"
                 log.minor_fail("Running the workload")
@@ -177,18 +195,56 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
 @click.command()
 @click.argument("cmd-name")
-@click.argument("perf-report", type=click.Path(exists=True, path_type=Path))
 @click.option(
-    "--probe-type", "-p", type=click.Choice(["kprobe", "kfunc", "ftrace"]), default="kprobe"
+    "--with-sudo",
+    "-ws",
+    default=False,
+    is_flag=True,
+    help="Whether some commands should be run with sudo or not",
 )
-@click.option("--bpfring-size", "-s", type=int, default=4096 * 4096)  # add checks
+@click.option(
+    "--repeat-perf",
+    "-rp",
+    default=5,
+    type=click.INT,
+    help="How many times should the perf sampling be repeated",
+)
+@click.option(
+    "--perf-report",
+    "-pr",
+    default=None,
+    type=click.Path(exists=True, path_type=Path),
+    help="File with collected perf events; if not set, then the events will be collected several times.",
+)
+@click.option(
+    "--probe-type",
+    "-p",
+    type=click.Choice(["kprobe", "kfunc", "ftrace"]),
+    default="kprobe",
+    help="type of probes in resulting eBPF program",
+)
+@click.option(
+    "--bpfring-size",
+    "-s",
+    type=int,
+    default=4096 * 4096 * 10,
+    help="Size of the ring buffer used in eBPF program. Increasing the size will lead to lesser number of lost events.",
+)  # add checks
 @click.option(
     "--output-profile-type",
     "-t",
     type=click.Choice(["clustered", "details", "flat"]),
     default="flat",
+    help="type of the resulting profile; clustered has highest granularity, flat has lowest granularity.",
 )
-@click.option("--save-intermediate-to-csv", "-c", is_flag=True, type=bool, default=False)
+@click.option(
+    "--save-intermediate-to-csv",
+    "-c",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Saves the intermediate results into some file",
+)
 @click.pass_context
 def ktrace(ctx, **kwargs):
     """Generates kernel traces for specific commands based on perf reports."""
