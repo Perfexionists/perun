@@ -55,6 +55,7 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], perf_handle)
     log.minor_success(f"Parsing sampled {log.highlight('perf')} events")
 
+    log.increase_indent()
     available_symbols = symbols.get_available_symbols(get_kernel(), kwargs["probe_type"])
     attachable_symbols = symbols.filter_available_symbols(
         perf_symbols, available_symbols, exclude=symbols.exclude_btf_deny()
@@ -65,7 +66,6 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         len_str = log.in_color(f"{len_no}", "green", attribute_style=["bold"])
     else:
         len_str = log.in_color(f"{len_no}", "red", attribute_style=["bold"])
-    log.increase_indent()
     log.minor_info(f"found {len_str} attachable symbols")
     log.decrease_indent()
     if log.is_verbose_enough(log.VERBOSE_DEBUG) and len_no > 0:
