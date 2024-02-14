@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os.path
+
 # Standard Imports
 from typing import Literal, Iterable, Collection
 from pathlib import Path
@@ -34,7 +35,20 @@ def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]
     #     1. sudo bpftrace -l 'kprobe:*' > available_bpftrace_kprobe
     #     2. sudo bpftrace -l 'kfunc:*' > available_bpftrace_func
     else:
-        return get_bpftrace_symbols(f"symbols/{kernel}_bpftrace_{probe_type}", "kprobe")
+        target_symbol_name = Path(
+            Path(__file__).resolve().parent, f"symbols/{kernel}_bpftrace_{probe_type}"
+        )
+        if not os.path.exists(target_symbol_name):
+            log.minor_info(f"No available symbols detected for {log.highlight(kernel)}")
+            log.minor_info(f"Symbols will be collected by {log.cmd_style('bpftrace')}")
+            try:
+                out, _ = commands.run_safely_external_command(f"sudo bpftrace -l '{probe_type}:*'")
+            except subprocess.CalledProcessError as exc:
+                log.error(f"could not collect available {probe_type}s: {exc}")
+            with open(target_symbol_name, "wb") as target_handle:
+                target_handle.write(out)
+            log.minor_success(f"Available {probe_type}s", "found")
+        return get_bpftrace_symbols(target_symbol_name, probe_type)
 
 
 def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[str]:
@@ -73,7 +87,9 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
         try:
             _, err = commands.run_safely_external_command(perf_record_cmd)
             if match := sample_matcher.search(err.decode("utf-8")):
-                log.minor_status("Collected samples", status=f"{log.success_highlight(match.group(1))}")
+                log.minor_status(
+                    "Collected samples", status=f"{log.success_highlight(match.group(1))}"
+                )
             else:
                 log.minor_fail("Collected samples", "no samples")
             out, _ = commands.run_safely_external_command(perf_report_cmd)
@@ -108,16 +124,17 @@ def get_ftrace_symbols() -> set[str]:
     return attachable
 
 
-def get_bpftrace_symbols(filename: str, probe_type: Literal["kfunc", "kprobe"]) -> set[str]:
-    # TODO: invoke bpftrace directly.
-    bpftrace_list_file = Path(Path(__file__).resolve().parent, filename)
+def get_bpftrace_symbols(bpftrace_list_file: Path, probe_type: Literal["kfunc", "kprobe"]) -> set[str]:
     attachable: set[str] = set()
     probe_prefix = f"{probe_type}:"
     probe_prefix_len = len(probe_prefix)
     with open(bpftrace_list_file, "r", encoding="utf-8") as bpftrace_list_handle:
         for line in bpftrace_list_handle:
             if not line.startswith(probe_prefix):
-                print(f"Warning: A bpftrace list entry is not {probe_type}!")
+                log.warn(
+                    f"A bpftrace list {log.highlight(line.strip())} entry is "
+                    f"{log.failed_highlight('not ' + probe_type)}!"
+                )
                 continue
             # Get rid of the probe type prefix
             attachable.add(line.rstrip()[probe_prefix_len:])
