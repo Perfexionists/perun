@@ -2,11 +2,16 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Literal
+from typing import Literal, Iterable, Collection
 from pathlib import Path
+import re
+import subprocess
 
 # Third-Party Imports
+
 # Perun Imports
+from perun.utils import log
+from perun.utils.external import commands
 
 
 KernelSymbolType = Literal["kprobe", "kfunc", "ftrace"]
@@ -22,7 +27,7 @@ def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]
     # To obtain ftrace_symbols available to your system run the following:
     #     1. sudo cp /sys/kernel/tracing/available_filter_functions ./available_filter_functions;
     #     2. Change owner and permissions.
-    if probe_type == 'ftrace':
+    if probe_type == "ftrace":
         return get_ftrace_symbols()
     # To obtain 'kprobes' or 'kfuncs' runs on of the following:
     #     1. sudo bpftrace -l 'kprobe:*' > available_bpftrace_kprobe
@@ -31,18 +36,59 @@ def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]
         return get_bpftrace_symbols(f"symbols/{kernel}_bpftrace_{probe_type}", "kprobe")
 
 
-def parse_perf_events(cmd_filter: str, perf_file: Path) -> list[str]:
-    perf_functions: list[str] = []
-    with open(perf_file, "r", encoding="utf-8") as perf_handle:
-        for line in perf_handle:
-            # Ignore comment or empty lines
-            line = line.rstrip()
-            if not line or line.startswith("#"):
-                continue
-            _, cmd, _, symbol_src, symbol_name = line.split()
-            # Find kernel symbols related to the measured command
-            if cmd == cmd_filter and symbol_src == "[k]":
-                perf_functions.append(symbol_name)
+def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[str]:
+    """Computes file with perf records
+
+    We use the default frequency as we wish to collect as many events as we could.
+    Brendan Gregg advises to use 99Hz frequency, however, this (anecdotally let to
+    low number of events).
+
+    Runs following two commands:
+      1. perf record <CMD>
+      2. perf report
+
+    Note, on some systems the `with_sudo` should be set to True, otherwise the kernel events
+    will not be profiled.
+
+    :param cmd: command that is profiled by perf
+    :param repeat: number of repeats of the run command
+    :param with_sudo: whether the command should be run with sudo
+    """
+    log.minor_info(
+        f"Collecting perf events {log.highlight(repeat)} times, with sudo={log.highlight(with_sudo)}"
+    )
+    sample_matcher = re.compile(r"\((\d+) samples\)")
+    log.increase_indent()
+    result = []
+    for _ in range(0, repeat):
+        try:
+            perf_cmd = f"perf record {cmd}"
+            if with_sudo:
+                perf_cmd = f"sudo {perf_cmd}"
+            _, err = commands.run_safely_external_command(perf_cmd)
+            if match := sample_matcher.search(err.decode("utf-8")):
+                log.minor_status("Collected", status=f"{log.success_highlight(match.group(1))}")
+            else:
+                log.minor_fail("Collected", "no samples")
+            out, _ = commands.run_safely_external_command("perf report")
+            result.extend(out.decode("utf-8").splitlines())
+        except subprocess.CalledProcessError as err:
+            log.warn(f"{log.cmd_style('perf record' + cmd)} returned error: {err}")
+    log.decrease_indent()
+    return result
+
+
+def parse_perf_events(cmd_filter: str, perf_stream: Iterable[str]) -> set[str]:
+    perf_functions: set[str] = set()
+    for line in perf_stream:
+        # Ignore comment or empty lines
+        line = line.rstrip()
+        if not line or line.startswith("#"):
+            continue
+        _, cmd, _, symbol_src, symbol_name = line.split()
+        # Find kernel symbols related to the measured command
+        if cmd == cmd_filter and symbol_src == "[k]":
+            perf_functions.add(symbol_name)
     return perf_functions
 
 
@@ -89,10 +135,10 @@ def exclude_btf_deny() -> set[str]:
 
 
 def filter_available_symbols(
-    perf_symbols: list[str],
+    perf_symbols: Collection[str],
     attachable_symbols: set[str],
     max_symbols: int = 0,
-    exclude: set[str] | None = None
+    exclude: set[str] | None = None,
 ) -> set[str]:
     if exclude is None:
         exclude = set()
