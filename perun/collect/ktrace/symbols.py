@@ -1,6 +1,7 @@
 """Collection of handing of eBPF primitives, i.e. symbols such as kprobes or kfuncs"""
 from __future__ import annotations
 
+import os.path
 # Standard Imports
 from typing import Literal, Iterable, Collection
 from pathlib import Path
@@ -57,23 +58,28 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
     log.minor_info(
         f"Collecting perf events {log.highlight(repeat)} times, with sudo={log.highlight(with_sudo)}"
     )
-    sample_matcher = re.compile(r"\((\d+) samples\)")
-    log.increase_indent()
+    target_filename = "internal-perf.data"
+    if os.path.exists(target_filename):
+        os.remove(target_filename)
     result = []
+    sample_matcher = re.compile(r"\((\d+) samples\)")
+    perf_record_cmd = f"perf record -o {target_filename} {cmd}"
+    perf_report_cmd = f"perf report -i {target_filename}"
+    if with_sudo:
+        perf_record_cmd = f"sudo {perf_record_cmd}"
+
+    log.increase_indent()
     for _ in range(0, repeat):
         try:
-            perf_cmd = f"perf record {cmd}"
-            if with_sudo:
-                perf_cmd = f"sudo {perf_cmd}"
-            _, err = commands.run_safely_external_command(perf_cmd)
+            _, err = commands.run_safely_external_command(perf_record_cmd)
             if match := sample_matcher.search(err.decode("utf-8")):
-                log.minor_status("Collected", status=f"{log.success_highlight(match.group(1))}")
+                log.minor_status("Collected samples", status=f"{log.success_highlight(match.group(1))}")
             else:
-                log.minor_fail("Collected", "no samples")
-            out, _ = commands.run_safely_external_command("perf report")
+                log.minor_fail("Collected samples", "no samples")
+            out, _ = commands.run_safely_external_command(perf_report_cmd)
             result.extend(out.decode("utf-8").splitlines())
         except subprocess.CalledProcessError as err:
-            log.warn(f"{log.cmd_style('perf record' + cmd)} returned error: {err}")
+            log.warn(f"{log.cmd_style(perf_record_cmd)} returned error: {err}")
     log.decrease_indent()
     return result
 
