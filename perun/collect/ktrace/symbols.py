@@ -4,7 +4,7 @@ from __future__ import annotations
 import os.path
 
 # Standard Imports
-from typing import Literal, Iterable, Collection
+from typing import Literal, Iterable, Collection, Optional
 from pathlib import Path
 import re
 import subprocess
@@ -19,6 +19,29 @@ from perun.utils.external import commands
 KernelSymbolType = Literal["kprobe", "kfunc", "ftrace"]
 
 
+def find_available_filter_function_file(tracing_file: Path) -> Optional[Path]:
+    """Finds in /sys/kernel file called available_filter_functions
+
+    We use find with sudo to find the file (since it is problematic in Python to work
+    with system files)
+
+    :param tracing_file: target path
+    :return: path to available_filter_function file
+    """
+    for path in (
+        os.path.join("sys", "kernel", "tracing"),
+        os.path.join("sys", "kernel", "debug", "tracing"),
+    ):
+        try:
+            commands.run_safely_external_command(f"sudo cp /{path}/available_filter_functions {tracing_file}")
+            os.chmod(tracing_file, 0o744)
+            log.minor_success(f"/{log.path_style(path)}", "found")
+            return tracing_file
+        except subprocess.CalledProcessError:
+            log.minor_fail(f"/{log.path_style(path)}", "not found")
+    return None
+
+
 def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]:
     """Obtains available symbols for profiling for given kernel and given probe_type
 
@@ -30,7 +53,25 @@ def get_available_symbols(kernel: str, probe_type: KernelSymbolType) -> set[str]
     #     1. sudo cp /sys/kernel/tracing/available_filter_functions ./available_filter_functions;
     #     2. Change owner and permissions.
     if probe_type == "ftrace":
-        return get_ftrace_symbols()
+        tracing_file = Path(
+            Path(__file__).resolve().parent, f"symbols/{kernel}_available_filter_functions"
+        )
+        if not os.path.exists(tracing_file):
+            log.minor_info(f"No available filter functions detected for {log.highlight(kernel)}")
+            tracing_file_src = find_available_filter_function_file(tracing_file)
+            if tracing_file_src is None:
+                log.error(f"cannot find {log.path_style('available_filter_functions')}")
+            log.minor_status(
+                "available filter functions found", status=log.path_style(tracing_file_src)
+            )
+            with open(tracing_file_src, "r") as tracing_read_handle:
+                lines = tracing_read_handle.read()
+            with open(tracing_file, "w") as tracing_write_handle:
+                tracing_write_handle.write(lines)
+            log.minor_status(
+                "available filter functions saved", status=log.path_style(tracing_file)
+            )
+        return get_ftrace_symbols(tracing_file)
     # To obtain 'kprobes' or 'kfuncs' runs on of the following:
     #     1. sudo bpftrace -l 'kprobe:*' > available_bpftrace_kprobe
     #     2. sudo bpftrace -l 'kfunc:*' > available_bpftrace_func
@@ -114,8 +155,7 @@ def parse_perf_events(cmd_filter: str, perf_stream: Iterable[str]) -> set[str]:
     return perf_functions
 
 
-def get_ftrace_symbols() -> set[str]:
-    tracing_file = Path(Path(__file__).resolve().parent, "symbols/available_filter_functions")
+def get_ftrace_symbols(tracing_file: str) -> set[str]:
     attachable: set[str] = set()
     with open(tracing_file, "r", encoding="utf-8") as attachable_handle:
         # The file is potentially big, read line by line
@@ -124,7 +164,9 @@ def get_ftrace_symbols() -> set[str]:
     return attachable
 
 
-def get_bpftrace_symbols(bpftrace_list_file: Path, probe_type: Literal["kfunc", "kprobe"]) -> set[str]:
+def get_bpftrace_symbols(
+    bpftrace_list_file: Path, probe_type: Literal["kfunc", "kprobe"]
+) -> set[str]:
     attachable: set[str] = set()
     probe_prefix = f"{probe_type}:"
     probe_prefix_len = len(probe_prefix)
