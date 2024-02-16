@@ -60,6 +60,7 @@ dependencies = [
     "termcolor>=2.4",
     "tabulate>=0.9",
     "holoviews>=1.17",
+    "progressbar2>=4.3",
 
     # Transitive dependencies that we need to limit for some reason
     "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
