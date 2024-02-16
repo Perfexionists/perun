@@ -166,6 +166,22 @@ def init_perun_at(
     perun_log.minor_status(msg, status=f"{perun_log.path_style(perun_path)}")
 
 
+def try_init():
+    """Checks if the current instance is Perun and prompts user if he wishes to init"""
+    try:
+        pcs.get_path()
+    except NotPerunRepositoryException:
+        if common_kit.perun_confirm(
+            f"  - You are not in Perun instance. "
+            f"Do you wish to init empty {perun_log.highlight('Perun')}"
+            f" with {perun_log.highlight('git')}?"
+        ):
+            init(os.getcwd(), vcs_type="git")
+        else:
+            # Raise new exception with new traceback
+            raise NotPerunRepositoryException(os.getcwd())
+
+
 def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
     """Initializes the performance and version control systems
 
@@ -180,8 +196,8 @@ def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> Non
     perun_log.major_info("Initializing Perun")
     # First init the wrapping repository well
     vcs_type = kwargs["vcs_type"]
-    vcs_path = kwargs["vcs_path"] or dst
-    vcs_params = kwargs["vcs_params"]
+    vcs_path = kwargs.get("vcs_path", dst) or dst
+    vcs_params = kwargs.get("vcs_params", {})
 
     # Construct local config
     vcs_config = {"vcs": {"url": vcs_path, "type": vcs_type}}

@@ -100,17 +100,17 @@ LINE_PARSING_REGEX: re.Pattern[Any] = re.compile(
 )
 
 ALWAYS_CONFIRM: bool = False
+DEFAULT_CONFIRMATION: bool = True
 
 
-def perun_confirm(confirm_message: str, default: bool = True):
+def perun_confirm(confirm_message: str):
     """Wrapper function for confirming information from user
 
     :param confirm_message: message that is printed to user
-    :param default: default that is returned if ALWAYS_CONFIRM is set
     :return: confirmation status
     """
     if ALWAYS_CONFIRM:
-        return default
+        return DEFAULT_CONFIRMATION
     return click.confirm(confirm_message)
 
 
