@@ -13,6 +13,7 @@ import warnings
 # Third-Party Imports
 from click.testing import CliRunner
 from git.exc import GitCommandError
+from subprocess import CalledProcessError
 import git
 import pytest
 
@@ -2544,3 +2545,18 @@ def test_try_init(monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "Initializing Perun" in result.output
     assert "Creating empty commit" in result.output
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_try_init_error(monkeypatch):
+    monkeypatch.setattr("click.confirm", lambda _: True)
+
+    def mock_raised_exception(*_, **__):
+        raise CalledProcessError(-1, "failed")
+
+    monkeypatch.setattr(commands, "run_safely_external_command", mock_raised_exception)
+    runner = CliRunner()
+    result = runner.invoke(cli.cli, ["status"])
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    assert "Initializing Perun" in result.output
+    assert "Creating empty commit - failed" in common_kit.escape_ansi(result.output)

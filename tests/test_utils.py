@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Standard Imports
 import glob
+import io
 import pkgutil
 import os
 import re
@@ -280,6 +281,11 @@ def test_common(capsys):
     out, _ = capsys.readouterr()
     assert "captured stdout" in out
 
+    prev_value = common_kit.ALWAYS_CONFIRM
+    common_kit.ALWAYS_CONFIRM = True
+    assert common_kit.perun_confirm("Confirm_something") == common_kit.DEFAULT_CONFIRMATION
+    common_kit.ALWAYS_CONFIRM = prev_value
+
 
 def test_predicates(capsys):
     """Test predicates used for testing"""
@@ -316,6 +322,10 @@ def test_logger(capsys):
     assert stdout_log.tell() == 0
     assert stdout_log.seekable()
     assert stdout_log.seek(2) == 2
+    with pytest.raises(io.UnsupportedOperation):
+        stdout_log.fileno()
+    assert stdout_log.errors is not None
+    assert stdout_log.encoding is not None
     assert not stdout_log.readable()
     assert not stdout_log.isatty()
 
