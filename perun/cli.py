@@ -178,6 +178,8 @@ def cli(
     if perun_log.VERBOSITY < verbose:
         perun_log.VERBOSITY = verbose
 
+    commands.try_init()
+
 
 def configure_local_perun(perun_path: str) -> None:
     """Configures the local perun repository with the interactive help of the user
@@ -518,7 +520,6 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     configuration.
     """
     try:
-        commands.try_init()
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
         perun_log.error(f"could not print the repository history: {str(exception)}")
@@ -574,7 +575,6 @@ def status(**kwargs: Any) -> None:
     configuration.
     """
     try:
-        commands.try_init()
         commands.status(**kwargs)
     except (
         NotPerunRepositoryException,
