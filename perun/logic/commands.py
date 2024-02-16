@@ -12,6 +12,7 @@ from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
 import collections
 import os
 import re
+import subprocess
 
 # Third-Party Imports
 
@@ -42,6 +43,7 @@ from perun.utils.common.common_kit import (
 )
 from perun.utils.structs import ProfileListConfig, MinorVersion
 from perun.vcs import vcs_kit
+from perun.vcs.git_repository import GitRepository
 import perun.profile.helpers as profile
 
 if TYPE_CHECKING:
@@ -167,16 +169,36 @@ def init_perun_at(
 
 
 def try_init():
-    """Checks if the current instance is Perun and prompts user if he wishes to init"""
+    """Checks if the current instance is Perun and prompts user if he wishes to init
+
+    Currently, we assume, that if there is no perun and no git, we initialize the perun with empty git
+    and potentially with empty commit
+    """
     try:
         pcs.get_path()
     except NotPerunRepositoryException:
+        # First we ask if we wish to init Perun
         if common_kit.perun_confirm(
             f"  - You are not in Perun instance. "
             f"Do you wish to init empty {perun_log.highlight('Perun')}"
             f" with {perun_log.highlight('git')}?"
         ):
+            contains_git = GitRepository.contains_git_repo(os.getcwd())
             init(os.getcwd(), vcs_type="git")
+
+            # Second we create empty commit
+            if not contains_git:
+                perun_log.minor_status(
+                    "Creating empty commit",
+                    status=perun_log.cmd_style('git commit --allow-empty -m "root"'),
+                )
+                try:
+                    external_commands.run_safely_external_command(
+                        'git commit --allow-empty -m "root"'
+                    )
+                    perun_log.minor_success("Creating empty commit")
+                except subprocess.CalledProcessError:
+                    perun_log.minor_fail("Creating empty commit")
         else:
             # Raise new exception with new traceback
             raise NotPerunRepositoryException(os.getcwd())
