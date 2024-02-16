@@ -227,7 +227,7 @@ class NotPerunRepositoryException(Exception):
         self.path = path
 
     def __str__(self) -> str:
-        return f"Current working dir is not a perun repository (or any parent on path {self.path})"
+        return f"aborted by user: current working dir ({self.path}) is not a Perun repository"
 
 
 class UnsupportedModuleException(Exception):

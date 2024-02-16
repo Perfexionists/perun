@@ -1187,10 +1187,12 @@ class Logger(TextIO):
     :ivar StringIO log: log saving the stream
     """
 
-    __slots__ = ["original", "log"]
+    __slots__ = ["original", "log", "errors", "encoding"]
 
     def __init__(self, stream: TextIO) -> None:
         self.original = stream
+        self.errors = self.original.errors
+        self.encoding = self.original.encoding
         self.log = io.StringIO()
 
     def write(self, message: str) -> int:
@@ -1211,7 +1213,7 @@ class Logger(TextIO):
         assert NotImplementedError("Function not supported in wrapper Logger")
 
     def fileno(self) -> None:  # type: ignore
-        assert NotImplementedError("Function not supported in wrapper Logger")
+        return self.original.fileno()
 
     def isatty(self) -> bool:
         return self.original.isatty()
