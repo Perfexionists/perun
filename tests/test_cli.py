@@ -10,8 +10,6 @@ import shutil
 import time
 import warnings
 
-import click
-
 # Third-Party Imports
 from click.testing import CliRunner
 from git.exc import GitCommandError

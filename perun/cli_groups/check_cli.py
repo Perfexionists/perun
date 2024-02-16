@@ -9,7 +9,7 @@ import distutils.util as dutils
 import click
 
 # Perun Imports
-from perun.logic import pcs, config as perun_config, commands
+from perun.logic import pcs, config as perun_config
 from perun.utils import log
 from perun.utils.common import cli_kit
 import perun.check.factory as check

@@ -103,7 +103,7 @@ ALWAYS_CONFIRM: bool = False
 DEFAULT_CONFIRMATION: bool = True
 
 
-def perun_confirm(confirm_message: str):
+def perun_confirm(confirm_message: str) -> bool:
     """Wrapper function for confirming information from user
 
     :param confirm_message: message that is printed to user
