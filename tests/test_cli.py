@@ -10,6 +10,8 @@ import shutil
 import time
 import warnings
 
+import click
+
 # Third-Party Imports
 from click.testing import CliRunner
 from git.exc import GitCommandError
@@ -23,6 +25,7 @@ from perun.logic import config, pcs, stats, temp
 from perun.testing import asserts
 from perun.utils import exceptions, log
 from perun.utils.common import common_kit
+from perun.utils.exceptions import NotPerunRepositoryException
 from perun.utils.external import commands
 from perun.utils.structs import CollectStatus, RunnerReport
 import perun.check.factory as check
@@ -2529,3 +2532,17 @@ def test_safe_cli(monkeypatch, capsys):
 
     with pytest.raises(Exception):
         cli.launch_cli_in_dev_mode()
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_try_init(monkeypatch):
+    monkeypatch.setattr("click.confirm", lambda _: False)
+    runner = CliRunner()
+    result = runner.invoke(cli.cli, ["status"])
+    assert isinstance(result.exception, NotPerunRepositoryException)
+
+    monkeypatch.setattr("click.confirm", lambda _: True)
+    result = runner.invoke(cli.cli, ["status"])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    assert "Initializing Perun" in result.output
+    assert "Creating empty commit" in result.output

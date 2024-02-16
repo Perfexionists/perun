@@ -69,6 +69,7 @@ def test_log_short_error(pcs_with_root, capsys, monkeypatch):
     assert "object does not contain 'notexist' attribute" in err
 
 
+@pytest.mark.usefixtures("cleandir")
 def test_log_short(pcs_single_prof, capsys):
     """Test calling 'perun log --short', which outputs shorter info
 
@@ -108,6 +109,7 @@ def test_log_short(pcs_single_prof, capsys):
     assert len(out.split("\n")) - 1 == len(commits) + 2
 
 
+@pytest.mark.usefixtures("cleandir")
 def test_log(pcs_single_prof, capsys):
     """Test calling 'perun log' with working stuff
 

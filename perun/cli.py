@@ -170,7 +170,7 @@ def cli(
     # through --no-pager set by default to False you enable the paging
     global DEV_MODE
     DEV_MODE = dev_mode
-    perun_log.ALWAYS_CONFIRM = say_yes
+    common_kit.ALWAYS_CONFIRM = say_yes
     perun_log.SUPPRESS_PAGING = no_pager
     perun_log.COLOR_OUTPUT = not no_color
 
