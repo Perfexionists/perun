@@ -6,7 +6,6 @@ when working within wrong scopes, how does perun copes with existing perun direc
 from __future__ import annotations
 
 # Standard Imports
-from distutils import spawn
 import os
 
 # Third-Party Imports
@@ -18,6 +17,7 @@ import pytest
 from perun.logic import commands
 from perun.utils.common import common_kit
 from perun.utils.exceptions import UnsupportedModuleException
+from perun.utils.external import executable
 
 
 def assert_perun_successfully_init_at(path):
@@ -314,7 +314,7 @@ def test_user_config():
     main_workload = os.path.join(pcs_path, "workload")
     common_kit.touch_dir(main_build)
     common_kit.touch_dir(main_workload)
-    os.symlink(spawn.find_executable("cat"), os.path.join(main_build, "lecat"))
+    os.symlink(executable.find_executable("cat"), os.path.join(main_build, "lecat"))
     common_kit.touch_file(os.path.join(main_workload, "file1"))
 
     subproject_path = os.path.join(pcs_path, "subproject")
@@ -325,7 +325,7 @@ def test_user_config():
     common_kit.touch_dir(sub_build)
     common_kit.touch_dir(sub_workload)
     common_kit.touch_dir(bogus_workload)
-    os.symlink(spawn.find_executable("wc"), os.path.join(sub_build, "lewc"))
+    os.symlink(executable.find_executable("wc"), os.path.join(sub_build, "lewc"))
     common_kit.touch_file(os.path.join(sub_workload, "file2"))
     common_kit.touch_file(os.path.join(bogus_workload, "file3"))
 
