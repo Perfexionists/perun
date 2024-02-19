@@ -122,6 +122,7 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
     perf_report_cmd = f"perf report -i {target_filename}"
     if with_sudo:
         perf_record_cmd = f"sudo {perf_record_cmd}"
+        perf_report_cmd = f"sudo {perf_report_cmd}"
 
     log.increase_indent()
     for _ in range(0, repeat):
