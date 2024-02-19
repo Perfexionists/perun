@@ -425,7 +425,7 @@ def lookup_profile_in_filesystem(profile_name: str) -> str:
             full_path = os.path.join(root, file)
             if file.endswith(".perf") and searched_regex.search(full_path):
                 rel_path = os.path.relpath(full_path, os.getcwd())
-                if click.confirm(f"did you perhaps mean '{rel_path}'?"):
+                if common_kit.perun_confirm(f"did you perhaps mean '{rel_path}'?"):
                     return full_path
 
     return profile_name

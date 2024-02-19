@@ -11,6 +11,7 @@ import re
 import signal
 
 # Third-Party Imports
+import click
 
 # Perun Imports
 from perun.postprocess.regression_analysis import tools
@@ -97,6 +98,20 @@ LINE_PARSING_REGEX: re.Pattern[Any] = re.compile(
     r"(?P<minor>\S+)\s"
     r"(?P<cmdstr>.+)"
 )
+
+ALWAYS_CONFIRM: bool = False
+DEFAULT_CONFIRMATION: bool = True
+
+
+def perun_confirm(confirm_message: str) -> bool:
+    """Wrapper function for confirming information from user
+
+    :param confirm_message: message that is printed to user
+    :return: confirmation status
+    """
+    if ALWAYS_CONFIRM:
+        return DEFAULT_CONFIRMATION
+    return click.confirm(confirm_message)
 
 
 def first_index_of_attr(input_list: list[Any], attr: str, value: Any) -> int:
