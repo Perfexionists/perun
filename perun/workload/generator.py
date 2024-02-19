@@ -10,7 +10,6 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any, Callable, Iterable, TYPE_CHECKING
-import distutils.util as dutils
 
 # Third-Party Imports
 
@@ -18,6 +17,7 @@ import distutils.util as dutils
 from perun.logic import config
 from perun.profile import helpers as profile_helpers, factory as profile_factory
 from perun.utils import log
+from perun.utils.common import common_kit
 from perun.utils.structs import CollectStatus, Job, Unit
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ class WorkloadGenerator:
         """
         self.job = job
         self.generator_name = self.job.executable.origin_workload
-        self.for_each = dutils.strtobool(str(profile_for_each_workload))
+        self.for_each = common_kit.strtobool(str(profile_for_each_workload))
 
     def generate(
         self, collect_function: Callable[[Unit, Job], tuple[CollectStatus, Profile]]

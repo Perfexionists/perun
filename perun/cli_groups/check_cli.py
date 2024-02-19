@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any, TYPE_CHECKING, Optional
-import distutils.util as dutils
 
 # Third-Party Imports
 import click
@@ -11,7 +10,7 @@ import click
 # Perun Imports
 from perun.logic import pcs, config as perun_config
 from perun.utils import log
-from perun.utils.common import cli_kit
+from perun.utils.common import cli_kit, common_kit
 import perun.check.factory as check
 
 if TYPE_CHECKING:
@@ -107,10 +106,10 @@ def check_group(**_: Any) -> None:
         8. Exclusive Time Outliers (ETO)
 
     """
-    should_precollect = dutils.strtobool(
+    should_precollect = common_kit.strtobool(
         str(perun_config.lookup_key_recursively("degradation.collect_before_check", "false"))
     )
-    precollect_to_log = dutils.strtobool(
+    precollect_to_log = common_kit.strtobool(
         str(perun_config.lookup_key_recursively("degradation.log_collect", "false"))
     )
     if should_precollect:

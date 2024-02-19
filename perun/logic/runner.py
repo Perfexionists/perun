@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
-import distutils.util as dutils
 import os
 import signal
 import time
@@ -25,6 +24,7 @@ from perun.utils.common.common_kit import (
     COLLECT_PHASE_POSTPROCESS,
     COLLECT_PHASE_WORKLOAD,
     ColorChoiceType,
+    strtobool,
 )
 from perun.utils.structs import (
     CollectStatus,
@@ -441,7 +441,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     log.minor_status(
         "stored generated profile ", status=f"{log.path_style(os.path.relpath(full_profile_path))}"
     )
-    if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
+    if strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get("origin", pcs.vcs().get_minor_head())
         # FIXME: consider removing this

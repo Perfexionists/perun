@@ -5,7 +5,6 @@ from __future__ import annotations
 
 # Standard Imports
 import contextlib
-import distutils.util as dutils
 import os
 import re
 
@@ -27,6 +26,7 @@ from perun.check.methods import (
     polynomial_regression,
 )
 from perun.utils import decorators, log
+from perun.utils.common import common_kit
 from perun.utils.structs import (
     DetectionChangeResult,
     DegradationInfo,
@@ -112,14 +112,14 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
 
     :param MinorVersion minor_version: minor version for which we are collecting the data
     """
-    should_precollect = dutils.strtobool(
+    should_precollect = common_kit.strtobool(
         str(config.lookup_key_recursively("degradation.collect_before_check", "false"))
     )
     if should_precollect and minor_version.checksum not in pre_collect_profiles.minor_version_cache:
         # Set the registering after run to true for this run
         config.runtime().set("profiles.register_after_run", "true")
         # Actually collect the resources
-        collect_to_log = dutils.strtobool(
+        collect_to_log = common_kit.strtobool(
             str(config.lookup_key_recursively("degradation.log_collect", "false"))
         )
         log_file = os.path.join(pcs.get_log_directory(), f"{minor_version.checksum}-precollect.log")

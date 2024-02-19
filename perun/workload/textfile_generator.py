@@ -35,7 +35,6 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any, Iterable
-import distutils.util as dutils
 import os
 import random
 import tempfile
@@ -44,6 +43,7 @@ import tempfile
 import faker
 
 # Perun Imports
+from perun.utils.common import common_kit
 from perun.utils.structs import Job
 from perun.workload.generator import WorkloadGenerator
 
@@ -104,7 +104,7 @@ class TextfileGenerator(WorkloadGenerator):
         # Note that faker has a lower limit on generated text.
         self.min_chars = max(int(min_rows), 5)
         self.max_chars = int(max_rows)
-        self.randomize_rows = dutils.strtobool(str(randomize_rows))
+        self.randomize_rows = common_kit.strtobool(str(randomize_rows))
 
         self.faker = faker.Faker()
 

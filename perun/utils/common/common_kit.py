@@ -437,4 +437,26 @@ def get_module(module_name: str) -> types.ModuleType:
     return MODULE_CACHE[module_name]
 
 
+_STRTOBOOL_MAP = {
+    'y': True,
+    'yes': True,
+    't': True,
+    'true': True,
+    'on': True,
+    '1': True,
+    'n': False,
+    'no': False,
+    'f': False,
+    'false': False,
+    'off': False,
+    '0': False
+}
+
+
+def strtobool(value):
+    try:
+        return _STRTOBOOL_MAP[str(value).lower()]
+    except KeyError:
+        raise ValueError('"{}" is not a valid bool value'.format(value))
+
 MODULE_CACHE: dict[str, types.ModuleType] = {}
