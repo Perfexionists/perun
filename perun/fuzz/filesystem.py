@@ -7,6 +7,7 @@ import os
 import re
 
 # Third-Party Imports
+import progressbar
 
 # Perun Imports
 from perun.fuzz.structs import Mutation, FuzzingProgress
@@ -78,7 +79,7 @@ def del_temp_files(
     :param str output_dir: path to directory, where fuzzed files are stored
     """
     log.minor_info("Removing mutations")
-    for mutation in parents:
+    for mutation in progressbar.progressbar(parents):
         if (
             mutation not in fuzz_progress.final_results
             and mutation not in fuzz_progress.hangs
@@ -88,5 +89,4 @@ def del_temp_files(
         ):
             with exceptions.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
-                log.tick()
     log.newline()

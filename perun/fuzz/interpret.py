@@ -7,6 +7,7 @@ import difflib
 import os
 
 # Third-Party Imports
+import progressbar
 from scipy.stats import mstats
 import matplotlib.pyplot as plt
 
@@ -43,9 +44,8 @@ def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: Te
     if anomalies:
         log.minor_info(f"Saving {log.highlight(anomaly_type + 's')}")
         file_handle.write(f"{anomaly_type.capitalize()}s:\n")
-        for anomaly in anomalies:
+        for anomaly in progressbar.progressbar(anomalies):
             file_handle.write(anomaly.path + " " + str(anomaly.history) + "\n")
-            log.tick()
         log.newline()
 
 
@@ -75,7 +75,7 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     log.minor_success("Saving coverage time series")
 
     log.minor_info("Saving log files")
-    for mut in fuzz_progress.parents:
+    for mut in progressbar.progressbar(fuzz_progress.parents):
         results_data_file.write(
             str(mut.fitness)
             + " "
@@ -88,7 +88,6 @@ def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
             + str(mut.history)
             + "\n"
         )
-        log.tick()
     log.newline()
 
     save_anomalies(fuzz_progress.hangs, "hang", results_data_file)
@@ -270,7 +269,7 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     ]:
         if mutations:
             log.minor_info(mutation_type)
-        for res in mutations:
+        for res in progressbar.progressbar(mutations):
             if res.predecessor is not None:
                 pred = streams.safely_load_file(res.predecessor.path)
                 result = streams.safely_load_file(res.path)
@@ -297,7 +296,6 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
 
                 open(diff_file_name, "w").writelines(diff)
                 filesystem.move_file_to(diff_file_name, diffs_dir)
-                log.tick()
         if mutations:
             log.newline()
     log.decrease_indent()

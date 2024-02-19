@@ -39,7 +39,7 @@ def load_generator_specifications() -> dict[str, GeneratorSpec]:
     specifications_from_config = config.gather_key_recursively("generators.workload")
     spec_map = {}
     warnings = []
-    log.minor_info("Loading workload generator specifications")
+    log.minor_info("Loading workload generator specifications", end="")
     for spec in specifications_from_config:
         if "id" not in spec.keys() or "type" not in spec.keys():
             warnings.append((spec.get("id", "?"), "specification is missing 'id' or 'type' key"))

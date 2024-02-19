@@ -332,9 +332,6 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
     :param Job job: additional information about the running job
     :returns (int, dict): status of the collection, generated profile
     """
-    log.print_current_phase("Collecting by collector", collector.name, COLLECT_PHASE_COLLECT)
-    log.increase_indent()
-
     try:
         collector_module = common_kit.get_module(f"perun.collect.{collector.name}.run")
     except ImportError:
@@ -357,8 +354,6 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, A
             f"Collecting by {log.highlight(collector.name)} from {log.cmd_style(str(job.executable))}",
         )
 
-    log.newline()
-    log.decrease_indent()
     return cast(CollectStatus, collection_report.status), prof
 
 
@@ -403,9 +398,6 @@ def run_postprocessor(
     :param dict prof: dictionary with profile
     :returns (int, dict): status of the collection, postprocessed profile
     """
-    log.print_current_phase("Postprocessing data", postprocessor.name, COLLECT_PHASE_POSTPROCESS)
-    log.increase_indent()
-
     try:
         postprocessor_module = common_kit.get_module(f"perun.postprocess.{postprocessor.name}.run")
     except ImportError:
@@ -430,7 +422,6 @@ def run_postprocessor(
     else:
         log.minor_success(f"Postprocessing by {postprocessor.name}")
 
-    log.decrease_indent()
     return cast(PostprocessStatus, postprocess_report.status), prof
 
 
@@ -537,17 +528,26 @@ def generate_jobs_on_current_working_dir(
     collective_status = CollectStatus.OK
 
     log.major_info("Running Jobs")
+    log.increase_indent()
+    job_counter = 1
     for job_cmd, workloads_per_cmd in job_matrix.items():
         for workload, jobs_per_workload in workloads_per_cmd.items():
-            log.print_current_phase("Collecting for command", job_cmd, COLLECT_PHASE_CMD)
-            log.print_current_phase("Generating by workload", workload, COLLECT_PHASE_WORKLOAD)
             # Prepare the specification
             generator_spec = workload_generators_specs.get(
                 workload, GeneratorSpec(SingletonGenerator, {"value": workload})
             )
             generator, params = generator_spec.constructor, generator_spec.params
             for job in jobs_per_workload:
-                log.print_job_progress(number_of_jobs)
+                log.major_info(f"Job {job_counter} Overview")
+                log.minor_status("Command", status=log.cmd_style(job_cmd))
+                log.minor_status("Workload", status=log.highlight(workload))
+                log.minor_status("Collector", status=log.highlight(job.collector.name))
+                if job.postprocessors:
+                    log.minor_status(
+                        "Postprocessors",
+                        status=log.highlight(", ".join(post.name for post in job.postprocessors)),
+                    )
+
                 for c_status, prof in generator(job, **params).generate(run_collector):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
@@ -568,6 +568,9 @@ def generate_jobs_on_current_working_dir(
                     else:
                         # Store the computed profile inside the job directory
                         yield collective_status, prof, job
+                job_counter += 1
+
+    log.decrease_indent()
 
 
 def generate_jobs(
