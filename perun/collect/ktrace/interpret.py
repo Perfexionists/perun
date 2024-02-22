@@ -265,7 +265,7 @@ def pandas_to_resources(df: pandas.DataFrame) -> list[dict[str, Any]]:
                     "ncalls": ncalls,
                     "type": "time",
                     "subtype": col,
-                    "trace": [{"func": f for f in trace}],
+                    "trace": [{"func": f} for f in trace],
                 }
             )
     return resources
