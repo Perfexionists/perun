@@ -238,7 +238,7 @@ def append_resources(
                 "ncalls": len(group),
                 "type": "time",
                 "subtype": resource_type,
-                "trace": [{"func": f for f in trace}],
+                "trace": [{"func": f} for f in trace],
             }
         )
 
