@@ -5,6 +5,7 @@ Currently, this only handles getting version of Python.
 from __future__ import annotations
 
 # Standard Imports
+from subprocess import CalledProcessError
 from typing import Optional, Callable, Protocol, Any
 import operator
 import re
@@ -106,3 +107,17 @@ def get_current_interpreter(
                 break
     # If no interpreter was found, use fallback
     return interpreter or fallback
+
+
+def get_kernel() -> str:
+    """Returns the identification of the kernel
+
+    If `uname -r` cannot be called, then "Unknown" is returned
+
+    :return: identification of the kernel
+    """
+    try:
+        out, _ = commands.run_safely_external_command("uname -r")
+        return out.decode("utf-8").strip()
+    except CalledProcessError:
+        return "Unknown"

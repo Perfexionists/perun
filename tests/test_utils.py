@@ -16,12 +16,12 @@ import pytest
 
 # Perun Imports
 from perun import collect, postprocess, view
+from perun.collect.trace.optimizations.structs import Complexity
 from perun.fuzz import filetype
 from perun.logic import commands, config
 from perun.testing import asserts
 from perun.utils import log
 from perun.utils.common import common_kit, cli_kit
-from perun.collect.trace.optimizations.structs import Complexity
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
@@ -337,3 +337,15 @@ def test_filetypes(monkeypatch):
     monkeypatch.setattr("mimetypes.guess_type", patched_guess)
 
     assert filetype.get_filetype("somefile") == (True, None)
+
+
+def test_kernel_info(monkeypatch):
+    # Test that we can obtain some information about kernel
+    assert environment.get_kernel() != "Unknown"
+
+    def mock_raised_exception(*_, **__):
+        raise subprocess.CalledProcessError(-1, "failed")
+
+    # Test that if there is some issue, at least "uknown" is returned
+    monkeypatch.setattr(external_commands, "run_safely_external_command", mock_raised_exception)
+    assert environment.get_kernel() == "Unknown"
