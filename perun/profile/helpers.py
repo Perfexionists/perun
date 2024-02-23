@@ -30,6 +30,7 @@ from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
 from perun.utils import decorators, log as perun_log
 from perun.utils.common import common_kit
+from perun.utils.external import environment
 from perun.utils.exceptions import (
     InvalidParameterException,
     MissingConfigSectionException,
@@ -308,6 +309,7 @@ def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Pr
     """
     profile.update({"origin": pcs.vcs().get_minor_head()})
     profile.update({"header": generate_header_for_profile(job)})
+    profile.update({"machine": environment.get_machine_specification()})
     profile.update({"collector_info": generate_collector_info(job)})
     profile.update({"postprocessors": generate_postprocessor_info(job)})
     return profile

@@ -30,6 +30,9 @@ dependencies = [
     "meson>=1.2.3",
     "ninja>=1.0",
 
+    # Other
+    "psutil>=5.0.0",
+
     # CLI
     "click>=8.1",
 

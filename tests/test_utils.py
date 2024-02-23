@@ -378,7 +378,7 @@ def test_traces():
     assert common_kit.compute_distance(trace_b, trace_c) == 3.4
 
 
-def test_kernel_info(monkeypatch):
+def test_machine_info(monkeypatch):
     # Test that we can obtain some information about kernel
     assert environment.get_kernel() != "Unknown"
 
@@ -388,3 +388,6 @@ def test_kernel_info(monkeypatch):
     # Test that if there is some issue, at least "uknown" is returned
     monkeypatch.setattr(external_commands, "run_safely_external_command", mock_raised_exception)
     assert environment.get_kernel() == "Unknown"
+
+    spec = environment.get_machine_specification()
+    assert spec != {}
