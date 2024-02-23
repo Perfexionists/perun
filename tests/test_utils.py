@@ -339,6 +339,45 @@ def test_filetypes(monkeypatch):
     assert filetype.get_filetype("somefile") == (True, None)
 
 
+def test_traces():
+    """Test various parts of working with traces"""
+    trace_a = [
+        {"func": "unmap_vmas"},
+        {"func": "unmap_single_vma"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_memcg_lruvec_state"},
+    ]
+    trace_b = [
+        {"func": "unmap_vmas"},
+        {"func": "unmap_single_vma"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_node_page_state"},
+        {"func": "hrtimer_interrupt"},
+    ]
+    trace_c = [
+        {"func": "exit_mmap"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_memcg_lruvec_state"},
+    ]
+    assert common_kit.compute_distance(trace_a, trace_a) == 0
+    assert common_kit.compute_distance(trace_a, trace_b) == 1.4
+    assert common_kit.compute_distance(trace_b, trace_a) == 1.4
+    assert common_kit.compute_distance(trace_a, trace_c) == 2.0
+    assert common_kit.compute_distance(trace_b, trace_c) == 3.4
+
+
 def test_kernel_info(monkeypatch):
     # Test that we can obtain some information about kernel
     assert environment.get_kernel() != "Unknown"
