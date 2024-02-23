@@ -92,6 +92,7 @@ typing = [
     "types-tabulate>=0.9",
     "pandas-stubs>=2.0",
     "nptyping>=2.5.0",
+    "types-psutil>=5.9.5"
 ]
 
 [project.urls]

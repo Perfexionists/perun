@@ -440,8 +440,6 @@ def get_module(module_name: str) -> types.ModuleType:
 
 MODULE_CACHE: dict[str, types.ModuleType] = {}
 
-cache = {}
-
 
 @functools.cache
 def split_to_words(identifier: str) -> set[str]:
@@ -469,7 +467,7 @@ def switch_cost(lhs_identifier: str, rhs_identifier: str) -> float:
     return 1 - (2 * len(lhs_words.intersection(rhs_words)) / (len(lhs_words) + len(rhs_words)))
 
 
-DISTANCE_CACHE = {}
+DISTANCE_CACHE: dict[str, float] = {}
 
 
 def compute_distance(
@@ -497,17 +495,15 @@ def compute_distance(
     :param trace_key: key that is used for retrieving the trace names
     :return: distance between two traces
     """
-    global DISTANCE_CACHE
-
     key = f"{','.join(l[trace_key] for l in lhs_trace)};{','.join(r[trace_key] for r in rhs_trace)}"
 
     if key not in DISTANCE_CACHE.keys():
         # We need to insert everything from RHS, hence full cost of what is in RHS
         if len(lhs_trace) == 0:
-            cost = len(rhs_trace)
+            cost = float(len(rhs_trace))
         # We need to insert everything from LHS, hence full cost of what is in LHS
         elif len(rhs_trace) == 0:
-            cost = len(lhs_trace)
+            cost = float(len(lhs_trace))
         # 1. First parts are matched in the trace, so the cost is the cost of matching the rest of the trace
         elif lhs_trace[0][trace_key] == rhs_trace[0][trace_key]:
             cost = compute_distance(lhs_trace[1:], rhs_trace[1:], trace_key)
