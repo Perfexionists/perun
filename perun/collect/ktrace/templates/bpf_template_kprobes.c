@@ -51,7 +51,7 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 {
 	pid_t pid;
 	pid = bpf_get_current_pid_tgid() >> 32;
-	if (({{ range(0, command_names|length)|map('regex_replace', '^(.*)$', 'pid != process_id\\1')|join(" && ") }}) || process_pid == 0) {
+    if (({% for it in fact1 %}pid != process_id{{ it }}{{ loop.last | ternary('', ' && ') }}{% endfor %}) || process_pid == 0) {
 		return 0;
 	}
 
