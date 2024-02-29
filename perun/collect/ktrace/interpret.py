@@ -144,11 +144,21 @@ def parse_traces(
                 record_stack.append(TraceRecord(func_id, ts))
                 record = data_handle.read(16)
                 continue
-            top_record = record_stack.pop()
-            if top_record.func_id != func_id:
-                log.error("Stack mismatch.")
+            while True:
+                if not record_stack:
+                    log.error("corrupted log: empty records stack")
+                top_record = record_stack.pop()
+                if top_record.func_id != func_id:
+                    log.warn(
+                        f"stack mismatch: expected {func_map[top_record.func_id]} (skipping), but got {func_map[func_id]}."
+                    )
+                    top_record = record_stack.pop()
+                    continue
+                break
             if (duration := ts - top_record.timestamp) < 0:
-                log.error("Invalid timestamps.")
+                log.error(
+                    f"corrupted log: invalid timestamps for {func_map[func_id]}: duration {duration} is negative."
+                )
             # Obtain the trace from the stack
             trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
             # Update the exclusive time of the parent call
