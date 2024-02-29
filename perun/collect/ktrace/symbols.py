@@ -142,7 +142,7 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
     return result
 
 
-def parse_perf_events(cmd_filter: str, perf_stream: Iterable[str]) -> set[str]:
+def parse_perf_events(cmd_filter: list[str], perf_stream: Iterable[str]) -> set[str]:
     perf_functions: set[str] = set()
     for line in perf_stream:
         # Ignore comment or empty lines
@@ -151,7 +151,7 @@ def parse_perf_events(cmd_filter: str, perf_stream: Iterable[str]) -> set[str]:
             continue
         _, cmd, _, symbol_src, symbol_name = line.split()
         # Find kernel symbols related to the measured command
-        if cmd == cmd_filter and symbol_src == "[k]":
+        if cmd in cmd_filter and symbol_src == "[k]":
             perf_functions.add(symbol_name)
     return perf_functions
 
