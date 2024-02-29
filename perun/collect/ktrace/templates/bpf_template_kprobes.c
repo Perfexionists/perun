@@ -13,27 +13,35 @@ struct {
 } rb SEC(".maps");
 
 uint64_t events_lost = 0;
-pid_t process_pid = 0;
+{% for i in range(0, command_names|length) %}
+pid_t process_pid{{ i }} = 0;
+{%- endfor %}
 
 SEC("tp/sched/sched_process_exec")
 int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 {
-	char comm[{{ command_len }}];
-	bpf_get_current_comm(comm, {{ command_len }});
-	if (bpf_strncmp(comm, {{ command_cmp_len }}, "{{ command_name }}" ) == 0) {
-		process_pid = bpf_get_current_pid_tgid() >> 32;
-		bpf_printk("EXEC {{ command_name }}: pid = %d\n", process_pid);
+{% for command_name in command_names %}
+	char comm{{ loop.index0 }}[{{ command_name|length }} + 1];
+	bpf_get_current_comm(comm{{ loop.index0 }}, {{ command_name|length }} + 1);
+	if (bpf_strncmp(comm{{ loop.index0 }}, {{ command_name|length }}, "{{ command_name }}" ) == 0) {
+		process_pid{{ loop.index0 }} = bpf_get_current_pid_tgid() >> 32;
+		bpf_printk("EXEC {{ command_name }}: pid = %d\n", process_pid{{ loop.index0 }});
 	}
+{% endfor %}
 	return 0;
 }
 
 SEC("tp/sched/sched_process_exit")
 int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 {
-	if ((bpf_get_current_pid_tgid() >> 32) == process_pid) {
-		bpf_printk("EXIT {{ command_name }}: pid = %d\n", process_pid);
-		process_pid = 0;
+    pid_t pid;
+    pid = bpf_get_current_pid_tgid() >> 32;
+{% for i in range(0, command_names|length ) %}
+	if (pid == process_pid{{ i }}) {
+		bpf_printk("EXIT {{ command_names[i] }}: pid = %d\n", process_pid{{ i }});
+		process_pid{{ i }} = 0;
 	}
+{% endfor %}
 	return 0;
 }
 
@@ -42,7 +50,8 @@ SEC("kprobe/{{ func_name }}")
 int BPF_KPROBE({{ func_name|replace(".", "_") }})
 {
 	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
+	pid = bpf_get_current_pid_tgid() >> 32;
+	if (({{ range(0, command_names|length)|map('regex_replace', '^(.*)$', 'pid != process_id\\1')|join(" && ") }}) || process_pid == 0) {
 		return 0;
 	}
 

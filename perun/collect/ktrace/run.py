@@ -48,11 +48,11 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         perf_output = symbols.compute_perf_events(
             str(kwargs["executable"]), kwargs["repeat_perf"], kwargs["with_sudo"]
         )
-        perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], perf_output)
+        perf_symbols = symbols.parse_perf_events(kwargs["cmd_names"], perf_output)
     else:
         log.minor_status("Source of perf events", status=f"{log.path_style(kwargs['perf_report'])}")
         with open(kwargs["perf_report"], "r", encoding="utf-8") as perf_handle:
-            perf_symbols = symbols.parse_perf_events(kwargs["cmd_name"], perf_handle)
+            perf_symbols = symbols.parse_perf_events(kwargs["cmd_names"], perf_handle)
     log.minor_success(f"Parsing sampled {log.highlight('perf')} events")
 
     log.increase_indent()
@@ -78,7 +78,7 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps(attachable_symbols)
     log.minor_success("Generating the source of the eBPF program")
 
-    bpfgen.generate_bpf_c(kwargs["cmd_name"], kwargs["func_to_idx"], kwargs["bpfring_size"])
+    bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"])
     build_dir = Path(Path(__file__).resolve().parent, "bpf_build")
     commands.run_safely_external_command(f"make -C {build_dir}")
     log.minor_success("Building the eBPF program")
@@ -127,7 +127,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         log.minor_info(f"The workload has to be run manually, since {failed_reason}", end="\n")
 
     log.minor_info(
-        f"waiting for {log.highlight('ktrace')} to finish profiling {log.cmd_style(kwargs['cmd_name'])}",
+        f"waiting for {log.highlight('ktrace')} to finish profiling {log.cmd_style(', '.join(kwargs['cmd_names']))}",
         end="",
     )
 
@@ -139,7 +139,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             break
         time.sleep(BUSY_WAIT)
 
-    log.minor_success(f"collecting data for {log.cmd_style(kwargs['cmd_name'])}")
+    log.minor_success(f"collecting data for {log.cmd_style(', '.join(kwargs['cmd_name']))}")
 
     return CollectStatus.OK, "", dict(kwargs)
 
@@ -194,7 +194,7 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
 
 @click.command()
-@click.argument("cmd-name")
+@click.argument("cmd-names", required=True, nargs=-1)
 @click.option(
     "--with-sudo",
     "-ws",
