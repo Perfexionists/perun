@@ -51,7 +51,7 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 {
 	pid_t pid;
 	pid = bpf_get_current_pid_tgid() >> 32;
-    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || process_pid == 0) {
+    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
 		return 0;
 	}
 
