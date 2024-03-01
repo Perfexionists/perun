@@ -139,7 +139,7 @@ def collect(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             break
         time.sleep(BUSY_WAIT)
 
-    log.minor_success(f"collecting data for {log.cmd_style(', '.join(kwargs['cmd_name']))}")
+    log.minor_success(f"collecting data for {log.cmd_style(', '.join(kwargs['cmd_names']))}")
 
     return CollectStatus.OK, "", dict(kwargs)
 
