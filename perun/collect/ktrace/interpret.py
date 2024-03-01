@@ -104,9 +104,9 @@ class TraceContextsMap(Generic[DataT]):
         for (func_id, trace_id), func_times in self.durations.items():
             # Func name, Trace (sequence of func names), inclusive times, exclusive times
             yield (
-                self.idx_name_map[func_id],
+                self.idx_name_map.get(func_id, str(func_id)),
                 # Translate the function indices to names
-                tuple(self.idx_name_map[trace_func] for trace_func in trace_map_rev[trace_id]),
+                tuple(self.idx_name_map.get(trace_func, str(trace_func)) for trace_func in trace_map_rev[trace_id]),
                 func_times,
             )
 
@@ -150,14 +150,16 @@ def parse_traces(
                 top_record = record_stack.pop()
                 if top_record.func_id != func_id:
                     log.warn(
-                        f"stack mismatch: expected {func_map[top_record.func_id]} (skipping), but got {func_map[func_id]}."
+                        f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} (skipping),"
+                        f" but got {func_map.get(func_id, func_id)}."
                     )
                     top_record = record_stack.pop()
                     continue
                 break
             if (duration := ts - top_record.timestamp) < 0:
                 log.error(
-                    f"corrupted log: invalid timestamps for {func_map[func_id]}: duration {duration} is negative."
+                    f"corrupted log: invalid timestamps for {func_map.get(func_id, func_id)}:"
+                    f" duration {duration} is negative."
                 )
             # Obtain the trace from the stack
             trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
