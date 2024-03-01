@@ -54,6 +54,7 @@ VERBOSE_DEBUG: int = 2
 VERBOSE_INFO: int = 1
 VERBOSE_RELEASE: int = 0
 
+WARN_ONCE: bool = True
 SUPPRESS_WARNINGS: bool = False
 SUPPRESS_PAGING: bool = True
 
@@ -242,13 +243,15 @@ def error(
     sys.exit(1)
 
 
+warn_cache = set()
 def warn(msg: str, end: str = "\n") -> None:
     """
     :param str msg: warn message printed to standard output
     :param str end:
     """
-    if not SUPPRESS_WARNINGS:
+    if not SUPPRESS_WARNINGS or (WARN_ONCE and msg in warn_cache):
         print(f"{tag('warning', 'yellow')} {msg}", end=end)
+        warn_cache.add(msg)
 
 
 @decorators.static_variables(current_job=1)
