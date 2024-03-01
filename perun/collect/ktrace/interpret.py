@@ -106,7 +106,10 @@ class TraceContextsMap(Generic[DataT]):
             yield (
                 self.idx_name_map.get(func_id, str(func_id)),
                 # Translate the function indices to names
-                tuple(self.idx_name_map.get(trace_func, str(trace_func)) for trace_func in trace_map_rev[trace_id]),
+                tuple(
+                    self.idx_name_map.get(trace_func, str(trace_func))
+                    for trace_func in trace_map_rev[trace_id]
+                ),
                 func_times,
             )
 
@@ -146,7 +149,10 @@ def parse_traces(
                 continue
             while True:
                 if not record_stack:
-                    log.error("corrupted log: empty records stack")
+                    log.warn(
+                        f"empty records stack: no calling event for {func_map.get(func_id, func_id)} (skipping)"
+                    )
+                    continue
                 top_record = record_stack.pop()
                 if top_record.func_id != func_id:
                     log.warn(
