@@ -42,6 +42,16 @@ class Comparable(Protocol):
         """"""
 
 
+def get_kernel():
+    """Returns the identification of the kernel
+
+    TODO: this is temporary here, later this should be extracted to perun.utils.common.environment
+    :return: identification of the kernel
+    """
+    out, _ = commands.run_safely_external_command("uname -r")
+    return out.decode("utf-8").strip()
+
+
 def get_current_interpreter(
     required_version: Optional[str] = None, fallback: str = "python3"
 ) -> str:

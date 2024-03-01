@@ -30,6 +30,7 @@ import time
 from perun.logic import config, index, pcs, store
 from perun.profile import factory as profiles, query
 from perun.utils import decorators, log as perun_log
+from perun.utils.external import environment
 from perun.utils.common import common_kit
 from perun.utils.external import environment
 from perun.utils.exceptions import (
@@ -100,6 +101,8 @@ def generate_profile_name(profile: profiles.Profile) -> str:
             Parameter of the collector given by concrete name
         `%cmd%`:
             Command of the job
+        `%kernel%`:
+            Current kernel
         `%workload%`:
             Workload of the job
         `%type%`:
@@ -158,6 +161,7 @@ def generate_profile_name(profile: profiles.Profile) -> str:
                 r"%date%",
                 lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime()),
             ),
+            (r"%kernel%", lambda scanner, token: environment.get_kernel()),
             (r"%origin%", lambda scanner, token: lookup_value(profile, "origin", "_")),
             (r"%counter%", lambda scanner, token: str(PROFILE_COUNTER)),
             (r"%%", lambda scanner, token: token),
