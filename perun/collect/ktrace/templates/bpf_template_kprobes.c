@@ -78,9 +78,11 @@ SEC("kretprobe/{{ func_name }}")
 int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 {
 	pid_t pid;
-	if ((pid = bpf_get_current_pid_tgid() >> 32) != process_pid || process_pid == 0) {
+	pid = bpf_get_current_pid_tgid() >> 32;
+    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
 		return 0;
 	}
+
 	/* reserve sample from BPF ringbuf */
 	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
 	if (!e) {
