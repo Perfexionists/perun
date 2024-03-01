@@ -241,7 +241,7 @@ def warn(msg: str, end: str = "\n") -> None:
     :param str msg: warn message printed to standard output
     :param str end:
     """
-    if not SUPPRESS_WARNINGS or (WARN_ONCE and msg in warn_cache):
+    if not SUPPRESS_WARNINGS and (not WARN_ONCE or msg not in warn_cache):
         print(f"{tag('warning', 'yellow')} {msg}", end=end)
         warn_cache.add(msg)
 
