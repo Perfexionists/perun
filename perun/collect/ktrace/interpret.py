@@ -147,12 +147,11 @@ def parse_traces(
                 record_stack.append(TraceRecord(func_id, ts))
                 record = data_handle.read(16)
                 continue
+            found_matching_record = True
             while True:
                 if not record_stack:
-                    log.warn(
-                        f"empty records stack: no calling event for {func_map.get(func_id, func_id)} (skipping)"
-                    )
-                    continue
+                    found_matching_record = False
+                    break
                 top_record = record_stack.pop()
                 if top_record.func_id != func_id:
                     log.warn(
@@ -161,6 +160,10 @@ def parse_traces(
                     )
                     continue
                 break
+            if not found_matching_record:
+                log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
+                record = data_handle.read(16)
+                continue
             if (duration := ts - top_record.timestamp) < 0:
                 log.error(
                     f"corrupted log: invalid timestamps for {func_map.get(func_id, func_id)}:"
