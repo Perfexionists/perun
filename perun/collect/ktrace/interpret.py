@@ -153,7 +153,6 @@ def parse_traces(
                         f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} (skipping),"
                         f" but got {func_map.get(func_id, func_id)}."
                     )
-                    top_record = record_stack.pop()
                     continue
                 break
             if (duration := ts - top_record.timestamp) < 0:
