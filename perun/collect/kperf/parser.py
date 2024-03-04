@@ -24,17 +24,16 @@ def parse_events(perf_events: list[str]) -> list[dict[str, Any]]:
     """
     resources = []
     for event in progressbar.progressbar(perf_events):
-        if not event.strip():
-            continue
-        record, samples = event.split(" ")
-        parts = record.split(";")
-        command, trace, uid = parts[0], parts[1:-1], parts[-1]
-        resources.append(
-            {
-                "amount": int(samples),
-                "uid": uid,
-                "command": command,
-                "trace": [{"func": f} for f in trace],
-            }
-        )
+        if event.strip():
+            record, samples = event.split(" ")
+            parts = record.split(";")
+            command, trace, uid = parts[0], parts[1:-1], parts[-1]
+            resources.append(
+                {
+                    "amount": int(samples),
+                    "uid": uid,
+                    "command": command,
+                    "trace": [{"func": f} for f in trace],
+                }
+            )
     return resources

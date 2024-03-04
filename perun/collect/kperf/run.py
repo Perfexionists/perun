@@ -60,11 +60,11 @@ def run_perf(executable: Executable, run_with_sudo: bool = False) -> str:
     parse_script = os.path.join(script_dir, "stackcollapse-perf.pl")
 
     if run_with_sudo:
-        perf_record_command = f"perf record -q -g -o collected.data {executable}"
-        perf_script_command = f"perf script -i collected.data | {parse_script}"
-    else:
         perf_record_command = f"sudo perf record -q -g -o collected.data {executable}"
         perf_script_command = f"sudo perf script -i collected.data | {parse_script}"
+    else:
+        perf_record_command = f"perf record -q -g -o collected.data {executable}"
+        perf_script_command = f"perf script -i collected.data | {parse_script}"
 
     try:
         commands.run_safely_external_command(perf_record_command)
