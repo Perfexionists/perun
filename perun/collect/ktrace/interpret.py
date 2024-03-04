@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+# Standard Imports
+from abc import ABC, abstractmethod
+from collections.abc import Iterator
+from typing import Any, Generic, TypeVar, Type, Literal
 import itertools
+import os
 import pathlib
 import struct
-from typing import Any, Generic, TypeVar, Type, Literal
-from collections.abc import Iterator
-from abc import ABC, abstractmethod
 
-import pandas
+# Third-Party Imports
 import pandas as pd
+import progressbar
 
+# Perun Imports
 from perun.utils import log
 
 
@@ -130,61 +134,75 @@ def parse_traces(
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
     record_stack: list[TraceRecord] = [TraceRecord(-1, 0)]
     trace_contexts = TraceContextsMap(func_map, data_type)
-    with open(raw_data, "rb") as data_handle:
-        # Special handling for the first line to get the first timestamp
-        record = data_handle.read(16)
-        if record is None or record == b"":
-            return trace_contexts
-        _, _, trace_contexts.total_runtime = struct.unpack("iIQ", record)
-        ts: int
-        while record:
-            # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-            # [1] 64b timestamp
-            pid, record_id, ts = struct.unpack("iIQ", record)
-            event_type = record_id & 0xF
-            func_id = record_id >> 4
-            if event_type == 0:
-                record_stack.append(TraceRecord(func_id, ts))
-                record = data_handle.read(16)
-                continue
-            found_matching_record = True
-            while True:
-                if not record_stack:
-                    found_matching_record = False
-                    break
-                top_record = record_stack.pop()
-                if top_record.func_id != func_id:
-                    log.warn(
-                        f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} (skipping),"
-                        f" but got {func_map.get(func_id, func_id)}."
-                    )
+
+    file_size = os.path.getsize(raw_data)
+    read_bytes = 0
+    chunk_size = 16
+
+    with progressbar.ProgressBar(max_value=file_size) as progress:
+        with open(raw_data, "rb") as data_handle:
+            # Special handling for the first line to get the first timestamp
+            record = data_handle.read(chunk_size)
+            read_bytes += chunk_size
+            progress.update(read_bytes)
+            if record is None or record == b"":
+                return trace_contexts
+            _, _, trace_contexts.total_runtime = struct.unpack("iIQ", record)
+            ts: int
+            while record:
+                # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
+                # [1] 64b timestamp
+                pid, record_id, ts = struct.unpack("iIQ", record)
+                event_type = record_id & 0xF
+                func_id = record_id >> 4
+                if event_type == 0:
+                    record_stack.append(TraceRecord(func_id, ts))
+                    record = data_handle.read(chunk_size)
+                    read_bytes += chunk_size
+                    progress.update(read_bytes)
                     continue
-                break
-            if not found_matching_record:
-                log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
-                record = data_handle.read(16)
-                continue
-            if (duration := ts - top_record.timestamp) < 0:
-                log.error(
-                    f"corrupted log: invalid timestamps for {func_map.get(func_id, func_id)}:"
-                    f" duration {duration} is negative."
+                found_matching_record = True
+                while True:
+                    if not record_stack:
+                        found_matching_record = False
+                        break
+                    top_record = record_stack.pop()
+                    if top_record.func_id != func_id:
+                        log.warn(
+                            f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} (skipping),"
+                            f" but got {func_map.get(func_id, func_id)}."
+                        )
+                        continue
+                    break
+                if not found_matching_record:
+                    log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
+                    record = data_handle.read(chunk_size)
+                    read_bytes += chunk_size
+                    progress.update(read_bytes)
+                    continue
+                if (duration := ts - top_record.timestamp) < 0:
+                    log.error(
+                        f"corrupted log: invalid timestamps for {func_map.get(func_id, func_id)}:"
+                        f" duration {duration} is negative."
+                    )
+                # Obtain the trace from the stack
+                trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
+                # Update the exclusive time of the parent call
+                record_stack[-1].callees += 1
+                record_stack[-1].callees_time += duration
+                # Register the new function duration record
+                trace_contexts.add(
+                    top_record.func_id,
+                    trace,
+                    duration,
+                    duration - top_record.callees_time,
+                    top_record.callees,
                 )
-            # Obtain the trace from the stack
-            trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
-            # Update the exclusive time of the parent call
-            record_stack[-1].callees += 1
-            record_stack[-1].callees_time += duration
-            # Register the new function duration record
-            trace_contexts.add(
-                top_record.func_id,
-                trace,
-                duration,
-                duration - top_record.callees_time,
-                top_record.callees,
-            )
-            record = data_handle.read(16)
-        # Compute an approximation of the total runtime
-        trace_contexts.total_runtime = ts - trace_contexts.total_runtime
+                record = data_handle.read(chunk_size)
+                read_bytes += chunk_size
+                progress.update(read_bytes)
+            # Compute an approximation of the total runtime
+            trace_contexts.total_runtime = ts - trace_contexts.total_runtime
     return trace_contexts
 
 
