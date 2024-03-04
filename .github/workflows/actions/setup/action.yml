@@ -18,7 +18,7 @@ runs:
       shell: sh
       run: |
         sudo apt-get -qq update
-        sudo apt-get install time libunwind8-dev g++-9 gcc-9 git linux-tools
+        sudo apt-get install time libunwind8-dev g++-9 gcc-9 git linux-tools-generic
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
 
     - name: Initialize Git
