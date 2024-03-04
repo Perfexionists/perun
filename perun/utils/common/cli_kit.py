@@ -885,7 +885,7 @@ def get_supported_module_names(package: str) -> list[str]:
         log.error(f"trying to call get_supported_module_names with incorrect package '{package}'")
     return {
         "vcs": ["git"],
-        "collect": ["trace", "memory", "time", "complexity", "bounds"],
+        "collect": ["trace", "memory", "time", "complexity", "bounds", "kperf"],
         "postprocess": [
             "clusterizer",
             "normalizer",

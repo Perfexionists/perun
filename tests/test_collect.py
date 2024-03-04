@@ -559,3 +559,64 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()
     assert "while collecting by time: received signal" in err
+
+
+def test_collect_kperf(monkeypatch, pcs_with_root, capsys):
+    """Test collecting the profile using the time collector"""
+    # Count the state before running the single job
+    before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
+
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ["-c", "ls", "-w", ".", "kperf", "-w", "1", "-r", "1"])
+    assert result.exit_code == 0
+    after_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
+    assert before_object_count + 2 == after_object_count
+
+    # Test sudo (mocked)
+    def mocked_safe_external(*_, **__):
+        return b"", b""
+
+    old_run = commands.run_external_command
+    monkeypatch.setattr(commands, "run_safely_external_command", mocked_safe_external)
+    result = runner.invoke(
+        cli.collect, ["-c", "ls", "-w", ".", "kperf", "-w", "1", "-r", "1", "--with-sudo"]
+    )
+    assert result.exit_code == 0
+
+    def mocked_fail_external(cmd, *args, **kwargs):
+        if "ls" in cmd:
+            raise subprocess.CalledProcessError("perf", "something happened")
+        else:
+            return old_run(cmd, *args, **kwargs)
+
+    old_run = commands.run_external_command
+    monkeypatch.setattr(commands, "run_safely_external_command", mocked_fail_external)
+    monkeypatch.setattr("perun.utils.external.commands.is_executable", lambda command: True)
+    result = runner.invoke(
+        cli.collect, ["-c", "ls", "-w", ".", "kperf", "-w", "1", "-r", "1", "--with-sudo"]
+    )
+    assert result.exit_code == 0
+    monkeypatch.setattr(commands, "run_safely_external_command", old_run)
+
+    # Test error stuff
+    def mocked_is_executable_sc(command):
+        if "stackcoll" in command:
+            return False
+        else:
+            return True
+
+    monkeypatch.setattr("perun.utils.external.commands.is_executable", mocked_is_executable_sc)
+    result = runner.invoke(cli.collect, ["-c", "ls", "-w", ".", "kperf", "-w", "0", "-r", "1"])
+    assert result.exit_code != 0
+    assert "not-executable" in result.output
+
+    def mocked_is_executable_perf(command):
+        if "perf" in command:
+            return False
+        else:
+            return True
+
+    monkeypatch.setattr("perun.utils.external.commands.is_executable", mocked_is_executable_perf)
+    result = runner.invoke(cli.collect, ["-c", "ls", "-w", ".", "kperf", "-w", "0", "-r", "1"])
+    assert result.exit_code != 0
+    assert "not-executable" in result.output

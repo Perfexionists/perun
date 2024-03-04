@@ -123,3 +123,15 @@ def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
     process = subprocess.Popen(cmd_args, **subprocess_kwargs)
     process.wait()
     return process.returncode
+
+
+def is_executable(command: str) -> bool:
+    """Tests if command is executable
+
+    :return: true if the command is executable
+    """
+    try:
+        run_safely_external_command(command)
+        return True
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        return False
