@@ -7,11 +7,12 @@ from __future__ import annotations
 from typing import Any
 
 # Third-Party Imports
+import progressbar
 
 # Perun Imports
 
 
-def parse_events(perf_events: str) -> list[dict[str, Any]]:
+def parse_events(perf_events: list[str]) -> list[dict[str, Any]]:
     """Parses perf events into a list of resources
 
     Each resource is identified by its topmost called function (uid),
@@ -22,7 +23,7 @@ def parse_events(perf_events: str) -> list[dict[str, Any]]:
     :return: list of resources
     """
     resources = []
-    for event in perf_events.split("\n"):
+    for event in progressbar.progressbar(perf_events):
         if not event.strip():
             continue
         record, samples = event.split(" ")
@@ -30,7 +31,7 @@ def parse_events(perf_events: str) -> list[dict[str, Any]]:
         command, trace, uid = parts[0], parts[1:-1], parts[-1]
         resources.append(
             {
-                "amount": samples,
+                "amount": int(samples),
                 "uid": uid,
                 "command": command,
                 "trace": [{"func": f} for f in trace],

@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 # Standard Imports
-import os
-import subprocess
 from pathlib import Path
 from typing import Any
+import os
+import subprocess
+import time
 
 # Third-Party Imports
 import click
+import progressbar
 
 # Perun Imports
 from perun.collect.kperf import parser
@@ -47,13 +49,17 @@ def before(**_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     return CollectStatus.OK, "", {}
 
 
-def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
-    """Runs the workload with perf and transforms it to stack traces"""
-    log.major_info("Collecting performance data")
+def run_perf(executable: Executable, run_with_sudo: bool = False) -> str:
+    """Runs perf and obtains the output
+
+    :param executable: run executable profiled by perf
+    :param run_with_sudo: if the command should be run with sudo
+    :return: parsed output of perf
+    """
     script_dir = Path(Path(__file__).resolve().parent, "scripts")
     parse_script = os.path.join(script_dir, "stackcollapse-perf.pl")
 
-    if kwargs.get("with_sudo", False):
+    if run_with_sudo:
         perf_record_command = f"perf record -q -g -o collected.data {executable}"
         perf_script_command = f"perf script -i collected.data | {parse_script}"
     else:
@@ -63,11 +69,31 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
     try:
         commands.run_safely_external_command(perf_record_command)
         out, err = commands.run_safely_external_command(perf_script_command)
-        log.minor_success(f"Raw data from {log.cmd_style(executable)}", "collected")
+        log.minor_success(f"Raw data from {log.cmd_style(str(executable))}", "collected")
     except subprocess.CalledProcessError:
-        log.minor_fail(f"Raw data from {log.cmd_style(executable)}", "not collected")
-        return CollectStatus.ERROR, "Command failed", {}
-    kwargs["raw_data"] = out.decode("utf-8")
+        log.minor_fail(f"Raw data from {log.cmd_style(str(executable))}", "not collected")
+        return ""
+    return out.decode("utf-8")
+
+
+def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
+    """Runs the workload with perf and transforms it to stack traces"""
+    log.major_info("Collecting performance data")
+    warmups = kwargs["warmup"]
+    repeats = kwargs["repeat"]
+
+    log.minor_info(f"Running {log.highlight(warmups)} warmup iterations")
+    for _ in progressbar.progressbar(range(0, warmups)):
+        run_perf(executable, kwargs.get("with_sudo", False))
+
+    log.minor_info(f"Running {log.highlight(repeats)} iterations")
+    before_time = time.time()
+    kwargs["raw_data"] = []
+    for _ in progressbar.progressbar(range(0, repeats)):
+        output = run_perf(executable, kwargs.get("with_sudo", False))
+        kwargs["raw_data"].extend(output.splitlines())
+    kwargs["time"] = time.time() - before_time
+
     return CollectStatus.OK, "", kwargs
 
 
@@ -84,7 +110,7 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
     kwargs["profile"] = {
         "global": {
-            "time": "TODO",
+            "time": kwargs["time"],
             "resources": resources,
         }
     }
@@ -93,6 +119,23 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
 @click.command()
 @click.pass_context
+@click.option(
+    "--with-sudo", "-s", is_flag=True, help="Runs the profiled command in sudo mode.", default=False
+)
+@click.option(
+    "--warmup",
+    "-w",
+    default=3,
+    type=click.INT,
+    help="Runs [INT] warm up iterations of profiled command.",
+)
+@click.option(
+    "--repeat",
+    "-r",
+    default=5,
+    type=click.INT,
+    help="Runs [INT] samplings of the profiled command.",
+)
 def kperf(ctx: click.Context, **kwargs: Any) -> None:
     """Generates kernel sampled traces for specific commands based on perf."""
     runner.run_collector_from_cli_context(ctx, "kperf", kwargs)
