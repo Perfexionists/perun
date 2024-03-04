@@ -139,7 +139,7 @@ def parse_traces(
     read_bytes = 0
     chunk_size = 16
 
-    with progressbar.ProgressBar(max_value=file_size) as progress:
+    with progressbar.ProgressBar(max_value=file_size+chunk_size) as progress:
         with open(raw_data, "rb") as data_handle:
             # Special handling for the first line to get the first timestamp
             record = data_handle.read(chunk_size)
