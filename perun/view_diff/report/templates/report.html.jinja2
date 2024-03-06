@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Columns DataTable</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+</head>
+<body>
+
+<div style="float: left; width: 50%;">
+    <h2>Column 1</h2>
+    <table id="table1" class="display">
+        <thead>
+            <tr>
+                <th>Column A</th>
+                <th>Column B</th>
+                <th>Column C</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="float: left; width: 50%;">
+    <h2>Column 2</h2>
+    <table id="table2" class="display">
+        <thead>
+            <tr>
+                <th>Column A</th>
+                <th>Column B</th>
+                <th>Column C</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready( function () {
+        $('#table1').DataTable();
+        $('#table2').DataTable();
+    });
+</script>
+
+</body>
+</html>
