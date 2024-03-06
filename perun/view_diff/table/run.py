@@ -73,10 +73,8 @@ def get_top_n_records(profile: Profile, **kwargs: Any) -> list[TableRecord]:
     """
     df = convert.resources_to_pandas_dataframe(profile)
 
-    print(df["command"].unique())
     if filters := kwargs.get("filters"):
         df = filter_df(df, filters)
-    print(df["command"].unique())
 
     grouped_df = df.groupby(["uid", "trace"]).agg({"amount": "sum"}).reset_index()
     sorted_df = grouped_df.sort_values(by="amount", ascending=False)
