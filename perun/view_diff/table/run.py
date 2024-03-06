@@ -20,6 +20,7 @@ import itertools
 
 # Third-Party Imports
 import click
+import pandas
 import tabulate
 
 # Perun Imports
@@ -71,6 +72,12 @@ def get_top_n_records(profile: Profile, **kwargs: Any) -> list[TableRecord]:
     :return: list of top N records
     """
     df = convert.resources_to_pandas_dataframe(profile)
+
+    print(df["command"].unique())
+    if filters := kwargs.get("filters"):
+        df = filter_df(df, filters)
+    print(df["command"].unique())
+
     grouped_df = df.groupby(["uid", "trace"]).agg({"amount": "sum"}).reset_index()
     sorted_df = grouped_df.sort_values(by="amount", ascending=False)
     amount_sum = df["amount"].sum()
@@ -108,6 +115,22 @@ def print_traces(top_n_lhs: TableRecord, top_n_rhs: TableRecord) -> None:
     tabulate.PRESERVE_WHITESPACE = False
 
 
+def filter_df(df: pandas.DataFrame, filters: list[tuple[str, Any]]) -> pandas.DataFrame:
+    """Filters dataframe based on list of rules
+
+    :param df: input dataframe
+    :param filters: list of tuples of column and value
+    :return: filtered pandas dataframe
+    """
+    mask = None
+    for column, value in filters:
+        if mask is None:
+            mask = df[column] == value
+        else:
+            mask |= df[column] == value
+    return df[mask]
+
+
 def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -> None:
     """Compares the profiles and prints table for top N ranks
 
@@ -140,6 +163,14 @@ def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) 
 @click.command()
 @click.option(
     "-n", "--top-n", type=click.INT, help="Prints top [INT] records (default=10).", default=10
+)
+@click.option(
+    "-f",
+    "--filter",
+    "filters",
+    nargs=2,
+    multiple=True,
+    help="Filters the result to concrete column and concrete value.",
 )
 @click.option(
     "-g",
