@@ -5,10 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
+        html {
+            font-family: "Courier New", Courier, monospace;
+        }
         .column {
-            width: 45%;
-            margin: 0 2%;
+            width: 48%;
+            margin: 0 1%;
             float: left;
+        }
+        .column-head {
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            text-align: center;
         }
         .clear {
             clear: both;
@@ -18,10 +26,12 @@
 <body>
 
 <div class="column">
+    <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ lhs_flamegraph }}
 </div>
 
 <div class="column">
+    <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ rhs_flamegraph }}
 </div>
 

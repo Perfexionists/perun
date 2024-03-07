@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any
+import os
 import re
 
 # Third-Party Imports
@@ -10,7 +11,9 @@ import click
 import jinja2
 
 # Perun Imports
+from perun.utils import log
 from perun.profile.factory import Profile
+from perun.profile import helpers
 from perun.view.flamegraph import flamegraph as flamegraph_factory
 
 
@@ -72,23 +75,58 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     :param rhs_profile: target profile
     :param kwargs: additional arguments
     """
-    lhs_graph = flamegraph_factory.draw_flame_graph(lhs_profile, 20, 600)
-    rhs_graph = flamegraph_factory.draw_flame_graph(rhs_profile, 20, 600)
+    log.major_info("Generating Flamegraph Difference")
+    lhs_graph = flamegraph_factory.draw_flame_graph(
+        lhs_profile, kwargs.get("height"), kwargs.get("width"), no_title=True
+    )
+    log.minor_success("Baseline flamegraph", "generated")
+    rhs_graph = flamegraph_factory.draw_flame_graph(
+        rhs_profile, kwargs.get("height"), kwargs.get("width"), no_title=True
+    )
+    log.minor_success("Target flamegraph", "generated")
 
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun.view_diff.flamegraph", "templates"))
     template = env.get_template("flamegraph.html.jinja2")
     content = template.render(
         lhs_flamegraph=escape_content("lhs", lhs_graph),
+        lhs_tag="Baseline",
         rhs_flamegraph=escape_content("rhs", rhs_graph),
+        rhs_tag="Target",
         title="Flamegraph",
     )
+    log.minor_success("Difference report", "generated")
 
-    with open("test.html", "w", encoding="utf-8") as template_out:
+    if (output_file := kwargs.get("output_file")) is None:
+        lhs_name = os.path.splitext(helpers.generate_profile_name(lhs_profile))[0]
+        rhs_name = os.path.splitext(helpers.generate_profile_name(rhs_profile))[0]
+        output_file = f"flamegraph-diff-of-{lhs_name}-and-{rhs_name}" + ".html"
+
+    if not output_file.endswith("html"):
+        output_file += ".html"
+
+    with open(output_file, "w", encoding="utf-8") as template_out:
         template_out.write(content)
+
+    log.minor_status("Output saved", log.path_style(output_file))
 
 
 @click.command()
 @click.pass_context
+@click.option(
+    "-w",
+    "--width",
+    type=click.INT,
+    default=600,
+    help="Sets the width of the flamegraph (default=600px).",
+)
+@click.option(
+    "-h",
+    "--height",
+    type=click.INT,
+    default=14,
+    help="Sets the height of the flamegraph (default=14).",
+)
+@click.option("-o", "--output-file", help="Sets the output file (default=automatically generated).")
 def flamegraph(ctx: click.Context, *_, **kwargs: Any) -> None:
     """ """
     profile_list = ctx.parent.params["profile_list"]

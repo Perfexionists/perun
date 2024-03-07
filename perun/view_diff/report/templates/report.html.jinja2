@@ -8,6 +8,9 @@
     <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
+        html {
+             font-family: "Courier New", Courier, monospace;
+        }
         .column {
             width: 46%;
             margin: 0 2%;
@@ -18,12 +21,17 @@
         .right {
             float: right;
         }
+        .column-head {
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="left column">
-    <h2>{{ lhs_tag }}</h2>
+    <h2 class="column-head">{{ lhs_tag }}</h2>
     <table id="table1" class="display">
         <thead>
             <tr>
@@ -46,7 +54,7 @@
 </div>
 
 <div class="right column">
-    <h2>{{ rhs_tag }}</h2>
+    <h2 class="column-head">{{ rhs_tag }}</h2>
     <table id="table2" class="display">
         <thead>
         <tr>
