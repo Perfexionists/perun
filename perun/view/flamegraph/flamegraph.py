@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 _SCRIPT_FILENAME = "flamegraph.pl"
 
 
-def draw_flame_graph(profile: Profile, height: int) -> str:
+def draw_flame_graph(profile: Profile, height: int, width: int = 1200) -> str:
     """Draw Flame graph from profile.
 
         To create Flame graphs we use perl script created by Brendan Gregg.
@@ -50,6 +50,8 @@ def draw_flame_graph(profile: Profile, height: int) -> str:
                 "--countname",
                 f"{units}",
                 "--reverse",
+                "--width",
+                str(width),
                 "--height",
                 str(height),
             ]
