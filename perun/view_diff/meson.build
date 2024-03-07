@@ -9,5 +9,6 @@ py3.install_sources(
     subdir: perun_view_diff_dir
 )
 
+subdir('flamegraph')
 subdir('report')
 subdir('table')
