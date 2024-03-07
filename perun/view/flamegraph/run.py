@@ -70,4 +70,6 @@ def flamegraph(
     :func:`perun.profile.convert.to_flame_graph_format` for more details how
     the profiles are converted to the flame graph format.
     """
-    flame.draw_flame_graph(profile, filename, graph_height)
+    flamegraph_content = flame.draw_flame_graph(profile, graph_height)
+    with open(filename, "w") as file_handle:
+        file_handle.write(flamegraph_content)

@@ -1,30 +1,32 @@
 """This module provides wrapper for the Flame graph visualization"""
 from __future__ import annotations
 
+import subprocess
+
 # Standard Imports
 from typing import TYPE_CHECKING
 import os
-import subprocess
+import tempfile
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.profile import convert
+from perun.utils.external import commands
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
-_SCRIPT_FILENAME = "./flamegraph.pl"
+_SCRIPT_FILENAME = "flamegraph.pl"
 
 
-def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
+def draw_flame_graph(profile: Profile, height: int) -> str:
     """Draw Flame graph from profile.
 
         To create Flame graphs we use perl script created by Brendan Gregg.
         https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
 
     :param dict profile: the memory profile
-    :param str output_file: filename of the output file, expected is SVG format
     :param int height: graphs height
     """
     # converting profile format to format suitable to Flame graph visualization
@@ -37,20 +39,20 @@ def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     units = header["units"][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))
-    with open(output_file, "w") as out:
-        process = subprocess.Popen(
+    with tempfile.NamedTemporaryFile() as tmp:
+        tmp.write("".join(flame).encode("utf-8"))
+        cmd = " ".join(
             [
-                _SCRIPT_FILENAME,
+                os.path.join(pwd, _SCRIPT_FILENAME),
+                tmp.name,
                 "--title",
-                title,
+                f'"{title}"',
                 "--countname",
-                units,
+                f"{units}",
                 "--reverse",
                 "--height",
                 str(height),
-            ],
-            stdin=subprocess.PIPE,
-            stdout=out,
-            cwd=pwd,
+            ]
         )
-        process.communicate(bytes("".join(flame), encoding="UTF-8"))
+        out, _ = commands.run_safely_external_command(cmd)
+    return out.decode("utf-8")
