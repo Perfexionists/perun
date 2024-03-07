@@ -132,7 +132,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     stacks = []
     for _, snapshot in profile.all_snapshots():
         for alloc in snapshot:
-            if alloc["subtype"] != "free":
+            if not "subtype" in alloc.keys() or alloc["subtype"] != "free":
                 stack_str = ""
                 for frame in alloc["trace"]:
                     line = to_string_line(frame)
@@ -151,7 +151,11 @@ def to_string_line(frame: dict[str, Any]) -> str:
     :param dict frame: call stack's frame
     :returns str: line representing call stack's frame
     """
-    return f"{frame['function']}()~{frame['source']}~{frame['line']}"
+    if "function" in frame.keys() and "source" in frame.keys() and "line" in frame.keys():
+        return f"{frame['function']}()~{frame['source']}~{frame['line']}"
+    else:
+        assert "func" in frame.keys()
+        return f"{frame['func']}"
 
 
 def plot_data_from_coefficients_of(model: dict[str, Any]) -> dict[str, Any]:

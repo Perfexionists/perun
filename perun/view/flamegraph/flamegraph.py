@@ -10,7 +10,6 @@ import subprocess
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
