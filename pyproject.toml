@@ -30,6 +30,9 @@ dependencies = [
     "meson>=1.2.3",
     "ninja>=1.0",
 
+    # Other
+    "psutil>=5.0.0",
+
     # CLI
     "click>=8.1",
 
@@ -89,6 +92,7 @@ typing = [
     "types-tabulate>=0.9",
     "pandas-stubs>=2.0",
     "nptyping>=2.5.0",
+    "types-psutil>=5.9.5"
 ]
 
 [project.urls]

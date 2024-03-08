@@ -5,12 +5,15 @@ Currently, this only handles getting version of Python.
 from __future__ import annotations
 
 # Standard Imports
+from subprocess import CalledProcessError
 from typing import Optional, Callable, Protocol, Any
 import operator
+import platform
 import re
 import sys
 
 # Third-Party Imports
+import psutil
 
 # Perun Imports
 from perun.utils import log
@@ -106,3 +109,40 @@ def get_current_interpreter(
                 break
     # If no interpreter was found, use fallback
     return interpreter or fallback
+
+
+def get_kernel() -> str:
+    """Returns the identification of the kernel
+
+    If `uname -r` cannot be called, then "Unknown" is returned
+
+    :return: identification of the kernel
+    """
+    try:
+        out, _ = commands.run_safely_external_command("uname -r")
+        return out.decode("utf-8").strip()
+    except CalledProcessError:
+        return "Unknown"
+
+
+def get_machine_specification() -> dict[str, Any]:
+    """Returns dictionary with machine specification
+
+    :return: machine specification as dictionary
+    """
+    system = platform.uname()
+    return {
+        "architecture": system.machine,
+        "system": system.system,
+        "release": system.release,
+        "host": system.node,
+        "cpu": {
+            "physical": psutil.cpu_count(logical=False),
+            "total": psutil.cpu_count(logical=True),
+            "frequency": f"{psutil.cpu_freq().current:.2f}Mhz",
+        },
+        "memory": {
+            "total_ram": log.format_file_size(psutil.virtual_memory().total).strip(),
+            "swap": log.format_file_size(psutil.swap_memory().total).strip(),
+        },
+    }

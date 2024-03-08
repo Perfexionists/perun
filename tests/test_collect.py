@@ -1,31 +1,25 @@
 """Basic tests for running the currently supported collectors"""
 
+# Standard Imports
+from subprocess import SubprocessError, CalledProcessError
 import os
 import subprocess
 import signal
 
+# Third-Party Imports
 from click.testing import CliRunner
 
-import perun.cli as cli
-import perun.logic.runner as run
-from perun.logic import pcs
-from perun.utils.common import common_kit
-import perun.collect.complexity.makefiles as makefiles
-import perun.collect.complexity.symbols as symbols
-import perun.collect.complexity.run as complexity
-import perun.collect.complexity.configurator as configurator
-import perun.utils.log as log
-
-from subprocess import SubprocessError
-
+# Perun Imports
+from perun import cli
+from perun.collect.complexity import makefiles, symbols, run as complexity, configurator
+from perun.logic import pcs, runner as run
 from perun.profile.factory import Profile
-from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
+from perun.testing import asserts, utils as test_utils
+from perun.utils import log
+from perun.utils.common import common_kit
 from perun.utils.external import commands
+from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
-from subprocess import CalledProcessError
-
-import perun.testing.asserts as asserts
-import perun.testing.utils as test_utils
 
 
 def _mocked_external_command(_, **__):

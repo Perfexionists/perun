@@ -16,12 +16,12 @@ import pytest
 
 # Perun Imports
 from perun import collect, postprocess, view
+from perun.collect.trace.optimizations.structs import Complexity
 from perun.fuzz import filetype
 from perun.logic import commands, config
 from perun.testing import asserts
 from perun.utils import log
 from perun.utils.common import common_kit, cli_kit
-from perun.collect.trace.optimizations.structs import Complexity
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
@@ -337,3 +337,57 @@ def test_filetypes(monkeypatch):
     monkeypatch.setattr("mimetypes.guess_type", patched_guess)
 
     assert filetype.get_filetype("somefile") == (True, None)
+
+
+def test_traces():
+    """Test various parts of working with traces"""
+    trace_a = [
+        {"func": "unmap_vmas"},
+        {"func": "unmap_single_vma"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_memcg_lruvec_state"},
+    ]
+    trace_b = [
+        {"func": "unmap_vmas"},
+        {"func": "unmap_single_vma"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_node_page_state"},
+        {"func": "hrtimer_interrupt"},
+    ]
+    trace_c = [
+        {"func": "exit_mmap"},
+        {"func": "unmap_page_range"},
+        {"func": "zap_pte_range"},
+        {"func": "page_remove_rmap"},
+        {"func": "__mod_lruvec_page_state"},
+        {"func": "__mod_lruvec_state"},
+        {"func": "__mod_memcg_lruvec_state"},
+    ]
+    assert common_kit.compute_distance(trace_a, trace_a) == 0
+    assert common_kit.compute_distance(trace_a, trace_b) == 1.4
+    assert common_kit.compute_distance(trace_b, trace_a) == 1.4
+    assert common_kit.compute_distance(trace_a, trace_c) == 2.0
+    assert common_kit.compute_distance(trace_b, trace_c) == 3.4
+
+
+def test_machine_info(monkeypatch):
+    # Test that we can obtain some information about kernel
+    assert environment.get_kernel() != "Unknown"
+
+    def mock_raised_exception(*_, **__):
+        raise subprocess.CalledProcessError(-1, "failed")
+
+    # Test that if there is some issue, at least "uknown" is returned
+    monkeypatch.setattr(external_commands, "run_safely_external_command", mock_raised_exception)
+    assert environment.get_kernel() == "Unknown"
+
+    spec = environment.get_machine_specification()
+    assert spec != {}
