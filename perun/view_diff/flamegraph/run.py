@@ -68,6 +68,20 @@ def escape_content(tag: str, content: str) -> str:
     return content
 
 
+def generate_header(profile: Profile) -> list[tuple[str, str]]:
+    """
+
+    :param profile: profile for which we are generating the header
+    :return: list of tuples (key and value)
+    """
+    command = " ".join([profile["header"]["cmd"], profile["header"]["workload"]]).strip()
+    return [
+        ("origin", profile.get("origin")),
+        ("command", command),
+        ("collector command", log.collector_to_command(profile.get("collector_info"))),
+    ]
+
+
 def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any):
     """Generates differences of two profiles as two side-by-side flamegraphs
 
@@ -89,8 +103,10 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     template = env.get_template("flamegraph.html.jinja2")
     content = template.render(
         lhs_flamegraph=escape_content("lhs", lhs_graph),
+        lhs_header=generate_header(lhs_profile),
         lhs_tag="Baseline",
         rhs_flamegraph=escape_content("rhs", rhs_graph),
+        rhs_header=generate_header(rhs_profile),
         rhs_tag="Target",
         title="Flamegraph",
     )

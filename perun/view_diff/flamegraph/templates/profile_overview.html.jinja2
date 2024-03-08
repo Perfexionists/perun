@@ -1,0 +1,28 @@
+{%  macro overview_table(function_name, element_name, header) %}
+<table class="info" id="{{ element_name }}">
+    <thead>
+    <tr>
+        <th onclick="{{ function_name }}()" colspan="2">Profile Specification</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for (key, value) in header %}
+        <tr>
+            <td class="key">{{ key }}</td>
+            <td class="value">{{ value }}</td>
+        </tr>
+    {%- endfor %}
+    </tbody>
+</table>
+{%- endmacro %}
+
+{% macro toggle_script(function_name, element_name) -%}
+function {{ function_name }}() {
+    var tableBody = document.getElementById("{{ element_name }}").getElementsByTagName("tbody")[0];
+    if (tableBody.style.display === "none") {
+        tableBody.style.display = "table";
+    } else {
+        tableBody.style.display = "none";
+    }
+}
+{%- endmacro %}

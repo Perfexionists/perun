@@ -1,3 +1,4 @@
+{% import 'profile_overview.html.jinja2' as profile_overview %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +13,7 @@
             width: 48%;
             margin: 0 1%;
             float: left;
+            justify-content: center;
         }
         .column-head {
             border-bottom: 1px solid #ddd;
@@ -21,21 +23,49 @@
         .clear {
             clear: both;
         }
+        .info th {
+            cursor: pointer;
+            text-align: center;
+        }
+        .info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info th, .info td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .info td.value {
+            white-space: normal;
+            word-wrap: anywhere;
+            overflow-wrap: anywhere;
+            text-align: left;
+        }
+        .info td.key{
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header) }}
     {{ lhs_flamegraph }}
 </div>
 
 <div class="column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header) }}
     {{ rhs_flamegraph }}
 </div>
 
 <div class="clear"></div>
+
+<script>
+{{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
+{{ profile_overview.toggle_script('toggleRightCollapse', 'right-info') }}
+</script>
 
 </body>
 </html>
