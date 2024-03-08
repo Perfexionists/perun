@@ -2,7 +2,13 @@
 <table class="info" id="{{ element_name }}">
     <thead>
     <tr>
-        <th onclick="{{ function_name }}()" colspan="2">Profile Specification</th>
+        <th onclick="{{ function_name }}()" colspan="2">
+            <span id="{{ element_name }}-plus-left" style="float: left; display: none">+</span>
+            <span id="{{ element_name }}-minus-left" style="float: left">-</span>
+            Profile Specification
+            <span id="{{ element_name }}-minus-right" style="float: right">-</span>
+            <span id="{{ element_name }}-plus-right" style="float: right; display: none">+</span>
+        </th>
     </tr>
     </thead>
     <tbody>
@@ -19,10 +25,23 @@
 {% macro toggle_script(function_name, element_name) -%}
 function {{ function_name }}() {
     var tableBody = document.getElementById("{{ element_name }}").getElementsByTagName("tbody")[0];
-    if (tableBody.style.display === "none") {
-        tableBody.style.display = "table";
+    var plus_l = document.getElementById("{{ element_name }}-plus-left");
+    var minus_l= document.getElementById("{{ element_name }}-minus-left");
+    var plus_r = document.getElementById("{{ element_name }}-plus-right");
+    var minus_r = document.getElementById("{{ element_name }}-minus-right");
+
+    if (tableBody.style.visibility === "collapse") {
+        tableBody.style.visibility = "visible";
+        minus_l.style.display = "block";
+        minus_r.style.display = "block";
+        plus_l.style.display = "none";
+        plus_r.style.display = "none";
     } else {
-        tableBody.style.display = "none";
+        tableBody.style.visibility = "collapse";
+        minus_l.style.display = "none";
+        minus_r.style.display = "none";
+        plus_l.style.display = "block";
+        plus_r.style.display = "block";
     }
 }
 {%- endmacro %}
