@@ -4,14 +4,16 @@ from __future__ import annotations
 # Standard Imports
 from dataclasses import dataclass
 from typing import Any
+import os
 
 # Third-Party Imports
 import click
 import jinja2
 
 # Perun Imports
+from perun.utils import log
 from perun.profile.factory import Profile
-from perun.profile import convert
+from perun.profile import convert, helpers
 
 
 PRECISION: int = 2
@@ -74,8 +76,17 @@ def profile_to_data(profile: Profile) -> list[TableRecord]:
 
 
 def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any):
+    """Generates HTML report of differences
+
+    :param lhs_profile: baseline profile
+    :param rhs_profile: target profile
+    :param kwargs: other parameters
+    """
+    log.major_info("Generating HTML Report", no_title=True)
     lhs_data = profile_to_data(lhs_profile)
+    log.minor_success("Baseline data", "generated")
     rhs_data = profile_to_data(rhs_profile)
+    log.minor_success("Target data", "generated")
     columns = ["uid", "amount", "relative", "short trace"]
 
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun.view_diff.report", "templates"))
@@ -89,12 +100,22 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
         rhs_data=rhs_data,
         title="Difference of profiles",
     )
+    log.minor_success("HTML report ", "generated")
+    if (output_file := kwargs.get("output_file")) is None:
+        lhs_name = os.path.splitext(helpers.generate_profile_name(lhs_profile))[0]
+        rhs_name = os.path.splitext(helpers.generate_profile_name(rhs_profile))[0]
+        output_file = f"report-diff-of-{lhs_name}-and-{rhs_name}" + ".html"
 
-    with open("test.html", "w", encoding="utf-8") as template_out:
+    if not output_file.endswith("html"):
+        output_file += ".html"
+
+    with open(output_file, "w", encoding="utf-8") as template_out:
         template_out.write(content)
+    log.minor_status("Output saved", log.path_style(output_file))
 
 
 @click.command()
+@click.option("-o", "--output-file", help="Sets the output file (default=automatically generated).")
 @click.pass_context
 def report(ctx: click.Context, *_, **kwargs: Any) -> None:
     profile_list = ctx.parent.params["profile_list"]
