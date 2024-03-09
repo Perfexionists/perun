@@ -76,10 +76,15 @@ def generate_header(profile: Profile) -> list[tuple[str, str]]:
     :return: list of tuples (key and value)
     """
     command = " ".join([profile["header"]["cmd"], profile["header"]["workload"]]).strip()
+    machine_info = profile.get("machine")
     return [
         ("origin", profile.get("origin")),
         ("command", command),
         ("collector command", log.collector_to_command(profile.get("collector_info"))),
+        ("kernel", machine_info["release"]),
+        ("host", machine_info["host"]),
+        ("cpu (total)", machine_info["cpu"]["total"]),
+        ("memory (total)", machine_info["memory"]["total_ram"]),
     ]
 
 
