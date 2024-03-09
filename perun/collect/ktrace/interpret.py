@@ -281,7 +281,7 @@ def append_resources(
         )
 
 
-def pandas_to_resources(df: pandas.DataFrame) -> list[dict[str, Any]]:
+def pandas_to_resources(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Transforms pandas dataframe to list of resources
 
     :param df: pandas dataframe
