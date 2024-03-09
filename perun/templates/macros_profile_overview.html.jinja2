@@ -26,7 +26,7 @@
     }
 {%- endmacro %}
 
-{%  macro top_n_table(function_name, element_name, top_records) %}
+{%  macro top_n_table(function_name, element_name, top_records, rhs_uids, rhs_tag) %}
     <table class="info" id="{{ element_name }}">
         <thead>
         <tr>
@@ -54,7 +54,7 @@
                        {% for trace in top_record.trace_list %}
                           <tr>
                               <td class="key" style="width: 5%"></td>
-                              <td class="key" style="width: 80%">{{ trace }}</td>
+                              <td class="key" style="width: 80%; color: {% if trace.strip()[2:] in rhs_uids or trace.strip() in rhs_uids %}green{% else %}red{% endif %};">{{ trace }}{% if trace.strip()[2:] not in rhs_uids and trace.strip() not in rhs_uids %} (not in {{ rhs_tag }}){% endif %}</td>
                               <td class="key" style="width: 10%"></td>
                               <td class="key" style="width: 5%"></td>
                           </tr>

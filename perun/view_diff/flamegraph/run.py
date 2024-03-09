@@ -13,7 +13,7 @@ import jinja2
 # Perun Imports
 from perun.utils import log
 from perun.profile.factory import Profile
-from perun.profile import helpers
+from perun.profile import helpers, convert
 from perun.view.flamegraph import flamegraph as flamegraph_factory
 from perun.view_diff.table import run as table_run
 
@@ -69,6 +69,16 @@ def escape_content(tag: str, content: str) -> str:
     return content
 
 
+def get_uids(profile: Profile) -> set[str]:
+    """For given profile return set of uids
+
+    :param profile: profile
+    :return: set of unique uids in profile
+    """
+    df = convert.resources_to_pandas_dataframe(profile)
+    return set(df["uid"].unique())
+
+
 def generate_header(profile: Profile) -> list[tuple[str, str]]:
     """Generates header for given profile
 
@@ -110,12 +120,14 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     content = template.render(
         lhs_flamegraph=escape_content("lhs", lhs_graph),
         lhs_header=generate_header(lhs_profile),
-        lhs_tag="Baseline",
+        lhs_tag="Baseline (base)",
         lhs_top=table_run.get_top_n_records(lhs_profile, top_n=10),
+        lhs_uids=get_uids(lhs_profile),
         rhs_flamegraph=escape_content("rhs", rhs_graph),
         rhs_header=generate_header(rhs_profile),
-        rhs_tag="Target",
+        rhs_tag="Target (tgt)",
         rhs_top=table_run.get_top_n_records(rhs_profile, top_n=10),
+        rhs_uids=get_uids(rhs_profile),
         title="Flamegraph",
     )
     log.minor_success("Difference report", "generated")
