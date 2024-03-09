@@ -17,6 +17,10 @@
   background-color: #ccc;
 }
 
+.hidden {
+    display: none;
+}
+
 /* Style the accordion panel. Note: hidden by default */
 .panel {
   background-color: white;
@@ -35,6 +39,13 @@ for (i = 0; i < acc.length; i++) {
     /* Toggle between adding and removing the "active" class,
     to highlight the button that controls the panel */
     this.classList.toggle("active");
+
+    var controls = this.getElementsByClassName("control");
+    var j;
+
+    for (j = 0; j < controls.length; j++) {
+        controls[j].classList.toggle("hidden");
+    }
 
     /* Toggle between hiding and showing the active panel */
     var panel = this.nextElementSibling;
