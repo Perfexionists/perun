@@ -89,8 +89,8 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
     log.minor_success("Target data", "generated")
     columns = ["uid", "amount", "relative", "short trace"]
 
-    env = jinja2.Environment(loader=jinja2.PackageLoader("perun.view_diff.report", "templates"))
-    template = env.get_template("report.html.jinja2")
+    env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
+    template = env.get_template("diff_view_report.html.jinja2")
     content = template.render(
         lhs_tag="baseline",
         lhs_columns=columns,

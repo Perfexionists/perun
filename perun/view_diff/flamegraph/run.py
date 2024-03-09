@@ -99,8 +99,8 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     )
     log.minor_success("Target flamegraph", "generated")
 
-    env = jinja2.Environment(loader=jinja2.PackageLoader("perun.view_diff.flamegraph", "templates"))
-    template = env.get_template("flamegraph.html.jinja2")
+    env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
+    template = env.get_template("diff_view_flamegraph.html.jinja2")
     content = template.render(
         lhs_flamegraph=escape_content("lhs", lhs_graph),
         lhs_header=generate_header(lhs_profile),
