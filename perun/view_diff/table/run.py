@@ -37,14 +37,35 @@ class TableRecord:
 
     :ivar uid: uid of the records
     :ivar trace: trace of the record
+    :ivar trace_list: trace as list of formatted strings
     :ivar abs: absolute value of the uid
     :ivar rel: relative value of the uid
     """
 
     uid: str
     trace: str
+    trace_list: list[str]
     abs: str
     rel: float
+
+
+def generate_trace_list(trace: str, uid: str) -> list[str]:
+    """Generates list of traces
+
+    :param trace: trace to uid
+    :param uid: called uid
+    """
+    if trace.strip() == "":
+        return [uid]
+    data = []
+    lhs_trace = trace.split(",") + [uid]
+    for i, lhs in enumerate(lhs_trace):
+        if i == 0:
+            data.append(lhs)
+            continue
+        indent = " " * i + "┕ "
+        data.append(indent + lhs)
+    return data
 
 
 def print_header(lhs_profile: Profile, rhs_profile: Profile) -> None:
@@ -85,6 +106,7 @@ def get_top_n_records(profile: Profile, **kwargs: Any) -> list[TableRecord]:
             TableRecord(
                 top["uid"],
                 top["trace"],
+                generate_trace_list(top["trace"], top["uid"]),
                 top["amount"],
                 round(100 * top["amount"] / amount_sum, PRECISION),
             )

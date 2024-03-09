@@ -70,7 +70,7 @@ def escape_content(tag: str, content: str) -> str:
 
 
 def generate_header(profile: Profile) -> list[tuple[str, str]]:
-    """
+    """Generates header for given profile
 
     :param profile: profile for which we are generating the header
     :return: list of tuples (key and value)

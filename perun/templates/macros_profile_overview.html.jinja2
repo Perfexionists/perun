@@ -1,24 +1,28 @@
 {% macro css_style() %}
     .info th {
-    cursor: pointer;
-    text-align: center;
+        cursor: pointer;
+        text-align: center;
     }
     .info table {
-    width: 100%;
-    border-collapse: collapse;
+        width: 100%;
+        border-collapse: collapse;
     }
     .info th, .info td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
     }
     .info td.value {
-    white-space: normal;
-    word-wrap: anywhere;
-    overflow-wrap: anywhere;
-    text-align: left;
+        white-space: normal;
+        word-wrap: anywhere;
+        overflow-wrap: anywhere;
+        text-align: left;
     }
     .info td.key{
-    font-weight: bold;
+        font-weight: bold;
+    }
+    .panel td.key {
+        white-space: pre-wrap;
+        border: 0;
     }
 {%- endmacro %}
 
@@ -39,11 +43,25 @@
         {% for top_record in top_records %}
             <tr class="accordion">
                 <td class="key" style="width: 5%">{{ loop.index }}</td>
-                <td class="value" style="width: 80%">{{ top_record.uid }}</td>
-                <td class="value" style="width: 15%">{{ top_record.rel }}</td>
+                <td class="key" style="width: 80%">{{ top_record.uid }}</td>
+                <td class="key" style="width: 10%">{{ top_record.rel }}</td>
+                <td class="key" style="width: 5%">+</td>
             </tr>
             <tr class="panel">
-                <td colspan="3">{{ top_record.trace }}</td>
+                <td colspan="3">
+                    <table>
+                       <tbody>
+                       {% for trace in top_record.trace_list %}
+                          <tr>
+                              <td class="key" style="width: 5%"></td>
+                              <td class="key" style="width: 80%">{{ trace }}</td>
+                              <td class="key" style="width: 10%"></td>
+                              <td class="key" style="width: 5%"></td>
+                          </tr>
+                       {%- endfor %}
+                       </tbody>
+                    </table>
+                </td>
             </tr>
         {%- endfor %}
         </tbody>
