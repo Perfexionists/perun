@@ -1,3 +1,55 @@
+{% macro css_style() %}
+    .info th {
+    cursor: pointer;
+    text-align: center;
+    }
+    .info table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+    .info th, .info td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    }
+    .info td.value {
+    white-space: normal;
+    word-wrap: anywhere;
+    overflow-wrap: anywhere;
+    text-align: left;
+    }
+    .info td.key{
+    font-weight: bold;
+    }
+{%- endmacro %}
+
+{%  macro top_n_table(function_name, element_name, top_records) %}
+    <table class="info" id="{{ element_name }}">
+        <thead>
+        <tr>
+            <th onclick="{{ function_name }}()" colspan="3">
+                <span id="{{ element_name }}-plus-left" style="float: left; display: none">+</span>
+                <span id="{{ element_name }}-minus-left" style="float: left">-</span>
+                Top 10 Records
+                <span id="{{ element_name }}-minus-right" style="float: right">-</span>
+                <span id="{{ element_name }}-plus-right" style="float: right; display: none">+</span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for top_record in top_records %}
+            <tr class="accordion">
+                <td class="key" style="width: 5%">{{ loop.index }}</td>
+                <td class="value" style="width: 80%">{{ top_record.uid }}</td>
+                <td class="value" style="width: 15%">{{ top_record.rel }}</td>
+            </tr>
+            <tr class="panel">
+                <td colspan="3">{{ top_record.trace }}</td>
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+{%- endmacro %}
+
 {%  macro overview_table(function_name, element_name, header) %}
 <table class="info" id="{{ element_name }}">
     <thead>

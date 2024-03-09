@@ -28,7 +28,7 @@ from perun.utils import log
 from perun.profile import convert
 from perun.profile.factory import Profile
 
-PRECISION: int = 4
+PRECISION: int = 2
 
 
 @dataclass
@@ -86,7 +86,7 @@ def get_top_n_records(profile: Profile, **kwargs: Any) -> list[TableRecord]:
                 top["uid"],
                 top["trace"],
                 top["amount"],
-                100 * round(top["amount"] / amount_sum, PRECISION),
+                round(100 * top["amount"] / amount_sum, PRECISION),
             )
         )
     return top_n

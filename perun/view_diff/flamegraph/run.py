@@ -15,6 +15,7 @@ from perun.utils import log
 from perun.profile.factory import Profile
 from perun.profile import helpers
 from perun.view.flamegraph import flamegraph as flamegraph_factory
+from perun.view_diff.table import run as table_run
 
 
 def escape_content(tag: str, content: str) -> str:
@@ -105,9 +106,11 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
         lhs_flamegraph=escape_content("lhs", lhs_graph),
         lhs_header=generate_header(lhs_profile),
         lhs_tag="Baseline",
+        lhs_top=table_run.get_top_n_records(lhs_profile, top_n=10),
         rhs_flamegraph=escape_content("rhs", rhs_graph),
         rhs_header=generate_header(rhs_profile),
         rhs_tag="Target",
+        rhs_top=table_run.get_top_n_records(rhs_profile, top_n=10),
         title="Flamegraph",
     )
     log.minor_success("Difference report", "generated")

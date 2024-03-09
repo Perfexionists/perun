@@ -1,4 +1,5 @@
 {% import 'macros_profile_overview.html.jinja2' as profile_overview %}
+{% import 'macros_accordion.html.jinja2' as accordion %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,27 +24,8 @@
         .clear {
             clear: both;
         }
-        .info th {
-            cursor: pointer;
-            text-align: center;
-        }
-        .info table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .info th, .info td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .info td.value {
-            white-space: normal;
-            word-wrap: anywhere;
-            overflow-wrap: anywhere;
-            text-align: left;
-        }
-        .info td.key{
-            font-weight: bold;
-        }
+        {{ profile_overview.css_style() }}
+        {{ accordion.css_style() }}
     </style>
 </head>
 <body>
@@ -51,12 +33,14 @@
 <div class="column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header) }}
+    {{ profile_overview.top_n_table('toggleLeftTopCollapse', 'left-top', lhs_top) }}
     {{ lhs_flamegraph }}
 </div>
 
 <div class="column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header) }}
+    {{ profile_overview.top_n_table('toggleRightTopCollapse', 'right-top', rhs_top) }}
     {{ rhs_flamegraph }}
 </div>
 
@@ -64,7 +48,10 @@
 
 <script>
 {{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
+{{ profile_overview.toggle_script('toggleLeftTopCollapse', 'left-top') }}
 {{ profile_overview.toggle_script('toggleRightCollapse', 'right-info') }}
+{{ profile_overview.toggle_script('toggleRightTopCollapse', 'right-top') }}
+{{ accordion.script("table-row") }}
 </script>
 
 </body>
