@@ -20,6 +20,10 @@
     .info td.key{
         font-weight: bold;
     }
+    .info td.diff{
+        font-weight: bold;
+        color: #D04848;
+    }
     .panel td.key {
         white-space: pre-wrap;
         border: 0;
@@ -31,11 +35,11 @@
         <thead>
         <tr>
             <th onclick="{{ function_name }}()" colspan="4">
-                <span id="{{ element_name }}-plus-left" style="float: left; display: none">+</span>
-                <span id="{{ element_name }}-minus-left" style="float: left">-</span>
+                <span id="{{ element_name }}-plus-left" style="float: left; display: none">[+]</span>
+                <span id="{{ element_name }}-minus-left" style="float: left">[-]</span>
                 Top 10 Records
-                <span id="{{ element_name }}-minus-right" style="float: right">-</span>
-                <span id="{{ element_name }}-plus-right" style="float: right; display: none">+</span>
+                <span id="{{ element_name }}-minus-right" style="float: right">[-]</span>
+                <span id="{{ element_name }}-plus-right" style="float: right; display: none">[+]</span>
             </th>
         </tr>
         </thead>
@@ -44,8 +48,8 @@
             <tr class="accordion">
                 <td class="key" style="width: 5%">{{ loop.index }}</td>
                 <td class="key" style="width: 80%">{{ top_record.uid }}</td>
-                <td class="key" style="width: 10%">{{ top_record.rel }}</td>
-                <td class="key" style="width: 5%"><span class="control">+</span><span class="control hidden">-</span></td>
+                <td class="key" style="width: 10%;{% if top_record.rel > 1 %}color: #D04848; font-weight: bold;{% endif %}">{{ top_record.rel }}%</td>
+                <td class="key" style="width: 5%"><span class="control">[+]</span><span class="control hidden">[-]</span></td>
             </tr>
             <tr class="panel">
                 <td colspan="3">
@@ -68,24 +72,29 @@
     </table>
 {%- endmacro %}
 
-{%  macro overview_table(function_name, element_name, header) %}
+{%  macro overview_table(function_name, element_name, lhs_header, rhs_header) %}
 <table class="info" id="{{ element_name }}">
     <thead>
     <tr>
         <th onclick="{{ function_name }}()" colspan="2">
-            <span id="{{ element_name }}-plus-left" style="float: left; display: none">+</span>
-            <span id="{{ element_name }}-minus-left" style="float: left">-</span>
+            <span id="{{ element_name }}-plus-left" style="float: left; display: none">[+]</span>
+            <span id="{{ element_name }}-minus-left" style="float: left">[-]</span>
             Profile Specification
-            <span id="{{ element_name }}-minus-right" style="float: right">-</span>
-            <span id="{{ element_name }}-plus-right" style="float: right; display: none">+</span>
+            <span id="{{ element_name }}-minus-right" style="float: right">[-]</span>
+            <span id="{{ element_name }}-plus-right" style="float: right; display: none">[+]</span>
         </th>
     </tr>
     </thead>
     <tbody>
-    {% for (key, value) in header %}
+    {% for (key, value) in lhs_header %}
         <tr>
+        {% if (key, value) in rhs_header %}
             <td class="key">{{ key }}</td>
             <td class="value">{{ value }}</td>
+        {% else %}
+            <td class="key diff">{{ key }}</td>
+            <td class="value diff">{{ value }}</td>
+        {% endif %}
         </tr>
     {%- endfor %}
     </tbody>

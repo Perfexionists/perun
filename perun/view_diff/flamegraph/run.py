@@ -107,11 +107,11 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     """
     log.major_info("Generating Flamegraph Difference")
     lhs_graph = flamegraph_factory.draw_flame_graph(
-        lhs_profile, kwargs.get("height"), kwargs.get("width"), no_title=True
+        lhs_profile, kwargs.get("height"), kwargs.get("width"), title="Baseline Flamegraph"
     )
     log.minor_success("Baseline flamegraph", "generated")
     rhs_graph = flamegraph_factory.draw_flame_graph(
-        rhs_profile, kwargs.get("height"), kwargs.get("width"), no_title=True
+        rhs_profile, kwargs.get("height"), kwargs.get("width"), title="Target Flamegraph"
     )
     log.minor_success("Target flamegraph", "generated")
 

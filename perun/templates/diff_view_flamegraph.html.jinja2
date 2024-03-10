@@ -32,14 +32,14 @@
 
 <div class="column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
-    {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header) }}
+    {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
     {{ profile_overview.top_n_table('toggleLeftTopCollapse', 'left-top', lhs_top, rhs_uids, "tgt") }}
     {{ lhs_flamegraph }}
 </div>
 
 <div class="column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
-    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header) }}
+    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     {{ profile_overview.top_n_table('toggleRightTopCollapse', 'right-top', rhs_top, lhs_uids, "base") }}
     {{ rhs_flamegraph }}
 </div>

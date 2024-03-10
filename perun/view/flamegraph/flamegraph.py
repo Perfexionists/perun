@@ -20,9 +20,7 @@ if TYPE_CHECKING:
 _SCRIPT_FILENAME = "flamegraph.pl"
 
 
-def draw_flame_graph(
-    profile: Profile, height: int, width: int = 1200, no_title: bool = False
-) -> str:
+def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: str = "") -> str:
     """Draw Flame graph from profile.
 
         To create Flame graphs we use perl script created by Brendan Gregg.
@@ -31,7 +29,7 @@ def draw_flame_graph(
     :param profile: the memory profile
     :param width: width of the graph
     :param height: graphs height
-    :param no_title: if set to true, then no title will be generated
+    :param title: if set to empty, then title will be generated
     """
     # converting profile format to format suitable to Flame graph visualization
     flame = convert.to_flame_graph_format(profile)
@@ -39,7 +37,7 @@ def draw_flame_graph(
     header = profile["header"]
     profile_type = header["type"]
     cmd, workload = (header["cmd"], header["workload"])
-    title = "" if no_title else f"{profile_type} consumption of {cmd} {workload}"
+    title = title if title != "" else f"{profile_type} consumption of {cmd} {workload}"
     units = header["units"][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))
