@@ -15,6 +15,7 @@ from perun.utils import log
 from perun.profile.factory import Profile
 from perun.profile import convert, helpers
 from perun.view_diff.flamegraph import run as flamegraph_run
+from perun.view_diff.table import run as table_run
 
 
 PRECISION: int = 2
@@ -30,11 +31,12 @@ class TableRecord:
     :ivar rel_amount: relative value of the uid
     """
 
-    __slots__ = ["uid", "trace", "short_trace", "abs_amount", "rel_amount"]
+    __slots__ = ["uid", "trace", "short_trace", "trace_list", "abs_amount", "rel_amount"]
 
     uid: str
     trace: str
     short_trace: str
+    trace_list: list[str]
     abs_amount: float
     rel_amount: float
 
@@ -69,6 +71,7 @@ def profile_to_data(profile: Profile) -> list[TableRecord]:
                 row["uid"],
                 row["trace"],
                 to_short_trace(row["trace"]),
+                table_run.generate_trace_list(row["trace"], row["uid"]),
                 row["amount"],
                 round(100 * row["amount"] / amount_sum, PRECISION),
             )

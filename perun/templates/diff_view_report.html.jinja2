@@ -30,6 +30,25 @@
         .clear {
             clear: both;
         }
+        td.details-control {
+            text-align: center;
+            cursor: pointer;
+        }
+        tr.shown td.details-control {
+            text-align: center;
+        }
+        tr.shown span.minus {
+            display: block;
+        }
+        tr.shown span.plus {
+            display: none;
+        }
+        tr.hidden span.plus {
+            display: block;
+        }
+        tr.hidden span.minus {
+            display: none;
+        }
         {{ profile_overview.css_style() }}
     </style>
 </head>
@@ -38,9 +57,10 @@
 <div class="left column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
-    <table id="table1" class="display">
+    <table id="table1" class="display" style="width: 100%;">
         <thead>
             <tr>
+                <th></th>
                 {% for column in lhs_columns %}
                 <th>{{ column }}</th>
                 {%- endfor %}
@@ -61,23 +81,15 @@
 <div class="right column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
-    <table id="table2" class="display">
+    <table id="table2" class="display" style="width: 100%;">
         <thead>
         <tr>
+            <th></th>
             {% for column in rhs_columns %}
                 <th>{{ column }}</th>
             {%- endfor %}
         </tr>
         </thead>
-        <tbody>
-        {% for val in rhs_data %}
-            <tr>
-                <td>{{ val.uid }}</td>
-                <td>{{ val.abs_amount }}</td>
-                <td>{{ val.rel_amount }}%</td>
-            </tr>
-        {%- endfor %}
-        </tbody>
     </table>
 </div>
 
@@ -85,13 +97,115 @@
     {{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
     {{ profile_overview.toggle_script('toggleRightCollapse', 'right-info') }}
     $(document).ready( function () {
-        new DataTable("#table1", {
+        var lhs = $("#table1").DataTable({
+            data: lhs_data.data,
+            columns: [
+                {
+                    className: "details-control",
+                    orderable: false,
+                    data: null,
+                    defaultContent: "",
+                    render: function () {
+                        return '<span class="plus">[+]</span><span class="minus">[-]</span>';
+                    },
+                    width: "15px"
+                },
+                { data: "uid" },
+                { data: "abs" },
+                { data: "rel" }
+            ],
+            createdRow: function( row, data, dataIndex ) {
+                $( row ).addClass('hidden');
+            },
             order: [[2, "desc"]],
         });
-        new DataTable("#table2", {
+        var rhs  = $("#table2").DataTable({
+            data: rhs_data.data,
+            columns: [
+                {
+                    className: "details-control",
+                    orderable: false,
+                    data: null,
+                    defaultContent: "",
+                    render: function () {
+                        return '<span class="plus">[+]</span><span class="minus">[-]</span>';
+                    },
+                    width: "15px"
+                },
+                { data: "uid" },
+                { data: "abs" },
+                { data: "rel" }
+            ],
+            createdRow: function( row, data, dataIndex ) {
+                $( row ).addClass('hidden');
+            },
             order: [[2, "desc"]]
         });
+
+        $('#table1 tbody').on('click', 'td.details-control', function() {
+            var tr = $(this).closest('tr');
+            var row = lhs.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+                tr.addClass('hidden');
+            } else {
+                row.child(format(row.data())).show();
+                tr.removeClass('hidden');
+                tr.addClass('shown');
+            }
+        });
+
+        $('#table2 tbody').on('click', 'td.details-control', function() {
+            var tr = $(this).closest('tr');
+            var row = rhs.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
     });
+
+    function format(d) {
+        let result = '<table style="width: 100%;">';
+        d.trace.forEach((value, index) => {
+          result += "<tr>";
+          result += '<td style="white-space: pre-wrap">' + value + "</td>";
+          result += "</tr>";
+        });
+        result += '</table>';
+        return result
+    }
+
+    const lhs_data = {
+        "data": [
+            {% for val in lhs_data %}
+            {
+                "uid": "{{ val.uid }}",
+                "abs": "{{ val.abs_amount }}",
+                "rel": "{{ val.rel_amount }}",
+                "trace": {{ val.trace_list }}
+            },
+            {%- endfor %}
+        ]
+    };
+    const rhs_data = {
+        "data": [
+            {% for val in rhs_data %}
+                {
+                    "uid": "{{ val.uid }}",
+                    "abs": "{{ val.abs_amount }}",
+                    "rel": "{{ val.rel_amount }}",
+                    "trace": {{ val.trace_list }}
+                },
+            {%- endfor %}
+        ]
+    };
 </script>
 
 </body>
