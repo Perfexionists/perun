@@ -13,8 +13,13 @@
         .column {
             width: 48%;
             margin: 0 1%;
-            float: left;
             justify-content: center;
+        }
+        .left {
+            float: left;
+        }
+        .right {
+            float: right;
         }
         .column-head {
             border-bottom: 1px solid #ddd;
@@ -30,14 +35,14 @@
 </head>
 <body>
 
-<div class="column">
+<div class="left column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
     {{ profile_overview.top_n_table('toggleLeftTopCollapse', 'left-top', lhs_top, rhs_uids, "tgt") }}
     {{ lhs_flamegraph }}
 </div>
 
-<div class="column">
+<div class="right column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     {{ profile_overview.top_n_table('toggleRightTopCollapse', 'right-top', rhs_top, lhs_uids, "base") }}

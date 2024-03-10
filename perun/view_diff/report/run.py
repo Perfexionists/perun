@@ -14,6 +14,7 @@ import jinja2
 from perun.utils import log
 from perun.profile.factory import Profile
 from perun.profile import convert, helpers
+from perun.view_diff.flamegraph import run as flamegraph_run
 
 
 PRECISION: int = 2
@@ -87,7 +88,7 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
     log.minor_success("Baseline data", "generated")
     rhs_data = profile_to_data(rhs_profile)
     log.minor_success("Target data", "generated")
-    columns = ["uid", "amount", "relative", "short trace"]
+    columns = ["uid", "amount", "relative"]
 
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
     template = env.get_template("diff_view_report.html.jinja2")
@@ -95,9 +96,11 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
         lhs_tag="baseline",
         lhs_columns=columns,
         lhs_data=lhs_data,
+        lhs_header=flamegraph_run.generate_header(lhs_profile),
         rhs_tag="target",
         rhs_columns=columns,
         rhs_data=rhs_data,
+        rhs_header=flamegraph_run.generate_header(rhs_profile),
         title="Difference of profiles",
     )
     log.minor_success("HTML report ", "generated")

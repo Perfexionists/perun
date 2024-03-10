@@ -1,3 +1,4 @@
+{% import 'macros_profile_overview.html.jinja2' as profile_overview %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,12 +27,17 @@
             border-top: 1px solid #ddd;
             text-align: center;
         }
+        .clear {
+            clear: both;
+        }
+        {{ profile_overview.css_style() }}
     </style>
 </head>
 <body>
 
 <div class="left column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
     <table id="table1" class="display">
         <thead>
             <tr>
@@ -45,8 +51,7 @@
             <tr>
                 <td>{{ val.uid }}</td>
                 <td>{{ val.abs_amount }}</td>
-                <td>{{ val.rel_amount }}</td>
-                <td>{{ val.short_trace }}</td>
+                <td>{{ val.rel_amount }}%</td>
             </tr>
             {%- endfor %}
         </tbody>
@@ -55,6 +60,7 @@
 
 <div class="right column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     <table id="table2" class="display">
         <thead>
         <tr>
@@ -68,8 +74,7 @@
             <tr>
                 <td>{{ val.uid }}</td>
                 <td>{{ val.abs_amount }}</td>
-                <td>{{ val.rel_amount }}</td>
-                <td>{{ val.short_trace }}</td>
+                <td>{{ val.rel_amount }}%</td>
             </tr>
         {%- endfor %}
         </tbody>
@@ -77,12 +82,14 @@
 </div>
 
 <script>
+    {{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
+    {{ profile_overview.toggle_script('toggleRightCollapse', 'right-info') }}
     $(document).ready( function () {
         new DataTable("#table1", {
-            order: [[3, "asc"]],
+            order: [[2, "desc"]],
         });
         new DataTable("#table2", {
-            order: [[3, "asc"]]
+            order: [[2, "desc"]]
         });
     });
 </script>
