@@ -127,7 +127,17 @@
                     width: "15px"
                 },
                 { data: "uid" },
-                { data: "abs" },
+                {
+                    data: "abs",
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            var formatted_number = parseInt(data, 10).toLocaleString();
+                            return `${formatted_number}`;
+                        }
+
+                        return data;
+                    },
+                },
                 { data: "rel" }
             ],
             createdRow: function( row, data, dataIndex ) {
@@ -150,7 +160,17 @@
                     width: "15px"
                 },
                 { data: "uid" },
-                { data: "abs" },
+                {
+                    data: "abs",
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            var formatted_number = parseInt(data, 10).toLocaleString();
+                            return `${formatted_number}`;
+                        }
+
+                        return data;
+                    },
+                },
                 { data: "rel" }
             ],
             createdRow: function( row, data, dataIndex ) {
