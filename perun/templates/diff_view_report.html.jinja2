@@ -57,6 +57,17 @@
 <div class="left column">
     <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
+    <div style="margin: 0 10px;">&nbsp;</div>
+</div>
+
+
+<div class="right column">
+    <h2 class="column-head">{{ rhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
+    <div style="margin: 0 10px;">&nbsp;</div>
+</div>
+
+<div class="left column">
     <table id="table1" class="display" style="width: 100%;">
         <thead>
             <tr>
@@ -66,21 +77,18 @@
                 {%- endfor %}
             </tr>
         </thead>
-        <tbody>
-            {% for val in lhs_data %}
+        <tfoot>
             <tr>
-                <td>{{ val.uid }}</td>
-                <td>{{ val.abs_amount }}</td>
-                <td>{{ val.rel_amount }}%</td>
+                <th></th>
+                {% for column in lhs_columns %}
+                    <th>{{ column }}</th>
+                {%- endfor %}
             </tr>
-            {%- endfor %}
-        </tbody>
+        </tfoot>
     </table>
 </div>
 
 <div class="right column">
-    <h2 class="column-head">{{ rhs_tag }}</h2>
-    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     <table id="table2" class="display" style="width: 100%;">
         <thead>
         <tr>
@@ -90,6 +98,14 @@
             {%- endfor %}
         </tr>
         </thead>
+        <tfoot>
+        <tr>
+            <th></th>
+            {% for column in rhs_columns %}
+                <th>{{ column }}</th>
+            {%- endfor %}
+        </tr>
+        </tfoot>
     </table>
 </div>
 
@@ -118,6 +134,7 @@
                 $( row ).addClass('hidden');
             },
             order: [[2, "desc"]],
+            iDisplayLength: 50,
         });
         var rhs  = $("#table2").DataTable({
             data: rhs_data.data,
@@ -139,7 +156,8 @@
             createdRow: function( row, data, dataIndex ) {
                 $( row ).addClass('hidden');
             },
-            order: [[2, "desc"]]
+            order: [[2, "desc"]],
+            iDisplayLength: 50,
         });
 
         $('#table1 tbody').on('click', 'td.details-control', function() {
@@ -188,7 +206,7 @@
             {
                 "uid": "{{ val.uid }}",
                 "abs": "{{ val.abs_amount }}",
-                "rel": "{{ val.rel_amount }}",
+                "rel": "{{ val.rel_amount }}%",
                 "trace": {{ val.trace_list }}
             },
             {%- endfor %}
@@ -200,7 +218,7 @@
                 {
                     "uid": "{{ val.uid }}",
                     "abs": "{{ val.abs_amount }}",
-                    "rel": "{{ val.rel_amount }}",
+                    "rel": "{{ val.rel_amount }}%",
                     "trace": {{ val.trace_list }}
                 },
             {%- endfor %}
