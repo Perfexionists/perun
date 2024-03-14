@@ -27,6 +27,11 @@
             border-top: 1px solid #ddd;
             text-align: center;
         }
+        .aboveThreshold {
+            font-weight: bold;
+            color: #902000;
+            background-color: salmon;
+        }
         .clear {
             clear: both;
         }
@@ -49,6 +54,21 @@
         tr.hidden span.minus {
             display: none;
         }
+
+        div.tools table {
+            margin: 0 auto 2em auto;
+            width: 80%;
+        }
+
+        div.tools td.value {
+            text-align: left;
+        }
+
+        div.tools td.key {
+            text-align: right;
+            font-weight: bold;
+        }
+
         {{ profile_overview.css_style() }}
     </style>
 </head>
@@ -65,6 +85,18 @@
     <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     <div style="margin: 0 10px;">&nbsp;</div>
+</div>
+
+<div class="tools">
+        <tbody>
+            <tr>
+                <td class="key">Global Search:</td>
+                <td class="value"><input type="text" class="filter" id="filter_uid"></td>
+                <td class="key">Relative Threshold:</td>
+                <td class="value"><input type="text" class="filter" id="filter_threshold"></td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 <div class="left column">
@@ -207,6 +239,15 @@
                 tr.addClass('shown');
             }
         });
+
+        document.querySelectorAll('input.filter').forEach((el) => {
+            el.addEventListener(el.type === 'text' ? 'keyup' : 'change', () => {
+                filterGlobal(lhs);
+                filterGlobal(rhs);
+                highlightGlobal(lhs);
+                highlightGlobal(rhs);
+            })
+        });
     });
 
     function format(d) {
@@ -218,6 +259,27 @@
         });
         result += '</table>';
         return result
+    }
+
+    function filterGlobal(table) {
+        let filter = document.querySelector("#filter_uid");
+
+        table.search(filter.value).draw();
+    }
+
+    function highlightGlobal(table) {
+        const inputValue = parseFloat(document.querySelector("#filter_threshold").value)
+        table.rows({search: 'applied', filter: 'applied'}).every(function () {
+            const rowData = this.data();
+            const columnValue = parseFloat(rowData['rel'].replace("%", ""));
+
+            if (columnValue >= inputValue) {
+                console.log("Above Threshold")
+                $(this.node()).addClass("aboveThreshold");
+            } else {
+                $(this.node()).removeClass("aboveThreshold");
+            }
+        })
     }
 
     const lhs_data = {
