@@ -91,7 +91,7 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
     log.minor_success("Baseline data", "generated")
     rhs_data = profile_to_data(rhs_profile)
     log.minor_success("Target data", "generated")
-    columns = ["uid", "amount", "relative"]
+    columns = ["uid", f"[{lhs_profile['header']['units'][lhs_profile['header']['type']]}]", "[%]"]
 
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
     template = env.get_template("diff_view_report.html.jinja2")
