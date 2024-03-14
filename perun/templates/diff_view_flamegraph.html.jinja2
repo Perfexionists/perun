@@ -29,6 +29,22 @@
         .clear {
             clear: both;
         }
+
+        .svg-container {
+            display: inline-block;
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            vertical-align: top;
+            overflow: hidden;
+        }
+
+        .svg-content {
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
         {{ profile_overview.css_style() }}
         {{ accordion.css_style() }}
     </style>
@@ -39,14 +55,18 @@
     <h2 class="column-head">{{ lhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
     {{ profile_overview.top_n_table('toggleLeftTopCollapse', 'left-top', lhs_top, rhs_uids, "tgt") }}
+    <div class='svg-container'>
     {{ lhs_flamegraph }}
+    </div>
 </div>
 
 <div class="right column">
     <h2 class="column-head">{{ rhs_tag }}</h2>
     {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
     {{ profile_overview.top_n_table('toggleRightTopCollapse', 'right-top', rhs_top, lhs_uids, "base") }}
-    {{ rhs_flamegraph }}
+    <div class='svg-container'>
+        {{ rhs_flamegraph }}
+    </div>
 </div>
 
 <div class="clear"></div>
