@@ -91,20 +91,27 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
     log.minor_success("Baseline data", "generated")
     rhs_data = profile_to_data(rhs_profile)
     log.minor_success("Target data", "generated")
-    columns = ["uid", f"[{lhs_profile['header']['units'][lhs_profile['header']['type']]}]", "[%]"]
+    columns = [
+        ("uid", "The measured symbol (click [+] for full trace)."),
+        (
+            f"[{lhs_profile['header']['units'][lhs_profile['header']['type']]}]",
+            "The absolute measured value.",
+        ),
+        ("[%]", "The relative measured value (in percents overall)."),
+    ]
 
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
     template = env.get_template("diff_view_report.html.jinja2")
     content = template.render(
-        lhs_tag="baseline",
+        lhs_tag="Baseline (base)",
         lhs_columns=columns,
         lhs_data=lhs_data,
         lhs_header=flamegraph_run.generate_header(lhs_profile),
-        rhs_tag="target",
+        rhs_tag="Target (tgt)",
         rhs_columns=columns,
         rhs_data=rhs_data,
         rhs_header=flamegraph_run.generate_header(rhs_profile),
-        title="Difference of profiles",
+        title="Difference of profiles (with tables)",
     )
     log.minor_success("HTML report ", "generated")
     if (output_file := kwargs.get("output_file")) is None:

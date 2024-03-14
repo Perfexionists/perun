@@ -95,10 +95,10 @@
     <table>
         <tbody>
             <tr>
-                <td class="key">Global Search:</td>
-                <td class="value"><input type="text" class="filter" id="filter_uid"></td>
-                <td class="key">Relative Threshold:</td>
-                <td class="value"><input type="text" class="filter" id="filter_threshold"></td>
+                <td class="key" title="Allows searching across both tables.">Global Search:</td>
+                <td class="value" title="Allows searching across both tables."><input type="text" class="filter" id="filter_uid"></td>
+                <td class="key" title="Highlights values higher than given threshold (as float number).">Relative Threshold:</td>
+                <td class="value" title="Highlights values higher than given threshold (as float number)."><input type="text" class="filter" id="filter_threshold"></td>
             </tr>
         </tbody>
     </table>
@@ -109,16 +109,16 @@
         <thead>
             <tr>
                 <th></th>
-                {% for column in lhs_columns %}
-                <th>{{ column }}</th>
+                {% for (column, title) in lhs_columns %}
+                    <th title="{{ title }}">{{ column }}</th>
                 {%- endfor %}
             </tr>
         </thead>
         <tfoot>
             <tr>
                 <th></th>
-                {% for column in lhs_columns %}
-                    <th>{{ column }}</th>
+                {% for (column, title) in lhs_columns %}
+                    <th title="{{ title }}">{{ column }}</th>
                 {%- endfor %}
             </tr>
         </tfoot>
@@ -130,16 +130,16 @@
         <thead>
         <tr>
             <th></th>
-            {% for column in rhs_columns %}
-                <th>{{ column }}</th>
+            {% for (column, title) in rhs_columns %}
+                <th title="{{ title }}">{{ column }}</th>
             {%- endfor %}
         </tr>
         </thead>
         <tfoot>
         <tr>
             <th></th>
-            {% for column in rhs_columns %}
-                <th>{{ column }}</th>
+            {% for (column, title) in rhs_columns %}
+                <th title="{{ title }}">{{ column }}</th>
             {%- endfor %}
         </tr>
         </tfoot>

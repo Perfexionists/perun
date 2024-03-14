@@ -86,9 +86,9 @@
     </tr>
     </thead>
     <tbody>
-    {% for (key, value) in lhs_header %}
-        <tr>
-        {% if (key, value) in rhs_header %}
+    {% for (key, value, title) in lhs_header %}
+        <tr title="{{ title }}">
+        {% if (key, value, title) in rhs_header %}
             <td class="key">{{ key }}</td>
             <td class="value">{{ value }}</td>
         {% else %}

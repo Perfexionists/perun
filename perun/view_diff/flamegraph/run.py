@@ -88,13 +88,33 @@ def generate_header(profile: Profile) -> list[tuple[str, str]]:
     command = " ".join([profile["header"]["cmd"], profile["header"]["workload"]]).strip()
     machine_info = profile.get("machine")
     return [
-        ("origin", profile.get("origin")),
-        ("command", command),
-        ("collector command", log.collector_to_command(profile.get("collector_info"))),
-        ("kernel", machine_info["release"]),
-        ("host", machine_info["host"]),
-        ("cpu (total)", machine_info["cpu"]["total"]),
-        ("memory (total)", machine_info["memory"]["total_ram"]),
+        (
+            "origin",
+            profile.get("origin"),
+            "The version control version, for which the profile was measured.",
+        ),
+        ("command", command, "The workload / command, for which the profile was measured."),
+        (
+            "collector command",
+            log.collector_to_command(profile.get("collector_info")),
+            "The collector / profiler, which collected the data.",
+        ),
+        (
+            "kernel",
+            machine_info["release"],
+            "The underlying kernel version, where the results were measured.",
+        ),
+        ("host", machine_info["host"], "The hostname, where the results were measured."),
+        (
+            "cpu (total)",
+            machine_info["cpu"]["total"],
+            "The total number (physical and virtual) of CPUs available on the host.",
+        ),
+        (
+            "memory (total)",
+            machine_info["memory"]["total_ram"],
+            "The total number of RAM available on the host.",
+        ),
     ]
 
 
@@ -128,7 +148,7 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
         rhs_tag="Target (tgt)",
         rhs_top=table_run.get_top_n_records(rhs_profile, top_n=10),
         rhs_uids=get_uids(rhs_profile),
-        title="Flamegraph",
+        title="Differences of profiles (with flamegraphs)",
     )
     log.minor_success("Difference report", "generated")
 
