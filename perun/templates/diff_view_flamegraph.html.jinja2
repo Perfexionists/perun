@@ -45,6 +45,20 @@
             top: 0;
             left: 0;
         }
+        .help {
+            border-top: 1px solid #ddd;
+            margin: 0 auto 2em auto;
+            text-align: center;
+        }
+        .help ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .help ul li {
+            margin: 0;
+            padding: 0;
+        }
         {{ profile_overview.css_style() }}
         {{ accordion.css_style() }}
     </style>
@@ -70,6 +84,17 @@
 </div>
 
 <div class="clear"></div>
+
+<div class="help">
+    <h2>Help</h2>
+    <ul>
+        <li>> Click on the square to nested into selected trace.</li>
+        <li>> The size of the rectangle represents relative consumption with respect to parent.</li>
+        <li>> The color of the rectangle represents nothing.</li>
+        <li>> Use <it>reset zoom</it> (top left) to return to original view.</li>
+        <li>> Use <it>search</it> (top right) to highlight selected functions.</li>
+    </ul>
+</div>
 
 <script>
 {{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
