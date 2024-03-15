@@ -1,0 +1,803 @@
+{
+  "resources": {
+    "__legitimize_mnt#0": {
+      "amount": [
+        3806005
+      ]
+    },
+    "entry_SYSCALL_64#0": {
+      "amount": [
+        132964
+      ]
+    },
+    "__d_lookup_rcu#0": {
+      "amount": [
+        238842
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#0": {
+      "amount": [
+        1, 1, 1, 1, 1
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#1": {
+      "amount": [
+        23, 18, 23, 24
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#2": {
+      "amount": [
+        1, 1, 1, 1
+      ]
+    },
+    "finish_task_switch.isra.0#0": {
+      "amount": [
+        514, 660, 541
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#3": {
+      "amount": [
+        234, 142, 264, 76
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#4": {
+      "amount": [
+        7, 7, 7, 7
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#5": {
+      "amount": [
+        2, 2, 2, 2
+      ]
+    },
+    "schedule#0": {
+      "amount": [
+        855
+      ]
+    },
+    "__perf_event_task_sched_in#0": {
+      "amount": [
+        317, 151
+      ]
+    },
+    "finish_task_switch.isra.0#1": {
+      "amount": [
+        548, 6234
+      ]
+    },
+    "task_work_add#0": {
+      "amount": [
+        654267
+      ]
+    },
+    "nohz_balance_exit_idle#0": {
+      "amount": [
+        177719
+      ]
+    },
+    "_raw_spin_lock_irqsave#0": {
+      "amount": [
+        1603
+      ]
+    }
+  },
+  "resource_type_map": {
+    "__legitimize_mnt#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_statx"
+        },
+        {
+          "func": "do_statx"
+        },
+        {
+          "func": "vfs_statx"
+        },
+        {
+          "func": "user_path_at_empty"
+        },
+        {
+          "func": "filename_lookup"
+        },
+        {
+          "func": "path_lookupat"
+        },
+        {
+          "func": "complete_walk"
+        },
+        {
+          "func": "try_to_unlazy"
+        },
+        {
+          "func": "__legitimize_path"
+        }
+      ],
+      "uid": "__legitimize_mnt"
+    },
+    "entry_SYSCALL_64#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "[libc.so.6]"
+        }
+      ],
+      "uid": "entry_SYSCALL_64"
+    },
+    "__d_lookup_rcu#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_openat"
+        },
+        {
+          "func": "do_sys_openat2"
+        },
+        {
+          "func": "do_filp_open"
+        },
+        {
+          "func": "path_openat"
+        },
+        {
+          "func": "lookup_fast"
+        }
+      ],
+      "uid": "__d_lookup_rcu"
+    },
+    "__intel_pmu_enable_all.isra.0#0": {
+      "command": "perf-exec",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_execve"
+        },
+        {
+          "func": "do_execveat_common.isra.0"
+        },
+        {
+          "func": "bprm_execve"
+        },
+        {
+          "func": "load_elf_binary"
+        },
+        {
+          "func": "begin_new_exec"
+        },
+        {
+          "func": "perf_event_exec"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#1": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__do_sys_newfstatat"
+        },
+        {
+          "func": "vfs_statx"
+        },
+        {
+          "func": "v9fs_vfs_getattr_dotl"
+        },
+        {
+          "func": "p9_client_getattr_dotl"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#2": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_statx"
+        },
+        {
+          "func": "do_statx"
+        },
+        {
+          "func": "vfs_statx"
+        },
+        {
+          "func": "v9fs_vfs_getattr_dotl"
+        },
+        {
+          "func": "p9_client_getattr_dotl"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "finish_task_switch.isra.0#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_getdents64"
+        },
+        {
+          "func": "iterate_dir"
+        },
+        {
+          "func": "v9fs_dir_readdir_dotl"
+        },
+        {
+          "func": "p9_client_readdir"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        }
+      ],
+      "uid": "finish_task_switch.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#3": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_getdents64"
+        },
+        {
+          "func": "iterate_dir"
+        },
+        {
+          "func": "v9fs_dir_readdir_dotl"
+        },
+        {
+          "func": "p9_client_readdir"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#4": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_openat"
+        },
+        {
+          "func": "do_sys_openat2"
+        },
+        {
+          "func": "do_filp_open"
+        },
+        {
+          "func": "path_openat"
+        },
+        {
+          "func": "do_dentry_open"
+        },
+        {
+          "func": "v9fs_file_open"
+        },
+        {
+          "func": "p9_client_open"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#5": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_openat"
+        },
+        {
+          "func": "do_sys_openat2"
+        },
+        {
+          "func": "do_filp_open"
+        },
+        {
+          "func": "path_openat"
+        },
+        {
+          "func": "do_dentry_open"
+        },
+        {
+          "func": "v9fs_file_open"
+        },
+        {
+          "func": "p9_client_walk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "schedule#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        }
+      ],
+      "uid": "schedule"
+    },
+    "__perf_event_task_sched_in#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_getdents64"
+        },
+        {
+          "func": "iterate_dir"
+        },
+        {
+          "func": "v9fs_dir_readdir_dotl"
+        },
+        {
+          "func": "p9_client_readdir"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        }
+      ],
+      "uid": "__perf_event_task_sched_in"
+    },
+    "finish_task_switch.isra.0#1": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        }
+      ],
+      "uid": "finish_task_switch.isra.0"
+    },
+    "task_work_add#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_exit_group"
+        },
+        {
+          "func": "do_group_exit"
+        },
+        {
+          "func": "do_exit"
+        },
+        {
+          "func": "mmput"
+        },
+        {
+          "func": "exit_mmap"
+        },
+        {
+          "func": "fput_many"
+        }
+      ],
+      "uid": "task_work_add"
+    },
+    "nohz_balance_exit_idle#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_exit_group"
+        },
+        {
+          "func": "do_group_exit"
+        },
+        {
+          "func": "do_exit"
+        },
+        {
+          "func": "mmput"
+        },
+        {
+          "func": "exit_mmap"
+        },
+        {
+          "func": "unmap_vmas"
+        },
+        {
+          "func": "unmap_page_range"
+        },
+        {
+          "func": "asm_sysvec_hyperv_stimer0"
+        },
+        {
+          "func": "sysvec_hyperv_stimer0"
+        },
+        {
+          "func": "__sysvec_hyperv_stimer0"
+        },
+        {
+          "func": "hrtimer_interrupt"
+        },
+        {
+          "func": "__hrtimer_run_queues"
+        },
+        {
+          "func": "tick_sched_timer"
+        },
+        {
+          "func": "update_process_times"
+        },
+        {
+          "func": "trigger_load_balance"
+        }
+      ],
+      "uid": "nohz_balance_exit_idle"
+    },
+    "_raw_spin_lock_irqsave#0": {
+      "command": "ls",
+      "time": 2.059779644012451,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "prepare_to_wait_event"
+        }
+      ],
+      "uid": "_raw_spin_lock_irqsave"
+    }
+  },
+  "models": [],
+  "origin": "3135c881c2a11f0790e5dee39a2b1addf0e38adf",
+  "header": {
+    "type": "time",
+    "cmd": "ls .",
+    "workload": "",
+    "units": {
+      "time": "sample"
+    }
+  },
+  "machine": {
+    "architecture": "x86_64",
+    "system": "Linux",
+    "release": "5.15.146.1-microsoft-standard-WSL2",
+    "host": "dellion",
+    "cpu": {
+      "physical": 6,
+      "total": 12,
+      "frequency": "2208.00Mhz"
+    },
+    "memory": {
+      "total_ram": "7.7 GiB",
+      "swap": "2.0 GiB"
+    }
+  },
+  "collector_info": {
+    "name": "kperf",
+    "params": {
+      "with_sudo": true,
+      "warmup": 3,
+      "repeat": 5,
+      "workload": ""
+    }
+  },
+  "postprocessors": []
+}

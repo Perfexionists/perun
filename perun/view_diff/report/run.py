@@ -4,7 +4,6 @@ from __future__ import annotations
 # Standard Imports
 from dataclasses import dataclass
 from typing import Any
-import os
 
 # Third-Party Imports
 import click
@@ -12,8 +11,9 @@ import jinja2
 
 # Perun Imports
 from perun.utils import log
+from perun.utils.common import diff_kit
 from perun.profile.factory import Profile
-from perun.profile import convert, helpers
+from perun.profile import convert
 from perun.view_diff.flamegraph import run as flamegraph_run
 from perun.view_diff.table import run as table_run
 
@@ -114,16 +114,9 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
         title="Difference of profiles (with tables)",
     )
     log.minor_success("HTML report ", "generated")
-    if (output_file := kwargs.get("output_file")) is None:
-        lhs_name = os.path.splitext(helpers.generate_profile_name(lhs_profile))[0]
-        rhs_name = os.path.splitext(helpers.generate_profile_name(rhs_profile))[0]
-        output_file = f"report-diff-of-{lhs_name}-and-{rhs_name}" + ".html"
-
-    if not output_file.endswith("html"):
-        output_file += ".html"
-
-    with open(output_file, "w", encoding="utf-8") as template_out:
-        template_out.write(content)
+    output_file = diff_kit.save_diff_view(
+        kwargs.get("output_file"), content, "report", lhs_profile, rhs_profile
+    )
     log.minor_status("Output saved", log.path_style(output_file))
 
 

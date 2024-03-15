@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # Standard Imports
 from typing import Any
-import os
 import re
 
 # Third-Party Imports
@@ -12,8 +11,9 @@ import jinja2
 
 # Perun Imports
 from perun.utils import log
+from perun.utils.common import diff_kit
 from perun.profile.factory import Profile
-from perun.profile import helpers, convert
+from perun.profile import convert
 from perun.view.flamegraph import flamegraph as flamegraph_factory
 from perun.view_diff.table import run as table_run
 
@@ -158,18 +158,9 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
         title="Differences of profiles (with flamegraphs)",
     )
     log.minor_success("Difference report", "generated")
-
-    if (output_file := kwargs.get("output_file")) is None:
-        lhs_name = os.path.splitext(helpers.generate_profile_name(lhs_profile))[0]
-        rhs_name = os.path.splitext(helpers.generate_profile_name(rhs_profile))[0]
-        output_file = f"flamegraph-diff-of-{lhs_name}-and-{rhs_name}" + ".html"
-
-    if not output_file.endswith("html"):
-        output_file += ".html"
-
-    with open(output_file, "w", encoding="utf-8") as template_out:
-        template_out.write(content)
-
+    output_file = diff_kit.save_diff_view(
+        kwargs.get("output_file"), content, "flamegraph", lhs_profile, rhs_profile
+    )
     log.minor_status("Output saved", log.path_style(output_file))
 
 
