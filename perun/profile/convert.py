@@ -133,7 +133,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     for _, snapshot in profile.all_snapshots():
         for alloc in snapshot:
             if not "subtype" in alloc.keys() or alloc["subtype"] != "free":
-                stack_str = alloc["uid"] + ";"
+                stack_str = to_uid(alloc["uid"]) + ";"
                 for frame in alloc["trace"][::-1]:
                     line = to_string_line(frame)
                     stack_str += line + ";"
@@ -143,6 +143,18 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
                     stacks.append(final)
 
     return stacks
+
+
+def to_uid(record: dict[str, Any] | str) -> str:
+    """Retrieves uid from record
+
+    :param record: record for which we are retrieving uid
+    :return: single string representing uid
+    """
+    if isinstance(record, str):
+        return record
+    else:
+        return to_string_line(record)
 
 
 def to_string_line(frame: dict[str, Any]) -> str:

@@ -41,8 +41,9 @@ def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: st
     units = header["units"][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))
-    with tempfile.NamedTemporaryFile() as tmp:
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
         tmp.write("".join(flame).encode("utf-8"))
+        tmp.close()
         cmd = " ".join(
             [
                 os.path.join(pwd, _SCRIPT_FILENAME),
@@ -59,4 +60,5 @@ def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: st
             ]
         )
         out, _ = commands.run_safely_external_command(cmd)
+        os.remove(tmp.name)
     return out.decode("utf-8")
