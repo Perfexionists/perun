@@ -60,7 +60,7 @@ def escape_content(tag: str, content: str) -> str:
         (r"svg;", f"{tag}_svg;"),
         (r"\[0\]", "[1]" if tag == "rhs" else "[0]"),
         (r"document.", f"{tag}_svg."),
-        (f"({tag}_(svg|details|searchbtn|matchedtxt)) = {tag}_svg\.", f"\\1 = document."),
+        (f"({tag}_(svg|details|searchbtn|matchedtxt)) = {tag}_svg.", "\\1 = document."),
         # Huge thanks to following article:
         # https://chartio.com/resources/tutorials/how-to-resize-an-svg-when-the-window-is-resized-in-d3-js/
         # Which helped to solve the issue with non-resizable flamegraphs

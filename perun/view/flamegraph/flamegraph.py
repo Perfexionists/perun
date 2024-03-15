@@ -1,8 +1,6 @@
 """This module provides wrapper for the Flame graph visualization"""
 from __future__ import annotations
 
-import subprocess
-
 # Standard Imports
 from typing import TYPE_CHECKING
 import os

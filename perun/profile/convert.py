@@ -132,7 +132,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     stacks = []
     for _, snapshot in profile.all_snapshots():
         for alloc in snapshot:
-            if not "subtype" in alloc.keys() or alloc["subtype"] != "free":
+            if "subtype" not in alloc.keys() or alloc["subtype"] != "free":
                 stack_str = to_uid(alloc["uid"]) + ";"
                 for frame in alloc["trace"][::-1]:
                     line = to_string_line(frame)
