@@ -80,9 +80,9 @@ def print_header(lhs_profile: Profile, rhs_profile: Profile) -> None:
         ["baseline origin", lhs_profile.get("origin")],
         ["target origin", rhs_profile.get("origin")],
         ["command", command],
-        ["collector command", log.collector_to_command(lhs_profile.get("collector_info"))],
+        ["collector command", log.collector_to_command(lhs_profile.get("collector_info", {}))],
     ]
-    print(tabulate.tabulate(data))
+    print(tabulate.tabulate(data))  # type: ignore
 
 
 def get_top_n_records(profile: Profile, **kwargs: Any) -> list[TableRecord]:
@@ -148,7 +148,7 @@ def filter_df(df: pandas.DataFrame, filters: list[tuple[str, Any]]) -> pandas.Da
             mask = df[column] == value
         else:
             mask |= df[column] == value
-    return df[mask]
+    return df[mask]  # type: ignore
 
 
 def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -> None:
@@ -172,8 +172,8 @@ def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) 
     for i, (top_lhs, top_rhs) in enumerate(zip(top_n_lhs, top_n_rhs)):
         log.major_info(f"Top-{i+1} Record")
         data = [
-            [lhs_tag, top_lhs.uid, top_lhs.rel, top_lhs.abs - top_rhs.abs],
-            [rhs_tag, top_rhs.uid, top_rhs.rel, top_rhs.abs - top_lhs.abs],
+            [lhs_tag, top_lhs.uid, top_lhs.rel, float(top_lhs.abs) - float(top_rhs.abs)],
+            [rhs_tag, top_rhs.uid, top_rhs.rel, float(top_rhs.abs) - float(top_lhs.abs)],
         ]
         print(tabulate.tabulate(data, headers=[str(i + 1)] + columns))
         log.newline()
@@ -200,6 +200,7 @@ def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) 
     help="Names the each profile by its particular option (default=origin).",
 )
 @click.pass_context
-def table(ctx: click.Context, *_, **kwargs: Any) -> None:
+def table(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     profile_list = ctx.parent.params["profile_list"]
     compare_profiles(profile_list[0], profile_list[1], **kwargs)

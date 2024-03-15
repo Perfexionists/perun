@@ -18,6 +18,10 @@ from perun.view.flamegraph import flamegraph as flamegraph_factory
 from perun.view_diff.table import run as table_run
 
 
+DEFAULT_HEIGHT: int = 14
+DEFAULT_WIDTH: int = 600
+
+
 def escape_content(tag: str, content: str) -> str:
     """Escapes content, so there are no clashes in the files
 
@@ -86,46 +90,48 @@ def get_uids(profile: Profile) -> set[str]:
     return set(df["uid"].unique())
 
 
-def generate_header(profile: Profile) -> list[tuple[str, str]]:
+def generate_header(profile: Profile) -> list[tuple[str, Any, str]]:
     """Generates header for given profile
 
     :param profile: profile for which we are generating the header
     :return: list of tuples (key and value)
     """
     command = " ".join([profile["header"]["cmd"], profile["header"]["workload"]]).strip()
-    machine_info = profile.get("machine")
+    machine_info = profile.get("machine", {})
     return [
         (
             "origin",
-            profile.get("origin"),
+            profile.get("origin", "?"),
             "The version control version, for which the profile was measured.",
         ),
         ("command", command, "The workload / command, for which the profile was measured."),
         (
             "collector command",
-            log.collector_to_command(profile.get("collector_info")),
+            log.collector_to_command(profile.get("collector_info", {})),
             "The collector / profiler, which collected the data.",
         ),
         (
             "kernel",
-            machine_info["release"],
+            machine_info.get("release", "?"),
             "The underlying kernel version, where the results were measured.",
         ),
         ("host", machine_info["host"], "The hostname, where the results were measured."),
         (
             "cpu (total)",
-            machine_info["cpu"]["total"],
+            machine_info.get("cpu", {"total": "?"}).get("total", "?"),
             "The total number (physical and virtual) of CPUs available on the host.",
         ),
         (
             "memory (total)",
-            machine_info["memory"]["total_ram"],
+            machine_info.get("memory", {"total_ram": "?"}).get("total_ram", "?"),
             "The total number of RAM available on the host.",
         ),
     ]
 
 
-def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any):
+def generate_flamegraph_diffrence(
+    lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any
+) -> None:
     """Generates differences of two profiles as two side-by-side flamegraphs
 
     :param lhs_profile: baseline profile
@@ -134,11 +140,17 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     """
     log.major_info("Generating Flamegraph Difference")
     lhs_graph = flamegraph_factory.draw_flame_graph(
-        lhs_profile, kwargs.get("height"), kwargs.get("width"), title="Baseline Flamegraph"
+        lhs_profile,
+        kwargs.get("height", DEFAULT_HEIGHT),
+        kwargs.get("width", DEFAULT_WIDTH),
+        title="Baseline Flamegraph",
     )
     log.minor_success("Baseline flamegraph", "generated")
     rhs_graph = flamegraph_factory.draw_flame_graph(
-        rhs_profile, kwargs.get("height"), kwargs.get("width"), title="Target Flamegraph"
+        rhs_profile,
+        kwargs.get("height", DEFAULT_HEIGHT),
+        kwargs.get("width", DEFAULT_WIDTH),
+        title="Target Flamegraph",
     )
     log.minor_success("Target flamegraph", "generated")
 
@@ -170,18 +182,19 @@ def generate_flamegraph_diffrence(lhs_profile: Profile, rhs_profile: Profile, **
     "-w",
     "--width",
     type=click.INT,
-    default=600,
+    default=DEFAULT_WIDTH,
     help="Sets the width of the flamegraph (default=600px).",
 )
 @click.option(
     "-h",
     "--height",
     type=click.INT,
-    default=14,
+    default=DEFAULT_HEIGHT,
     help="Sets the height of the flamegraph (default=14).",
 )
 @click.option("-o", "--output-file", help="Sets the output file (default=automatically generated).")
-def flamegraph(ctx: click.Context, *_, **kwargs: Any) -> None:
+def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     """ """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     profile_list = ctx.parent.params["profile_list"]
     generate_flamegraph_diffrence(profile_list[0], profile_list[1], **kwargs)

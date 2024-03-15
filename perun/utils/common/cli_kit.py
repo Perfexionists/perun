@@ -448,7 +448,7 @@ def lookup_minor_version_callback(_: click.Context, __: click.Option, value: str
 
 
 def lookup_list_of_profiles_callback(
-    ctx: click.Context, arg: click.argument, value: tuple[str]
+    ctx: click.Context, arg: click.Argument, value: tuple[str]
 ) -> list[Profile]:
     """Callback for lookup up list of profiles anywhere
 

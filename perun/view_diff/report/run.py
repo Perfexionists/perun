@@ -79,7 +79,7 @@ def profile_to_data(profile: Profile) -> list[TableRecord]:
     return data
 
 
-def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any):
+def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -> None:
     """Generates HTML report of differences
 
     :param lhs_profile: baseline profile
@@ -123,6 +123,7 @@ def generate_html_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: A
 @click.command()
 @click.option("-o", "--output-file", help="Sets the output file (default=automatically generated).")
 @click.pass_context
-def report(ctx: click.Context, *_, **kwargs: Any) -> None:
+def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     profile_list = ctx.parent.params["profile_list"]
     generate_html_report(profile_list[0], profile_list[1], **kwargs)
