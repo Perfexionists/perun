@@ -409,7 +409,7 @@ def test_trace_manager():
         "__mod_lruvec_state",
         "__mod_memcg_lruvec_state",
     ]
-    classifier = traces_kit.TraceClassifier()
+    classifier = traces_kit.TraceClassifier(stratification_strategy=lambda x: ",".join(x[:3]))
     classification = classifier.classify_trace(trace_a)
     assert (
         classification.as_str

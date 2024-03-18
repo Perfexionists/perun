@@ -126,15 +126,20 @@ class TraceClassifierLayer:
 
 
 class TraceClassifier:
-    __slots__ = ["layers", "strategy", "threshold"]
+    __slots__ = ["layers", "strategy", "threshold", "stratification_strategy"]
 
     def __init__(
         self,
         strategy: ClassificationStrategy = ClassificationStrategy.FIRST_FIT,
         threshold: float = DEFAULT_THRESHOLD,
+        stratification_strategy: Callable[[list[str]], str] = None,
     ):
         self.layers: dict[str, TraceClassifierLayer] = {}
         self.strategy: ClassificationStrategy = strategy
+        if stratification_strategy is not None:
+            self.stratification_strategy: Callable[[list[str]], str] = stratification_strategy
+        else:
+            self.stratification_strategy = TraceClassifier.stratify_trace
         self.threshold: float = threshold
 
     @staticmethod
@@ -142,7 +147,7 @@ class TraceClassifier:
         return ",".join(trace[:2])
 
     def get_classification_layer(self, trace: list[str]) -> TraceClassifierLayer:
-        stratification = TraceClassifier.stratify_trace(trace)
+        stratification = self.stratification_strategy(trace)
         if layer := self.layers.get(stratification):
             return layer
         new_layer = TraceClassifierLayer(self.strategy, self.threshold)
