@@ -378,6 +378,55 @@ def test_traces():
     assert traces_kit.compute_distance(trace_b, trace_c) == 3.4
 
 
+def test_trace_manager():
+    trace_a = [
+        "unmap_vmas",
+        "unmap_single_vma",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_memcg_lruvec_state",
+    ]
+    trace_b = [
+        "unmap_vmas",
+        "unmap_single_vma",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_node_page_state",
+        "hrtimer_interrupt",
+    ]
+    trace_c = [
+        "exit_mmap",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_memcg_lruvec_state",
+    ]
+    classifier = traces_kit.TraceClassifier()
+    classification = classifier.classify_trace(trace_a)
+    assert (
+        classification.as_str
+        == "unmap_vmas,unmap_single_vma,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+    classification = classifier.classify_trace(trace_b)
+    assert (
+        classification.as_str
+        == "unmap_vmas,unmap_single_vma,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+    classification = classifier.classify_trace(trace_c)
+    assert (
+        classification.as_str
+        == "exit_mmap,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+
+
 def test_machine_info(monkeypatch):
     # Test that we can obtain some information about kernel
     assert environment.get_kernel() != "Unknown"
