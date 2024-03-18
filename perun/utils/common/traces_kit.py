@@ -83,16 +83,15 @@ class TraceClassifierLayer:
     def find_first_fit_cluster_for(self, trace_member: TraceClusterMember) -> TraceClusterMember:
         trace_len = len(trace_member.as_list)
         for cluster in self.clusters:
-            if abs(len(cluster.pivot.as_list) - trace_len) > self.threshold:
-                continue
-            fitness = fast_compute_distance(
-                trace_member.as_list, cluster.pivot.as_list, self.threshold, self.distance_cache
-            )
-            if fitness <= self.threshold:
-                cluster.members.append(trace_member)
-                trace_member.parent = cluster
-                trace_member.distance = fitness
-                return cluster.pivot
+            if abs(len(cluster.pivot.as_list) - trace_len) <= self.threshold:
+                fitness = fast_compute_distance(
+                    trace_member.as_list, cluster.pivot.as_list, self.threshold, self.distance_cache
+                )
+                if fitness <= self.threshold:
+                    cluster.members.append(trace_member)
+                    trace_member.parent = cluster
+                    trace_member.distance = fitness
+                    return cluster.pivot
 
         # We did not find any suitable cluster, hence we crate new one
         new_cluster = TraceCluster(trace_member)
@@ -102,16 +101,17 @@ class TraceClassifierLayer:
 
     def find_best_fit_cluster_for(self, trace_member: TraceClusterMember) -> TraceClusterMember:
         best_fit: Optional[TraceCluster] = None
-        best_fit_distance = self.threshold + 1
+        best_fit_distance = self.threshold
         trace_len = len(trace_member.as_list)
         for cluster in self.clusters:
-            if abs(len(cluster.pivot.as_list) - trace_len) > self.threshold:
-                continue
-            fitness = fast_compute_distance(
-                trace_member.as_list, cluster.pivot.as_list, self.threshold, self.distance_cache
-            )
-            if fitness < best_fit_distance:
-                best_fit = cluster
+            if abs(len(cluster.pivot.as_list) - trace_len) <= self.threshold:
+                fitness = fast_compute_distance(
+                    trace_member.as_list, cluster.pivot.as_list, self.threshold, self.distance_cache
+                )
+                if fitness < best_fit_distance or (
+                    fitness == best_fit_distance and best_fit is None
+                ):
+                    best_fit = cluster
         if not best_fit:
             # We did not find any suitable cluster, hence we crate new one
             new_cluster = TraceCluster(trace_member)
@@ -242,16 +242,6 @@ def compute_distance(
             cost = min(cost_delete_lhs, cost_delete_rhs, cost_switch)
         DISTANCE_CACHE[key] = cost
     return DISTANCE_CACHE[key]
-
-
-def fast_switch_cost(lhs: str, rhs: str, switch_cache: dict[str, float]) -> float:
-    key = f"{lhs};{rhs}" if lhs < rhs else f"{rhs};{lhs}"
-    if key not in switch_cache.keys():
-        lhs_words = set(lhs.split("_"))
-        rhs_words = set(rhs.split("_"))
-        cost = 1 - (2 * len(lhs_words.intersection(rhs_words)) / (len(lhs_words) + len(rhs_words)))
-        switch_cache[key] = cost
-    return switch_cache[key]
 
 
 def fast_compute_distance(

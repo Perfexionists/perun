@@ -426,6 +426,42 @@ def test_trace_manager():
         == "exit_mmap,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
     )
 
+    trace_a = ["main", "a_a", "b_a"]
+    trace_e = ["main", "a_a", "b_b", "c_a"]
+    trace_b = ["main", "a_a", "b_b", "c_a", "d_a", "e_a"]
+    trace_c = ["main", "a_a", "b_a", "c_a"]
+    trace_d = ["main", "a_a", "b_b", "c_a", "d_a"]
+
+    classifier_best = traces_kit.TraceClassifier(
+        strategy=traces_kit.ClassificationStrategy.BEST_FIT, threshold=1
+    )
+    classifier = traces_kit.TraceClassifier(threshold=1)
+    classification = classifier_best.classify_trace(trace_a)
+    assert classification.as_str == "main,a_a,b_a"
+    classification = classifier.classify_trace(trace_a)
+    assert classification.as_str == "main,a_a,b_a"
+
+    classification = classifier_best.classify_trace(trace_b)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+    classification = classifier.classify_trace(trace_b)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+
+    classification = classifier_best.classify_trace(trace_e)
+    assert classification.as_str == "main,a_a,b_b,c_a"
+    classification = classifier_best.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_b,c_a"
+    classification = classifier.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_a"
+    # Returns the same cluster again
+    classification = classifier.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_a"
+
+    classification = classifier_best.classify_trace(trace_d)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+
+    assert traces_kit.fast_compute_distance(trace_a, trace_b, cache={}, threshold=1) == 2
+    assert int(traces_kit.fast_compute_distance(trace_a, trace_b, cache={}, threshold=3)) == 3
+
 
 def test_machine_info(monkeypatch):
     # Test that we can obtain some information about kernel
