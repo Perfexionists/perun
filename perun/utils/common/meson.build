@@ -5,6 +5,7 @@ perun_common_files = files(
     'cli_kit.py',
     'common_kit.py',
     'script_kit.py',
+    'traces_kit.py',
     'view_kit.py',
 )
 
