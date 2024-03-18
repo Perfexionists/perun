@@ -33,7 +33,7 @@ class TraceClusterMember:
     __slots__ = ["distance", "as_str", "as_list", "parent"]
 
     def __init__(self, trace: list[str], trace_as_str: str):
-        self.distance: int = 0
+        self.distance: float = 0
         self.as_str: str = trace_as_str
         self.parent: Optional[TraceCluster] = None
         self.as_list: list[str] = trace
@@ -64,7 +64,7 @@ class TraceClassifierLayer:
             ] = self.find_first_fit_cluster_for
         else:
             assert strategy == ClassificationStrategy.BEST_FIT
-            self.find_cluster: Callable[
+            self.find_cluster: Callable[  # type: ignore
                 [TraceClusterMember], TraceClusterMember
             ] = self.find_best_fit_cluster_for
         self.threshold: float = threshold
@@ -132,7 +132,7 @@ class TraceClassifier:
         self,
         strategy: ClassificationStrategy = ClassificationStrategy.FIRST_FIT,
         threshold: float = DEFAULT_THRESHOLD,
-        stratification_strategy: Callable[[list[str]], str] = None,
+        stratification_strategy: Optional[Callable[[list[str]], str]] = None,
     ):
         self.layers: dict[str, TraceClassifierLayer] = {}
         self.strategy: ClassificationStrategy = strategy
