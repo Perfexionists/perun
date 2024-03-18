@@ -12,7 +12,15 @@ import functools
 
 
 class ClassificationStrategy(Enum):
-    """ """
+    """The strategy used for final classification of the clusters.
+
+    The traces are first classified wrt to first initial (stratification) classification.
+    Then for each sublayer of classifiers, we can employ particular strategies to find
+    suitable cluster for given trace.
+
+    1. first-fit: finds first cluster, that matches the threshold of the distance,
+    2. best-fit: finds the best cluster, that has the least distance.
+    """
 
     FIRST_FIT = "first-fit"
     BEST_FIT = "best-fit"
@@ -22,17 +30,43 @@ DEFAULT_THRESHOLD: float = 2.0
 
 
 class TraceCluster:
+    """TraceCluster represents a single cluster, that contains list of similar traces.
+
+    Each cluster is represented by its members and its pivot: the first member of the created cluster.
+
+    :ivar pivot: main representant of the cluster, that is used for comparisons with other members
+    :ivar members: list of members corresponding to the cluster, whose distance is from pivot smaller than
+        threshold of the classifier.
+    """
+
     __slots__ = ["members", "pivot"]
 
     def __init__(self, pivot: TraceClusterMember):
+        """Creates empty cluster with single element
+
+        :param pivot: initial pivot of the cluster
+        """
         self.pivot: TraceClusterMember = pivot
         self.members: list[TraceClusterMember] = [pivot]
 
 
 class TraceClusterMember:
+    """TraceClusterMember represents a single member of the cluster
+
+    :ivar distance: distance of the trace from its parent pivot
+    :ivar as_str: member represented as string
+    :ivar as_list: member represented as list
+    :ivar parent: parent cluster
+    """
+
     __slots__ = ["distance", "as_str", "as_list", "parent"]
 
     def __init__(self, trace: list[str], trace_as_str: str):
+        """Initializes the member based on list of traces and its representation as single string
+
+        :param trace: trace represented as list of strings
+        :param trace_as_str: trace represented as string
+        """
         self.distance: float = 0
         self.as_str: str = trace_as_str
         self.parent: Optional[TraceCluster] = None
@@ -40,10 +74,26 @@ class TraceClusterMember:
 
 
 class TraceClassifierLayer:
+    """Single layer that classifies traces into clusters
+
+    When given a trace, the layer either returns previously classified cluster, or it iterates
+    through the clusters, tries to find a suitable cluster, and if not found, a new one is created.
+    The trace is then merged into the classified cluster.
+
+    The layer utilizes its own cache for computing the distances. For computing costs of switching
+    uids in the traces, we use the shared general cache.
+
+    :ivar trace_to_cluster: mapping of traces (as strings) to their classified TraceClusters
+    :ivar distance_cache: cache of the distances between two traces represented as floating point
+    :ivar clusters: list of clusters in the layer
+    :ivar find_cluster: function used to find appropriate cluster; this is set wrt strategy either
+        as 'best-fit' or as 'first-fit'.
+    :ivar threshold: threshold of the distances between vectors.
+    """
+
     __slots__ = [
         "trace_to_cluster",
         "distance_cache",
-        "cost_cache",
         "clusters",
         "find_cluster",
         "threshold",
@@ -54,9 +104,14 @@ class TraceClassifierLayer:
         strategy: ClassificationStrategy = ClassificationStrategy.FIRST_FIT,
         threshold: float = DEFAULT_THRESHOLD,
     ):
+        """Initializes the cluster layer
+
+        :param strategy: strategy used to find the appropriate cluster
+        :param threshold: threshold for checking the distances between traces; traces of different
+            lengths are automatically pruned.
+        """
         self.trace_to_cluster: dict[str, TraceClusterMember] = {}
         self.distance_cache: dict[str, float] = {}
-        self.cost_cache: dict[str, float] = {}
         self.clusters: list[TraceCluster] = []
         if strategy == ClassificationStrategy.FIRST_FIT:
             self.find_cluster: Callable[
@@ -70,6 +125,14 @@ class TraceClassifierLayer:
         self.threshold: float = threshold
 
     def classify_trace(self, trace: list[str]) -> TraceClusterMember:
+        """For given trace return corresponding cluster
+
+        First, we check, if we already get the cluster classified.
+        Otherwise, we iterate through the clusters and try to find either best-fit
+        or first-fit.
+
+        :param trace: trace represent as (ordered) list of uids
+        """
         trace_as_str = ",".join(trace)
         if trace_as_str not in self.trace_to_cluster:
             cluster = self.find_cluster_for(TraceClusterMember(trace, trace_as_str))
@@ -78,9 +141,30 @@ class TraceClassifierLayer:
         return self.trace_to_cluster[trace_as_str]
 
     def find_cluster_for(self, trace_member: TraceClusterMember) -> TraceClusterMember:
+        """Dynamically invokes strategy used for finding cluster for given trace
+
+        :param trace_member: trace which we are classifying
+        :return: classification of the traces
+        """
         return self.find_cluster(trace_member)
 
     def find_first_fit_cluster_for(self, trace_member: TraceClusterMember) -> TraceClusterMember:
+        """Finds first suitable cluster for the given trace
+
+        We iterate through all the clusters; we skip clusters, that are bigger than
+        the analysed traces wrt given threshold (no need to classify them, since
+        they will always have cost higher than the threshold). If we find some
+        cluster that is suitable, we return it.
+
+        If no cluster is found, we create a new one.
+
+        Note: this might return worst cluster than there actually is, especially
+        if the threshold is low: generally we want to find such clusters that have
+        mostly the switching of uids.
+
+        :param trace_member: trace which we are classifying
+        :return: classification of the traces
+        """
         trace_len = len(trace_member.as_list)
         for cluster in self.clusters:
             if abs(len(cluster.pivot.as_list) - trace_len) <= self.threshold:
@@ -100,6 +184,21 @@ class TraceClassifierLayer:
         return trace_member
 
     def find_best_fit_cluster_for(self, trace_member: TraceClusterMember) -> TraceClusterMember:
+        """Finds best fit cluster for the given trace
+
+        We iterate through all the clusters; we skip clusters, that are bigger than
+        the analysed traces wrt given threshold (no need to classify them, since
+        they will always have cost higher than the threshold). We then remember which
+        cluster had the best fit. This is finally returned.
+
+        If no cluster is found, we create a new one.
+
+        Note: this finds the best cluster, however, if there is too much clusters, it might lead
+        to an excesive number of comparisons leading to high computational cost.
+
+        :param trace_member: trace which we are classifying
+        :return: classification of the traces
+        """
         best_fit: Optional[TraceCluster] = None
         best_fit_distance = self.threshold
         trace_len = len(trace_member.as_list)
@@ -126,6 +225,21 @@ class TraceClassifierLayer:
 
 
 class TraceClassifier:
+    """Hierarchical classifier of traces
+
+    The first layer is done wrt stratification: by default we look at the prefix of the
+    trace and use its first two callers in the traces. This can be changed by different
+    function (e.g. wrt existence of some function).
+
+    The classifier then uses the appropriate layer, that does the actual classification.
+
+    :ivar layers: map of layers of classifiers wrt stratification
+    :ivar strategy: strategy used in each classifier for finding the suitable cluster for trace
+    :ivar threshold: threshold used in each classifier for limiting the computed distance
+    :ivar stratification_strategy: strategy used to distribute the state space into a smaller
+        number of layers.
+    """
+
     __slots__ = ["layers", "strategy", "threshold", "stratification_strategy"]
 
     def __init__(
@@ -134,6 +248,12 @@ class TraceClassifier:
         threshold: float = DEFAULT_THRESHOLD,
         stratification_strategy: Optional[Callable[[list[str]], str]] = None,
     ):
+        """Initializes the classifier
+
+        :param strategy: strategy for classification in each sublayer
+        :param threshold: threshold for computed distance
+        :param stratification_strategy: strategy for distributing the state space into smaller layers
+        """
         self.layers: dict[str, TraceClassifierLayer] = {}
         self.strategy: ClassificationStrategy = strategy
         if stratification_strategy is not None:
@@ -144,9 +264,21 @@ class TraceClassifier:
 
     @staticmethod
     def stratify_trace(trace: list[str]) -> str:
+        """Basic stratification of the traces
+
+        We use the first two callers as the prefix to distribute traces into smaller state space.
+
+        :param trace: classified trace
+        :return: representation of the master class of the trace
+        """
         return ",".join(trace[:2])
 
     def get_classification_layer(self, trace: list[str]) -> TraceClassifierLayer:
+        """Finds the layer, where we will classify the trace
+
+        :param trace: classified trace for which we are looking up sub state space
+        :return: layer, where the trace will be classified
+        """
         stratification = self.stratification_strategy(trace)
         if layer := self.layers.get(stratification):
             return layer
@@ -155,6 +287,11 @@ class TraceClassifier:
         return new_layer
 
     def classify_trace(self, trace: list[str]) -> TraceClusterMember:
+        """Classifies the trace
+
+        :param trace: trace
+        :return: classification of the trace
+        """
         layer = self.get_classification_layer(trace)
         return layer.classify_trace(trace)
 
@@ -252,6 +389,22 @@ def compute_distance(
 def fast_compute_distance(
     lhs: list[str], rhs: list[str], threshold: float, cache: dict[str, float]
 ) -> float:
+    """Optimized version of the computed distance
+
+    See the `compute_distance` for more info about the algorithm.
+
+    In particular this optimizes the following:
+
+      1. The heuristics wrt length of the traces are extracted and not cached.
+      2. We assume, that if the traces are of same length, then the switch is always preferred.
+      3. We always insert/delete to bigger side (hence, omitting one case)
+
+    :param lhs: left trace
+    :param rhs: right trace
+    :param threshold: threshold for pruning less interesting traces from start
+    :param cache: cache for the results
+    :return: distance between rhs and lhs
+    """
     keys = [",".join(lhs), ",".join(rhs)]
     key = f"{keys[0]};{keys[1]}" if keys[0] < keys[1] else f"{keys[1]};{keys[0]}"
     lhs_len = len(lhs)
