@@ -12,6 +12,18 @@ import perun.view.flamegraph.flamegraph as flame
 import perun.profile.factory as profile_factory
 
 
+def save_flamegraph(profile: profile_factory.Profile, filename: str, graph_height: int) -> None:
+    """Draws and saves flamegraph to file
+
+    :param profile: profile for which we are saving flamegraph
+    :param filename: name of the file where the flamegraph will be saved
+    :param graph_height: height of the graph
+    """
+    flamegraph_content = flame.draw_flame_graph(profile, graph_height)
+    with open(filename, "w") as file_handle:
+        file_handle.write(flamegraph_content)
+
+
 @click.command()
 @click.option(
     "--filename",
@@ -70,4 +82,4 @@ def flamegraph(
     :func:`perun.profile.convert.to_flame_graph_format` for more details how
     the profiles are converted to the flame graph format.
     """
-    flame.draw_flame_graph(profile, filename, graph_height)
+    save_flamegraph(profile, filename, graph_height)

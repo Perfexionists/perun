@@ -1,0 +1,59 @@
+{# This solution is from: https://www.w3schools.com/howto/howto_js_accordion.asp #}
+
+{% macro css_style() %}
+.accordion {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .accordion:hover {
+  background-color: #ccc;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Style the accordion panel. Note: hidden by default */
+.panel {
+  background-color: white;
+  display: none;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+{%-endmacro %}
+
+{% macro script(display="block") %}
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    /* Toggle between adding and removing the "active" class,
+    to highlight the button that controls the panel */
+    this.classList.toggle("active");
+
+    var controls = this.getElementsByClassName("control");
+    var j;
+
+    for (j = 0; j < controls.length; j++) {
+        controls[j].classList.toggle("hidden");
+    }
+
+    /* Toggle between hiding and showing the active panel */
+    var panel = this.nextElementSibling;
+    if (panel.style.display === "{{ display }}") {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "{{ display }}";
+    }
+  });
+}
+{%-endmacro %}

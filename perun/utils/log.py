@@ -839,6 +839,20 @@ def format_file_size(size: Optional[float]) -> str:
     return f"{size:.1f} PiB"
 
 
+def collector_to_command(collector_info: dict[str, Any]) -> str:
+    """Converts the collector info dictionary into prettier one line command
+
+    :param collector_info: dictionary with information about collector
+    :return: prettified collector info
+    """
+    params = " ".join(
+        f"--{param.replace('_', '-')}={val}"
+        for (param, val) in collector_info.get("params", {}).items()
+        if val
+    )
+    return f"{collector_info['name']} {params}"
+
+
 class History:
     """Helper with wrapper, which is used when one wants to visualize the version control history
     of the project, printing specific stuff corresponding to a git history

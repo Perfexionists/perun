@@ -1,0 +1,317 @@
+{% import 'macros_profile_overview.html.jinja2' as profile_overview %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <style>
+        html {
+             font-family: "Courier New", Courier, monospace;
+        }
+        .column {
+            width: 48%;
+            margin: 0 1%;
+        }
+        .left {
+            float: left;
+        }
+        .right {
+            float: right;
+        }
+        .column-head {
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }
+        .aboveThreshold {
+            font-weight: bold;
+            color: #902000;
+            background-color: salmon !important;
+        }
+        .clear {
+            clear: both;
+        }
+        td.details-control {
+            text-align: center;
+            cursor: pointer;
+        }
+        tr.shown td.details-control {
+            text-align: center;
+        }
+        tr.shown span.minus {
+            display: block;
+        }
+        tr.shown span.plus {
+            display: none;
+        }
+        tr.hidden span.plus {
+            display: block;
+        }
+        tr.hidden span.minus {
+            display: none;
+        }
+
+        div.tools table {
+            border-collapse: collapse;
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            margin: 0 auto 2em auto;
+        }
+
+        div.tools td.value {
+            padding: 1em 0.5em;
+            text-align: left;
+        }
+
+        div.tools td.key {
+            padding: 1em 0.5em;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        {{ profile_overview.css_style() }}
+    </style>
+</head>
+<body>
+
+<div class="left column">
+    <h2 class="column-head">{{ lhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleLeftCollapse', 'left-info', lhs_header, rhs_header) }}
+    <div style="margin: 0 10px;">&nbsp;</div>
+</div>
+
+
+<div class="right column">
+    <h2 class="column-head">{{ rhs_tag }}</h2>
+    {{ profile_overview.overview_table('toggleRightCollapse', 'right-info', rhs_header, lhs_header) }}
+    <div style="margin: 0 10px;">&nbsp;</div>
+</div>
+
+<div class="tools">
+    <table>
+        <tbody>
+            <tr>
+                <td class="key" title="Allows searching across both tables.">Global Search:</td>
+                <td class="value" title="Allows searching across both tables."><input type="text" class="filter" id="filter_uid"></td>
+                <td class="key" title="Highlights values higher than given threshold (as float number).">Relative Threshold:</td>
+                <td class="value" title="Highlights values higher than given threshold (as float number)."><input type="text" class="filter" id="filter_threshold"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="left column">
+    <table id="table1" class="display" style="width: 100%;">
+        <thead>
+            <tr>
+                <th></th>
+                {% for (column, title) in lhs_columns %}
+                    <th title="{{ title }}">{{ column }}</th>
+                {%- endfor %}
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th></th>
+                {% for (column, title) in lhs_columns %}
+                    <th title="{{ title }}">{{ column }}</th>
+                {%- endfor %}
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="right column">
+    <table id="table2" class="display" style="width: 100%;">
+        <thead>
+        <tr>
+            <th></th>
+            {% for (column, title) in rhs_columns %}
+                <th title="{{ title }}">{{ column }}</th>
+            {%- endfor %}
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <th></th>
+            {% for (column, title) in rhs_columns %}
+                <th title="{{ title }}">{{ column }}</th>
+            {%- endfor %}
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+    {{ profile_overview.toggle_script('toggleLeftCollapse', 'left-info') }}
+    {{ profile_overview.toggle_script('toggleRightCollapse', 'right-info') }}
+    $(document).ready( function () {
+        var lhs = $("#table1").DataTable({
+            data: lhs_data.data,
+            columns: [
+                {
+                    className: "details-control",
+                    orderable: false,
+                    data: null,
+                    defaultContent: "",
+                    render: function () {
+                        return '<span class="plus">[+]</span><span class="minus">[-]</span>';
+                    },
+                    width: "15px"
+                },
+                { data: "uid" },
+                {
+                    data: "abs",
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            var formatted_number = parseInt(data, 10).toLocaleString();
+                            return `${formatted_number}`;
+                        }
+
+                        return data;
+                    },
+                },
+                { data: "rel" }
+            ],
+            createdRow: function( row, data, dataIndex ) {
+                $( row ).addClass('hidden');
+            },
+            order: [[2, "desc"]],
+            iDisplayLength: 50,
+        });
+        var rhs  = $("#table2").DataTable({
+            data: rhs_data.data,
+            columns: [
+                {
+                    className: "details-control",
+                    orderable: false,
+                    data: null,
+                    defaultContent: "",
+                    render: function () {
+                        return '<span class="plus">[+]</span><span class="minus">[-]</span>';
+                    },
+                    width: "15px"
+                },
+                { data: "uid" },
+                {
+                    data: "abs",
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            var formatted_number = parseInt(data, 10).toLocaleString();
+                            return `${formatted_number}`;
+                        }
+
+                        return data;
+                    },
+                },
+                { data: "rel" }
+            ],
+            createdRow: function( row, data, dataIndex ) {
+                $( row ).addClass('hidden');
+            },
+            order: [[2, "desc"]],
+            iDisplayLength: 50,
+        });
+
+        $('#table1 tbody').on('click', 'td.details-control', function() {
+            var tr = $(this).closest('tr');
+            var row = lhs.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+                tr.addClass('hidden');
+            } else {
+                row.child(format(row.data())).show();
+                tr.removeClass('hidden');
+                tr.addClass('shown');
+            }
+        });
+
+        $('#table2 tbody').on('click', 'td.details-control', function() {
+            var tr = $(this).closest('tr');
+            var row = rhs.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+
+        document.querySelectorAll('input.filter').forEach((el) => {
+            el.addEventListener(el.type === 'text' ? 'keyup' : 'change', () => {
+                filterGlobal(lhs);
+                filterGlobal(rhs);
+                highlightGlobal(lhs);
+                highlightGlobal(rhs);
+            })
+        });
+    });
+
+    function format(d) {
+        let result = '<table style="width: 100%;">';
+        d.trace.forEach((value, index) => {
+          result += "<tr>";
+          result += '<td style="white-space: pre-wrap">' + value + "</td>";
+          result += "</tr>";
+        });
+        result += '</table>';
+        return result
+    }
+
+    function filterGlobal(table) {
+        let filter = document.querySelector("#filter_uid");
+
+        table.search(filter.value).draw();
+    }
+
+    function highlightGlobal(table) {
+        const inputValue = parseFloat(document.querySelector("#filter_threshold").value)
+        table.rows({search: 'applied', filter: 'applied'}).every(function () {
+            const rowData = this.data();
+            const columnValue = parseFloat(rowData['rel'].replace("%", ""));
+
+            if (columnValue >= inputValue) {
+                console.log("Above Threshold")
+                $(this.node()).addClass("aboveThreshold");
+            } else {
+                $(this.node()).removeClass("aboveThreshold");
+            }
+        })
+    }
+
+    const lhs_data = {
+        "data": [
+            {% for val in lhs_data %}
+            {
+                "uid": "{{ val.uid }}",
+                "abs": "{{ val.abs_amount }}",
+                "rel": "{{ val.rel_amount }}%",
+                "trace": {{ val.trace_list }}
+            },
+            {%- endfor %}
+        ]
+    };
+    const rhs_data = {
+        "data": [
+            {% for val in rhs_data %}
+                {
+                    "uid": "{{ val.uid }}",
+                    "abs": "{{ val.abs_amount }}",
+                    "rel": "{{ val.rel_amount }}%",
+                    "trace": {{ val.trace_list }}
+                },
+            {%- endfor %}
+        ]
+    };
+</script>
+
+</body>
+</html>

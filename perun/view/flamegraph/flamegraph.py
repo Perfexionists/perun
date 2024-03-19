@@ -4,29 +4,30 @@ from __future__ import annotations
 # Standard Imports
 from typing import TYPE_CHECKING
 import os
-import subprocess
+import tempfile
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.profile import convert
-from perun.utils.common import common_kit
+from perun.utils.external import commands
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
-_SCRIPT_FILENAME = "./flamegraph.pl"
+_SCRIPT_FILENAME = "flamegraph.pl"
 
 
-def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
+def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: str = "") -> str:
     """Draw Flame graph from profile.
 
         To create Flame graphs we use perl script created by Brendan Gregg.
         https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
 
-    :param dict profile: the memory profile
-    :param str output_file: filename of the output file, expected is SVG format
-    :param int height: graphs height
+    :param profile: the memory profile
+    :param width: width of the graph
+    :param height: graphs height
+    :param title: if set to empty, then title will be generated
     """
     # converting profile format to format suitable to Flame graph visualization
     flame = convert.to_flame_graph_format(profile)
@@ -34,24 +35,28 @@ def draw_flame_graph(profile: Profile, output_file: str, height: int) -> None:
     header = profile["header"]
     profile_type = header["type"]
     cmd, workload = (header["cmd"], header["workload"])
-    title = f"{profile_type} consumption of {cmd} {workload}"
+    title = title if title != "" else f"{profile_type} consumption of {cmd} {workload}"
     units = header["units"][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))
-    with open(output_file, "w") as out:
-        process = subprocess.Popen(
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write("".join(flame).encode("utf-8"))
+        tmp.close()
+        cmd = " ".join(
             [
-                _SCRIPT_FILENAME,
+                os.path.join(pwd, _SCRIPT_FILENAME),
+                tmp.name,
                 "--title",
-                title,
+                f'"{title}"',
                 "--countname",
-                units,
+                f"{units}",
                 "--reverse",
+                "--width",
+                str(width),
                 "--height",
                 str(height),
-            ],
-            stdin=subprocess.PIPE,
-            stdout=out,
-            cwd=pwd,
+            ]
         )
-        process.communicate(bytes("".join(flame), encoding="UTF-8"))
+        out, _ = commands.run_safely_external_command(cmd)
+        os.remove(tmp.name)
+    return out.decode("utf-8")

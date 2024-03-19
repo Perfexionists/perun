@@ -1,0 +1,481 @@
+{
+  "resources": {
+    "__intel_pmu_enable_all.isra.0#0": {
+      "amount": [
+        6, 7, 6, 6, 6
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#1": {
+      "amount": [
+        147, 262, 126, 170, 162
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#2": {
+      "amount": [
+        2, 2, 2, 2, 2
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#3": {
+      "amount": [
+        1, 1, 1, 1, 1
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#4": {
+      "amount": [
+        174
+      ]
+    },
+    "__intel_pmu_enable_all.isra.0#5": {
+      "amount": [
+        1, 1, 1, 1, 1
+      ]
+    },
+    "finish_task_switch.isra.0#0": {
+      "amount": [
+        411
+      ]
+    },
+    "__perf_event_task_sched_in#0": {
+      "amount": [
+        140, 320
+      ]
+    },
+    "__raw_callee_save___pv_queued_spin_unlock#0": {
+      "amount": [
+        260
+      ]
+    }
+  },
+  "resource_type_map": {
+    "__intel_pmu_enable_all.isra.0#0": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#1": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_getdents64"
+        },
+        {
+          "func": "iterate_dir"
+        },
+        {
+          "func": "v9fs_dir_readdir_dotl"
+        },
+        {
+          "func": "p9_client_readdir"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#2": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_openat"
+        },
+        {
+          "func": "do_sys_openat2"
+        },
+        {
+          "func": "do_filp_open"
+        },
+        {
+          "func": "path_openat"
+        },
+        {
+          "func": "do_dentry_open"
+        },
+        {
+          "func": "v9fs_file_open"
+        },
+        {
+          "func": "p9_client_open"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#3": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_openat"
+        },
+        {
+          "func": "do_sys_openat2"
+        },
+        {
+          "func": "do_filp_open"
+        },
+        {
+          "func": "path_openat"
+        },
+        {
+          "func": "do_dentry_open"
+        },
+        {
+          "func": "v9fs_file_open"
+        },
+        {
+          "func": "p9_client_walk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#4": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "__intel_pmu_enable_all.isra.0#5": {
+      "command": "perf-exec",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "__x64_sys_execve"
+        },
+        {
+          "func": "do_execveat_common.isra.0"
+        },
+        {
+          "func": "bprm_execve"
+        },
+        {
+          "func": "load_elf_binary"
+        },
+        {
+          "func": "begin_new_exec"
+        },
+        {
+          "func": "perf_event_exec"
+        }
+      ],
+      "uid": "__intel_pmu_enable_all.isra.0"
+    },
+    "finish_task_switch.isra.0#0": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        }
+      ],
+      "uid": "finish_task_switch.isra.0"
+    },
+    "__perf_event_task_sched_in#0": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        }
+      ],
+      "uid": "__perf_event_task_sched_in"
+    },
+    "__raw_callee_save___pv_queued_spin_unlock#0": {
+      "command": "ls",
+      "time": 1.610957145690918,
+      "trace": [
+        {
+          "func": "[unknown]"
+        },
+        {
+          "func": "[libc.so.6]"
+        },
+        {
+          "func": "entry_SYSCALL_64_after_hwframe"
+        },
+        {
+          "func": "do_syscall_64"
+        },
+        {
+          "func": "syscall_exit_to_user_mode"
+        },
+        {
+          "func": "exit_to_user_mode_prepare"
+        },
+        {
+          "func": "task_work_run"
+        },
+        {
+          "func": "__fput"
+        },
+        {
+          "func": "v9fs_dir_release"
+        },
+        {
+          "func": "p9_client_clunk"
+        },
+        {
+          "func": "p9_client_rpc"
+        },
+        {
+          "func": "schedule"
+        },
+        {
+          "func": "__schedule"
+        },
+        {
+          "func": "finish_task_switch.isra.0"
+        },
+        {
+          "func": "__perf_event_task_sched_in"
+        }
+      ],
+      "uid": "__raw_callee_save___pv_queued_spin_unlock"
+    }
+  },
+  "models": [],
+  "origin": "3135c881c2a11f0790e5dee39a2b1addf0e38adf",
+  "header": {
+    "type": "time",
+    "cmd": "ls",
+    "workload": "",
+    "units": {
+      "time": "sample"
+    }
+  },
+  "machine": {
+    "architecture": "x86_64",
+    "system": "Linux",
+    "release": "5.15.146.1-microsoft-standard-WSL2",
+    "host": "dellion",
+    "cpu": {
+      "physical": 6,
+      "total": 12,
+      "frequency": "2208.00Mhz"
+    },
+    "memory": {
+      "total_ram": "7.7 GiB",
+      "swap": "2.0 GiB"
+    }
+  },
+  "collector_info": {
+    "name": "kperf",
+    "params": {
+      "with_sudo": true,
+      "warmup": 3,
+      "repeat": 5,
+      "workload": ""
+    }
+  },
+  "postprocessors": []
+}

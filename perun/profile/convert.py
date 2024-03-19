@@ -132,9 +132,9 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     stacks = []
     for _, snapshot in profile.all_snapshots():
         for alloc in snapshot:
-            if alloc["subtype"] != "free":
-                stack_str = ""
-                for frame in alloc["trace"]:
+            if "subtype" not in alloc.keys() or alloc["subtype"] != "free":
+                stack_str = to_uid(alloc["uid"]) + ";"
+                for frame in alloc["trace"][::-1]:
                     line = to_string_line(frame)
                     stack_str += line + ";"
                 if stack_str and stack_str.endswith(";"):
@@ -145,13 +145,29 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     return stacks
 
 
+def to_uid(record: dict[str, Any] | str) -> str:
+    """Retrieves uid from record
+
+    :param record: record for which we are retrieving uid
+    :return: single string representing uid
+    """
+    if isinstance(record, str):
+        return record
+    else:
+        return to_string_line(record)
+
+
 def to_string_line(frame: dict[str, Any]) -> str:
     """Create string representing call stack's frame
 
     :param dict frame: call stack's frame
     :returns str: line representing call stack's frame
     """
-    return f"{frame['function']}()~{frame['source']}~{frame['line']}"
+    if "function" in frame.keys() and "source" in frame.keys() and "line" in frame.keys():
+        return f"{frame['function']}()~{frame['source']}~{frame['line']}"
+    else:
+        assert "func" in frame.keys()
+        return f"{frame['func']}"
 
 
 def plot_data_from_coefficients_of(model: dict[str, Any]) -> dict[str, Any]:
