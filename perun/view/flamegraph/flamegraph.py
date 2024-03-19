@@ -10,12 +10,11 @@ import tempfile
 
 # Perun Imports
 from perun.profile import convert
+from perun.utils.common import script_kit
 from perun.utils.external import commands
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
-
-_SCRIPT_FILENAME = "flamegraph.pl"
 
 
 def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: str = "") -> str:
@@ -44,7 +43,7 @@ def draw_flame_graph(profile: Profile, height: int, width: int = 1200, title: st
         tmp.close()
         cmd = " ".join(
             [
-                os.path.join(pwd, _SCRIPT_FILENAME),
+                script_kit.get_script("flamegraph.pl"),
                 tmp.name,
                 "--title",
                 f'"{title}"',

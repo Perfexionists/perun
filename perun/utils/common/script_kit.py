@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 # Standard Imports
+from pathlib import Path
 from typing import Any
 import os
 
@@ -15,6 +16,16 @@ from perun.utils import log
 from perun.utils.common import common_kit
 from perun.utils.exceptions import ExternalEditorErrorException
 from perun.utils.external import commands
+
+
+def get_script(script_name: str) -> str:
+    """Retrieves path to the script
+
+    :param script_name: name of the retrieved script
+    :return path to the script
+    """
+    script_dir = Path(Path(__file__).resolve().parent, "..", "..", "scripts")
+    return os.path.join(script_dir, script_name)
 
 
 def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) -> None:
