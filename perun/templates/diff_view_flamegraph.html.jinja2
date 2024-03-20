@@ -10,6 +10,17 @@
         html {
             font-family: "Courier New", Courier, monospace;
         }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        .middle {
+            width: 98%;
+            height: 600px;
+            float: left;
+            margin: 0 1%;
+            justify-content: center;
+        }
         .column {
             width: 48%;
             margin: 0 1%;
@@ -83,7 +94,12 @@
     </div>
 </div>
 
-<div class="clear"></div>
+<div class="middle">
+    <h2 class="column-head">Difference of profiles</h2>
+    <div class='svg-container'>
+        {{ diff_flamegraph }}
+    </div>
+</div>
 
 <div class="help">
     <h2>Help</h2>

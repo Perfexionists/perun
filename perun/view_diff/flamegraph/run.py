@@ -50,6 +50,7 @@ def escape_content(tag: str, content: str) -> str:
         r"(?<!\w)(zoom_parent)\(",
         r"(?<!\w)(zoom_reset)\(",
     ]
+    tag_to_index = ["lhs", "rhs", "diff"]
     other = [
         (r"func_g", f"{tag}_func_g"),
         (r"\"unzoom\"", f'"{tag}_unzoom"'),
@@ -62,7 +63,7 @@ def escape_content(tag: str, content: str) -> str:
         (r"svg\.", f"{tag}_svg."),
         (r"svg =", f"{tag}_svg ="),
         (r"svg;", f"{tag}_svg;"),
-        (r"\[0\]", "[1]" if tag == "rhs" else "[0]"),
+        (r"\[0\]", f"[{tag_to_index.index(tag)}]"),
         (r"document.", f"{tag}_svg."),
         (f"({tag}_(svg|details|searchbtn|matchedtxt)) = {tag}_svg.", "\\1 = document."),
         # Huge thanks to following article:
@@ -154,6 +155,15 @@ def generate_flamegraph_diffrence(
     )
     log.minor_success("Target flamegraph", "generated")
 
+    diff_graph = flamegraph_factory.draw_flame_graph_difference(
+        lhs_profile,
+        rhs_profile,
+        kwargs.get("height", DEFAULT_HEIGHT),
+        kwargs.get("width", DEFAULT_WIDTH),
+        title="Difference Flamegraph",
+    )
+    log.minor_success("Diff flamegraph", "generated")
+
     env = jinja2.Environment(loader=jinja2.PackageLoader("perun", "templates"))
     template = env.get_template("diff_view_flamegraph.html.jinja2")
     content = template.render(
@@ -168,6 +178,7 @@ def generate_flamegraph_diffrence(
         rhs_top=table_run.get_top_n_records(rhs_profile, top_n=10),
         rhs_uids=get_uids(rhs_profile),
         title="Differences of profiles (with flamegraphs)",
+        diff_flamegraph=escape_content("diff", diff_graph),
     )
     log.minor_success("Difference report", "generated")
     output_file = diff_kit.save_diff_view(
