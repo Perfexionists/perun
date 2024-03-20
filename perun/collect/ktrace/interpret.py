@@ -263,7 +263,7 @@ def append_resources(
 
     :param func_name: name of the function for which the resources correspond
     :param trace: tuple of function names corresponding to the trace of the resource
-    :param resources: resolting resources
+    :param resources: resulting resources
     :param times: measured inclusive/exlusive times
     :param resource_type: type of resources added (currently supports inclusive or exclusive time
     """
@@ -276,7 +276,7 @@ def append_resources(
                 "ncalls": len(group),
                 "type": "time",
                 "subtype": resource_type,
-                "trace": [{"func": f} for f in trace],
+                "trace": list(trace),
             }
         )
 
@@ -293,19 +293,17 @@ def pandas_to_resources(df: pd.DataFrame) -> list[dict[str, Any]]:
         trace = row["Trace"].split(" -> ") if row["Trace"] else []
         ncalls = row["Calls [#]"]
 
+        resource = {
+            "uid": function,
+            "ncalls": ncalls,
+            "type": "stats",
+            "trace": list(trace),
+        }
         for col in df.columns:
             if col in ("Function", "Trace", "Calls [#]"):
                 continue
-            resources.append(
-                {
-                    "amount": row[col],
-                    "uid": function,
-                    "ncalls": ncalls,
-                    "type": "time",
-                    "subtype": col,
-                    "trace": [{"func": f} for f in trace],
-                }
-            )
+            resource[col] = row[col]
+        resources.append(resource)
     return resources
 
 

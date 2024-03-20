@@ -119,7 +119,7 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
     result = []
     sample_matcher = re.compile(r"\((\d+) samples\)")
     perf_record_cmd = f"perf record -o {target_filename} {cmd}"
-    perf_report_cmd = f"perf report -i {target_filename}"
+    perf_report_cmd = f"perf report -f -i {target_filename}"
     if with_sudo:
         perf_record_cmd = f"sudo {perf_record_cmd}"
         perf_report_cmd = f"sudo {perf_report_cmd}"
@@ -137,7 +137,7 @@ def compute_perf_events(cmd: str, repeat: int, with_sudo: bool = False) -> list[
             out, _ = commands.run_safely_external_command(perf_report_cmd)
             result.extend(out.decode("utf-8").splitlines())
         except subprocess.CalledProcessError as err:
-            log.warn(f"{log.cmd_style(perf_record_cmd)} returned error: {err}")
+            log.warn(f"{log.cmd_style(perf_record_cmd)} or {log.cmd_style(perf_report_cmd)} returned error: {err}")
     log.decrease_indent()
     return result
 
