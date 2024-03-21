@@ -132,7 +132,7 @@ def parse_traces(
     raw_data: pathlib.Path, func_map: dict[int, str], data_type: Type[DataT]
 ) -> TraceContextsMap[DataT]:
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
-    record_stack: list[TraceRecord] = [TraceRecord(-1, 0)]
+    record_stacks: dict[int, list[TraceRecord]] = {}
     trace_contexts = TraceContextsMap(func_map, data_type)
 
     file_size = os.path.getsize(raw_data)
@@ -153,6 +153,9 @@ def parse_traces(
                 # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
                 # [1] 64b timestamp
                 pid, record_id, ts = struct.unpack("iIQ", record)
+                if pid not in record_stacks:
+                    record_stacks[pid] = [TraceRecord(-1, 0)]
+                record_stack = record_stacks[pid]
                 event_type = record_id & 0xF
                 func_id = record_id >> 4
                 if event_type == 0:
@@ -352,7 +355,6 @@ def traces_details_to_pandas(trace_contexts: TraceContextsMap[FuncDataDetails]) 
                 *incl_excl_flattened,
             )
         )
-    log.cprintln("Parsing DONE. Transforming to Pandas.", colour="green")
     df = pd.DataFrame(
         pandas_rows,
         columns=[
