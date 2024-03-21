@@ -21,7 +21,7 @@ from perun.fuzz import filetype
 from perun.logic import commands, config
 from perun.testing import asserts
 from perun.utils import log
-from perun.utils.common import common_kit, cli_kit
+from perun.utils.common import common_kit, cli_kit, traces_kit
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
@@ -371,11 +371,96 @@ def test_traces():
         {"func": "__mod_lruvec_state"},
         {"func": "__mod_memcg_lruvec_state"},
     ]
-    assert common_kit.compute_distance(trace_a, trace_a) == 0
-    assert common_kit.compute_distance(trace_a, trace_b) == 1.4
-    assert common_kit.compute_distance(trace_b, trace_a) == 1.4
-    assert common_kit.compute_distance(trace_a, trace_c) == 2.0
-    assert common_kit.compute_distance(trace_b, trace_c) == 3.4
+    assert traces_kit.compute_distance(trace_a, trace_a) == 0
+    assert traces_kit.compute_distance(trace_a, trace_b) == 1.4
+    assert traces_kit.compute_distance(trace_b, trace_a) == 1.4
+    assert traces_kit.compute_distance(trace_a, trace_c) == 2.0
+    assert traces_kit.compute_distance(trace_b, trace_c) == 3.4
+
+
+def test_trace_manager():
+    trace_a = [
+        "unmap_vmas",
+        "unmap_single_vma",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_memcg_lruvec_state",
+    ]
+    trace_b = [
+        "unmap_vmas",
+        "unmap_single_vma",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_node_page_state",
+        "hrtimer_interrupt",
+    ]
+    trace_c = [
+        "exit_mmap",
+        "unmap_page_range",
+        "zap_pte_range",
+        "page_remove_rmap",
+        "__mod_lruvec_page_state",
+        "__mod_lruvec_state",
+        "__mod_memcg_lruvec_state",
+    ]
+    classifier = traces_kit.TraceClassifier(stratification_strategy=lambda x: ",".join(x[:3]))
+    classification = classifier.classify_trace(trace_a)
+    assert (
+        classification.as_str
+        == "unmap_vmas,unmap_single_vma,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+    classification = classifier.classify_trace(trace_b)
+    assert (
+        classification.as_str
+        == "unmap_vmas,unmap_single_vma,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+    classification = classifier.classify_trace(trace_c)
+    assert (
+        classification.as_str
+        == "exit_mmap,unmap_page_range,zap_pte_range,page_remove_rmap,__mod_lruvec_page_state,__mod_lruvec_state,__mod_memcg_lruvec_state"
+    )
+
+    trace_a = ["main", "a_a", "b_a"]
+    trace_e = ["main", "a_a", "b_b", "c_a"]
+    trace_b = ["main", "a_a", "b_b", "c_a", "d_a", "e_a"]
+    trace_c = ["main", "a_a", "b_a", "c_a"]
+    trace_d = ["main", "a_a", "b_b", "c_a", "d_a"]
+
+    classifier_best = traces_kit.TraceClassifier(
+        strategy=traces_kit.ClassificationStrategy.BEST_FIT, threshold=1
+    )
+    classifier = traces_kit.TraceClassifier(threshold=1)
+    classification = classifier_best.classify_trace(trace_a)
+    assert classification.as_str == "main,a_a,b_a"
+    classification = classifier.classify_trace(trace_a)
+    assert classification.as_str == "main,a_a,b_a"
+
+    classification = classifier_best.classify_trace(trace_b)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+    classification = classifier.classify_trace(trace_b)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+
+    classification = classifier_best.classify_trace(trace_e)
+    assert classification.as_str == "main,a_a,b_b,c_a"
+    classification = classifier_best.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_b,c_a"
+    classification = classifier.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_a"
+    # Returns the same cluster again
+    classification = classifier.classify_trace(trace_c)
+    assert classification.as_str == "main,a_a,b_a"
+
+    classification = classifier_best.classify_trace(trace_d)
+    assert classification.as_str == "main,a_a,b_b,c_a,d_a,e_a"
+
+    assert traces_kit.fast_compute_distance(trace_a, trace_b, cache={}, threshold=1) == 2
+    assert int(traces_kit.fast_compute_distance(trace_a, trace_b, cache={}, threshold=3)) == 3
 
 
 def test_machine_info(monkeypatch):
