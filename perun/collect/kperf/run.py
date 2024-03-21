@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from pathlib import Path
 from typing import Any
-import os
 import subprocess
 import time
 
@@ -16,6 +14,7 @@ import progressbar
 from perun.collect.kperf import parser
 from perun.logic import runner
 from perun.utils import log
+from perun.utils.common import script_kit
 from perun.utils.structs import Executable, CollectStatus
 from perun.utils.external import commands
 
@@ -32,8 +31,7 @@ def before(**_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         log.minor_fail(f"{log.cmd_style('perf')}", "not-executable")
 
     # Check that helper script can be run
-    script_dir = Path(Path(__file__).resolve().parent, "scripts")
-    parse_script = os.path.join(script_dir, "stackcollapse-perf.pl")
+    parse_script = script_kit.get_script("stackcollapse-perf.pl")
     if commands.is_executable(f'echo "" | {parse_script}'):
         log.minor_success(f"{log.cmd_style(parse_script)}", "executable")
     else:
@@ -42,7 +40,7 @@ def before(**_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
     if not all_found:
         log.minor_fail("Checking dependencies")
-        return CollectStatus.ERROR, "Some depedencies cannot be run", {}
+        return CollectStatus.ERROR, "Some dependencies cannot be run", {}
     else:
         log.minor_success("Checking dependencies")
 
@@ -56,8 +54,7 @@ def run_perf(executable: Executable, run_with_sudo: bool = False) -> str:
     :param run_with_sudo: if the command should be run with sudo
     :return: parsed output of perf
     """
-    script_dir = Path(Path(__file__).resolve().parent, "scripts")
-    parse_script = os.path.join(script_dir, "stackcollapse-perf.pl")
+    parse_script = script_kit.get_script("stackcollapse-perf.pl")
 
     if run_with_sudo:
         perf_record_command = f"sudo perf record -q -g -o collected.data {executable}"
