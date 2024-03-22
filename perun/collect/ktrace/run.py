@@ -10,6 +10,7 @@ import time
 import click
 
 # Perun Imports
+from perun.collect.kperf import run as kperf
 from perun.collect.ktrace import symbols, bpfgen, interpret
 from perun.logic import runner
 from perun.utils import log
@@ -41,14 +42,26 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             log.error(
                 "cannot collect perf events without executable. Run collection again with `-c cmd`."
             )
-        log.minor_status(
-            "Source of perf events",
-            status=f"{log.cmd_style('perf record ' + str(kwargs['executable']) + '; perf report')}",
-        )
-        perf_output = symbols.compute_perf_events(
-            str(kwargs["executable"]), kwargs["repeat_perf"], kwargs["with_sudo"]
-        )
-        perf_symbols = symbols.parse_perf_events(kwargs["cmd_names"], perf_output)
+        perf_symbols = set()
+        for precollect_program in kwargs["precollect_symbols_by"]:
+            if precollect_program == 'perf':
+                log.minor_status(
+                    "Source of perf events",
+                    status=f"{log.cmd_style('perf record ' + str(kwargs['executable']) + '; perf report')}",
+                )
+                perf_output = symbols.compute_perf_events(
+                    str(kwargs["executable"]), kwargs["repeat_perf"], kwargs["with_sudo"]
+                )
+                perf_symbols.update(symbols.parse_perf_events(kwargs["cmd_names"], perf_output))
+            elif precollect_program == 'kperf':
+                for _ in range(0, kwargs["repeat_perf"]):
+                    log.increase_indent()
+                    perf_output = kperf.run_perf(kwargs['executable'], kwargs['with_sudo'])
+                    for out in perf_output.split("\n"):
+                        if out.strip():
+                            trace, _ = out.split(" ")
+                            perf_symbols.update(trace.split(';'))
+                    log.decrease_indent()
     else:
         log.minor_status("Source of perf events", status=f"{log.path_style(kwargs['perf_report'])}")
         with open(kwargs["perf_report"], "r", encoding="utf-8") as perf_handle:
@@ -244,6 +257,16 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     type=bool,
     default=False,
     help="Saves the intermediate results into some file",
+)
+@click.option(
+    "--precollect-symbols-by",
+    "-ps",
+    multiple=True,
+    type=click.Choice(["perf", "kperf"]),
+    default=("kperf", "perf"),
+    help="Precollects symbols that will be instrumented by selected profiler. "
+         "`perf` collects only topmost functions from stack; "
+         "`kperf` collects all functions in traces on stack.",
 )
 @click.pass_context
 def ktrace(ctx, **kwargs):
