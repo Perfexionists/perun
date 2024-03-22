@@ -129,7 +129,7 @@ class TraceRecord:
 
 
 def parse_traces(
-    raw_data: pathlib.Path, func_map: dict[int, str], data_type: Type[DataT]
+    raw_data: pathlib.Path, func_map: dict[int, str], data_type: Type[DataT], skip_mismatched: bool = False
 ) -> TraceContextsMap[DataT]:
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
     record_stacks: dict[int, list[TraceRecord]] = {}
@@ -172,10 +172,15 @@ def parse_traces(
                     top_record = record_stack.pop()
                     if top_record.func_id != func_id:
                         log.warn(
-                            f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} (skipping),"
+                            f"stack mismatch: expected {func_map.get(top_record.func_id, top_record.func_id)} "
+                            f"{('skipping' if skip_mismatched else 'approximating')},"
                             f" but got {func_map.get(func_id, func_id)}."
                         )
-                        continue
+                        if skip_mismatched:
+                            continue
+                        else:
+                            # We return the record on stack
+                            record_stack.append(top_record)
                     break
                 if not found_matching_record:
                     log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")

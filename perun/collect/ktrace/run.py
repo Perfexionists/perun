@@ -169,7 +169,7 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
 
     if profile_output_type == "flat":
         flat_parsed_traces = interpret.parse_traces(
-            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataFlat
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataFlat, kwargs['skip_mismatched_events']
         )
         trace_data = interpret.traces_flat_to_pandas(flat_parsed_traces)
         if save_intermediate:
@@ -178,7 +178,7 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         total_runtime = flat_parsed_traces.total_runtime
     elif profile_output_type == "details":
         detailed_parsed_traces = interpret.parse_traces(
-            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails, kwargs['skip_mismatched_events']
         )
         trace_data = interpret.traces_details_to_pandas(detailed_parsed_traces)
         resources = interpret.pandas_to_resources(trace_data)
@@ -188,7 +188,7 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     else:
         assert profile_output_type == "clustered"
         detailed_parsed_traces = interpret.parse_traces(
-            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails
+            raw_data_file, kwargs["idx_to_func"], interpret.FuncDataDetails, kwargs['skip_mismatched_events']
         )
         resources = interpret.trace_details_to_resources(detailed_parsed_traces)
         total_runtime = detailed_parsed_traces.total_runtime
@@ -267,6 +267,14 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     help="Precollects symbols that will be instrumented by selected profiler. "
          "`perf` collects only topmost functions from stack; "
          "`kperf` collects all functions in traces on stack.",
+)
+@click.option(
+    '--skip-mismatched-events',
+    '-sm',
+    type=bool,
+    is_flag=True,
+    default=False,
+    help="Skips mismatched events on stack (be default, we approximate the results)."
 )
 @click.pass_context
 def ktrace(ctx, **kwargs):
