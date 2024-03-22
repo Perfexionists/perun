@@ -128,6 +128,26 @@ class TraceRecord:
         self.callees_time: int = 0
 
 
+def report_finished_event(ts, top_record, record_stack, function_name, trace_contexts):
+    if (duration := ts - top_record.timestamp) < 0:
+        log.error(
+            f"corrupted log: invalid timestamps for {function_name}:"
+            f" duration {duration} is negative."
+        )
+    # Obtain the trace from the stack
+    trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
+    # Update the exclusive time of the parent call
+    record_stack[-1].callees += 1
+    record_stack[-1].callees_time += duration
+    # Register the new function duration record
+    trace_contexts.add(
+        top_record.func_id,
+        trace,
+        duration,
+        duration - top_record.callees_time,
+        top_record.callees,
+    )
+
 def parse_traces(
     raw_data: pathlib.Path, func_map: dict[int, str], data_type: Type[DataT], skip_mismatched: bool = False
 ) -> TraceContextsMap[DataT]:
@@ -166,7 +186,8 @@ def parse_traces(
                     continue
                 found_matching_record = True
                 while True:
-                    if not record_stack:
+                    # We found the sentinel
+                    if record_stack[-1].func_id == -1 and len(record_stack) == 1:
                         found_matching_record = False
                         break
                     top_record = record_stack.pop()
@@ -176,11 +197,9 @@ def parse_traces(
                             f"{('skipping' if skip_mismatched else 'approximating')},"
                             f" but got {func_map.get(func_id, func_id)}."
                         )
-                        if skip_mismatched:
-                            continue
-                        else:
-                            # We return the record on stack
-                            record_stack.append(top_record)
+                        if not skip_mismatched:
+                            report_finished_event(ts, top_record, record_stack, func_map.get(top_record.func_id, top_record.func_id), trace_contexts)
+                        continue
                     break
                 if not found_matching_record:
                     log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
@@ -188,24 +207,7 @@ def parse_traces(
                     read_bytes += chunk_size
                     progress.update(read_bytes)
                     continue
-                if (duration := ts - top_record.timestamp) < 0:
-                    log.error(
-                        f"corrupted log: invalid timestamps for {func_map.get(func_id, func_id)}:"
-                        f" duration {duration} is negative."
-                    )
-                # Obtain the trace from the stack
-                trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
-                # Update the exclusive time of the parent call
-                record_stack[-1].callees += 1
-                record_stack[-1].callees_time += duration
-                # Register the new function duration record
-                trace_contexts.add(
-                    top_record.func_id,
-                    trace,
-                    duration,
-                    duration - top_record.callees_time,
-                    top_record.callees,
-                )
+                report_finished_event(ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts)
                 record = data_handle.read(chunk_size)
                 read_bytes += chunk_size
                 progress.update(read_bytes)
