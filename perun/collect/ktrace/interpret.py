@@ -158,6 +158,7 @@ def parse_traces(
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
     record_stacks: dict[int, list[TraceRecord]] = {}
     trace_contexts = TraceContextsMap(func_map, data_type)
+    parsed_lines = []  # Used for debug only
 
     file_size = os.path.getsize(raw_data)
     read_bytes = 0
@@ -182,6 +183,9 @@ def parse_traces(
                 record_stack = record_stacks[pid]
                 event_type = record_id & 0xF
                 func_id = record_id >> 4
+                if log.is_verbose_enough(log.VERBOSE_DEBUG):
+                    stack = ";".join(func_id.get(record.func_id, record.func_id) for record in record_stack)
+                    parsed_lines.append(f"{pid}({func_map.get(func_id, func_id)}):{ts}:{'call' if event_type == 0 else 'return'}:[{stack}]")
                 if event_type == 0:
                     record_stack.append(TraceRecord(func_id, ts))
                     record = data_handle.read(chunk_size)
@@ -226,6 +230,9 @@ def parse_traces(
             # Compute an approximation of the total runtime
             trace_contexts.total_runtime = ts - trace_contexts.total_runtime
             trace_contexts.add(-1, (), trace_contexts.total_runtime, 0, file_size // chunk_size)
+    if log.is_verbose_enough(log.VERBOSE_DEBUG):
+        with open('ktrace-parse-debug.log', 'w') as debug_log:
+            debug_log.write("\n".join(parsed_lines))
     return trace_contexts
 
 
