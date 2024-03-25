@@ -91,7 +91,7 @@ int BPF_KRETPROBE(main_exit)
 	}
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = ({{ main_id } << 4) | 0x1;
+	e->data[0] = ({{ main_id }} << 4) | 0x1;
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
