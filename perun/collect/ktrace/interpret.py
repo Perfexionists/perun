@@ -148,8 +148,12 @@ def report_finished_event(ts, top_record, record_stack, function_name, trace_con
         top_record.callees,
     )
 
+
 def parse_traces(
-    raw_data: pathlib.Path, func_map: dict[int, str], data_type: Type[DataT], skip_mismatched: bool = False
+    raw_data: pathlib.Path,
+    func_map: dict[int, str],
+    data_type: Type[DataT],
+    skip_mismatched: bool = False,
 ) -> TraceContextsMap[DataT]:
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
     record_stacks: dict[int, list[TraceRecord]] = {}
@@ -159,7 +163,7 @@ def parse_traces(
     read_bytes = 0
     chunk_size = 16
 
-    with progressbar.ProgressBar(max_value=file_size+chunk_size) as progress:
+    with progressbar.ProgressBar(max_value=file_size + chunk_size) as progress:
         with open(raw_data, "rb") as data_handle:
             # Special handling for the first line to get the first timestamp
             record = data_handle.read(chunk_size)
@@ -198,7 +202,13 @@ def parse_traces(
                             f" but got {func_map.get(func_id, func_id)}."
                         )
                         if not skip_mismatched:
-                            report_finished_event(ts, top_record, record_stack, func_map.get(top_record.func_id, top_record.func_id), trace_contexts)
+                            report_finished_event(
+                                ts,
+                                top_record,
+                                record_stack,
+                                func_map.get(top_record.func_id, top_record.func_id),
+                                trace_contexts,
+                            )
                         continue
                     break
                 if not found_matching_record:
@@ -207,7 +217,9 @@ def parse_traces(
                     read_bytes += chunk_size
                     progress.update(read_bytes)
                     continue
-                report_finished_event(ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts)
+                report_finished_event(
+                    ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts
+                )
                 record = data_handle.read(chunk_size)
                 read_bytes += chunk_size
                 progress.update(read_bytes)

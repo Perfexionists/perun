@@ -91,7 +91,12 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps(attachable_symbols)
     log.minor_success("Generating the source of the eBPF program")
 
-    bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"])
+    bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"])
+    # We add probed main to symbol tables (now we can since we generated the program already)
+    if kwargs.get("include_main", False):
+        main_id = len(attachable_symbols)
+        kwargs["func_to_idx"]['main'] = main_id
+        kwargs["idx_to_func"][main_id] = 'main'
     build_dir = Path(Path(__file__).resolve().parent, "bpf_build")
     commands.run_safely_external_command(f"make -C {build_dir}")
     log.minor_success("Building the eBPF program")
@@ -275,6 +280,14 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     is_flag=True,
     default=False,
     help="Skips mismatched events on stack (be default, we approximate the results)."
+)
+@click.option(
+    '--include-main',
+    '-im',
+    type=bool,
+    is_flag=True,
+    default=False,
+    help="Instruments uprobe for the main function of the profiled binary."
 )
 @click.pass_context
 def ktrace(ctx, **kwargs):
