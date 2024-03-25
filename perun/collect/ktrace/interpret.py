@@ -225,6 +225,7 @@ def parse_traces(
                 progress.update(read_bytes)
             # Compute an approximation of the total runtime
             trace_contexts.total_runtime = ts - trace_contexts.total_runtime
+            trace_contexts.add(-1, (), trace_contexts.total_runtime, 0, file_size // chunk_size)
     return trace_contexts
 
 
