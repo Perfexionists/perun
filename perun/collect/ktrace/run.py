@@ -20,6 +20,7 @@ from perun.utils.structs import CollectStatus
 
 
 BUSY_WAIT: int = 5
+TOTAL_RECORD_NAME: str = "%TOTAL_TIME%"
 
 
 def get_kernel():
@@ -92,11 +93,17 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     log.minor_success("Generating the source of the eBPF program")
 
     bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"])
-    # We add probed main to symbol tables (now we can since we generated the program already)
+
+    # We adjust the function map as follows:
+    #  1. If --include-main was set, we add main as the last symbol in the table
+    #  2. We add -1 as a whole command (this serves mainly for sanity checks)
     if kwargs.get("include_main", False):
         main_id = len(attachable_symbols)
         kwargs["func_to_idx"]['main'] = main_id
         kwargs["idx_to_func"][main_id] = 'main'
+    kwargs["func_to_idx"][TOTAL_RECORD_NAME] = -1
+    kwargs["idx_to_func"][-1] = TOTAL_RECORD_NAME
+
     build_dir = Path(Path(__file__).resolve().parent, "bpf_build")
     commands.run_safely_external_command(f"make -C {build_dir}")
     log.minor_success("Building the eBPF program")
