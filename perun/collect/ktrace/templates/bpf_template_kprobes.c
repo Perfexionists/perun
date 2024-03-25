@@ -45,6 +45,64 @@ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 	return 0;
 }
 
+{% if include_main %}
+SEC("uprobe//proc/self/exe:main")
+int BPF_KPROBE(main)
+{
+	pid_t pid;
+	pid = bpf_get_current_pid_tgid() >> 32;
+    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
+		return 0;
+	}
+
+	/* reserve sample from BPF ringbuf */
+	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
+	if (!e) {
+		events_lost++;
+		return 0;
+	}
+
+	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
+	e->data[0] = ({{ main_id }} << 4);
+	// Make it the upper bits
+	e->data[0] <<= 32;
+	// Add PID
+	e->data[0] |= pid;
+	e->data[1] = bpf_ktime_get_ns();
+	/* successfully submit it to user-space for post-processing */
+	bpf_ringbuf_submit(e, 0);
+	return 0;
+}
+
+SEC("uretprobe//proc/self/exe:main")
+int BPF_KRETPROBE(main_exit)
+{
+	pid_t pid;
+	pid = bpf_get_current_pid_tgid() >> 32;
+    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
+		return 0;
+	}
+
+	/* reserve sample from BPF ringbuf */
+	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
+	if (!e) {
+		events_lost++;
+		return 0;
+	}
+
+	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
+	e->data[0] = ({{ main_id } << 4) | 0x1;
+	// Make it the upper bits
+	e->data[0] <<= 32;
+	// Add PID
+	e->data[0] |= pid;
+	e->data[1] = bpf_ktime_get_ns();
+	/* successfully submit it to user-space for post-processing */
+	bpf_ringbuf_submit(e, 0);
+	return 0;
+}
+{% endif %}
+
 {% for func_name, func_idx in symbols.items() %}
 SEC("kprobe/{{ func_name }}")
 int BPF_KPROBE({{ func_name|replace(".", "_") }})
