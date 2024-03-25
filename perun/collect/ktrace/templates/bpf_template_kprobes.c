@@ -105,7 +105,7 @@ int BPF_KRETPROBE(main_exit)
 
 {% for func_name, func_idx in symbols.items() %}
 SEC("kprobe/{{ func_name }}")
-int BPF_KPROBE({{ func_name|replace(".", "_") }})
+int BPF_KPROBE({{ func_name|replace(".", "_") }}, int argc, char** argv)
 {
 	pid_t pid;
 	pid = bpf_get_current_pid_tgid() >> 32;
@@ -133,7 +133,7 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 }
 
 SEC("kretprobe/{{ func_name }}")
-int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
+int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit, int ret)
 {
 	pid_t pid;
 	pid = bpf_get_current_pid_tgid() >> 32;
