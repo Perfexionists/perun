@@ -209,7 +209,7 @@ def parse_traces(
                 func_id = record_id >> 4
                 if log.is_verbose_enough(log.VERBOSE_DEBUG):
                     stack = ";".join(func_map.get(record.func_id, record.func_id) for record in record_stack)
-                    parsed_lines.append(f"{pid}({func_map.get(func_id, func_id)}):{ts}:{'call' if event_type == 0 else 'return'}:[{stack}]")
+                    parsed_lines.append(f"{ts}:{pid}({func_map.get(func_id, func_id)}):{'call' if event_type == 0 else 'return'}:[{stack}]")
                 if event_type == 0:
                     record_stack.append(TraceRecord(func_id, ts))
                     record = data_handle.read(chunk_size)
