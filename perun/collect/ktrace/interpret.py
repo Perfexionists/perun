@@ -23,6 +23,30 @@ NS_TO_MS = 1000000
 DataT = TypeVar("DataT", bound="FuncData")
 
 
+def fold_recursive_calls_in_trace(trace: list[str], generalize=False):
+    """Folds consecutive recursive calls to single uid
+
+    TODO: REMOVE TEMPORARY AFTER MERGING OF UNMERGED BRANCH
+
+    If generalize is set to True, then each consecutive calls to certain UID will be
+    folded to ^*, otherwise to ^{number_of_consecutive_calls}.
+
+    So, e.g., for trace [a, b, c, c, c], we get [a, b, c^3] for generalize=False, and [a, b, c^*] otherwise.
+
+    :param trace: list of strings in order of calls
+    :param generalize: if set to true, then the folded calls will be generalized to *
+    :return: trace with folded recursive calls
+    """
+    folded_trace = []
+    for uid, group in itertools.groupby(trace):
+        count = sum(1 for _ in group)
+        if count > 1:
+            folded_trace.append(f"{uid}^*" if generalize else f"{uid}^{count}")
+        else:
+            folded_trace.append(uid)
+    return folded_trace
+
+
 class FuncData(ABC):
     @abstractmethod
     def update(self, inclusive_t: int, exclusive_t: int, callees_cnt: int) -> None:
@@ -306,7 +330,7 @@ def append_resources(
                 "ncalls": len(group),
                 "type": "time",
                 "subtype": resource_type,
-                "trace": list(trace),
+                "trace": fold_recursive_calls_in_trace(list(trace)),
             }
         )
 
@@ -327,7 +351,7 @@ def pandas_to_resources(df: pd.DataFrame) -> list[dict[str, Any]]:
             "uid": function,
             "ncalls": ncalls,
             "type": "stats",
-            "trace": list(trace),
+            "trace": fold_recursive_calls_in_trace(list(trace)),
         }
         for col in df.columns:
             if col in ("Function", "Trace", "Calls [#]"):
