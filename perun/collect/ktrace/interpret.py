@@ -221,11 +221,10 @@ def parse_traces(
                     read_bytes += chunk_size
                     progress.update(read_bytes)
                     continue
-                found_matching_record = True
+                found_matching_record = False
                 while True:
                     # We found the sentinel
                     if record_stack[-1].func_id == -1 and len(record_stack) == 1:
-                        found_matching_record = False
                         break
                     top_record = record_stack.pop()
                     if top_record.func_id != func_id:
@@ -243,6 +242,7 @@ def parse_traces(
                                 trace_contexts,
                             )
                         continue
+                    found_matching_record = True
                     break
                 if not found_matching_record:
                     log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
