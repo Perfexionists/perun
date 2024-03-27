@@ -156,7 +156,12 @@ def report_finished_event(ts, top_record, record_stack, function_name, trace_con
     if (duration := ts - top_record.timestamp) < 0:
         log.error(
             f"corrupted log: invalid timestamps for {function_name}:"
-            f" duration {duration} is negative."
+            f" duration of inclusive time: {duration} is negative."
+        )
+    if (duration - top_record.callees_time) < 0:
+        log.error(
+            f"corrupted log: invalid timestamps for {function_name}:"
+            f" duration of exclusive time: {duration - top_record.callees_time} is negative."
         )
     # Obtain the trace from the stack
     trace = tuple(record.func_id for record in record_stack if record.func_id != -1)
