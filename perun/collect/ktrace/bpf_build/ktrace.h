@@ -5,6 +5,7 @@
 
 struct event {
 	// [0]: 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b) 
-	// [1]: 64b timestamp in ns
-	uint64_t data[2];
+	// [1]: 32 empty, 32b tid
+	// [2]: 64b timestamp in ns
+	uint64_t data[3];
 };

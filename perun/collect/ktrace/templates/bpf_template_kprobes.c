@@ -129,6 +129,7 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 	e->data[0] <<= 32;
 	// Add PID
 	e->data[0] |= pid;
+	e->data[1] = 0; // Clear (for mind's tranquility)
 	e->data[1] |= tid;
 	e->data[2] = bpf_ktime_get_ns();
 	/* successfully submit it to user-space for post-processing */
@@ -161,6 +162,7 @@ int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 	e->data[0] <<= 32;
 	// Add PID
 	e->data[0] |= pid;
+	e->data[1] = 0; // Clear (for mind's tranquility)
 	e->data[1] |= tid;
 	e->data[2] = bpf_ktime_get_ns();
 	/* successfully submit it to user-space for post-processing */
