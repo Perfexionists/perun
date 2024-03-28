@@ -107,8 +107,11 @@ int BPF_KRETPROBE(uprobe_main_exit, int ret)
 SEC("kprobe/{{ func_name }}")
 int BPF_KPROBE({{ func_name|replace(".", "_") }})
 {
-	pid_t pid;
-	pid = bpf_get_current_pid_tgid() >> 32;
+	pid_t pid, tid;
+	u64 id;
+	id = bpf_get_current_pid_tgid();
+	pid = id >> 32;
+	tid = (u32) id;
     if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
 		return 0;
 	}
@@ -126,7 +129,8 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 	e->data[0] <<= 32;
 	// Add PID
 	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
+	e->data[1] |= tid;
+	e->data[2] = bpf_ktime_get_ns();
 	/* successfully submit it to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
 	return 0;
@@ -135,8 +139,11 @@ int BPF_KPROBE({{ func_name|replace(".", "_") }})
 SEC("kretprobe/{{ func_name }}")
 int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 {
-	pid_t pid;
-	pid = bpf_get_current_pid_tgid() >> 32;
+	pid_t pid, tid;
+	u64 id;
+	id = bpf_get_current_pid_tgid();
+	pid = id >> 32;
+	tid = (u32) id;
     if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
 		return 0;
 	}
@@ -154,7 +161,8 @@ int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 	e->data[0] <<= 32;
 	// Add PID
 	e->data[0] |= pid;
-	e->data[1] = bpf_ktime_get_ns();
+	e->data[1] |= tid;
+	e->data[2] = bpf_ktime_get_ns();
 	/* successfully submit it to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
 	return 0;
