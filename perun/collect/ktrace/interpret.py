@@ -201,7 +201,7 @@ def parse_traces(
             progress.update(read_bytes)
             if record is None or record == b"":
                 return trace_contexts
-            _, _, trace_contexts.total_runtime = struct.unpack("iIQ", record)
+            _, _, _, trace_contexts.total_runtime = struct.unpack("iIQQ", record)
             ts: int
             while record:
                 # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
