@@ -263,6 +263,12 @@ def parse_traces(
             exclusive = sum(val[-1].callees_time for val in record_stacks.values())
             trace_contexts.add(-1, (), trace_contexts.total_runtime, exclusive, file_size // chunk_size)
     if log.is_verbose_enough(log.VERBOSE_DEBUG):
+        log.minor_info("Events left in stack")
+        log.increase_indent()
+        for stack in record_stacks.values():
+            for event in stack:
+                log.minor_info(f"({event.func_id}, {event.callees_time})")
+        log.decrease_indent()
         with open('ktrace-parse-debug.log', 'w') as debug_log:
             debug_log.write("\n".join(parsed_lines))
     return trace_contexts
