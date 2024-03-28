@@ -267,7 +267,7 @@ def parse_traces(
         log.increase_indent()
         for stack in record_stacks.values():
             for event in stack:
-                log.minor_info(f"({event.func_id}, {event.callees_time})")
+                log.minor_info(f"({func_map.get(event.func_id, event.func_id)}, {event.callees_time})")
         log.decrease_indent()
         with open('ktrace-parse-debug.log', 'w') as debug_log:
             debug_log.write("\n".join(parsed_lines))
