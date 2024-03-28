@@ -191,7 +191,7 @@ def parse_traces(
 
     file_size = os.path.getsize(raw_data)
     read_bytes = 0
-    chunk_size = 16
+    chunk_size = 24
 
     with progressbar.ProgressBar(max_value=file_size + chunk_size) as progress:
         with open(raw_data, "rb") as data_handle:
