@@ -185,7 +185,7 @@ def parse_traces(
     skip_mismatched: bool = False,
 ) -> TraceContextsMap[DataT]:
     # Dummy TraceRecord for measuring exclusive time of the top-most function call
-    record_stacks: dict[int, list[TraceRecord]] = {}
+    record_stacks: dict[(int, int), list[TraceRecord]] = {}
     trace_contexts = TraceContextsMap(func_map, data_type)
     parsed_lines = []  # Used for debug only
 
@@ -206,15 +206,19 @@ def parse_traces(
             while record:
                 # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
                 # [1] 64b timestamp
-                pid, record_id, ts = struct.unpack("iIQ", record)
-                if pid not in record_stacks:
-                    record_stacks[pid] = [TraceRecord(-1, 0)]
-                record_stack = record_stacks[pid]
+                pid, record_id, tid, ts = struct.unpack("iIQQ", record)
+                if (pid, tid) not in record_stacks:
+                    record_stacks[(pid, tid)] = [TraceRecord(-1, 0)]
+                record_stack = record_stacks[(pid, tid)]
                 event_type = record_id & 0xF
                 func_id = record_id >> 4
                 if log.is_verbose_enough(log.VERBOSE_DEBUG):
-                    stack = ";".join(func_map.get(record.func_id, record.func_id) for record in record_stack)
-                    parsed_lines.append(f"{ts}:{pid}({func_map.get(func_id, func_id)}):{'call' if event_type == 0 else 'return'}:[{stack}]")
+                    stack = ";".join(
+                        func_map.get(record.func_id, record.func_id) for record in record_stack
+                    )
+                    parsed_lines.append(
+                        f"{ts}:({pid}:{tid})({func_map.get(func_id, func_id)}):{'call' if event_type == 0 else 'return'}:[{stack}]"
+                    )
                 if event_type == 0:
                     record_stack.append(TraceRecord(func_id, ts))
                     record = data_handle.read(chunk_size)
@@ -233,6 +237,8 @@ def parse_traces(
                             f"{('skipping' if skip_mismatched else 'approximating')},"
                             f" but got {func_map.get(func_id, func_id)}."
                         )
+                        if log.is_verbose_enough(log.VERBOSE_DEBUG):
+                            parsed_lines.append(f"{ts}:stack-mismatch:expected {func_map.get(top_record.func_id, top_record.func_id)} got {func_map.get(func_id, func_id)}")
                         if not skip_mismatched:
                             report_finished_event(
                                 ts,
@@ -249,6 +255,10 @@ def parse_traces(
                     record = data_handle.read(chunk_size)
                     read_bytes += chunk_size
                     progress.update(read_bytes)
+                    if log.is_verbose_enough(log.VERBOSE_DEBUG):
+                        parsed_lines.append(
+                            f"{ts}:missing-call:expected {func_map.get(func_id, func_id)}"
+                        )
                     continue
                 report_finished_event(
                     ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts
@@ -261,15 +271,19 @@ def parse_traces(
 
             # Register overall
             exclusive = sum(val[-1].callees_time for val in record_stacks.values())
-            trace_contexts.add(-1, (), trace_contexts.total_runtime, exclusive, file_size // chunk_size)
+            trace_contexts.add(
+                -1, (), trace_contexts.total_runtime, exclusive, file_size // chunk_size
+            )
     if log.is_verbose_enough(log.VERBOSE_DEBUG):
         log.minor_info("Events left in stack")
         log.increase_indent()
         for stack in record_stacks.values():
             for event in stack:
-                log.minor_info(f"({func_map.get(event.func_id, event.func_id)}, {event.callees_time})")
+                log.minor_info(
+                    f"({func_map.get(event.func_id, event.func_id)}, {event.callees_time})"
+                )
         log.decrease_indent()
-        with open('ktrace-parse-debug.log', 'w') as debug_log:
+        with open("ktrace-parse-debug.log", "w") as debug_log:
             debug_log.write("\n".join(parsed_lines))
     return trace_contexts
 
