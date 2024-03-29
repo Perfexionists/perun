@@ -104,39 +104,6 @@ int BPF_KRETPROBE(uprobe_main_exit, int ret)
 {% endif %}
 
 {% for func_name, func_idx in symbols.items() %}
-SEC("kprobe/{{ func_name }}")
-int BPF_KPROBE({{ func_name|replace(".", "_") }})
-{
-	pid_t pid, tid;
-	u64 id;
-	id = bpf_get_current_pid_tgid();
-	pid = id >> 32;
-	tid = (u32) id;
-    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
-		return 0;
-	}
-
-	/* reserve sample from BPF ringbuf */
-	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-	if (!e) {
-		events_lost++;
-		return 0;
-	}
-
-	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
-	e->data[0] = ({{ func_idx }} << 4);
-	// Make it the upper bits
-	e->data[0] <<= 32;
-	// Add PID
-	e->data[0] |= pid;
-	e->data[1] = 0; // Clear (for mind's tranquility)
-	e->data[1] |= tid;
-	e->data[2] = bpf_ktime_get_ns();
-	/* successfully submit it to user-space for post-processing */
-	bpf_ringbuf_submit(e, 0);
-	return 0;
-}
-
 SEC("kretprobe/{{ func_name }}")
 int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 {
@@ -158,6 +125,39 @@ int BPF_KRETPROBE({{ func_name|replace(".", "_") }}_exit)
 
 	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
 	e->data[0] = ({{ func_idx }} << 4) | 0x1;
+	// Make it the upper bits
+	e->data[0] <<= 32;
+	// Add PID
+	e->data[0] |= pid;
+	e->data[1] = 0; // Clear (for mind's tranquility)
+	e->data[1] |= tid;
+	e->data[2] = bpf_ktime_get_ns();
+	/* successfully submit it to user-space for post-processing */
+	bpf_ringbuf_submit(e, 0);
+	return 0;
+}
+
+SEC("kprobe/{{ func_name }}")
+int BPF_KPROBE({{ func_name|replace(".", "_") }})
+{
+	pid_t pid, tid;
+	u64 id;
+	id = bpf_get_current_pid_tgid();
+	pid = id >> 32;
+	tid = (u32) id;
+    if ((pid != process_pid0 {% for it in range(1, command_names|length) %} && pid != process_pid{{ it }}{% endfor %}) || pid == 0) {
+		return 0;
+	}
+
+	/* reserve sample from BPF ringbuf */
+	struct event *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
+	if (!e) {
+		events_lost++;
+		return 0;
+	}
+
+	// 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
+	e->data[0] = ({{ func_idx }} << 4);
 	// Make it the upper bits
 	e->data[0] <<= 32;
 	// Add PID
