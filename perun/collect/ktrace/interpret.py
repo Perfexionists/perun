@@ -3,7 +3,7 @@ from __future__ import annotations
 # Standard Imports
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from typing import Any, Generic, TypeVar, Type, Literal
+from typing import Any, Generic, TypeVar, Type, Literal, BinaryIO
 import itertools
 import os
 import pathlib
@@ -178,6 +178,23 @@ def report_finished_event(ts, top_record, record_stack, function_name, trace_con
     )
 
 
+def read_next_chunk(
+    data_handle: BinaryIO, read_bytes: int, chunk_size: int, progress: progressbar.ProgressBar
+) -> tuple[bytes, int]:
+    """Reads next chunk from the data handle and updates the progress
+
+    :param data_handle: opened data handle with log
+    :param read_bytes: how much bytes have we read so far
+    :param chunk_size: size of the read chunk
+    :param progress: progress bar of the reading
+    :return: read record and
+    """
+    record = data_handle.read(chunk_size)
+    read_bytes += chunk_size
+    progress.update(read_bytes)
+    return record, read_bytes
+
+
 def parse_traces(
     raw_data: pathlib.Path,
     func_map: dict[int, str],
@@ -196,9 +213,7 @@ def parse_traces(
     with progressbar.ProgressBar(max_value=file_size + chunk_size) as progress:
         with open(raw_data, "rb") as data_handle:
             # Special handling for the first line to get the first timestamp
-            record = data_handle.read(chunk_size)
-            read_bytes += chunk_size
-            progress.update(read_bytes)
+            record, read_bytes = read_next_chunk(data_handle, read_bytes, chunk_size, progress)
             if record is None or record == b"":
                 return trace_contexts
             _, _, _, trace_contexts.total_runtime = struct.unpack("iIQQ", record)
@@ -214,17 +229,14 @@ def parse_traces(
                 event_type = record_id & 0xF
                 func_id = record_id >> 4
                 if log.is_verbose_enough(log.VERBOSE_DEBUG):
-                    stack = ";".join(
-                        func_map.get(record.func_id, record.func_id) for record in record_stack
-                    )
                     parsed_lines.append(
                         f"{ts}:({pid}:{tid})({func_map.get(func_id, func_id)}):{'call' if event_type == 0 else 'return'}"
                     )
                 if event_type == 0:
                     record_stack.append(TraceRecord(func_id, ts))
-                    record = data_handle.read(chunk_size)
-                    read_bytes += chunk_size
-                    progress.update(read_bytes)
+                    record, read_bytes = read_next_chunk(
+                        data_handle, read_bytes, chunk_size, progress
+                    )
                     continue
                 found_matching_record = False
                 while True:
@@ -239,7 +251,9 @@ def parse_traces(
                             f" but got {func_map.get(func_id, func_id)}."
                         )
                         if log.is_verbose_enough(log.VERBOSE_DEBUG):
-                            parsed_lines.append(f"{ts}:stack-mismatch:expected {func_map.get(top_record.func_id, top_record.func_id)} got {func_map.get(func_id, func_id)}")
+                            parsed_lines.append(
+                                f"{ts}:stack-mismatch:expected {func_map.get(top_record.func_id, top_record.func_id)} got {func_map.get(func_id, func_id)}"
+                            )
                         if not skip_mismatched:
                             report_finished_event(
                                 ts,
@@ -253,9 +267,9 @@ def parse_traces(
                     break
                 if not found_matching_record:
                     log.warn(f"no calling event for {func_map.get(func_id, func_id)} (skipping)")
-                    record = data_handle.read(chunk_size)
-                    read_bytes += chunk_size
-                    progress.update(read_bytes)
+                    record, read_bytes = read_next_chunk(
+                        data_handle, read_bytes, chunk_size, progress
+                    )
                     if log.is_verbose_enough(log.VERBOSE_DEBUG):
                         parsed_lines.append(
                             f"{ts}:missing-call:expected {func_map.get(func_id, func_id)}"
@@ -264,9 +278,7 @@ def parse_traces(
                 report_finished_event(
                     ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts
                 )
-                record = data_handle.read(chunk_size)
-                read_bytes += chunk_size
-                progress.update(read_bytes)
+                record, read_bytes = read_next_chunk(data_handle, read_bytes, chunk_size, progress)
             # Compute an approximation of the total runtime
             trace_contexts.total_runtime = ts - trace_contexts.total_runtime
 
