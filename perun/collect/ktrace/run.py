@@ -90,12 +90,16 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         log.decrease_indent()
 
     if kwargs.get("use_multiprobes", False):
-        kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_enumerate(attachable_symbols)
-    else:
         kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_addresses(attachable_symbols)
+        bpfgen.generate_sources_for_multi_probes(
+            kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"]
+        )
+    else:
+        kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_enumerate(attachable_symbols)
+        bpfgen.generate_sources_for_kprobes(
+            kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"]
+        )
     log.minor_success("Generating the source of the eBPF program")
-
-    bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"])
 
     # We adjust the function map as follows:
     #  1. If --include-main was set, we add main as the last symbol in the table

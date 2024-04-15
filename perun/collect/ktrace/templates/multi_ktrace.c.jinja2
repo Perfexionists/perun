@@ -35,6 +35,12 @@ int main(int argc, char **argv)
 	struct ring_buffer *rb = NULL;
 	struct ktrace_bpf *skel;
 	int err;
+	struct bpf_link *link1, *link2, *link3, *link4 = NULL;
+	LIBBPF_OPTS(bpf_kprobe_multi_opts, opts);
+	const char *syms[2] = {
+		"find_vma",
+		"find_vma_prev",
+	};
 
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -51,11 +57,16 @@ int main(int argc, char **argv)
 	}
 
 	/* Attach tracepoint handler */
-	err = ktrace_bpf__attach(skel);
-	if (err) {
-		fprintf(stderr, "Failed to attach BPF skeleton\n");
-		goto cleanup;
-	}
+	opts.syms = syms;
+	opts.cnt = 2;
+	opts.cookies = NULL;
+
+	//err = ktrace_bpf__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
+	link1 = bpf_program__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
+	//err = ktrace_bpf__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
+	link2 = bpf_program__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
+	link3 = bpf_program__attach(skel->progs.handle_exec);
+	link4 = bpf_program__attach(skel->progs.handle_exit);
 
 	// Prepare an output file
 	out = fopen("output.log", "wb+");
@@ -94,5 +105,9 @@ cleanup:
 	if (out != NULL) {
 		fclose(out);
 	}
+	bpf_link__destroy(link1);
+	bpf_link__destroy(link2);
+	bpf_link__destroy(link3);
+	bpf_link__destroy(link4);
 	return err < 0 ? -err : 0;
 }
