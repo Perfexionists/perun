@@ -13,7 +13,7 @@ import subprocess
 
 # Perun Imports
 from perun.utils import log
-from perun.utils.external import commands
+from perun.utils.external import commands, environment
 
 
 KernelSymbolType = Literal["kprobe", "kfunc", "ftrace"]
@@ -220,7 +220,22 @@ def filter_available_symbols(
     return filtered_symbols
 
 
-def create_symbol_maps(symbols: set[str]) -> tuple[dict[str, int], dict[int, str]]:
+def create_symbol_maps_from_addresses(symbols: set[str]) -> tuple[dict[str, int], dict[int, str]]:
+    name_to_idx, idx_to_name = {}, {}
+    map_src = f"/boot/System.map-{environment.get_kernel()}"
+    try:
+        with open(map_src, 'r') as map_handle:
+            for line in map_handle:
+                parts = line.split()
+                if len(parts) >= 3 and parts[2] in symbols:
+                    name_to_idx[parts[2]] = int(parts[0])
+                    idx_to_name[int(parts[0])] = parts[2]
+    except FileNotFoundError:
+        log.error(f"cannot find kernel symbols map at {log.path_style(map_src)}")
+    return name_to_idx, idx_to_name
+
+
+def create_symbol_maps_from_enumerate(symbols: set[str]) -> tuple[dict[str, int], dict[int, str]]:
     name_to_idx, idx_to_name = {}, {}
     # The symbol indexing must currently be deterministic across multiple runs
     for idx, symbol in enumerate(sorted(symbols)):

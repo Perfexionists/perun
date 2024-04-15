@@ -89,7 +89,10 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             log.minor_info(f"{func}")
         log.decrease_indent()
 
-    kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps(attachable_symbols)
+    if kwargs.get("use_multiprobes", False):
+        kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_enumerate(attachable_symbols)
+    else:
+        kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_addresses(attachable_symbols)
     log.minor_success("Generating the source of the eBPF program")
 
     bpfgen.generate_bpf_c(kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"])
@@ -295,6 +298,14 @@ def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     is_flag=True,
     default=False,
     help="Instruments uprobe for the main function of the profiled binary."
+)
+@click.option(
+    '--use-multiprobes',
+    '-um',
+    type=bool,
+    is_flag=True,
+    default=False,
+    help="Instruments using kprobes.multi instead of using multiple kprobes (default=False)."
 )
 @click.pass_context
 def ktrace(ctx, **kwargs):
