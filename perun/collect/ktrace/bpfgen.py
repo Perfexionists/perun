@@ -11,6 +11,7 @@ from pathlib import Path
 import jinja2
 
 # Perun Imports
+from perun.utils import log
 
 
 def render_template(template_src: str, template_dst: str, **kwargs: Any) -> None:
@@ -50,8 +51,11 @@ def generate_sources_for_kprobes(
         include_main=include_main,
         main_id=len(symbol_map),
     )
+    log.minor_success(f"{log.path_style('ktrace.bpf.c')}", "generated")
     render_template("ktrace.c.jinja2", "ktrace.c")
+    log.minor_success(f"{log.path_style('ktrace.c')}", "generated")
     render_template("ktrace.h.jinja2", "ktrace.h")
+    log.minor_success(f"{log.path_style('ktrace.h')}", "generated")
 
 
 def generate_sources_for_multi_probes(
@@ -71,9 +75,10 @@ def generate_sources_for_multi_probes(
         "ktrace.bpf.c",
         bpfring_size=ring_size,
         command_names=cmd_names,
-        symbols=symbol_map,
-        include_main=include_main,
-        main_id=len(symbol_map),
+        include_main=include_main
     )
-    render_template("multi_ktrace.c.jinja2", "ktrace.c")
+    log.minor_success(f"{log.path_style('ktrace.bpf.c')}", "generated")
+    render_template("multi_ktrace.c.jinja2", "ktrace.c", symbols=symbol_map)
+    log.minor_success(f"{log.path_style('ktrace.c')}", "generated")
     render_template("multi_ktrace.h.jinja2", "ktrace.h")
+    log.minor_success(f"{log.path_style('ktrace.h')}", "generated")

@@ -89,6 +89,8 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
             log.minor_info(f"{func}")
         log.decrease_indent()
 
+    log.minor_info("Generating the source of the eBPF program")
+    log.increase_indent()
     if kwargs.get("use_multiprobes", False):
         kwargs["func_to_idx"], kwargs["idx_to_func"] = symbols.create_symbol_maps_from_addresses(attachable_symbols)
         bpfgen.generate_sources_for_multi_probes(
@@ -99,6 +101,7 @@ def before(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
         bpfgen.generate_sources_for_kprobes(
             kwargs["cmd_names"], kwargs["func_to_idx"], kwargs["bpfring_size"], kwargs["include_main"]
         )
+    log.decrease_indent()
     log.minor_success("Generating the source of the eBPF program")
 
     # We adjust the function map as follows:

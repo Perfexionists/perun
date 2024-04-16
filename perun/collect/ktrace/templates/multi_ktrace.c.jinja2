@@ -11,103 +11,106 @@
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
-	return vfprintf(stderr, format, args);
+    return vfprintf(stderr, format, args);
 }
 
 static volatile bool exiting = false;
 
 static void sig_handler(int sig)
 {
-	exiting = true;
+    exiting = true;
 }
 
 static int handle_event(void *ctx, void *data, size_t data_sz)
 {
-	const struct event *e = data;
-	FILE *out = (FILE *)ctx;
-	fwrite(e->data, sizeof(e->data), 1, out);
-	return 0;
+    const struct event *e = data;
+    FILE *out = (FILE *)ctx;
+    fwrite(e->data, sizeof(e->data), 1, out);
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
-	FILE *out = NULL;
-	struct ring_buffer *rb = NULL;
-	struct ktrace_bpf *skel;
-	int err;
-	struct bpf_link *link1, *link2, *link3, *link4 = NULL;
-	LIBBPF_OPTS(bpf_kprobe_multi_opts, opts);
-	const char *syms[2] = {
-		"find_vma",
-		"find_vma_prev",
-	};
+    FILE *out = NULL;
+    struct ring_buffer *rb = NULL;
+    struct ktrace_bpf *skel;
+    int err;
+    struct bpf_link *kprobe_link, *kretprobe_link = NULL;
+    struct bpf_link *sched_enter_link, *sched_exit_link = NULL;
 
-	/* Set up libbpf errors and debug info callback */
-	libbpf_set_print(libbpf_print_fn);
+    LIBBPF_OPTS(bpf_kprobe_multi_opts, opts);
+    const char *syms[{{ symbols|length }}] = {
+        {% for symbol in symbols %}
+        "{{ symbol }}",
+        {%- endfor %}
+    };
 
-	/* Cleaner handling of Ctrl-C */
-	signal(SIGINT, sig_handler);
-	signal(SIGTERM, sig_handler);
+    /* Set up libbpf errors and debug info callback */
+    libbpf_set_print(libbpf_print_fn);
 
-	/* Open load and verify BPF application */
-	skel = ktrace_bpf__open_and_load();
-	if (!skel) {
-		fprintf(stderr, "Failed to open BPF skeleton\n");
-		return 1;
-	}
+    /* Cleaner handling of Ctrl-C */
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
 
-	/* Attach tracepoint handler */
-	opts.syms = syms;
-	opts.cnt = 2;
-	opts.cookies = NULL;
+    /* Open load and verify BPF application */
+    skel = ktrace_bpf__open_and_load();
+    if (!skel) {
+        fprintf(stderr, "Failed to open BPF skeleton\n");
+        return 1;
+    }
 
-	//err = ktrace_bpf__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
-	link1 = bpf_program__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
-	//err = ktrace_bpf__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
-	link2 = bpf_program__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
-	link3 = bpf_program__attach(skel->progs.handle_exec);
-	link4 = bpf_program__attach(skel->progs.handle_exit);
+    /* Attach tracepoint handler */
+    opts.syms = syms;
+    opts.cnt = {{ symbols|length }};
+    opts.cookies = NULL;
 
-	// Prepare an output file
-	out = fopen("output.log", "wb+");
-	if (out == NULL) {
-		goto cleanup;
-	}
+    /* Attach tracepoints
+    // TODO: There should be some error handling
+    kprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
+    kretprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
+    sched_enter_link = bpf_program__attach(skel->progs.handle_exec);
+    sched_exit_link = bpf_program__attach(skel->progs.handle_exit);
 
-	/* Set up ring buffer polling */
-	rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, (void *)out, NULL);
-	if (!rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create ring buffer\n");
-		goto cleanup;
-	}
+    // Prepare an output file
+    out = fopen("output.log", "wb+");
+    if (out == NULL) {
+        goto cleanup;
+    }
 
-	/* Process events */
-	while (!exiting) {
-		err = ring_buffer__poll(rb, 10 /* timeout, ms */);
-		/* Ctrl-C will cause -EINTR */
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			printf("Error polling perf buffer: %d\n", err);
-			break;
-		}
-	}
+    /* Set up ring buffer polling */
+    rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, (void *)out, NULL);
+    if (!rb) {
+        err = -1;
+        fprintf(stderr, "Failed to create ring buffer\n");
+        goto cleanup;
+    }
+
+    /* Process events */
+    while (!exiting) {
+        err = ring_buffer__poll(rb, 10 /* timeout, ms */);
+        /* Ctrl-C will cause -EINTR */
+        if (err == -EINTR) {
+            err = 0;
+            break;
+        }
+        if (err < 0) {
+            printf("Error polling perf buffer: %d\n", err);
+            break;
+        }
+    }
 
 cleanup:
-	/* Clean up */
-	// Did we lose any data?
-	fprintf(stderr, "Lost events: %lu\n", skel->bss->events_lost);
-	ring_buffer__free(rb);
-	ktrace_bpf__destroy(skel);
-	if (out != NULL) {
-		fclose(out);
-	}
-	bpf_link__destroy(link1);
-	bpf_link__destroy(link2);
-	bpf_link__destroy(link3);
-	bpf_link__destroy(link4);
-	return err < 0 ? -err : 0;
+    /* Clean up */
+    // Did we lose any data?
+    fprintf(stderr, "Lost events: %lu\n", skel->bss->events_lost);
+    ring_buffer__free(rb);
+    ktrace_bpf__destroy(skel);
+    if (out != NULL) {
+        fclose(out);
+    }
+    bpf_link__destroy(kprobe_link);
+    bpf_link__destroy(kretprobe_link);
+    bpf_link__destroy(sched_enter_link);
+    bpf_link__destroy(sched_exit_link);
+    return err < 0 ? -err : 0;
 }
