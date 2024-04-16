@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     opts.cnt = {{ symbols|length }};
     opts.cookies = NULL;
 
-    /* Attach tracepoints
+    /* Attach tracepoints */
     // TODO: There should be some error handling
     kprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
     kretprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
