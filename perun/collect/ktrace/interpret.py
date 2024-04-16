@@ -222,12 +222,12 @@ def parse_traces(
                 # [0] 32 lowest bits: pid, 32 upper bits: func ID (28b) + event type (4b)
                 # [1] 32b empty, 32bit tid
                 # [2] 64b timestamp
-                pid, record_id, tid, ts = struct.unpack("iIQQ", record)
+                pid, record_id, func_id, ts = struct.unpack("iIQQ", record)
+                event_type = record_id & 0xF
+                tid = record_id >> 4
                 if (pid, tid) not in record_stacks:
                     record_stacks[(pid, tid)] = [TraceRecord(-1, 0)]
                 record_stack = record_stacks[(pid, tid)]
-                event_type = record_id & 0xF
-                func_id = record_id >> 4
                 if log.is_verbose_enough(log.VERBOSE_DEBUG):
                     parsed_lines.append(
                         f"{ts}:({pid}:{tid})({func_map.get(func_id, func_id)}):{'call' if event_type == 0 else 'return'}"
