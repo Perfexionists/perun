@@ -156,7 +156,7 @@ int kprobe(struct pt_regs *ctx)
     }
 
     // 32 lowest bits: pid, 32 upper bits: TID (28b) + event type (4b)
-    e->data[0] = (tid << 4) | 0x1;
+    e->data[0] = (tid << 4);
     // Make it the upper bits
     e->data[0] <<= 32;
     // Add PID
