@@ -67,6 +67,7 @@ int main(int argc, char **argv)
     /* Attach tracepoints */
     // TODO: There should be some error handling
     kprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kprobe, NULL, &opts);
+    opts.retprobe = true;
     kretprobe_link = bpf_program__attach_kprobe_multi_opts(skel->progs.kretprobe, NULL, &opts);
     sched_enter_link = bpf_program__attach(skel->progs.handle_exec);
     sched_exit_link = bpf_program__attach(skel->progs.handle_exit);
