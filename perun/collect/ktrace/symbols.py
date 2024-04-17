@@ -222,7 +222,7 @@ def filter_available_symbols(
 
 def create_symbol_maps_from_addresses(symbols: set[str]) -> tuple[dict[str, int], dict[int, str]]:
     name_to_idx, idx_to_name = {}, {}
-    map_src = "/proc/callsyms"
+    map_src = "/proc/kallsyms"
     try:
         with open(map_src, 'r') as map_handle:
             for line in map_handle:
