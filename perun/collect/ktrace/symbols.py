@@ -222,7 +222,7 @@ def filter_available_symbols(
 
 def create_symbol_maps_from_addresses(symbols: set[str]) -> tuple[dict[str, int], dict[int, str]]:
     name_to_idx, idx_to_name = {}, {}
-    map_src = f"/boot/System.map-{environment.get_kernel()}"
+    map_src = "/proc/callsyms"
     try:
         with open(map_src, 'r') as map_handle:
             for line in map_handle:
@@ -231,7 +231,7 @@ def create_symbol_maps_from_addresses(symbols: set[str]) -> tuple[dict[str, int]
                     name_to_idx[parts[2]] = int(parts[0], 16)
                     idx_to_name[int(parts[0], 16)] = parts[2]
     except FileNotFoundError:
-        log.error(f"cannot find kernel symbols map at {log.path_style(map_src)}")
+        log.error(f"cannot find kernel symbols at {log.path_style(map_src)}")
     return name_to_idx, idx_to_name
 
 
