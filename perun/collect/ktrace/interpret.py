@@ -250,10 +250,6 @@ def parse_traces(
                             f"{('skipping' if skip_mismatched else 'approximating')},"
                             f" but got {func_map.get(func_id, func_id)}."
                         )
-                        if log.is_verbose_enough(log.VERBOSE_DEBUG):
-                            parsed_lines.append(
-                                f"{ts}:stack-mismatch:expected {func_map.get(top_record.func_id, top_record.func_id)} got {func_map.get(func_id, func_id)}"
-                            )
                         if not skip_mismatched:
                             report_finished_event(
                                 ts,
@@ -270,10 +266,6 @@ def parse_traces(
                     record, read_bytes = read_next_chunk(
                         data_handle, read_bytes, chunk_size, progress
                     )
-                    if log.is_verbose_enough(log.VERBOSE_DEBUG):
-                        parsed_lines.append(
-                            f"{ts}:missing-call:expected {func_map.get(func_id, func_id)}"
-                        )
                     continue
                 report_finished_event(
                     ts, top_record, record_stack, func_map.get(func_id, func_id), trace_contexts
