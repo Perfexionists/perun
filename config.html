@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Configuration files &#8212; Perun 0.21.8 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -184,7 +184,7 @@ running <code class="docutils literal notranslate"><span class="pre">perun</span
 The formatting string consists either of raw characters or special tags, that output
 information according to the resulting profile. By default the following formatting string is
 set in the global configuration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">args</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
 </pre></div>
 </div>
 <p>The supported tags are as follows:</p>
@@ -197,7 +197,7 @@ Refer to <a class="reference internal" href="collectors.html#collectors-list"><s
 <blockquote>
 <div><p>Placeholder for list of postprocessors that were used on the given profile. The resulting
 string consists of postprocessor names joined by <code class="docutils literal notranslate"><span class="pre">-and-</span></code> string, i.e. for example this will
-output string <code class="docutils literal notranslate"><span class="pre">normalizer-and-regression-analysis</span></code>.</p>
+output string <code class="docutils literal notranslate"><span class="pre">regressogram-and-regression-analysis</span></code>.</p>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">%&lt;unit&gt;.&lt;param&gt;%</span></code>:</p>
 <blockquote>
@@ -208,11 +208,6 @@ postprocessor)</p>
 <blockquote>
 <div><p>Placeholder for the command that was profiled, i.e. some binary, script or command (refer
 to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal notranslate"><span class="pre">cmds</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">%args%</span></code>:</p>
-<blockquote>
-<div><p>Placeholder for arguments that were supplied to the profiled command (refer to
-<a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal notranslate"><span class="pre">args</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">%workload%</span></code>:</p>
 <blockquote>
@@ -252,7 +247,7 @@ attribute <code class="docutils literal notranslate"><span class="pre">ProfileIn
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
-<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'args',</span> <span class="pre">'workload',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="std confunit">
@@ -441,47 +436,42 @@ empty.</p>
 <td><p>–</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#confunit-args"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">args</span></code></a></p></td>
-<td><p>–</p></td>
-<td><p>–</p></td>
-<td><p>–</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#confunit-workloads"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">workloads</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confunit-workloads"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">workloads</span></code></a></p></td>
 <td><p>auto lookup</p></td>
 <td><p>–</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#confunit-collectors"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">collectors</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confunit-collectors"><code class="xref std std-cunit docutils literal notranslate"><span class="pre">collectors</span></code></a></p></td>
 <td><p><a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a></p></td>
 <td><p>–</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.strategies</span></code></a></p></td>
 <td><p><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></p></td>
 <td><p><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.collect_before_check</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.collect_before_check</span></code></a></p></td>
 <td><p>true</p></td>
 <td><p>true</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">degradation.log_collect</span></code></a></p></td>
 <td><p>true</p></td>
 <td><p>true</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">execute.pre_run</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">execute.pre_run</span></code></a></p></td>
 <td><p>make</p></td>
 <td><p>make</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.register_after_run</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.register_after_run</span></code></a></p></td>
 <td><p>true</p></td>
 <td><p>–</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a></p></td>
 <td><p>%collector%-of-%cmd%-%workload%-%date%</p></td>
 <td><p>–</p></td>
 <td><p>–</p></td>
@@ -715,7 +705,7 @@ specified in the nearest perun configuration..</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -723,7 +713,7 @@ specified in the nearest perun configuration..</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -733,7 +723,7 @@ specified in the nearest perun configuration..</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

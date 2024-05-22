@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Internals &#8212; Perun 0.21.8 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -64,189 +64,6 @@ serves as an interface in Perun which supplies the necessary information between
 control and performance versioning systems.</p>
 <section id="module-perun.vcs">
 <span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs" title="Link to this heading">¶</a></h3>
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.init">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcs_init_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.init" title="Link to this definition">¶</a></dt>
-<dd><p>Calls the implementation of initialization of wrapped underlying version
-control system.</p>
-<p>The initialization should take care of both reinitialization of existing
-version control system instances and newly created instances. Init is
-called during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">init</span></code> command from command line interface.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vcs_init_params</strong> (<em>dict</em>) – dictionary of keyword arguments passed to
-initialization method of the underlying vcs module</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>true if the underlying vcs was successfully initialized</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.walk_minor_versions">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">walk_minor_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">head_minor_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">MinorVersion</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#walk_minor_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.walk_minor_versions" title="Link to this definition">¶</a></dt>
-<dd><p>Generator of minor versions for the given major version, which yields
-the <code class="docutils literal notranslate"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
-<code class="docutils literal notranslate"><span class="pre">date</span></code>, <code class="docutils literal notranslate"><span class="pre">author</span></code>, <code class="docutils literal notranslate"><span class="pre">email</span></code>, <code class="docutils literal notranslate"><span class="pre">checksum</span></code> (i.e. the hash representation
-of the minor version), <code class="docutils literal notranslate"><span class="pre">commit_description</span></code> and <code class="docutils literal notranslate"><span class="pre">commit_parents</span></code> (i.e.
-other minor versions).</p>
-<p>Minor versions are walked through this function during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code>
-command.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>head_minor_version</strong> (<em>str</em>) – the root minor versions which is the root
-of the walk.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of minor version representation</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.walk_major_versions">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">walk_major_versions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">MajorVersion</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#walk_major_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.walk_major_versions" title="Link to this definition">¶</a></dt>
-<dd><p>Generator of major versions for the current wrapped repository.</p>
-<p>This function is currently unused, but will be needed in the future.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable stream of major version representation</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.get_minor_head">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_minor_head</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_head"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.get_minor_head" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the string representation of head of current major version, i.e.
-for git this returns the massaged HEAD reference.</p>
-<p>This function is called mainly during the outputs of <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code> and
-<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> but also during the automatic generation of profiles
-(either by <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span></code> or <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span></code>), where the retrieved
-identification is used as <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>unique string representation of current head (usually in SHA)</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – if the head cannot be retrieved from the current
-context</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.get_head_major_version">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_head_major_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#get_head_major_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.get_head_major_version" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the string representation of current major version of the
-wrapped repository.</p>
-<p>Major version is displayed during the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> output, which shows
-the current working major version of the project.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>string representation of the major version</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.get_minor_version_info">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">get_minor_version_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#perun.vcs.get_minor_version_info" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper function of the &#64;p func</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.check_minor_version_validity">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">check_minor_version_validity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#perun.vcs.check_minor_version_validity" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper function of the &#64;p func</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.massage_parameter">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">massage_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#massage_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.massage_parameter" title="Link to this definition">¶</a></dt>
-<dd><p>Conversion function for massaging (or unifying different representations
-of objects) the parameters for version control systems.</p>
-<p>Massaging is mainly executed during from the command line interface, when
-one can e.g. use the references (like <code class="docutils literal notranslate"><span class="pre">HEAD</span></code>) to specify concrete minor
-versions. Massing then unifies e.g. the references or proper hash
-representations, to just one representation for internal processing.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>parameter</strong> (<em>str</em>) – vcs parameter (e.g. revision, minor or major version)
-which will be massaged, i.e. transformed to unified representation</p></li>
-<li><p><strong>parameter_type</strong> (<em>str</em>) – more detailed type of the parameter</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>string representation of parameter</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.is_dirty">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">is_dirty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Link to this definition">¶</a></dt>
-<dd><p>Tests whether the wrapped repository is dirty.</p>
-<p>By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
-we are in the middle of commit) or any unsubmitted changes to tracked files in the current
-working directory.</p>
-<p>Note that this is crucial for performance testing, as any uncommited changes may skew
-the profiled data and hence the resulting profiles would not correctly represent the performance
-of minor versions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>whether the given repository is dirty or not</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.save_state">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">save_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.save_state" title="Link to this definition">¶</a></dt>
-<dd><p>Saves the state of the repository in case it is dirty.</p>
-<p>When saving the state of the repository one should store all of the uncommited changes to
-the working directory and index. Any issues while this process happens should be handled by
-user itself, hence no workarounds and mending should take place in this function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(bool, str) the tuple of indication that some changes were stashed and the state of
-previous head.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.restore_state">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">restore_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">saved</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Link to this definition">¶</a></dt>
-<dd><p>Restores the previous state of the the repository</p>
-<p>When restoring the state of the repository one should pop the stored changes from the stash
-and reapply them on the current directory. This make sure, that after the performance testing,
-the project is in the previous state and developer can continue with his work.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>saved</strong> (<em>bool</em>) – whether the stashed was something</p></li>
-<li><p><strong>state</strong> (<em>str</em>) – the previous state of the repository</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="perun.vcs.checkout">
-<span class="sig-prename descclassname"><span class="pre">perun.vcs.</span></span><span class="sig-name descname"><span class="pre">checkout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minor_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.checkout" title="Link to this definition">¶</a></dt>
-<dd><p>Checks out the new working directory corresponding to the given minor version.</p>
-<p>According to the supplied minor version, this command should remake the working directory
-so it corresponds to the state defined by the minor version.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="creating-support-for-custom-vcs">
 <span id="internals-vcs-custom"></span><h3>Creating Support for Custom VCS<a class="headerlink" href="#creating-support-for-custom-vcs" title="Link to this heading">¶</a></h3>
@@ -260,15 +77,15 @@ located in <code class="docutils literal notranslate"><span class="pre">perun.ut
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
-<span class="linenos"> 3</span><span class="gu">@@ -6,7 +6,7 @@</span>
-<span class="linenos"> 4</span><span class="w"> </span>        )
+<span class="linenos"> 3</span><span class="gu">@@ -4,7 +4,7 @@</span>
+<span class="linenos"> 4</span><span class="w"> </span>        error(f&quot;trying to call get_supported_module_names with incorrect package &#39;{package}&#39;&quot;)
 <span class="linenos"> 5</span><span class="w"> </span>    return {
 <span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;],
 <span class="linenos"> 7</span><span class="gd">-        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],</span>
 <span class="linenos"> 8</span><span class="gi">+        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;, &quot;mycollector&quot;],</span>
-<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [&quot;filter&quot;, &quot;normalizer&quot;, &quot;regression-analysis&quot;],
-<span class="linenos">10</span><span class="w"> </span>        &quot;view&quot;: [
-<span class="linenos">11</span><span class="w"> </span>            &quot;alloclist&quot;,
+<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [
+<span class="linenos">10</span><span class="w"> </span>            &quot;moving-average&quot;,
+<span class="linenos">11</span><span class="w"> </span>            &quot;kernel-regression&quot;,
 </pre></div>
 </div>
 <ol class="arabic" start="3">
@@ -488,21 +305,7 @@ confirmation until the profile is found.</p></li>
     <ul>
 <li><a class="reference internal" href="#">Perun Internals</a><ul>
 <li><a class="reference internal" href="#version-control-systems">Version Control Systems</a><ul>
-<li><a class="reference internal" href="#module-perun.vcs">Version Control System API</a><ul>
-<li><a class="reference internal" href="#perun.vcs.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.walk_minor_versions"><code class="docutils literal notranslate"><span class="pre">walk_minor_versions()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.walk_major_versions"><code class="docutils literal notranslate"><span class="pre">walk_major_versions()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.get_minor_head"><code class="docutils literal notranslate"><span class="pre">get_minor_head()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.get_head_major_version"><code class="docutils literal notranslate"><span class="pre">get_head_major_version()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.get_minor_version_info"><code class="docutils literal notranslate"><span class="pre">get_minor_version_info()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.check_minor_version_validity"><code class="docutils literal notranslate"><span class="pre">check_minor_version_validity()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.massage_parameter"><code class="docutils literal notranslate"><span class="pre">massage_parameter()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.is_dirty"><code class="docutils literal notranslate"><span class="pre">is_dirty()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.save_state"><code class="docutils literal notranslate"><span class="pre">save_state()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.restore_state"><code class="docutils literal notranslate"><span class="pre">restore_state()</span></code></a></li>
-<li><a class="reference internal" href="#perun.vcs.checkout"><code class="docutils literal notranslate"><span class="pre">checkout()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#module-perun.vcs">Version Control System API</a></li>
 <li><a class="reference internal" href="#creating-support-for-custom-vcs">Creating Support for Custom VCS</a></li>
 </ul>
 </li>
@@ -537,7 +340,7 @@ confirmation until the profile is found.</p></li>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -545,7 +348,7 @@ confirmation until the profile is found.</p></li>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -555,7 +358,7 @@ confirmation until the profile is found.</p></li>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

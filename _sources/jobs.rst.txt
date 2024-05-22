@@ -173,7 +173,7 @@ Full example of one job matrix is as follows:
               - name: time
 
            postprocessors:
-              - name: normalizer
+              - name: regressogram
               - name: regression_analysis
                 params:
                  - method: full
@@ -182,7 +182,7 @@ Full example of one job matrix is as follows:
 
 Given matrix will create four jobs (``perun log HEAD``, ``perun log HEAD~1``, ``perun log --short
 HEAD`` and ``perun log --short HEAD~1``) which will be issued for runs. Each job will be collected
-by :ref:`collectors-time` and then postprocessed first by :ref:`postprocessors-normalizer` and then
+by :ref:`collectors-time` and then postprocessed first by :ref:`postprocessors-regressogram` and then
 by :ref:`postprocessors-regression-analysis` with specification ``{'method': 'full', 'steps':
 10}``.
 
@@ -267,7 +267,7 @@ can be set in the configuration:
    .. code-block:: yaml
 
            postprocessors:
-              - name: normalizer
+              - name: regressogram
               - name: regression_analysis
                 params:
                  - method: full

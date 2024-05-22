@@ -1,17 +1,15 @@
 def get_supported_module_names(package):
     """..."""
     if package not in ("vcs", "collect", "postprocess", "view"):
-        error(
-            "trying to call get_supported_module_names with incorrect package '{}'".format(package)
-        )
+        error(f"trying to call get_supported_module_names with incorrect package '{package}'")
     return {
         "vcs": ["git"],
         "collect": ["trace", "memory", "time"],
         "postprocess": [
-            "filter",
-            "normalizer",
+            "moving-average",
+            "kernel-regression",
             "regression-analysis",
-            "mypostprocessor",
+            "regressogram",
         ],
         "view": [
             "alloclist",
@@ -19,7 +17,6 @@ def get_supported_module_names(package):
             "flamegraph",
             "flow",
             "heapmap",
-            "raw",
             "scatter",
         ],
     }[package]

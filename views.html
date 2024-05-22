@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Visualizations Overview &#8212; Perun 0.21.8 documentation</title>
+    <title>Visualizations Overview &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -52,7 +52,7 @@ e.g. using <a class="reference external" href="https://pandas.pydata.org/">panda
 </ol>
 </div></blockquote>
 <p>The format of input profiles has to be w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>, in
-particular the intepreted profiles should contain the <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> region
+particular the interpreted profiles should contain the <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> region
 with data.</p>
 <p>Automatically generated profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code>
 directory as a file with the <code class="docutils literal notranslate"><span class="pre">.perf</span></code> extension. The filename is by default
@@ -131,7 +131,7 @@ different values of <code class="docutils literal notranslate"><span class="pre"
 files, that can be opened directly in the browser. Resulting graphs can be
 further customized by adding custom labels for axes, custom graph title or
 different graph width.</p>
-<p>Example 1. The following will display the sum of sum of amounts of all
+<p>Example 1. The following will display the sum of sums of amounts of all
 resources of given for each subtype, stacked by uid (e.g. the locations in
 the program):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
@@ -274,7 +274,7 @@ relative to others.</p>
 <p><strong>Acknowledgements</strong>: Big thanks to Brendan Gregg for creating the original
 perl script for creating flame graphs w.r.t simple format. If you like this
 visualization technique, please check out this guy’s site
-(<a class="reference external" href="http://brendangregg.com">http://brendangregg.com</a>) for more information about performance, profiling
+(<a class="reference external" href="https://brendangregg.com">https://brendangregg.com</a>) for more information about performance, profiling
 and useful talks and visualization techniques!</p>
 <p>The example output of the flamegraph is more or less as follows:</p>
 <pre class="literal-block">                    `
@@ -339,7 +339,7 @@ variable as basic graph. For each group of resources identified by unique
 value of <code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code> key, one graph shows the dependency of <code class="docutils literal notranslate"><span class="pre">&lt;of&gt;</span></code> values
 aggregated by <code class="docutils literal notranslate"><span class="pre">&lt;func&gt;</span></code> depending on the <code class="docutils literal notranslate"><span class="pre">&lt;through&gt;</span></code> key. Moreover, the
 values can either be accumulated (this way when displaying the value of ‘n’
-on x axis, we accumulate the sum of all values for all m &lt; n) or stacked,
+on x-axis, we accumulate the sum of all values for all m &lt; n) or stacked,
 where the graphs are output on each other and then one can see the overall
 trend through all the groups and proportions between each of the group.</p>
 <p><a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library is the current interpretation backend, which generates HTML
@@ -350,7 +350,7 @@ different graph width.</p>
 the function running time) of each function depending on the size of the
 structure over which the given function operated:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
-    <span class="o">--</span><span class="n">acumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+    <span class="o">--</span><span class="n">accumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>
@@ -394,7 +394,7 @@ structure over which the given function operated:</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-show-flow-s">
 <span id="cmdoption-perun-show-flow-stacked"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--stacked</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-s" title="Link to this definition">¶</a></dt>
-<dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionaly shows the sum of the values.</p>
+<dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionally shows the sum of the values.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -455,7 +455,7 @@ function depending on the size of the structure we execute the search on.</p>
 </section>
 <section id="module-perun.view.scatter">
 <span id="scatter-plot"></span><span id="views-scatter"></span><h3>Scatter Plot<a class="headerlink" href="#module-perun.view.scatter" title="Link to this heading">¶</a></h3>
-<p><cite>Scatter plot</cite> visualizes the data as points on two dimensional grid, with
+<p><cite>Scatter plot</cite> visualizes the data as points on two-dimensional grid, with
 moderate customization possibilities. This visualization also display
 regression models, if the input profile was postprocessed by
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. The output backend of <cite>Scatter plot</cite>
@@ -512,7 +512,7 @@ regression analysis and models refer to
 <dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">amount</span></code></p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'amount'</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -523,7 +523,7 @@ regression analysis and models refer to
 <dd><p>Keys that will be displayed on X axis of the scatter plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">structure-unit-size</span></code></p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'structure-unit-size'</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -666,7 +666,7 @@ form, and allow output to file.</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-show-tableof-resources-h">
 <span id="cmdoption-perun-show-tableof-resources-headers"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--headers</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-resources-h" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be outputed</p>
+<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be output</p>
 </dd></dl>
 
 <dl class="std option">
@@ -692,7 +692,7 @@ form, and allow output to file.</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-show-tableof-models-h">
 <span id="cmdoption-perun-show-tableof-models-headers"></span><span class="sig-name descname"><span class="pre">-h</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--headers</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-models-h" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be outputed</p>
+<dd><p>Sets the headers that will be displayed in the table. If none are stated then all of the headers will be output</p>
 </dd></dl>
 
 <dl class="std option">
@@ -704,7 +704,7 @@ form, and allow output to file.</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-show-tableof-models-f">
 <span id="cmdoption-perun-show-tableof-models-filter-by"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filter-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;key&gt;</span> <span class="pre">&lt;value&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-tableof-models-f" title="Link to this definition">¶</a></dt>
-<dd><p>Filters the table to rows, where &lt;key&gt; == &lt;value&gt;. If the <cite>–filter</cite> is set several times, then rows satisfying all rules will be selected for different keys; and the rows satisfying some rule will be sellected for same key.</p>
+<dd><p>Filters the table to rows, where &lt;key&gt; == &lt;value&gt;. If the <cite>–filter</cite> is set several times, then rows satisfying all rules will be selected for different keys; and the rows satisfying some rule will be selected for same key.</p>
 </dd></dl>
 
 </section>
@@ -786,7 +786,7 @@ coefficient of determination <cite>r_square</cite>. The output uses different fo
 <span id="views-custom"></span><h2>Creating your own Visualization<a class="headerlink" href="#creating-your-own-visualization" title="Link to this heading">¶</a></h2>
 <p>New interpretation modules can be registered within Perun in several steps. The visualization
 methods has the least requirements and only needs to work over the profiles w.r.t.
-<a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> and implement method for <a class="reference external" href="http://click.pocoo.org/5/">Click</a> api in order to be used from command line.</p>
+<a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> and implement method for <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> api in order to be used from command line.</p>
 <p>You can register your new visualization as follows:</p>
 <blockquote>
 <div><ol class="arabic">
@@ -819,15 +819,15 @@ following structure:</p></li>
 <ol class="arabic simple" start="3">
 <li><p>Next, in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> implement module with the command line interface function, named the
 same as your visualization technique. This function is called from the command line as
-<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">``perun</span> <span class="pre">show</span> <span class="pre">myview</span></code> and is based on <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library.</p></li>
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">``perun</span> <span class="pre">show</span> <span class="pre">myview</span></code> and is based on <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library.</p></li>
 <li><p>Finally register your newly created module in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code> located in
 <code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos">2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_views.py</span>
-<span class="linenos">3</span><span class="gu">@@ -16,5 +16,6 @@</span>
-<span class="linenos">4</span><span class="w"> </span>            &quot;heapmap&quot;,
-<span class="linenos">5</span><span class="w"> </span>            &quot;raw&quot;,
+<span class="linenos">3</span><span class="gu">@@ -18,5 +18,6 @@</span>
+<span class="linenos">4</span><span class="w"> </span>            &quot;flow&quot;,
+<span class="linenos">5</span><span class="w"> </span>            &quot;heapmap&quot;,
 <span class="linenos">6</span><span class="w"> </span>            &quot;scatter&quot;,
 <span class="linenos">7</span><span class="gi">+            &quot;myview&quot;,</span>
 <span class="linenos">8</span><span class="w"> </span>        ],
@@ -930,7 +930,7 @@ using the developer installation, then reinstall Perun:</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -938,7 +938,7 @@ using the developer installation, then reinstall Perun:</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -948,7 +948,7 @@ using the developer installation, then reinstall Perun:</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

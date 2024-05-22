@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Performance Fuzz-testing &#8212; Perun 0.21.8 documentation</title>
+    <title>Performance Fuzz-testing &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -255,7 +255,7 @@ line in the file.</p></li>
 line. There are several intuitions behind this rule: (1) some trimming regular expressions
 can induce the excessive number of backtracking, and (2) some structures, such as hash
 tables, can have bad properties and lead to a singly-linked list when induced with lots of
-words (e.g. when one chooses wrong size of the table or bad hash-function.</p></li>
+words (e.g. when one chooses wrong size of the table or bad hash-function).</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
 </dd></dl>
@@ -271,7 +271,7 @@ words (e.g. when one chooses wrong size of the table or bad hash-function.</p></
 <li><p><strong>Description</strong>: The rule prepends random number of whitespaces at random line.</p></li>
 <li><p><strong>Known Issues</strong>:</p>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016">StackOverflow</a> regular expression with quadratic number of backtrackings.</p></li>
+<li><p><a class="reference external" href="https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016">StackOverflow</a> regular expression with quadratic number of backtracking.</p></li>
 </ol>
 </li>
 </ul>
@@ -444,7 +444,7 @@ when reading the whole memory.</p></li>
 <p id="module-perun.fuzz.methods.xml">Exploiting more domain-specific knowledge about the workload we
 devised specific rules for concrete formats. We propose rules for
 removing tags, attributes, names or values of attributes used in XML
-based files (i.e. . <code class="docutils literal notranslate"><span class="pre">xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.svg</span></code>, <code class="docutils literal notranslate"><span class="pre">.xhtml</span></code>, <code class="docutils literal notranslate"><span class="pre">.xul</span></code>).
+based files (i.e. <code class="docutils literal notranslate"><span class="pre">.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">.svg</span></code>, <code class="docutils literal notranslate"><span class="pre">.xhtml</span></code>, <code class="docutils literal notranslate"><span class="pre">.xul</span></code>).
 For example, we can assume a situation, when fuzzer removes closing tag,
 which will increase the nesting. Then a recursively implemented parser
 will fail to find one or more of closing brackets (representing recursion
@@ -1070,12 +1070,6 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-fuzz-a">
-<span id="cmdoption-perun-fuzz-args"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--args</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;args&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-a" title="Link to this definition">¶</a></dt>
-<dd><p>Arguments for the fuzzed command.</p>
-</dd></dl>
-
-<dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-fuzz-w">
 <span id="cmdoption-perun-fuzz-input-sample"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--input-sample</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;input_sample&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-w" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Required</strong> Initial sample of workloads (the so called corpus).These will serve as initial workloads to evaluate the baseline for performance testing.The parameter expects either paths to files (which will be directly added), or paths to directories (which will be recursively searched).</p>
@@ -1087,7 +1081,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
 <dd><p>Collector that will be used to collect performance data and used to infer baseline or target performance profiles. The profiles are further used for performance testing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>trace | memory | time | complexity | bounds</p>
+<dd class="field-odd"><p>trace | memory | time | complexity | bounds | kperf</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1310,7 +1304,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -1318,7 +1312,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1328,7 +1322,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

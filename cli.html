@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command Line Interface &#8212; Perun 0.21.8 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -37,9 +37,9 @@
 <span id="command-line-interface"></span><span id="cli-overview"></span><h1>Command Line Interface<a class="headerlink" href="#module-perun.cli" title="Link to this heading">¶</a></h1>
 <p>Perun can be run from the command line (if correctly installed) using the
 command interface inspired by git.</p>
-<p>The Command Line Interface is implemented using the <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library, which
+<p>The Command Line Interface is implemented using the <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library, which
 allows both effective definition of new commands and finer parsing of the
-command line arguments. The intefrace can be broken into several groups:</p>
+command line arguments. The interface can be broken into several groups:</p>
 <blockquote>
 <div><p>1. <strong>Core commands</strong>: namely <code class="docutils literal notranslate"><span class="pre">init</span></code>, <code class="docutils literal notranslate"><span class="pre">config</span></code>, <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">rm</span></code>,
 <code class="docutils literal notranslate"><span class="pre">status</span></code>, <code class="docutils literal notranslate"><span class="pre">log</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code> commands (which consists of commands <code class="docutils literal notranslate"><span class="pre">run</span>
@@ -109,6 +109,12 @@ following:</p>
 <dt class="sig sig-object std" id="cmdoption-perun-nc">
 <span id="cmdoption-perun-no-color"></span><span class="sig-name descname"><span class="pre">-nc</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-color</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-nc" title="Link to this definition">¶</a></dt>
 <dd><p>Disables the colored output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-y">
+<span id="cmdoption-perun-say-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--say-yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-y" title="Link to this definition">¶</a></dt>
+<dd><p>Says yes to every confirmation prompt</p>
 </dd></dl>
 
 <dl class="std option">
@@ -198,6 +204,12 @@ following:</p>
 
 <dl class="object">
 <dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">showdiff</span></span></dt>
+<dd><p>Interprets the difference of selected two…</p>
+</dd></dl>
+
+<dl class="object">
+<dt class="sig sig-object">
 <span class="sig-name descname"><span class="pre">status</span></span></dt>
 <dd><p>Shows the status of vcs, associated…</p>
 </dd></dl>
@@ -236,10 +248,9 @@ for more details.</p></li>
 current working directory is used instead. In case there already exists a
 performance versioning system, the infrastructure is only reinitialized.</p>
 <p>By default, a control system is initialized as well. This can be changed
-by setting the <code class="docutils literal notranslate"><span class="pre">--vcs-type</span></code> parameter (currently we support <code class="docutils literal notranslate"><span class="pre">git</span></code> and
-<code class="docutils literal notranslate"><span class="pre">tagit</span></code>—a lightweight git-based wrapped based on tags). Additional
-parameters can be passed to the wrapped control system initialization using
-the <code class="docutils literal notranslate"><span class="pre">--vcs-params</span></code>.</p>
+by setting the <code class="docutils literal notranslate"><span class="pre">--vcs-type</span></code> parameter (currently we support <code class="docutils literal notranslate"><span class="pre">git</span></code>).
+Additional parameters can be passed to the wrapped control system initialization
+using the <code class="docutils literal notranslate"><span class="pre">--vcs-params</span></code>.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>init<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;path&gt;
 </pre></div>
 </div>
@@ -467,7 +478,7 @@ steps are executed:</p>
 &lt;hash&gt;. This serves as a check, that we do not assign profiles to
 different minor versions.</p></li>
 <li><p>The <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> is removed and contents of &lt;profile&gt; are
-compresed using <cite>zlib</cite> compression method.</p></li>
+compressed using <cite>zlib</cite> compression method.</p></li>
 <li><p>Binary header for the profile is constructed.</p></li>
 <li><p>Compressed contents are appended to header, and this blob is stored
 in <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> directory.</p></li>
@@ -488,7 +499,7 @@ the profiles in the interval &lt;i, j&gt;. When <code class="docutils literal no
 will be added; when <code class="docutils literal notranslate"><span class="pre">j</span></code>; when <code class="docutils literal notranslate"><span class="pre">j</span></code> is bigger than the number of
 pending profiles, then all the non-existing pending profiles will
 be obviously skipped.
-Run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> to see the <cite>tag</cite> anotation of pending profiles.
+Run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> to see the <cite>tag</cite> annotation of pending profiles.
 Tags consider the sorted order as specified by the following option
 <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>Example of adding profiles:</p>
@@ -631,7 +642,7 @@ configuration.</p>
 <dd><p>Sets the &lt;key&gt; in the local configuration for sorting profiles. Note that after setting the &lt;key&gt; it will be used for sorting which is considered in pending and index tags!</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>realpath | type | time | cmd | args | workload | collector | checksum | source</p>
+<dd class="field-odd"><p>realpath | type | time | cmd | workload | collector | checksum | source</p>
 </dd>
 </dl>
 </dd></dl>
@@ -641,8 +652,8 @@ configuration.</p>
 <h3>perun log<a class="headerlink" href="#perun-log" title="Link to this heading">¶</a></h3>
 <p>Shows history of versions and associated profiles.</p>
 <p>Shows the history of the wrapped version control system and all the
-associated profiles starting from the &lt;hash&gt; point, outputing the
-information about number of profiles, about descriptions ofconcrete minor
+associated profiles starting from the &lt;hash&gt; point, outputting the
+information about number of profiles, about descriptions of concrete minor
 versions, their parents, parents etc.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code> is issued, the shorter version of the <code class="docutils literal notranslate"><span class="pre">log</span></code> is
 outputted.</p>
@@ -738,26 +749,26 @@ corresponding to <cite>pending tag</cite>, which can be obtained by running <cod
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">add</span> <span class="n">i</span><span class="nd">@p</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span><span class="nb">time</span><span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>file.in<span class="w"> </span>-w<span class="w"> </span>file2.in<span class="w"> </span>-p<span class="w"> </span>normalizer
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span><span class="nb">time</span><span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>file.in<span class="w"> </span>-w<span class="w"> </span>file2.in<span class="w"> </span>-p<span class="w"> </span>regression-analysis
 </pre></div>
 </div>
 <p>This command profiles two commands <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">file.in</span></code> and <code class="docutils literal notranslate"><span class="pre">./mybin</span>
 <span class="pre">file2.in</span></code> and collects the profiling data using the
-<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>. The profiles are then normalized with the
-<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a>.</p>
+<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>. The profiles are then modeled with the
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>complexity<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>sll.cpp<span class="w"> </span>-cp<span class="w"> </span>complexity<span class="w"> </span><span class="nv">targetdir</span><span class="o">=</span>./src
 </pre></div>
 </div>
 <p>This commands runs one job ‘./mybin sll.cpp’ using the
 <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>, which uses custom binaries targeted at
 <code class="docutils literal notranslate"><span class="pre">./src</span></code> directory.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>mcollect<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-b<span class="w"> </span>./otherbin<span class="w"> </span>-w<span class="w"> </span>input.txt<span class="w"> </span>-p<span class="w"> </span>normalizer<span class="w"> </span>-p<span class="w"> </span>clusterizer
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>mcollect<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-b<span class="w"> </span>./otherbin<span class="w"> </span>-w<span class="w"> </span>input.txt<span class="w"> </span>-p<span class="w"> </span>regressogram<span class="w"> </span>-p<span class="w"> </span>regression-analysis
 </pre></div>
 </div>
 <p>This commands runs two jobs <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">./otherbin</span>
 <span class="pre">input.txt</span></code> and collects the profiles using the <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.
 The profiles are then postprocessed, first using the
-<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> and then with
+<span class="xref std std-ref">postprocessors-regressogram</span> and then with
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <p>Refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="profile.html"><span class="doc">Perun’s Profile Format</span></a> for more details about automation
 and lifetimes of profiles. For list of available collectors and
@@ -791,7 +802,7 @@ postprocessors refer to <a class="reference internal" href="collectors.html#coll
 <dd><p><strong>Required</strong> Profiler used for collection of profiling data for the given &lt;cmd&gt;</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>trace | memory | time | complexity | bounds</p>
+<dd class="field-odd"><p>trace | memory | time | complexity | bounds | kperf</p>
 </dd>
 </dl>
 </dd></dl>
@@ -827,7 +838,7 @@ postprocessors refer to <a class="reference internal" href="collectors.html#coll
 the <cite>job matrix</cite> and subsequently runs the jobs collecting list of
 profiles. Each profile is then stored in <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory and
 moreover is annotated using by setting <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> key to current
-<code class="docutils literal notranslate"><span class="pre">HEAD</span></code>. This serves as check to not assing such profiles to different
+<code class="docutils literal notranslate"><span class="pre">HEAD</span></code>. This serves as check to not assign such profiles to different
 minor versions.</p>
 <p>The job matrix is defined in the yaml format and consists of specification
 of binaries with corresponding arguments, workloads, supported collectors
@@ -851,7 +862,7 @@ with Perun’s configuration files.</p>
 <p>Applies for the points of version history checks for possible performance changes.</p>
 <p>This command group either runs the checks for one point of history (<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">head</span></code>) or for
 the whole history (<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">all</span></code>). For each minor version (called the <cite>target</cite>) we iterate
-over all of the registered profiles and try to find a predecessor minor version (called the
+over the registered profiles and try to find a predecessor minor version (called the
 <cite>baseline</cite>) with profile of the same configuration (by configuration we mean the tuple of
 collector, postprocessors, command, arguments and workloads) and run the checks according to the
 rules set in the configurations.</p>
@@ -873,7 +884,7 @@ degradation:
       type: memory
       method: bmoe
     - method: aat</pre>
-<p>Currently we support the following methods:</p>
+<p>Currently, we support the following methods:</p>
 <blockquote>
 <div><p></p>
 <ol class="arabic simple">
@@ -936,14 +947,14 @@ degradation:
 </section>
 <section id="perun-check-head">
 <h3>perun check head<a class="headerlink" href="#perun-check-head" title="Link to this heading">¶</a></h3>
-<p>Checks for changes in performance between between specified minor version (or current <cite>head</cite>)
+<p>Checks for changes in performance between specified minor version (or current <cite>head</cite>)
 and its predecessor minor versions.</p>
-<p>The command iterates over all of the registered profiles of the specified <cite>minor version</cite>
+<p>The command iterates over the registered profiles of the specified <cite>minor version</cite>
 (<cite>target</cite>; e.g. the <cite>head</cite>), and tries to find the nearest predecessor minor version
 (<cite>baseline</cite>), where the profile with the same configuration as the tested target profile exists.
 When it finds such a pair, it runs the check according to the strategies set in the
 configuration (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
-<p>By default the <code class="docutils literal notranslate"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
+<p>By default, the <code class="docutils literal notranslate"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>head<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
@@ -958,8 +969,8 @@ configuration (see <a class="reference internal" href="degradation.html#degradat
 <section id="perun-check-all">
 <h3>perun check all<a class="headerlink" href="#perun-check-all" title="Link to this heading">¶</a></h3>
 <p>Checks for changes in performance for the specified interval of version history.</p>
-<p>The commands crawls through the whole history of project versions starting from the specified
-<code class="docutils literal notranslate"><span class="pre">&lt;hash&gt;</span></code> and for all of the registered profiles (corresponding to some <cite>target</cite> minor version)
+<p>The command crawls through the whole history of project versions starting from the specified
+<code class="docutils literal notranslate"><span class="pre">&lt;hash&gt;</span></code> and for registered profiles (corresponding to some <cite>target</cite> minor version)
 tries to find a suitable predecessor profile (corresponding to some <cite>baseline</cite> minor version)
 and runs the performance check according to the set of strategies set in the configuration
 (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
@@ -1034,12 +1045,6 @@ is asked for confirmation by user.</p></li>
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-fuzz-a">
-<span id="cmdoption-perun-fuzz-args"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--args</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;args&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-a" title="Link to this definition">¶</a></dt>
-<dd><p>Arguments for the fuzzed command.</p>
-</dd></dl>
-
-<dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-fuzz-w">
 <span id="cmdoption-perun-fuzz-input-sample"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--input-sample</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;input_sample&gt;</span></span><a class="headerlink" href="#cmdoption-perun-fuzz-w" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Required</strong> Initial sample of workloads (the so called corpus).These will serve as initial workloads to evaluate the baseline for performance testing.The parameter expects either paths to files (which will be directly added), or paths to directories (which will be recursively searched).</p>
@@ -1051,7 +1056,7 @@ is asked for confirmation by user.</p></li>
 <dd><p>Collector that will be used to collect performance data and used to infer baseline or target performance profiles. The profiles are further used for performance testing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>trace | memory | time | complexity | bounds</p>
+<dd class="field-odd"><p>trace | memory | time | complexity | bounds | kperf</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1194,7 +1199,7 @@ is asked for confirmation by user.</p></li>
 <h3>perun collect<a class="headerlink" href="#perun-collect" title="Link to this heading">¶</a></h3>
 <p>Generates performance profile using selected collector.</p>
 <p>Runs the single collector unit (registered in Perun) on given profiled
-command (optionaly with given arguments and workloads) and generates
+command (optionally with given arguments and workloads) and generates
 performance profile. The generated profile is then stored in
 <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code> directory as a file, by default with filename in form of:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
@@ -1245,7 +1250,7 @@ more complex configuration consult either <code class="docutils literal notransl
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-collect-w">
 <span id="cmdoption-perun-collect-workload"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workload</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workload&gt;</span></span><a class="headerlink" href="#cmdoption-perun-collect-w" title="Link to this definition">¶</a></dt>
-<dd><p>Inputs for &lt;cmd&gt;. E.g. <code class="docutils literal notranslate"><span class="pre">./subdir</span></code> is possible workloadfor <code class="docutils literal notranslate"><span class="pre">ls</span></code> command.</p>
+<dd><p>Inputs for &lt;cmd&gt;. E.g. <code class="docutils literal notranslate"><span class="pre">./subdir</span></code> is possible workload for <code class="docutils literal notranslate"><span class="pre">ls</span></code> command.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -1631,7 +1636,7 @@ the profiled command.</p>
 <div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
 <div class="line">* <strong>Default units</strong>: <cite>s</cite></div>
 </div>
-<p>This is a wrapper over the <code class="docutils literal notranslate"><span class="pre">time</span></code> linux unitility and captures resources
+<p>This is a wrapper over the <code class="docutils literal notranslate"><span class="pre">time</span></code> linux utility and captures resources
 in the following form:</p>
 <pre class="literal-block">{
     &quot;amount&quot;: 0.59,
@@ -1718,7 +1723,7 @@ examples of `bounds` collector.</pre>
 postprocessor.</p>
 <p>Runs the single postprocessor unit on given looked-up profile. The
 postprocessed file will be then stored in <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code> directory as a
-file, by default with filanem in form of:</p>
+file, by default with filename in form of:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
 </pre></div>
 </div>
@@ -1743,13 +1748,13 @@ is asked for confirmation by user.</p></li>
 <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>For checking the associated <cite>tags</cite> to profiles run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
 <p>Example 1. The following command will postprocess the given profile
-stored at given path by normalizer, i.e. for each snapshot, the resources
-will be normalized to the interval &lt;0, 1&gt;:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">./</span><span class="n">echo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">hello</span><span class="o">-</span><span class="mi">2017</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">34</span><span class="o">-</span><span class="mf">12.</span><span class="n">perf</span> <span class="n">normalizer</span>
+stored at given path by regression analysis, i.e. for each snapshot,
+computes regression models:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">./</span><span class="n">echo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">hello</span><span class="o">-</span><span class="mi">2017</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">34</span><span class="o">-</span><span class="mf">12.</span><span class="n">perf</span> <span class="n">regression</span><span class="o">-</span><span class="n">analysis</span>
 </pre></div>
 </div>
 <p>Example 2. The following command will postprocess the second profile stored
-in index of commit preceeding the current head using interval regression
+in index of commit preceding the current head using interval regression
 analysis:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">1</span><span class="nd">@i</span> <span class="n">regression</span><span class="o">-</span><span class="n">analysis</span> <span class="o">--</span><span class="n">method</span><span class="o">=</span><span class="n">interval</span>
 </pre></div>
@@ -1784,51 +1789,8 @@ more complex configuration consult either <code class="docutils literal notransl
 </section>
 <section id="postprocess-units">
 <span id="cli-postprocess-units-ref"></span><h3>Postprocess units<a class="headerlink" href="#postprocess-units" title="Link to this heading">¶</a></h3>
-<section id="perun-postprocessby-normalizer">
-<span id="cli-views-ref"></span><h4>perun postprocessby normalizer<a class="headerlink" href="#perun-postprocessby-normalizer" title="Link to this heading">¶</a></h4>
-<p>Normalizes performance profile into flat interval.</p>
-<div class="line-block">
-<div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
-<div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
-</div>
-<p>Normalizer is a postprocessor, which iterates through all of the snapshots
-and normalizes the resources of same type to interval <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">1)</span></code>, where
-<code class="docutils literal notranslate"><span class="pre">1</span></code> corresponds to the maximal value of the given type.</p>
-<p>Consider the following list of resources for one snapshot generated by
-<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>:</p>
-<pre class="literal-block">[
-    {
-        'amount': 0.59,
-        'uid': 'sys'
-    }, {
-        'amount': 0.32,
-        'uid': 'user'
-    }, {
-        'amount': 2.32,
-        'uid': 'real'
-    }
-]</pre>
-<p>Normalizer yields the following set of resources:</p>
-<pre class="literal-block">[
-    {
-        'amount': 0.2543103448275862,
-        'uid': 'sys'
-    }, {
-        'amount': 0.13793103448275865,
-        'uid': 'user'
-    }, {
-        'amount': 1.0,
-        'uid': 'real'
-    }
-]</pre>
-<p>Refer to <a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> for more thorough description and
-examples of <cite>normalizer</cite> postprocessor.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>normalizer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-</section>
 <section id="perun-postprocessby-regression-analysis">
-<h4>perun postprocessby regression_analysis<a class="headerlink" href="#perun-postprocessby-regression-analysis" title="Link to this heading">¶</a></h4>
+<span id="cli-views-ref"></span><h4>perun postprocessby regression_analysis<a class="headerlink" href="#perun-postprocessby-regression-analysis" title="Link to this heading">¶</a></h4>
 <p>Finds fitting regression models to estimate models of profiled resources.</p>
 <div class="line-block">
 <div class="line">* <strong>Limitations</strong>: Currently limited to models of <cite>amount</cite> depending on</div>
@@ -1842,7 +1804,7 @@ of resources depending on <cite>structural-unit-size</cite>.</p>
 <p>The following strategies are currently available:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p><strong>Full Computation</strong> uses all of the data points to obtain the best
+<li><p><strong>Full Computation</strong> uses data points to obtain the best
 fitting model for each type of model from the database (unless
 <code class="docutils literal notranslate"><span class="pre">--regression_models</span></code>/<code class="docutils literal notranslate"><span class="pre">-r</span></code> restrict the set of models)</p></li>
 <li><p><strong>Iterative Computation</strong> uses a percentage of data points to obtain
@@ -1852,7 +1814,7 @@ some other model becomes more fitting.</p></li>
 <li><p><strong>Full Computation with initial estimate</strong> first uses some percent
 of data to estimate which model would be best fitting. Given model
 is then fully computed.</p></li>
-<li><p><strong>Interval Analysis</strong> uses more finer set of intervals of data and
+<li><p><strong>Interval Analysis</strong> uses finer set of intervals of data and
 estimates models for each interval providing more precise modeling
 of the profile.</p></li>
 <li><p><strong>Bisection Analysis</strong> fully computes the models for full interval.
@@ -1861,8 +1823,8 @@ them. If the best fitting models changed for sub intervals, then we
 continue with the splitting.</p></li>
 </ol>
 </div></blockquote>
-<p>Currently we support <strong>linear</strong>, <strong>quadratic</strong>, <strong>power</strong>, <strong>logaritmic</strong>
-and <strong>constant</strong> models and use the <cite>coeficient of determination</cite>
+<p>Currently, we support <strong>linear</strong>, <strong>quadratic</strong>, <strong>power</strong>, <strong>logarithmic</strong>
+and <strong>constant</strong> models and use the <cite>coefficient of determination</cite>
 (<span class="math notranslate nohighlight">\(R^2\)</span>) to measure the fitness of model. The models are stored as
 follows:</p>
 <pre class="literal-block">{
@@ -1883,9 +1845,6 @@ follows:</p>
     &quot;model&quot;: &quot;linear&quot;,
     &quot;method&quot;: &quot;full&quot;,
 }</pre>
-<p>Note that if your data are not suitable for regression analysis, check out
-<a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a> to postprocess your profile to be
-analysable by this analysis.</p>
 <p>For more details about regression analysis refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
 suitable resources refer to <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>.</p>
@@ -1896,7 +1855,7 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-postprocessby-regression_analysis-m">
 <span id="cmdoption-perun-postprocessby-regression_analysis-method"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--method</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;method&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-regression_analysis-m" title="Link to this definition">¶</a></dt>
-<dd><p><strong>Required</strong> Will use the &lt;method&gt; to find the best fitting models for the given profile.</p>
+<dd><p>Will use the &lt;method&gt; to find the best fitting models for the given profile. By default ‘full’ computation will be performed</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>full | iterative | interval | initial_guess | bisection</p>
@@ -1931,87 +1890,6 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <dt class="sig sig-object std" id="cmdoption-perun-postprocessby-regression_analysis-o">
 <span id="cmdoption-perun-postprocessby-regression_analysis-of"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--of</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;of_resource_key&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-regression_analysis-o" title="Link to this definition">¶</a></dt>
 <dd><p>Sets key for which we are finding the model.</p>
-</dd></dl>
-
-</section>
-<section id="perun-postprocessby-clusterizer">
-<h4>perun postprocessby clusterizer<a class="headerlink" href="#perun-postprocessby-clusterizer" title="Link to this heading">¶</a></h4>
-<p>Clusters each resource to an appropriate cluster in order to be postprocessable
-by regression analysis.</p>
-<div class="line-block">
-<div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
-<div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
-</div>
-<p>Clusterizer tries to find a suitable cluster for each resource in the profile. The clusters
-are either computed w.r.t the sort order of the resource amounts, or are computed according
-to the sliding window.</p>
-<p>The sliding window can be further adjusted by setting its <strong>width</strong> (i.e. how many near values
-on the x axis will we fit to a cluster) and its <strong>height</strong> (i.e. how big of an interval of
-resource amounts will be consider for one cluster). Both <strong>width</strong> and <strong>height</strong> can be further
-augmented. <strong>Width</strong> can either be <cite>absolute</cite>, where we take in maximum the absolute number of
-resources, <cite>relative</cite>, where we take in maximum the percentage of number of resources for each
-cluster, or <cite>weighted</cite>, where we take the number of resource depending on the frequency of their
-occurrences. Similarly, the <strong>height</strong> can either be <cite>absolute</cite>, where we set the interval of
-amounts to an absolute size, or <cite>relative</cite>, where we set the interval of amounts relative to the
-to the first resource amount in the cluster (so e.g. if we have window of height 0.1 and the
-first resource in the cluster has amount of 100, we will cluster every resources in interval 100
-to 110 to this cluster).</p>
-<p>For more details about regression analysis refer to <a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a>.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>clusterizer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-<p class="rubric">Options</p>
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-s">
-<span id="cmdoption-perun-postprocessby-clusterizer-strategy"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--strategy</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;strategy&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-s" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the clustering strategy, that will be applied for the profile</p>
-<dl class="field-list simple">
-<dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sort_order | sliding_window</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-wh">
-<span id="cmdoption-perun-postprocessby-clusterizer-window-height"></span><span class="sig-name descname"><span class="pre">-wh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--window-height</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;window_height&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-wh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the height of the window (either fixed or proportional)</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-rwh">
-<span id="cmdoption-perun-postprocessby-clusterizer-relative-window-height"></span><span class="sig-name descname"><span class="pre">-rwh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--relative-window-height</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rwh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies that the height of the window is relative to the point</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-fwh">
-<span id="cmdoption-perun-postprocessby-clusterizer-fixed-window-height"></span><span class="sig-name descname"><span class="pre">-fwh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--fixed-window-height</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fwh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies that the height of the window is absolute to the point</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-ww">
-<span id="cmdoption-perun-postprocessby-clusterizer-window-width"></span><span class="sig-name descname"><span class="pre">-ww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--window-width</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;window_width&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-ww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the width of the window, i.e. how many values will be taken by window.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-rww">
-<span id="cmdoption-perun-postprocessby-clusterizer-relative-window-width"></span><span class="sig-name descname"><span class="pre">-rww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--relative-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-fww">
-<span id="cmdoption-perun-postprocessby-clusterizer-fixed-window-width"></span><span class="sig-name descname"><span class="pre">-fww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--fixed-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-www">
-<span id="cmdoption-perun-postprocessby-clusterizer-weighted-window-width"></span><span class="sig-name descname"><span class="pre">-www</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--weighted-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-www" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
 </dd></dl>
 
 </section>
@@ -2055,7 +1933,7 @@ performance</div>
 the code of these methods, you can visit <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges">SciPy</a>.</p>
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer to
-<a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a>.</p>
+<span class="xref std std-ref">postprocessors-regressogram</span>.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>regressogram<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2111,16 +1989,16 @@ the code of these methods, you can visit <a class="reference external" href="htt
 <p>Moving average methods are the natural generalizations of regressogram method. This
 method uses the local averages/medians of y-coordinates (<cite>&lt;of_resource_key&gt;</cite>), but
 the estimate in the x-point (<cite>&lt;per_key&gt;</cite>) is based on the centered surroundings of
-this points, more precisely:</p>
+these points, more precisely:</p>
 <blockquote>
 <div><p><strong>Moving Average</strong>: is a widely used estimator in the technical analysis, that helps
-smooth the dataset by filtering out the ‘noise’. Among the basic properties of this
+smooth the dataset by filtering out the ‘noise’. Among the basic properties of these
 methods belongs the ability to reduce the effect of temporary variations in data, better
-improvement of the fitness of data to a line, so called smoothing, to show the data’s
+improvement of the fitness of data to a line, so-called smoothing, to show the data’s
 trend more clearly and highlight any value below or above the trend. The most important
 task with this type of non-parametric approach is the choice of the <cite>&lt;window-width&gt;</cite>.
 If the user does not choose it, we try approximate this value by using the value of
-<cite>coefficient of determination</cite> (<span class="math notranslate nohighlight">\(R^2\)</span>). At the begin of the analysis is set the
+<cite>coefficient of determination</cite> (<span class="math notranslate nohighlight">\(R^2\)</span>). At the beginning, of the analysis is set the
 initial value of window width and then follows the interleaving of the current dataset,
 which runs until the value of <cite>coefficient of determination</cite> will not reach the required
 level. By this way is guaranteed the desired smoothness of the resulting models. The two
@@ -2242,7 +2120,7 @@ see <a class="reference external" href="https://docs.scipy.org/doc/scipy/referen
 <h4>perun postprocessby moving_average smm<a class="headerlink" href="#perun-postprocessby-moving-average-smm" title="Link to this heading">¶</a></h4>
 <p><strong>Simple Moving Median</strong></p>
 <p>The second representative of Simple Moving Average methods is the Simple Moving <strong>Median</strong>.
-For this method are applicable to the same rules like in the first described method, except
+For this method are applicable to the same rules as in the first described method, except
 for the option for choosing the window type, which do not make sense in this approach. The
 only difference between these two methods are the way of computation the values in the
 individual sub-intervals. Simple Moving <strong>Median</strong> is not based on the computation of
@@ -2267,7 +2145,7 @@ average, but as the name suggests, it based on the <strong>median</strong>.</p>
 <section id="perun-postprocessby-moving-average-ema">
 <h4>perun postprocessby moving_average ema<a class="headerlink" href="#perun-postprocessby-moving-average-ema" title="Link to this heading">¶</a></h4>
 <p><strong>Exponential Moving Average</strong></p>
-<p>This method is a type of moving average methods, also know as <strong>Exponential</strong> Weighted
+<p>This method is a type of moving average methods, also known as <strong>Exponential</strong> Weighted
 Moving Average, that places a greater weight and significance on the most recent data
 points. The weighting for each far x-coordinate decreases exponentially and never reaching
 zero. This approach of moving average reacts more significantly to recent changes than a
@@ -2321,7 +2199,7 @@ regression does not assume any underlying distribution (e.g. linear, exponential
 to estimate the regression function. The main idea of kernel regression is putting the
 <strong>kernel</strong>, that have the role of weighted function, to each observation point in the dataset.
 Subsequently, the kernel will assign weight to each point in depends on the distance from the
-current data point. The kernel basis formula depends only to the <em>bandwidth</em> from the current
+current data point. The kernel basis formula depends only on the <em>bandwidth</em> from the current
 (‘local’) data point X to a set of neighboring data points X.</p>
 <blockquote>
 <div><p><strong>Kernel Selection</strong> does not important from an asymptotic point of view. It is appropriate
@@ -2334,9 +2212,9 @@ kernels or this kernel regression mode you can see
 <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-kernel-smoothing"><span class="std std-ref">perun postprocessby kernel-regression kernel-smoothing</span></a>.</p>
 <p><strong>Bandwidth Selection</strong> is the most important factor at each approach of kernel regression,
 since this value significantly affects the smoothness of the resulting estimate. In case,
-when is choose the inappropriate value, in the most cases can be expected the following two
+when we choose the inappropriate value, in the most cases can be expected the following two
 situations. The <strong>small</strong> bandwidth value reproduce estimated data and vice versa, the
-<strong>large</strong> value leads to over-leaving, so to average of the estimated data. Therefore are
+<strong>large</strong> value leads to over-leaving, so to average of the estimated data. Therefore, are
 used the methods to determine the bandwidth value. One of the most widespread and most
 commonly used methods is the <strong>cross-validation</strong> method. This method is based on the
 estimate of the regression function in which will be omitted <em>i-th</em> observation. In this
@@ -2348,7 +2226,7 @@ definition you cas see in the part <a class="reference internal" href="postproce
 <p>This postprocessor in summary offers five different modes, which does not differ in the
 resulting estimate, but in the way of computation the resulting estimate. Better said, it
 means, that the result of each mode is the <strong>kernel estimate</strong> with relevant parameters,
-selected according to the concrete mode. In short we will describe the individual methods, for
+selected according to the concrete mode. In short, we will describe the individual methods, for
 more information about it, you can visit the relevant parts of documentation:</p>
 <blockquote>
 <div><div class="line-block">
@@ -2453,7 +2331,7 @@ edge of the support.</p>
 kernel-type estimators, such as the <em>Nadaraya-Watson</em> estimator. More precisely, it
 adapts to both random and fixed designs, and to various design densities such as highly
 clustered designs and nearly uniform designs. It turns out that the <em>local linear</em>
-smoother repairs the drawbacks of other kernel regression estimators. An regression
+smoother repairs the drawbacks of other kernel regression estimators. A regression
 estimator <em>m</em> of <em>m</em> is a linear smoother if, for each <em>x</em>, there is a vector
 <span class="math notranslate nohighlight">\(l(x) = (l_1(x), ..., l_n(x))^T\)</span> such that:</p>
 <blockquote>
@@ -2470,7 +2348,7 @@ are linear smoothers too: <em>Gaussian process regression</em>, <em>splines</em>
 </div></blockquote>
 <p><strong>Bandwidth Method &lt;bandwidth-method&gt;</strong>:</p>
 <blockquote>
-<div><p>As has been said in the general description of the <em>kernel regression</em>, once of the most
+<div><p>As has been said in the general description of the <em>kernel regression</em>, one of the most
 important factors of the resulting estimate is the kernel <strong>bandwidth</strong>. When the
 inappropriate value is selected may occur to <em>under-laying</em> or <em>over-laying</em> fo the
 resulting kernel estimate. Since the bandwidth of the kernel is a free parameter which
@@ -2501,7 +2379,7 @@ is a generalized product kernel.</p>
 <em>AIC</em> have been shown to be asymptotically equivalent.</p>
 </div></blockquote>
 <p>The remaining options at this mode of kernel regression postprocessor are described within usage
-to it and you can see this in the list below. All these options are parameters to
+from the CLI and you can see this in the list below. All these options are parameters to
 <em>EstimatorSettings</em> (see <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_density.EstimatorSettings.html">EstimatorSettings</a>), that optimizing the kernel bandwidth based on the
 these specified settings.</p>
 <p>In the case of confusion about this approach of kernel regression, you can visit <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_regression.KernelReg.html#statsmodels.nonparametric.kernel_regression.KernelReg">StatsModels</a>.</p>
@@ -2612,7 +2490,7 @@ from predefined formulas:</p>
 <blockquote>
 <div><p><strong>Scotts’s Rule</strong> of thumb to determine the smoothing bandwidth for a kernel estimation. It
 is very fast compute. This rule was designed for density estimation but is usable for kernel
-regression too. Typically produces a larger bandwidth and therefore it is useful for
+regression too. Typically, produces a larger bandwidth, and therefore it is useful for
 estimating a gradual trend:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
@@ -2835,7 +2713,7 @@ the methods to determine the optimal bandwidth with different ways, this method 
 little bit different way. From a given range of potential bandwidths &lt;gamma-range&gt; try to
 select the optimal kernel bandwidth with use of <em>leave-one-out cross-validation</em>. This approach
 was described in <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>, where was
-introduced the <em>least-squares cross- validation</em> and it is a modification of this approach.
+introduced the <em>least-squares cross-validation</em> and it is a modification of this approach.
 <em>Leave-one-out cross validation</em> is <a class="reference external" href="https://medium.com/datadriveninvestor/k-fold-cross-validation-6b8518070833">K-fold</a> cross validation taken to its logical extreme, with
 <em>K</em> equal to <em>N</em>, the number of data points in the set. The original <em>gamma-range</em> will be
 divided on the base of size the given step &lt;gamma-step&gt;. The selection of specific value from
@@ -2869,7 +2747,7 @@ kernel in resulting estimate: <span class="math notranslate nohighlight">\(K(x, 
 <p>Looks up the given profile and interprets it using the selected
 visualization technique. Some of the techniques outputs either to
 terminal (using <code class="docutils literal notranslate"><span class="pre">ncurses</span></code>) or generates HTML files, which can be
-browseable in the web browser (using <code class="docutils literal notranslate"><span class="pre">bokeh</span></code> library). Refer to concrete
+browsable in the web browser (using <code class="docutils literal notranslate"><span class="pre">bokeh</span></code> library). Refer to concrete
 techniques for concrete options and limitations.</p>
 <p>The shown &lt;profile&gt; will be looked up in the following steps:</p>
 <blockquote>
@@ -2943,7 +2821,7 @@ different values of <code class="docutils literal notranslate"><span class="pre"
 files, that can be opened directly in the browser. Resulting graphs can be
 further customized by adding custom labels for axes, custom graph title or
 different graph width.</p>
-<p>Example 1. The following will display the sum of sum of amounts of all
+<p>Example 1. The following will display the sum of sums of amounts of all
 resources of given for each subtype, stacked by uid (e.g. the locations in
 the program):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
@@ -3057,7 +2935,7 @@ relative to others.</p>
 <p><strong>Acknowledgements</strong>: Big thanks to Brendan Gregg for creating the original
 perl script for creating flame graphs w.r.t simple format. If you like this
 visualization technique, please check out this guy’s site
-(<a class="reference external" href="http://brendangregg.com">http://brendangregg.com</a>) for more information about performance, profiling
+(<a class="reference external" href="https://brendangregg.com">https://brendangregg.com</a>) for more information about performance, profiling
 and useful talks and visualization techniques!</p>
 <p>The example output of the flamegraph is more or less as follows:</p>
 <pre class="literal-block">                    `
@@ -3104,7 +2982,7 @@ variable as basic graph. For each group of resources identified by unique
 value of <code class="docutils literal notranslate"><span class="pre">&lt;by&gt;</span></code> key, one graph shows the dependency of <code class="docutils literal notranslate"><span class="pre">&lt;of&gt;</span></code> values
 aggregated by <code class="docutils literal notranslate"><span class="pre">&lt;func&gt;</span></code> depending on the <code class="docutils literal notranslate"><span class="pre">&lt;through&gt;</span></code> key. Moreover, the
 values can either be accumulated (this way when displaying the value of ‘n’
-on x axis, we accumulate the sum of all values for all m &lt; n) or stacked,
+on x-axis, we accumulate the sum of all values for all m &lt; n) or stacked,
 where the graphs are output on each other and then one can see the overall
 trend through all the groups and proportions between each of the group.</p>
 <p><a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library is the current interpretation backend, which generates HTML
@@ -3115,7 +2993,7 @@ different graph width.</p>
 the function running time) of each function depending on the size of the
 structure over which the given function operated:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
-    <span class="o">--</span><span class="n">acumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+    <span class="o">--</span><span class="n">accumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>
@@ -3159,7 +3037,7 @@ structure over which the given function operated:</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-show-flow-s">
 <span id="cmdoption-perun-show-flow-stacked"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--stacked</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flow-s" title="Link to this definition">¶</a></dt>
-<dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionaly shows the sum of the values.</p>
+<dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionally shows the sum of the values.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -3256,7 +3134,7 @@ regression analysis and models refer to
 <dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">amount</span></code></p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'amount'</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3267,7 +3145,7 @@ regression analysis and models refer to
 <dd><p>Keys that will be displayed on X axis of the scatter plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">structure-unit-size</span></code></p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">'structure-unit-size'</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3795,9 +3673,7 @@ has been manually tampered with and some files or directories were created or de
 <li><a class="reference internal" href="#postprocess-commands">Postprocess Commands</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby">perun postprocessby</a></li>
 <li><a class="reference internal" href="#postprocess-units">Postprocess units</a><ul>
-<li><a class="reference internal" href="#perun-postprocessby-normalizer">perun postprocessby normalizer</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-regression-analysis">perun postprocessby regression_analysis</a></li>
-<li><a class="reference internal" href="#perun-postprocessby-clusterizer">perun postprocessby clusterizer</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-regressogram">perun postprocessby regressogram</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average">perun postprocessby moving_average</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-sma">perun postprocessby moving_average sma</a></li>
@@ -3861,7 +3737,7 @@ has been manually tampered with and some files or directories were created or de
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -3869,7 +3745,7 @@ has been manually tampered with and some files or directories were created or de
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -3879,7 +3755,7 @@ has been manually tampered with and some files or directories were created or de
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Collectors Overview &#8212; Perun 0.21.8 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,7 +45,7 @@ that generates profile using a single collector with given collector
 configuration. The resulting profiles are not postprocessed in any way.</p></li>
 <li><p>By <strong>Using job specification</strong> either as a single run of batch of
 profiling jobs using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span></code> or according to the specification
-of the so called job matrix using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> command.</p></li>
+of the so-called job matrix using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> command.</p></li>
 </ol>
 </div></blockquote>
 <p>The format of resulting profiles is w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. The
@@ -53,7 +53,7 @@ of the so called job matrix using <code class="docutils literal notranslate"><sp
 However, note that uncommited changes may skew the resulting profile and Perun
 cannot guard your project against this. Further, <a class="reference internal" href="profile.html#perfreg-collector_info"><code class="xref std std-preg docutils literal notranslate"><span class="pre">collector_info</span></code></a> is
 filled with configuration of the run collector.</p>
-<p>All of the automatically generated profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code>
+<p>All  automatically generated profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code>
 directory as a file with the <code class="docutils literal notranslate"><span class="pre">.perf</span></code> extension. The filename is by default
 automatically generated according to the following template:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
@@ -673,7 +673,7 @@ the profiled command.</p>
 <div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
 <div class="line">* <strong>Default units</strong>: <cite>s</cite></div>
 </div>
-<p>This is a wrapper over the <code class="docutils literal notranslate"><span class="pre">time</span></code> linux unitility and captures resources
+<p>This is a wrapper over the <code class="docutils literal notranslate"><span class="pre">time</span></code> linux utility and captures resources
 in the following form:</p>
 <pre class="literal-block">{
     &quot;amount&quot;: 0.59,
@@ -1009,7 +1009,7 @@ bound, that represents the whole complexity of the function.</p>
 in any programming language and in order to work with Perun requires three phases to be specified
 as given in <a class="reference internal" href="#collectors-overview"><span class="std std-ref">Collectors Overview</span></a>—<code class="docutils literal notranslate"><span class="pre">before()</span></code>, <code class="docutils literal notranslate"><span class="pre">collect()</span></code> and <code class="docutils literal notranslate"><span class="pre">after()</span></code>. Each new
 collector requires a interface module <code class="docutils literal notranslate"><span class="pre">run.py</span></code>, which contains the three functions and, moreover,
-a cli API for <a class="reference external" href="http://click.pocoo.org/5/">Click</a>.</p>
+a cli API for <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a>.</p>
 <p>You can register your new collector as follows:</p>
 <blockquote>
 <div><ol class="arabic">
@@ -1065,7 +1065,7 @@ params passed to additional phases and ‘profile’ with dictionary w.r.t <a cl
 <ol class="arabic simple" start="4">
 <li><p>Additionally implement the command line interface function in <code class="docutils literal notranslate"><span class="pre">run.py</span></code>, named the same as
 your collector. This function will is called from command line as <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">collect</span>
-<span class="pre">mycollector</span></code> and is based on <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library.</p></li>
+<span class="pre">mycollector</span></code> and is based on <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library.</p></li>
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/collectors_run.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/collectors_run_api.py</span>
@@ -1097,15 +1097,15 @@ your collector. This function will is called from command line as <code class="d
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
-<span class="linenos"> 3</span><span class="gu">@@ -6,7 +6,7 @@</span>
-<span class="linenos"> 4</span><span class="w"> </span>        )
+<span class="linenos"> 3</span><span class="gu">@@ -4,7 +4,7 @@</span>
+<span class="linenos"> 4</span><span class="w"> </span>        error(f&quot;trying to call get_supported_module_names with incorrect package &#39;{package}&#39;&quot;)
 <span class="linenos"> 5</span><span class="w"> </span>    return {
 <span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;],
 <span class="linenos"> 7</span><span class="gd">-        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],</span>
 <span class="linenos"> 8</span><span class="gi">+        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;, &quot;mycollector&quot;],</span>
-<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [&quot;filter&quot;, &quot;normalizer&quot;, &quot;regression-analysis&quot;],
-<span class="linenos">10</span><span class="w"> </span>        &quot;view&quot;: [
-<span class="linenos">11</span><span class="w"> </span>            &quot;alloclist&quot;,
+<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [
+<span class="linenos">10</span><span class="w"> </span>            &quot;moving-average&quot;,
+<span class="linenos">11</span><span class="w"> </span>            &quot;kernel-regression&quot;,
 </pre></div>
 </div>
 <ol class="arabic" start="6">
@@ -1200,7 +1200,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -1208,7 +1208,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1218,7 +1218,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Automating Runs &#8212; Perun 0.21.8 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -98,26 +98,26 @@ corresponding to <cite>pending tag</cite>, which can be obtained by running <cod
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">add</span> <span class="n">i</span><span class="nd">@p</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span><span class="nb">time</span><span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>file.in<span class="w"> </span>-w<span class="w"> </span>file2.in<span class="w"> </span>-p<span class="w"> </span>normalizer
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span><span class="nb">time</span><span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>file.in<span class="w"> </span>-w<span class="w"> </span>file2.in<span class="w"> </span>-p<span class="w"> </span>regression-analysis
 </pre></div>
 </div>
 <p>This command profiles two commands <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">file.in</span></code> and <code class="docutils literal notranslate"><span class="pre">./mybin</span>
 <span class="pre">file2.in</span></code> and collects the profiling data using the
-<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>. The profiles are then normalized with the
-<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a>.</p>
+<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>. The profiles are then modeled with the
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>complexity<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-w<span class="w"> </span>sll.cpp<span class="w"> </span>-cp<span class="w"> </span>complexity<span class="w"> </span><span class="nv">targetdir</span><span class="o">=</span>./src
 </pre></div>
 </div>
 <p>This commands runs one job ‘./mybin sll.cpp’ using the
 <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>, which uses custom binaries targeted at
 <code class="docutils literal notranslate"><span class="pre">./src</span></code> directory.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>mcollect<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-b<span class="w"> </span>./otherbin<span class="w"> </span>-w<span class="w"> </span>input.txt<span class="w"> </span>-p<span class="w"> </span>normalizer<span class="w"> </span>-p<span class="w"> </span>clusterizer
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span>-c<span class="w"> </span>mcollect<span class="w"> </span>-b<span class="w"> </span>./mybin<span class="w"> </span>-b<span class="w"> </span>./otherbin<span class="w"> </span>-w<span class="w"> </span>input.txt<span class="w"> </span>-p<span class="w"> </span>regressogram<span class="w"> </span>-p<span class="w"> </span>regression-analysis
 </pre></div>
 </div>
 <p>This commands runs two jobs <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">./otherbin</span>
 <span class="pre">input.txt</span></code> and collects the profiles using the <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.
 The profiles are then postprocessed, first using the
-<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> and then with
+<span class="xref std std-ref">postprocessors-regressogram</span> and then with
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <p>Refer to <a class="reference internal" href="#"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="profile.html"><span class="doc">Perun’s Profile Format</span></a> for more details about automation
 and lifetimes of profiles. For list of available collectors and
@@ -151,7 +151,7 @@ postprocessors refer to <a class="reference internal" href="collectors.html#coll
 <dd><p><strong>Required</strong> Profiler used for collection of profiling data for the given &lt;cmd&gt;</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>trace | memory | time | complexity | bounds</p>
+<dd class="field-odd"><p>trace | memory | time | complexity | bounds | kperf</p>
 </dd>
 </dl>
 </dd></dl>
@@ -187,7 +187,7 @@ postprocessors refer to <a class="reference internal" href="collectors.html#coll
 the <cite>job matrix</cite> and subsequently runs the jobs collecting list of
 profiles. Each profile is then stored in <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory and
 moreover is annotated using by setting <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a> key to current
-<code class="docutils literal notranslate"><span class="pre">HEAD</span></code>. This serves as check to not assing such profiles to different
+<code class="docutils literal notranslate"><span class="pre">HEAD</span></code>. This serves as check to not assign such profiles to different
 minor versions.</p>
 <p>The job matrix is defined in the yaml format and consists of specification
 of binaries with corresponding arguments, workloads, supported collectors
@@ -298,7 +298,7 @@ config and the specification of job matrix is based on <a class="reference exter
 <span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">time</span>
 
 <span class="nt">postprocessors</span><span class="p">:</span>
-<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">normalizer</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regressogram</span>
 <span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
 <span class="w">     </span><span class="nt">params</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">full</span>
@@ -308,7 +308,7 @@ config and the specification of job matrix is based on <a class="reference exter
 </div></blockquote>
 <p>Given matrix will create four jobs (<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">HEAD</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">HEAD~1</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span>
 <span class="pre">HEAD</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span> <span class="pre">HEAD~1</span></code>) which will be issued for runs. Each job will be collected
-by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> and then postprocessed first by <a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> and then
+by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> and then postprocessed first by <span class="xref std std-ref">postprocessors-regressogram</span> and then
 by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> with specification <code class="docutils literal notranslate"><span class="pre">{'method':</span> <span class="pre">'full',</span> <span class="pre">'steps':</span>
 <span class="pre">10}</span></code>.</p>
 <p>Run the following to configure the job matrix of the current project:</p>
@@ -392,7 +392,7 @@ Each postprocessor is specified by its <cite>name</cite> and additional <cite>pa
 dictionary of (key, value) parameters. Note that the same postprocessor can be specified more
 than just once. For list of supported postprocessors refer to <a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">postprocessors</span><span class="p">:</span>
-<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">normalizer</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regressogram</span>
 <span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
 <span class="w">     </span><span class="nt">params</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">full</span>
@@ -409,7 +409,7 @@ workload values specified in <a class="reference internal" href="#matrixunit-wor
 and internally Perun either merges the resources into one single profile or gradually generates
 profile for each workload.</p>
 <p>The generators are specified by <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">generators.workload</span></code></a> section. These specifications are
-collected through all of the configurations in the hierarchy.</p>
+collected through all configurations in the hierarchy.</p>
 <p>You can use some basic generators specified in shared configurations called <code class="docutils literal notranslate"><span class="pre">basic_strings</span></code>
 (which generates strings of lengths from interval (8, 128) with increment of 8), <code class="docutils literal notranslate"><span class="pre">basic_integers</span></code>
 (which generates integers from interval (100, 10000), with increment of 200) or <code class="docutils literal notranslate"><span class="pre">basic_files</span></code>
@@ -430,7 +430,7 @@ generate profile for each of the generated workload.</p></li>
 <p>Singleton Generator generates only one single value. This generator corresponds to the default
 behaviour of Perun, i.e. when each specified workload in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a> was passed to profiled
 program as string.</p>
-<p>Currently be default, any string specified in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a>, that does not correspond to some
+<p>Currently, be default any string specified in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a>, that does not correspond to some
 generator specified in <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">generators.workload</span></code></a>, is converted to Singleton Generator.</p>
 <p>The Singleton Generator can be configured by following options:</p>
 <blockquote>
@@ -520,12 +520,12 @@ from the interval (<code class="docutils literal notranslate"><span class="pre">
 <div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">min_lines</span></code>: the minimal number of lines in the file that shall be generated.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">max_lines</span></code>: the maximal number of lines in the file that shall be generated.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">step</span></code>: the step (or increment) of the range. By default set to 1.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">min_chars</span></code>: the minimal number of characters on one line. By default set to 5.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">max_chars</span></code>: the maximal number of characters on one line. By default set to 80.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">step</span></code>: the step (or increment) of the range. By default, set to 1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_chars</span></code>: the minimal number of characters on one line. By default, set to 5.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_chars</span></code>: the maximal number of characters on one line. By default, set to 80.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">randomize_rows</span></code>: by default set to True, the rows in the file have then randomized length
-from interval (<code class="docutils literal notranslate"><span class="pre">min_chars</span></code>, <code class="docutils literal notranslate"><span class="pre">max_chars</span></code>). Otherwise (if set to false), the lines will always
-be of maximal length (<code class="docutils literal notranslate"><span class="pre">max_chars</span></code>).</p></li>
+from interval (<code class="docutils literal notranslate"><span class="pre">min_chars</span></code>, <code class="docutils literal notranslate"><span class="pre">max_chars</span></code>). Otherwise, (if set to false), the lines will
+always be of maximal length (<code class="docutils literal notranslate"><span class="pre">max_chars</span></code>).</p></li>
 </ul>
 </div></blockquote>
 </section>
@@ -582,7 +582,7 @@ be of maximal length (<code class="docutils literal notranslate"><span class="pr
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -590,7 +590,7 @@ be of maximal length (<code class="docutils literal notranslate"><span class="pr
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -600,7 +600,7 @@ be of maximal length (<code class="docutils literal notranslate"><span class="pr
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

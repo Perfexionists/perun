@@ -283,4 +283,4 @@ You can register your new visualization as follows:
     7. If you think your collector could help others, please, consider making `Pull Request`_.
 
 .. _Pull Request: https://github.com/Perfexionists/perun/pull/new/develop
-.. _Click: http://click.pocoo.org/5/
+.. _Click: https://click.palletsprojects.com/en/latest/

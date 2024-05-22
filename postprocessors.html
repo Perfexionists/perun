@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Postprocessors Overview &#8212; Perun 0.21.8 documentation</title>
+    <title>Postprocessors Overview &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -46,14 +46,14 @@ command, that takes the profile (either stored or pending) and uses a
 single postprocessor with given configuration.</p></li>
 <li><p>By <strong>Using job specification</strong> either as a single run of batch of
 profiling jobs using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span></code> or according to the specification
-of the so called job matrix using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> command.</p></li>
+of the so-called job matrix using <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> command.</p></li>
 </ol>
 </div></blockquote>
 <p>The format of input and resulting profiles has to be w.r.t.
-<a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. By default new profiles are created. The <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>
+<a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. By default, new profiles are created. The <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>
 set to the origin of the original profile. Further, <a class="reference internal" href="profile.html#perfreg-postprocessors"><code class="xref std std-preg docutils literal notranslate"><span class="pre">postprocessors</span></code></a> is
 extended with configuration of the run postprocessor (appended at the end).</p>
-<p>All of the postprocessed profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code> directory
+<p>All postprocessed profiles are stored in the <code class="docutils literal notranslate"><span class="pre">.perun/jobs/</span></code> directory
 as a file with the <code class="docutils literal notranslate"><span class="pre">.perf</span></code> extension. The filename is by default
 automatically generated according to the following template:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
@@ -72,19 +72,12 @@ techniques respectively. Internals of perun storage is described in
 <p>Perun’s tool suite currently contains the following five postprocessors:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p><a class="reference internal" href="#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> scales the resources of the given profile to the
-interval (0, 1). The main intuition behind the usage of this postprocessor is to be able to
-compare profiles from different workloads or parameters, which may have different scales of
-resource amounts.</p></li>
 <li><p><a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> (authored by <strong>Jirka Pavela</strong>) attempts to do a
 regression analysis by finding the fitting model for dependent variable based on other
 independent one. Currently the postprocessor focuses on finding a well
 suited model (linear, quadratic, logarithmic, etc.) for the amount of time duration
 depending on size of the data structure the function operates on.</p></li>
-<li><p><a class="reference internal" href="#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a> tries to classify resources to uniquely identified clusters,
-which can be used for further postprocessing (e.g. by regression analysis) or to group
-similar amounts of resources.</p></li>
-<li><p><a class="reference internal" href="#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a> (authored by <strong>Simon Stupinsky</strong>) also known as the binning
+<li><p><span class="xref std std-ref">postprocessors-regressogram</span> (authored by <strong>Simon Stupinsky</strong>) also known as the binning
 approach, is the simplest non-parametric estimator. This method trying to fit models through
 data by dividing the interval into N equal-width bucket and the resultant value in each bucket
 is equal to result of selected statistical aggregation function (mean/median) within the values
@@ -98,6 +91,16 @@ are derived from the different subsets of the full data set. We currently suppor
 methods of this approach and that the <strong>Simple</strong> Moving Average and the <strong>Exponential</strong> Moving
 Average. In the first method is an available selection from two aggregation function: <strong>mean</strong>
 or <strong>median</strong>.</p></li>
+<li><p><a class="reference internal" href="#postprocessors-kernel-regression"><span class="std std-ref">Kernel Regression Methods</span></a> (authored by <strong>Simon Stupinsky</strong>) is a non-parametric
+approach to estimate the conditional expectation of a random variable. Generally, the main goal
+of this approach is to find non-parametric relation between a pair of random variables X &lt;per-key&gt;
+and Y &lt;of-key&gt;. Different from parametric techniques (e.g. linear regression), kernel
+regression does not assume any underlying distribution (e.g. linear, exponential, etc.)
+to estimate the regression function. The main idea of kernel regression is putting the
+<strong>kernel</strong>, that have the role of weighted function, to each observation point in the dataset.
+Subsequently, the kernel will assign weight to each point in depends on the distance from the
+current data point. The kernel basis formula depends only on the <em>bandwidth</em> from the current
+(‘local’) data point X to a set of neighboring data points X.</p></li>
 </ol>
 </div></blockquote>
 <p>All of the listed postprocessors can be run from command line. For more information about command
@@ -105,65 +108,19 @@ line interface for individual postprocessors refer to <a class="reference intern
 <p>Postprocessors modules are implementation independent and only requires a simple python interface
 registered within Perun. For brief tutorial how to create and register your own postprocessors
 refer to <a class="reference internal" href="#postprocessors-custom"><span class="std std-ref">Creating your own Postprocessor</span></a>.</p>
-<section id="module-perun.postprocess.normalizer">
-<span id="normalizer-postprocessor"></span><span id="postprocessors-normalizer"></span><h3>Normalizer Postprocessor<a class="headerlink" href="#module-perun.postprocess.normalizer" title="Link to this heading">¶</a></h3>
-<p>Normalizer is a simple postprocessor that normalizes the values.</p>
 <section id="command-line-interface">
-<h4>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h4>
-<section id="perun-postprocessby-normalizer">
-<h5>perun postprocessby normalizer<a class="headerlink" href="#perun-postprocessby-normalizer" title="Link to this heading">¶</a></h5>
-<p>Normalizes performance profile into flat interval.</p>
-<div class="line-block">
-<div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
-<div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
-</div>
-<p>Normalizer is a postprocessor, which iterates through all of the snapshots
-and normalizes the resources of same type to interval <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">1)</span></code>, where
-<code class="docutils literal notranslate"><span class="pre">1</span></code> corresponds to the maximal value of the given type.</p>
-<p>Consider the following list of resources for one snapshot generated by
-<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>:</p>
-<pre class="literal-block">[
-    {
-        'amount': 0.59,
-        'uid': 'sys'
-    }, {
-        'amount': 0.32,
-        'uid': 'user'
-    }, {
-        'amount': 2.32,
-        'uid': 'real'
-    }
-]</pre>
-<p>Normalizer yields the following set of resources:</p>
-<pre class="literal-block">[
-    {
-        'amount': 0.2543103448275862,
-        'uid': 'sys'
-    }, {
-        'amount': 0.13793103448275865,
-        'uid': 'user'
-    }, {
-        'amount': 1.0,
-        'uid': 'real'
-    }
-]</pre>
-<p>Refer to <a class="reference internal" href="#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> for more thorough description and
-examples of <cite>normalizer</cite> postprocessor.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>normalizer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-</section>
-</section>
-</section>
+<h3>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h3>
 <section id="module-perun.postprocess.regression_analysis">
-<span id="regression-analysis"></span><span id="postprocessors-regression-analysis"></span><h3>Regression Analysis<a class="headerlink" href="#module-perun.postprocess.regression_analysis" title="Link to this heading">¶</a></h3>
+<span id="regression-analysis"></span><span id="postprocessors-regression-analysis"></span><h4>Regression Analysis<a class="headerlink" href="#module-perun.postprocess.regression_analysis" title="Link to this heading">¶</a></h4>
 <p>Postprocessing of input profiles using the regression analysis. The
 regression analysis offers several computational methods and models for finding
 fitting models for trends in the captured profiling resources.</p>
+</section>
+</section>
 <section id="postprocessors-regression-analysis-cli">
-<span id="id2"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-regression-analysis-cli" title="Link to this heading">¶</a></h4>
+<span id="id2"></span><h3>Command Line Interface<a class="headerlink" href="#postprocessors-regression-analysis-cli" title="Link to this heading">¶</a></h3>
 <section id="perun-postprocessby-regression-analysis">
-<h5>perun postprocessby regression_analysis<a class="headerlink" href="#perun-postprocessby-regression-analysis" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby regression_analysis<a class="headerlink" href="#perun-postprocessby-regression-analysis" title="Link to this heading">¶</a></h4>
 <p>Finds fitting regression models to estimate models of profiled resources.</p>
 <div class="line-block">
 <div class="line">* <strong>Limitations</strong>: Currently limited to models of <cite>amount</cite> depending on</div>
@@ -177,7 +134,7 @@ of resources depending on <cite>structural-unit-size</cite>.</p>
 <p>The following strategies are currently available:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p><strong>Full Computation</strong> uses all of the data points to obtain the best
+<li><p><strong>Full Computation</strong> uses data points to obtain the best
 fitting model for each type of model from the database (unless
 <code class="docutils literal notranslate"><span class="pre">--regression_models</span></code>/<code class="docutils literal notranslate"><span class="pre">-r</span></code> restrict the set of models)</p></li>
 <li><p><strong>Iterative Computation</strong> uses a percentage of data points to obtain
@@ -187,7 +144,7 @@ some other model becomes more fitting.</p></li>
 <li><p><strong>Full Computation with initial estimate</strong> first uses some percent
 of data to estimate which model would be best fitting. Given model
 is then fully computed.</p></li>
-<li><p><strong>Interval Analysis</strong> uses more finer set of intervals of data and
+<li><p><strong>Interval Analysis</strong> uses finer set of intervals of data and
 estimates models for each interval providing more precise modeling
 of the profile.</p></li>
 <li><p><strong>Bisection Analysis</strong> fully computes the models for full interval.
@@ -196,8 +153,8 @@ them. If the best fitting models changed for sub intervals, then we
 continue with the splitting.</p></li>
 </ol>
 </div></blockquote>
-<p>Currently we support <strong>linear</strong>, <strong>quadratic</strong>, <strong>power</strong>, <strong>logaritmic</strong>
-and <strong>constant</strong> models and use the <cite>coeficient of determination</cite>
+<p>Currently, we support <strong>linear</strong>, <strong>quadratic</strong>, <strong>power</strong>, <strong>logarithmic</strong>
+and <strong>constant</strong> models and use the <cite>coefficient of determination</cite>
 (<span class="math notranslate nohighlight">\(R^2\)</span>) to measure the fitness of model. The models are stored as
 follows:</p>
 <pre class="literal-block">{
@@ -218,9 +175,6 @@ follows:</p>
     &quot;model&quot;: &quot;linear&quot;,
     &quot;method&quot;: &quot;full&quot;,
 }</pre>
-<p>Note that if your data are not suitable for regression analysis, check out
-<a class="reference internal" href="#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a> to postprocess your profile to be
-analysable by this analysis.</p>
 <p>For more details about regression analysis refer to
 <a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
 suitable resources refer to <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>.</p>
@@ -231,7 +185,7 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-postprocessby-regression_analysis-m">
 <span id="cmdoption-perun-postprocessby-regression_analysis-method"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--method</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;method&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-regression_analysis-m" title="Link to this definition">¶</a></dt>
-<dd><p><strong>Required</strong> Will use the &lt;method&gt; to find the best fitting models for the given profile.</p>
+<dd><p>Will use the &lt;method&gt; to find the best fitting models for the given profile. By default ‘full’ computation will be performed</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>full | iterative | interval | initial_guess | bisection</p>
@@ -271,7 +225,7 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 </section>
 </section>
 <section id="examples">
-<span id="postprocessors-regression-analysis-examples"></span><h4>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h4>
+<span id="postprocessors-regression-analysis-examples"></span><h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="p">{</span>
 <span class="linenos">  2</span><span class="w">  </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="linenos">  3</span><span class="w">    </span><span class="nt">&quot;SLList_insert(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -496,170 +450,18 @@ computation yields initial estimate of fitness of models (the initial sample is 
 random). The best fitted model is then chosen and fully computed on the rest of the data points.</p>
 <p>The picture shows only one model, namely <cite>linear</cite> which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.</p>
-</section>
-</section>
-<section id="module-perun.postprocess.clusterizer">
-<span id="clusterizer"></span><span id="postprocessors-clusterizer"></span><h3>Clusterizer<a class="headerlink" href="#module-perun.postprocess.clusterizer" title="Link to this heading">¶</a></h3>
-<p>A postprocessor that attempts to classify resources to clusters.</p>
-<p>The main usage of this postprocessors is to prepare any kind of profile for further
-postprocessing, mainly by <a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. The clusterization
-is either realized w.r.t the sorted order of the resources or sliding window,
-with parametric width and height.</p>
-<section id="postprocessors-clusterizer-cli">
-<span id="id3"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-clusterizer-cli" title="Link to this heading">¶</a></h4>
-<section id="perun-postprocessby-clusterizer">
-<h5>perun postprocessby clusterizer<a class="headerlink" href="#perun-postprocessby-clusterizer" title="Link to this heading">¶</a></h5>
-<p>Clusters each resource to an appropriate cluster in order to be postprocessable
-by regression analysis.</p>
-<div class="line-block">
-<div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
-<div class="line">* <strong>Dependencies</strong>: <cite>none</cite></div>
-</div>
-<p>Clusterizer tries to find a suitable cluster for each resource in the profile. The clusters
-are either computed w.r.t the sort order of the resource amounts, or are computed according
-to the sliding window.</p>
-<p>The sliding window can be further adjusted by setting its <strong>width</strong> (i.e. how many near values
-on the x axis will we fit to a cluster) and its <strong>height</strong> (i.e. how big of an interval of
-resource amounts will be consider for one cluster). Both <strong>width</strong> and <strong>height</strong> can be further
-augmented. <strong>Width</strong> can either be <cite>absolute</cite>, where we take in maximum the absolute number of
-resources, <cite>relative</cite>, where we take in maximum the percentage of number of resources for each
-cluster, or <cite>weighted</cite>, where we take the number of resource depending on the frequency of their
-occurrences. Similarly, the <strong>height</strong> can either be <cite>absolute</cite>, where we set the interval of
-amounts to an absolute size, or <cite>relative</cite>, where we set the interval of amounts relative to the
-to the first resource amount in the cluster (so e.g. if we have window of height 0.1 and the
-first resource in the cluster has amount of 100, we will cluster every resources in interval 100
-to 110 to this cluster).</p>
-<p>For more details about regression analysis refer to <a class="reference internal" href="#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a>.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>clusterizer<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-<p class="rubric">Options</p>
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-s">
-<span id="cmdoption-perun-postprocessby-clusterizer-strategy"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--strategy</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;strategy&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-s" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the clustering strategy, that will be applied for the profile</p>
-<dl class="field-list simple">
-<dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sort_order | sliding_window</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-wh">
-<span id="cmdoption-perun-postprocessby-clusterizer-window-height"></span><span class="sig-name descname"><span class="pre">-wh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--window-height</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;window_height&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-wh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the height of the window (either fixed or proportional)</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-rwh">
-<span id="cmdoption-perun-postprocessby-clusterizer-relative-window-height"></span><span class="sig-name descname"><span class="pre">-rwh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--relative-window-height</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rwh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies that the height of the window is relative to the point</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-fwh">
-<span id="cmdoption-perun-postprocessby-clusterizer-fixed-window-height"></span><span class="sig-name descname"><span class="pre">-fwh</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--fixed-window-height</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fwh" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies that the height of the window is absolute to the point</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-ww">
-<span id="cmdoption-perun-postprocessby-clusterizer-window-width"></span><span class="sig-name descname"><span class="pre">-ww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--window-width</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;window_width&gt;</span></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-ww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the width of the window, i.e. how many values will be taken by window.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-rww">
-<span id="cmdoption-perun-postprocessby-clusterizer-relative-window-width"></span><span class="sig-name descname"><span class="pre">-rww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--relative-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-fww">
-<span id="cmdoption-perun-postprocessby-clusterizer-fixed-window-width"></span><span class="sig-name descname"><span class="pre">-fww</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--fixed-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fww" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-postprocessby-clusterizer-www">
-<span id="cmdoption-perun-postprocessby-clusterizer-weighted-window-width"></span><span class="sig-name descname"><span class="pre">-www</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--weighted-window-width</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-www" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies whether the width of the window is weighted or fixed</p>
-</dd></dl>
-
-</section>
-</section>
-<section id="postprocessors-clusterizer-examples">
-<span id="id4"></span><h4>Examples<a class="headerlink" href="#postprocessors-clusterizer-examples" title="Link to this heading">¶</a></h4>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="p">{</span>
-<span class="linenos"> 2</span><span class="w">  </span><span class="nt">&quot;snapshots&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos"> 3</span><span class="w">    </span><span class="p">{</span>
-<span class="linenos"> 4</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5.000000&quot;</span><span class="p">,</span>
-<span class="linenos"> 5</span><span class="w">      </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos"> 6</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 7</span><span class="w">          </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 8</span><span class="w">          </span><span class="nt">&quot;trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos"> 9</span><span class="w">            </span><span class="p">{</span>
-<span class="linenos">10</span><span class="w">              </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos">11</span><span class="w">              </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;malloc&quot;</span><span class="p">,</span>
-<span class="linenos">12</span><span class="w">              </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
-<span class="linenos">13</span><span class="w">            </span><span class="p">},</span>
-<span class="linenos">14</span><span class="w">            </span><span class="p">{</span>
-<span class="linenos">15</span><span class="w">              </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">21</span><span class="p">,</span>
-<span class="linenos">16</span><span class="w">              </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="linenos">17</span><span class="w">              </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span>
-<span class="linenos">18</span><span class="w">            </span><span class="p">},</span>
-<span class="linenos">19</span><span class="w">            </span><span class="p">{</span>
-<span class="linenos">20</span><span class="w">              </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos">21</span><span class="w">              </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;__libc_start_main&quot;</span><span class="p">,</span>
-<span class="linenos">22</span><span class="w">              </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
-<span class="linenos">23</span><span class="w">            </span><span class="p">},</span>
-<span class="linenos">24</span><span class="w">            </span><span class="p">{</span>
-<span class="linenos">25</span><span class="w">              </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos">26</span><span class="w">              </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;_start&quot;</span><span class="p">,</span>
-<span class="linenos">27</span><span class="w">              </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
-<span class="linenos">28</span><span class="w">            </span><span class="p">}</span>
-<span class="linenos">29</span><span class="w">          </span><span class="p">],</span>
-<span class="linenos">30</span><span class="w">          </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">31584848</span><span class="p">,</span>
-<span class="linenos">31</span><span class="w">          </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c:main#22&quot;</span><span class="p">,</span>
-<span class="hll"><span class="linenos">32</span><span class="w">          </span><span class="nt">&quot;cluster&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span class="linenos">33</span><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-<span class="linenos">34</span><span class="w">          </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;malloc&quot;</span>
-<span class="linenos">35</span><span class="w">        </span><span class="p">},</span>
-<span class="linenos">36</span><span class="w">      </span><span class="p">]</span>
-<span class="linenos">37</span><span class="w">    </span><span class="p">}</span>
-<span class="linenos">38</span><span class="w">  </span><span class="p">]</span>
-<span class="linenos">39</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>The profile above shows an example of profile postprocessed by clusterizer (note that this is only
-an excerpt of the whole profile). Each resource is annotated by a new field named <code class="docutils literal notranslate"><span class="pre">cluster</span></code>,
-which can be used in further interpretation of the profiles (either by <a class="reference internal" href="views.html#views-bars"><span class="std std-ref">Bars Plot</span></a>,
-<a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> or <a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>).</p>
-<img alt="_images/clusterizer-memory-scatter.png" src="_images/clusterizer-memory-scatter.png" />
-<p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the memory profile of a simple example, which randomly
-allocates memory with linear dependency and was collected by <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>. Since
-<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a> does not collect any other information, but memory rallocation records.
-Such profile cannot be used to infer any models. However the <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above was
-postprocessed by clusterizer and hence, we can plot the dependency of amount of allocated memory
-per each cluster. The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> itself ephasize the linear dependency of allocated
-memory depending on some unknown parameters (here represented by <cite>cluster</cite>).</p>
-<p>We can use <a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> to prove our assumption, and on the plot below
-we can see that the best model for the amount of allocated memory depending on clusters is indeed
-<strong>linear</strong>.</p>
-<img alt="_images/clusterizer-memory-scatter-with-models.png" src="_images/clusterizer-memory-scatter-with-models.png" />
-</section>
-</section>
 <section id="module-perun.postprocess.regressogram">
-<span id="regressogram-method"></span><span id="postprocessors-regressogram"></span><h3>Regressogram method<a class="headerlink" href="#module-perun.postprocess.regressogram" title="Link to this heading">¶</a></h3>
+<span id="regressogram-method"></span><h4>Regressogram method<a class="headerlink" href="#module-perun.postprocess.regressogram" title="Link to this heading">¶</a></h4>
 <p>Postprocessing of input profiles using the non-parametric method: regressogram.
 This method serves for finding fitting models for trends in the captured
 profiling resources using the constant function at the individual parts of
 the whole interval.</p>
+</section>
+</section>
 <section id="postprocessors-regressogram-cli">
-<span id="id5"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-regressogram-cli" title="Link to this heading">¶</a></h4>
+<span id="id3"></span><h3>Command Line Interface<a class="headerlink" href="#postprocessors-regressogram-cli" title="Link to this heading">¶</a></h3>
 <section id="perun-postprocessby-regressogram">
-<h5>perun postprocessby regressogram<a class="headerlink" href="#perun-postprocessby-regressogram" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby regressogram<a class="headerlink" href="#perun-postprocessby-regressogram" title="Link to this heading">¶</a></h4>
 <p>Execution of the interleaving of profiled resources by <strong>regressogram</strong> models.</p>
 <div class="line-block">
 <div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
@@ -698,7 +500,7 @@ performance</div>
 the code of these methods, you can visit <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges">SciPy</a>.</p>
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer to
-<a class="reference internal" href="#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a>.</p>
+<span class="xref std std-ref">postprocessors-regressogram</span>.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>regressogram<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -746,7 +548,7 @@ the code of these methods, you can visit <a class="reference external" href="htt
 </section>
 </section>
 <section id="postprocessors-regressogram-examples">
-<span id="id6"></span><h4>Examples<a class="headerlink" href="#postprocessors-regressogram-examples" title="Link to this heading">¶</a></h4>
+<span id="id4"></span><h3>Examples<a class="headerlink" href="#postprocessors-regressogram-examples" title="Link to this heading">¶</a></h3>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;bucket_stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -776,18 +578,18 @@ interpretation of the models (either by <a class="reference internal" href="view
 <p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted model, computed using the <strong>regressogram</strong>
 method. In the picture, one can see that the dependency of running time based on the structural
 size is best fitted by <cite>exponential</cite> models.</p>
-</section>
-</section>
 <section id="module-perun.postprocess.moving_average">
-<span id="moving-average-methods"></span><span id="postprocessors-moving-average"></span><h3>Moving Average Methods<a class="headerlink" href="#module-perun.postprocess.moving_average" title="Link to this heading">¶</a></h3>
+<span id="moving-average-methods"></span><span id="postprocessors-moving-average"></span><h4>Moving Average Methods<a class="headerlink" href="#module-perun.postprocess.moving_average" title="Link to this heading">¶</a></h4>
 <p>Postprocessing of input profiles using the non-parametric method: moving average.
 This method serves to analyze data points in the captured profiling resources
 by creating a series of averages, eventually medians, of different subsets of
 the full data set.</p>
+</section>
+</section>
 <section id="postprocessors-moving-average-cli">
-<span id="id7"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-moving-average-cli" title="Link to this heading">¶</a></h4>
+<span id="id5"></span><h3>Command Line Interface<a class="headerlink" href="#postprocessors-moving-average-cli" title="Link to this heading">¶</a></h3>
 <section id="perun-postprocessby-moving-average">
-<h5>perun postprocessby moving_average<a class="headerlink" href="#perun-postprocessby-moving-average" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby moving_average<a class="headerlink" href="#perun-postprocessby-moving-average" title="Link to this heading">¶</a></h4>
 <p>Execution of the interleaving of profiled resources by <em>moving average</em> models.</p>
 <div class="line-block">
 <div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
@@ -796,16 +598,16 @@ the full data set.</p>
 <p>Moving average methods are the natural generalizations of regressogram method. This
 method uses the local averages/medians of y-coordinates (<cite>&lt;of_resource_key&gt;</cite>), but
 the estimate in the x-point (<cite>&lt;per_key&gt;</cite>) is based on the centered surroundings of
-this points, more precisely:</p>
+these points, more precisely:</p>
 <blockquote>
 <div><p><strong>Moving Average</strong>: is a widely used estimator in the technical analysis, that helps
-smooth the dataset by filtering out the ‘noise’. Among the basic properties of this
+smooth the dataset by filtering out the ‘noise’. Among the basic properties of these
 methods belongs the ability to reduce the effect of temporary variations in data, better
-improvement of the fitness of data to a line, so called smoothing, to show the data’s
+improvement of the fitness of data to a line, so-called smoothing, to show the data’s
 trend more clearly and highlight any value below or above the trend. The most important
 task with this type of non-parametric approach is the choice of the <cite>&lt;window-width&gt;</cite>.
 If the user does not choose it, we try approximate this value by using the value of
-<cite>coefficient of determination</cite> (<span class="math notranslate nohighlight">\(R^2\)</span>). At the begin of the analysis is set the
+<cite>coefficient of determination</cite> (<span class="math notranslate nohighlight">\(R^2\)</span>). At the beginning, of the analysis is set the
 initial value of window width and then follows the interleaving of the current dataset,
 which runs until the value of <cite>coefficient of determination</cite> will not reach the required
 level. By this way is guaranteed the desired smoothness of the resulting models. The two
@@ -857,7 +659,7 @@ to <a class="reference internal" href="#postprocessors-moving-average"><span cla
 
 </section>
 <section id="perun-postprocessby-moving-average-sma">
-<h5>perun postprocessby moving_average sma<a class="headerlink" href="#perun-postprocessby-moving-average-sma" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby moving_average sma<a class="headerlink" href="#perun-postprocessby-moving-average-sma" title="Link to this heading">¶</a></h4>
 <p><strong>Simple Moving Average</strong></p>
 <p>In the most of cases, it is an unweighted Moving Average, this means that the each
 x-coordinate in the data set (profiled resources) has equal importance and is weighted
@@ -924,10 +726,10 @@ see <a class="reference external" href="https://docs.scipy.org/doc/scipy/referen
 
 </section>
 <section id="perun-postprocessby-moving-average-smm">
-<h5>perun postprocessby moving_average smm<a class="headerlink" href="#perun-postprocessby-moving-average-smm" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby moving_average smm<a class="headerlink" href="#perun-postprocessby-moving-average-smm" title="Link to this heading">¶</a></h4>
 <p><strong>Simple Moving Median</strong></p>
 <p>The second representative of Simple Moving Average methods is the Simple Moving <strong>Median</strong>.
-For this method are applicable to the same rules like in the first described method, except
+For this method are applicable to the same rules as in the first described method, except
 for the option for choosing the window type, which do not make sense in this approach. The
 only difference between these two methods are the way of computation the values in the
 individual sub-intervals. Simple Moving <strong>Median</strong> is not based on the computation of
@@ -950,9 +752,9 @@ average, but as the name suggests, it based on the <strong>median</strong>.</p>
 
 </section>
 <section id="perun-postprocessby-moving-average-ema">
-<h5>perun postprocessby moving_average ema<a class="headerlink" href="#perun-postprocessby-moving-average-ema" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby moving_average ema<a class="headerlink" href="#perun-postprocessby-moving-average-ema" title="Link to this heading">¶</a></h4>
 <p><strong>Exponential Moving Average</strong></p>
-<p>This method is a type of moving average methods, also know as <strong>Exponential</strong> Weighted
+<p>This method is a type of moving average methods, also known as <strong>Exponential</strong> Weighted
 Moving Average, that places a greater weight and significance on the most recent data
 points. The weighting for each far x-coordinate decreases exponentially and never reaching
 zero. This approach of moving average reacts more significantly to recent changes than a
@@ -993,7 +795,7 @@ factor or length of the average.</p>
 </section>
 </section>
 <section id="postprocessors-moving-average-examples">
-<span id="id8"></span><h4>Examples<a class="headerlink" href="#postprocessors-moving-average-examples" title="Link to this heading">¶</a></h4>
+<span id="id6"></span><h3>Examples<a class="headerlink" href="#postprocessors-moving-average-examples" title="Link to this heading">¶</a></h3>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;bucket_stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -1032,18 +834,18 @@ can be found in the whole profile, specifically in the part about used post-proc
 <p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted model, computed using the <strong>exponential moving average</strong>
 method, running with default values of parameters. In the picture, one can see that the dependency of running
 time based on the structural size is best fitted by <cite>exponential</cite> models.</p>
-</section>
-</section>
 <section id="module-perun.postprocess.kernel_regression">
-<span id="kernel-regression-methods"></span><span id="postprocessors-kernel-regression"></span><h3>Kernel Regression Methods<a class="headerlink" href="#module-perun.postprocess.kernel_regression" title="Link to this heading">¶</a></h3>
+<span id="kernel-regression-methods"></span><span id="postprocessors-kernel-regression"></span><h4>Kernel Regression Methods<a class="headerlink" href="#module-perun.postprocess.kernel_regression" title="Link to this heading">¶</a></h4>
 <p>A postprocessor that executing the kernel regression over the resources.</p>
 <p>Postprocessing of inputs profiles using the kernel regression. Postprocessor,
 implementing kernel regression offers several computational methods with
 different approaches and different strategies to find optimal parameters.</p>
+</section>
+</section>
 <section id="postprocessors-kernel-regression-cli">
-<span id="id9"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-kernel-regression-cli" title="Link to this heading">¶</a></h4>
+<span id="id7"></span><h3>Command Line Interface<a class="headerlink" href="#postprocessors-kernel-regression-cli" title="Link to this heading">¶</a></h3>
 <section id="perun-postprocessby-kernel-regression">
-<h5>perun postprocessby kernel-regression<a class="headerlink" href="#perun-postprocessby-kernel-regression" title="Link to this heading">¶</a></h5>
+<h4>perun postprocessby kernel-regression<a class="headerlink" href="#perun-postprocessby-kernel-regression" title="Link to this heading">¶</a></h4>
 <p>Execution of the interleaving of profiles resources by <em>kernel</em> models.</p>
 <div class="line-block">
 <div class="line">* <strong>Limitations</strong>: <cite>none</cite></div>
@@ -1057,7 +859,7 @@ regression does not assume any underlying distribution (e.g. linear, exponential
 to estimate the regression function. The main idea of kernel regression is putting the
 <strong>kernel</strong>, that have the role of weighted function, to each observation point in the dataset.
 Subsequently, the kernel will assign weight to each point in depends on the distance from the
-current data point. The kernel basis formula depends only to the <em>bandwidth</em> from the current
+current data point. The kernel basis formula depends only on the <em>bandwidth</em> from the current
 (‘local’) data point X to a set of neighboring data points X.</p>
 <blockquote>
 <div><p><strong>Kernel Selection</strong> does not important from an asymptotic point of view. It is appropriate
@@ -1070,9 +872,9 @@ kernels or this kernel regression mode you can see
 <a class="reference internal" href="#postprocessors-kernel-regression-kernel-smoothing"><span class="std std-ref">perun postprocessby kernel-regression kernel-smoothing</span></a>.</p>
 <p><strong>Bandwidth Selection</strong> is the most important factor at each approach of kernel regression,
 since this value significantly affects the smoothness of the resulting estimate. In case,
-when is choose the inappropriate value, in the most cases can be expected the following two
+when we choose the inappropriate value, in the most cases can be expected the following two
 situations. The <strong>small</strong> bandwidth value reproduce estimated data and vice versa, the
-<strong>large</strong> value leads to over-leaving, so to average of the estimated data. Therefore are
+<strong>large</strong> value leads to over-leaving, so to average of the estimated data. Therefore, are
 used the methods to determine the bandwidth value. One of the most widespread and most
 commonly used methods is the <strong>cross-validation</strong> method. This method is based on the
 estimate of the regression function in which will be omitted <em>i-th</em> observation. In this
@@ -1084,7 +886,7 @@ definition you cas see in the part <a class="reference internal" href="#postproc
 <p>This postprocessor in summary offers five different modes, which does not differ in the
 resulting estimate, but in the way of computation the resulting estimate. Better said, it
 means, that the result of each mode is the <strong>kernel estimate</strong> with relevant parameters,
-selected according to the concrete mode. In short we will describe the individual methods, for
+selected according to the concrete mode. In short, we will describe the individual methods, for
 more information about it, you can visit the relevant parts of documentation:</p>
 <blockquote>
 <div><div class="line-block">
@@ -1149,7 +951,7 @@ to <a class="reference internal" href="#postprocessors-kernel-regression"><span 
 
 </section>
 <section id="perun-postprocessby-kernel-regression-estimator-settings">
-<span id="postprocessors-kernel-regression-estimator-settings"></span><h5>perun postprocessby kernel-regression estimator-settings<a class="headerlink" href="#perun-postprocessby-kernel-regression-estimator-settings" title="Link to this heading">¶</a></h5>
+<span id="postprocessors-kernel-regression-estimator-settings"></span><h4>perun postprocessby kernel-regression estimator-settings<a class="headerlink" href="#perun-postprocessby-kernel-regression-estimator-settings" title="Link to this heading">¶</a></h4>
 <p>Nadaraya-Watson kernel regression with specific settings for estimate.</p>
 <p>As has been mentioned above, the kernel regression aims to estimate the functional relation
 between explanatory variable <strong>y</strong> and the response variable <strong>X</strong>. This mode of kernel
@@ -1189,7 +991,7 @@ edge of the support.</p>
 kernel-type estimators, such as the <em>Nadaraya-Watson</em> estimator. More precisely, it
 adapts to both random and fixed designs, and to various design densities such as highly
 clustered designs and nearly uniform designs. It turns out that the <em>local linear</em>
-smoother repairs the drawbacks of other kernel regression estimators. An regression
+smoother repairs the drawbacks of other kernel regression estimators. A regression
 estimator <em>m</em> of <em>m</em> is a linear smoother if, for each <em>x</em>, there is a vector
 <span class="math notranslate nohighlight">\(l(x) = (l_1(x), ..., l_n(x))^T\)</span> such that:</p>
 <blockquote>
@@ -1206,7 +1008,7 @@ are linear smoothers too: <em>Gaussian process regression</em>, <em>splines</em>
 </div></blockquote>
 <p><strong>Bandwidth Method &lt;bandwidth-method&gt;</strong>:</p>
 <blockquote>
-<div><p>As has been said in the general description of the <em>kernel regression</em>, once of the most
+<div><p>As has been said in the general description of the <em>kernel regression</em>, one of the most
 important factors of the resulting estimate is the kernel <strong>bandwidth</strong>. When the
 inappropriate value is selected may occur to <em>under-laying</em> or <em>over-laying</em> fo the
 resulting kernel estimate. Since the bandwidth of the kernel is a free parameter which
@@ -1237,7 +1039,7 @@ is a generalized product kernel.</p>
 <em>AIC</em> have been shown to be asymptotically equivalent.</p>
 </div></blockquote>
 <p>The remaining options at this mode of kernel regression postprocessor are described within usage
-to it and you can see this in the list below. All these options are parameters to
+from the CLI and you can see this in the list below. All these options are parameters to
 <em>EstimatorSettings</em> (see <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_density.EstimatorSettings.html">EstimatorSettings</a>), that optimizing the kernel bandwidth based on the
 these specified settings.</p>
 <p>In the case of confusion about this approach of kernel regression, you can visit <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_regression.KernelReg.html#statsmodels.nonparametric.kernel_regression.KernelReg">StatsModels</a>.</p>
@@ -1299,7 +1101,7 @@ these specified settings.</p>
 
 </section>
 <section id="perun-postprocessby-kernel-regression-user-selection">
-<span id="postprocessors-kernel-regression-user-selection"></span><h5>perun postprocessby kernel-regression user-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-user-selection" title="Link to this heading">¶</a></h5>
+<span id="postprocessors-kernel-regression-user-selection"></span><h4>perun postprocessby kernel-regression user-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-user-selection" title="Link to this heading">¶</a></h4>
 <p>Nadaraya-Watson kernel regression with user bandwidth.</p>
 <p>This mode of kernel regression postprocessor is very similar to <em>estimator-settings</em> mode. Also
 offers two types of <em>regression estimator</em> &lt;reg-type&gt; and that the <em>Nadaraya-Watson</em> estimator,
@@ -1334,7 +1136,7 @@ closest appropriate value, so that is not decreased the accuracy of the resultin
 
 </section>
 <section id="perun-postprocessby-kernel-regression-method-selection">
-<span id="postprocessors-kernel-regression-method-selection"></span><h5>perun postprocessby kernel-regression method-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-method-selection" title="Link to this heading">¶</a></h5>
+<span id="postprocessors-kernel-regression-method-selection"></span><h4>perun postprocessby kernel-regression method-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-method-selection" title="Link to this heading">¶</a></h4>
 <p>Nadaraya-Watson kernel regression with supporting bandwidth selection method.</p>
 <p>The last method from a group of three methods based on a similar principle. <em>Method-selection</em>
 mode offers the same type of <em>regression estimators</em> &lt;reg-type&gt; as the first two described
@@ -1348,7 +1150,7 @@ from predefined formulas:</p>
 <blockquote>
 <div><p><strong>Scotts’s Rule</strong> of thumb to determine the smoothing bandwidth for a kernel estimation. It
 is very fast compute. This rule was designed for density estimation but is usable for kernel
-regression too. Typically produces a larger bandwidth and therefore it is useful for
+regression too. Typically, produces a larger bandwidth, and therefore it is useful for
 estimating a gradual trend:</p>
 <blockquote>
 <div><div class="math notranslate nohighlight">
@@ -1401,7 +1203,7 @@ symmetric and does not have fat tails, it works fine:</p>
 
 </section>
 <section id="perun-postprocessby-kernel-regression-kernel-smoothing">
-<span id="postprocessors-kernel-regression-kernel-smoothing"></span><h5>perun postprocessby kernel-regression kernel-smoothing<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-smoothing" title="Link to this heading">¶</a></h5>
+<span id="postprocessors-kernel-regression-kernel-smoothing"></span><h4>perun postprocessby kernel-regression kernel-smoothing<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-smoothing" title="Link to this heading">¶</a></h4>
 <p>Kernel regression with different types of kernel and regression methods.</p>
 <p>This mode of kernel regression postprocessor implements non-parametric regression using
 different kernel methods and different kernel types. The calculation in this mode can be split
@@ -1563,7 +1365,7 @@ combination with &lt;bandwidth-value&gt;, then will be ignored and will be accep
 
 </section>
 <section id="perun-postprocessby-kernel-regression-kernel-ridge">
-<span id="postprocessors-kernel-regression-kernel-ridge"></span><h5>perun postprocessby kernel-regression kernel-ridge<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-ridge" title="Link to this heading">¶</a></h5>
+<span id="postprocessors-kernel-regression-kernel-ridge"></span><h4>perun postprocessby kernel-regression kernel-ridge<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-ridge" title="Link to this heading">¶</a></h4>
 <p>Nadaraya-Watson kernel regression with automatic bandwidth selection.</p>
 <p>This mode implements <em>Nadaraya-Watson</em> kernel regression, which was described above in
 <a class="reference internal" href="#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>. While the previous modes provided
@@ -1571,7 +1373,7 @@ the methods to determine the optimal bandwidth with different ways, this method 
 little bit different way. From a given range of potential bandwidths &lt;gamma-range&gt; try to
 select the optimal kernel bandwidth with use of <em>leave-one-out cross-validation</em>. This approach
 was described in <a class="reference internal" href="#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>, where was
-introduced the <em>least-squares cross- validation</em> and it is a modification of this approach.
+introduced the <em>least-squares cross-validation</em> and it is a modification of this approach.
 <em>Leave-one-out cross validation</em> is <a class="reference external" href="https://medium.com/datadriveninvestor/k-fold-cross-validation-6b8518070833">K-fold</a> cross validation taken to its logical extreme, with
 <em>K</em> equal to <em>N</em>, the number of data points in the set. The original <em>gamma-range</em> will be
 divided on the base of size the given step &lt;gamma-step&gt;. The selection of specific value from
@@ -1597,7 +1399,7 @@ kernel in resulting estimate: <span class="math notranslate nohighlight">\(K(x, 
 </section>
 </section>
 <section id="postprocessors-kernel-regression-examples">
-<span id="id12"></span><h4>Examples<a class="headerlink" href="#postprocessors-kernel-regression-examples" title="Link to this heading">¶</a></h4>
+<span id="id10"></span><h3>Examples<a class="headerlink" href="#postprocessors-kernel-regression-examples" title="Link to this heading">¶</a></h3>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;per_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
@@ -1646,14 +1448,13 @@ concretely with default value of parameters in <strong>estimator-settings</stron
 be see that the dependency of running time based on the structural size.</p>
 </section>
 </section>
-</section>
 <section id="creating-your-own-postprocessor">
 <span id="postprocessors-custom"></span><h2>Creating your own Postprocessor<a class="headerlink" href="#creating-your-own-postprocessor" title="Link to this heading">¶</a></h2>
 <p>New postprocessors can be registered within Perun in several steps. Internally they can be
 implemented in any programming language and in order to work with perun requires one to three
 phases to be specified as given in <a class="reference internal" href="#postprocessors-overview"><span class="std std-ref">Postprocessors Overview</span></a>—<code class="docutils literal notranslate"><span class="pre">before()</span></code>, <code class="docutils literal notranslate"><span class="pre">postprocess()</span></code>
 and <code class="docutils literal notranslate"><span class="pre">after()</span></code>. Each new postprocessor requires a interface module <code class="docutils literal notranslate"><span class="pre">run.py</span></code>, which contains the
-three function and, moreover, a CLI function for <a class="reference external" href="http://click.pocoo.org/5/">Click</a> framework.</p>
+three function and, moreover, a CLI function for <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> framework.</p>
 <p>You can register your new postprocessor as follows:</p>
 <blockquote>
 <div><ol class="arabic">
@@ -1667,8 +1468,10 @@ interface of <code class="docutils literal notranslate"><span class="pre">perun<
     <span class="o">|--</span> <span class="o">/</span><span class="n">mypostprocessor</span>
         <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
         <span class="o">|--</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span>
-    <span class="o">|--</span> <span class="o">/</span><span class="n">normalizer</span>
+    <span class="o">|--</span> <span class="o">/</span><span class="n">kernel_regression</span>
+    <span class="o">|--</span> <span class="o">/</span><span class="n">moving_average</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">regression_analysis</span>
+    <span class="o">|--</span> <span class="o">/</span><span class="n">regressogram</span>
     <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -1737,22 +1540,7 @@ your collector. This function will be called from the command line as <code clas
 <li><p>Finally register your newly created module in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code> located in
 <code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
 </ol>
-<div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
-<span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_postprocess.py</span>
-<span class="linenos"> 3</span><span class="gu">@@ -7,7 +7,12 @@</span>
-<span class="linenos"> 4</span><span class="w"> </span>    return {
-<span class="linenos"> 5</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;],
-<span class="linenos"> 6</span><span class="w"> </span>        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],
-<span class="linenos"> 7</span><span class="gd">-        &quot;postprocess&quot;: [&quot;filter&quot;, &quot;normalizer&quot;, &quot;regression-analysis&quot;],</span>
-<span class="linenos"> 8</span><span class="gi">+        &quot;postprocess&quot;: [</span>
-<span class="linenos"> 9</span><span class="gi">+            &quot;filter&quot;,</span>
-<span class="linenos">10</span><span class="gi">+            &quot;normalizer&quot;,</span>
-<span class="linenos">11</span><span class="gi">+            &quot;regression-analysis&quot;,</span>
-<span class="linenos">12</span><span class="gi">+            &quot;mypostprocessor&quot;,</span>
-<span class="linenos">13</span><span class="gi">+        ],</span>
-<span class="linenos">14</span><span class="w"> </span>        &quot;view&quot;: [
-<span class="linenos">15</span><span class="w"> </span>            &quot;alloclist&quot;,
-<span class="linenos">16</span><span class="w"> </span>            &quot;bars&quot;,
+<div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>
 </pre></div>
 </div>
 <ol class="arabic" start="6">
@@ -1792,38 +1580,26 @@ following to set the job matrix and run the batch collection of profiles:</p>
     <ul>
 <li><a class="reference internal" href="#">Postprocessors Overview</a><ul>
 <li><a class="reference internal" href="#supported-postprocessors">Supported Postprocessors</a><ul>
-<li><a class="reference internal" href="#module-perun.postprocess.normalizer">Normalizer Postprocessor</a><ul>
 <li><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
-<li><a class="reference internal" href="#perun-postprocessby-normalizer">perun postprocessby normalizer</a></li>
+<li><a class="reference internal" href="#module-perun.postprocess.regression_analysis">Regression Analysis</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-perun.postprocess.regression_analysis">Regression Analysis</a><ul>
 <li><a class="reference internal" href="#postprocessors-regression-analysis-cli">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby-regression-analysis">perun postprocessby regression_analysis</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#module-perun.postprocess.regressogram">Regressogram method</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.postprocess.clusterizer">Clusterizer</a><ul>
-<li><a class="reference internal" href="#postprocessors-clusterizer-cli">Command Line Interface</a><ul>
-<li><a class="reference internal" href="#perun-postprocessby-clusterizer">perun postprocessby clusterizer</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#postprocessors-clusterizer-examples">Examples</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-perun.postprocess.regressogram">Regressogram method</a><ul>
 <li><a class="reference internal" href="#postprocessors-regressogram-cli">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby-regressogram">perun postprocessby regressogram</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#postprocessors-regressogram-examples">Examples</a></li>
+<li><a class="reference internal" href="#postprocessors-regressogram-examples">Examples</a><ul>
+<li><a class="reference internal" href="#module-perun.postprocess.moving_average">Moving Average Methods</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.postprocess.moving_average">Moving Average Methods</a><ul>
 <li><a class="reference internal" href="#postprocessors-moving-average-cli">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average">perun postprocessby moving_average</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-sma">perun postprocessby moving_average sma</a></li>
@@ -1831,10 +1607,10 @@ following to set the job matrix and run the batch collection of profiles:</p>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-ema">perun postprocessby moving_average ema</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#postprocessors-moving-average-examples">Examples</a></li>
+<li><a class="reference internal" href="#postprocessors-moving-average-examples">Examples</a><ul>
+<li><a class="reference internal" href="#module-perun.postprocess.kernel_regression">Kernel Regression Methods</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.postprocess.kernel_regression">Kernel Regression Methods</a><ul>
 <li><a class="reference internal" href="#postprocessors-kernel-regression-cli">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby-kernel-regression">perun postprocessby kernel-regression</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-kernel-regression-estimator-settings">perun postprocessby kernel-regression estimator-settings</a></li>
@@ -1845,8 +1621,6 @@ following to set the job matrix and run the batch collection of profiles:</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#postprocessors-kernel-regression-examples">Examples</a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#creating-your-own-postprocessor">Creating your own Postprocessor</a></li>
@@ -1870,7 +1644,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -1878,7 +1652,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1888,7 +1662,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

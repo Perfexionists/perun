@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun: Performance Under Control &#8212; Perun 0.21.8 documentation</title>
+    <title>Perun: Performance Under Control &#8212; Perun 0.22 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=e76a183b"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=92c4edf1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -138,7 +138,7 @@ format of the supported profile refer to <a class="reference internal" href="pro
 structures, or simple <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> for basic timing) and can be further refined and
 transformed by sequence of postprocessing steps (like e.g.
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> for estimating regression models of dependent variables
-based on independent variables, or <a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a>, etc.).</p>
+based on independent variables, or <span class="xref std std-ref">postprocessors-regressogram</span>, etc.).</p>
 <p>Stored profiles then can be interpreted by set of visualization techniques like e.g.
 <a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a>, <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a>, or generic <a class="reference internal" href="views.html#views-bars"><span class="std std-ref">Bars Plot</span></a> and <a class="reference internal" href="views.html#views-flow"><span class="std std-ref">Flow Plot</span></a>.
 Refer to <a class="reference internal" href="views.html"><span class="doc">Visualizations Overview</span></a> for more concise list and documentation of interpretation capabilities of
@@ -178,7 +178,7 @@ project one then just needs to run <code class="docutils literal notranslate"><s
 profiles for latest (or currently checked-out) minor version of project.</p></li>
 <li><p><strong>Git-inspired Interface</strong>—the <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> is inspired by git version control systems and
 specifies commands like e.g. <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">remove</span></code>, <code class="docutils literal notranslate"><span class="pre">status</span></code>, or <code class="docutils literal notranslate"><span class="pre">log</span></code>, well-known to basic
-git users. Moreover, the interface is built using the <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library providing flexible option
+git users. Moreover, the interface is built using the <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library providing flexible option
 and argument handling. The overall interface was designed to have a natural feeling when
 executing the commands.</p></li>
 <li><p><strong>Efficient storage</strong>—performance profiles are stored compressed in the storage in parallel
@@ -317,7 +317,7 @@ following in the <code class="docutils literal notranslate"><span class="pre">ru
     <span class="k">pass</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library is used for command line interface. For full explanation how to register and
+<p>The <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library is used for command line interface. For full explanation how to register and
 create a new collector module refer to <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a>.</p>
 </section>
 </section>
@@ -389,7 +389,7 @@ Technology (<a class="reference external" href="https://www.fit.vutbr.cz/">BUT F
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -397,7 +397,7 @@ Technology (<a class="reference external" href="https://www.fit.vutbr.cz/">BUT F
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -407,7 +407,7 @@ Technology (<a class="reference external" href="https://www.fit.vutbr.cz/">BUT F
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
