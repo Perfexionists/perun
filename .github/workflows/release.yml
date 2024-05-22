@@ -97,6 +97,12 @@ jobs:
         run: |
           make release
 
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir dist
+
       - name: Upload to TestPypi
         run: |
           python3 -m twine upload dist/*
