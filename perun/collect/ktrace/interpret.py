@@ -309,10 +309,10 @@ def traces_flat_to_pandas(trace_contexts: TraceContextsMap[FuncDataFlat]) -> pd.
                 func_times.exclusive_time / trace_contexts.total_runtime,
                 func_times.inclusive_time / func_times.call_count / NS_TO_MS,
                 func_times.exclusive_time / func_times.call_count / NS_TO_MS,
-                func_times.incl_t_min,
-                func_times.excl_t_min,
-                func_times.incl_t_max,
-                func_times.excl_t_max,
+                func_times.incl_t_min / NS_TO_MS,
+                func_times.excl_t_min / NS_TO_MS,
+                func_times.incl_t_max / NS_TO_MS,
+                func_times.excl_t_max / NS_TO_MS,
             )
         )
     df = pd.DataFrame(
