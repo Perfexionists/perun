@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Internals &#8212; Perun 0.22.5 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.23 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=0e8f6b61"></script>
+    <script src="_static/documentation_options.js?v=36bc69e8"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -80,7 +80,7 @@ located in <code class="docutils literal notranslate"><span class="pre">perun.ut
 <span class="linenos"> 3</span><span class="gu">@@ -4,7 +4,7 @@</span>
 <span class="linenos"> 4</span><span class="w"> </span>        error(f&quot;trying to call get_supported_module_names with incorrect package &#39;{package}&#39;&quot;)
 <span class="linenos"> 5</span><span class="w"> </span>    return {
-<span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;],
+<span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;, &quot;svs&quot;],
 <span class="linenos"> 7</span><span class="gd">-        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],</span>
 <span class="linenos"> 8</span><span class="gi">+        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;, &quot;mycollector&quot;],</span>
 <span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [
