@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.factory &#8212; Perun 0.23 documentation</title>
+    <title>perun.profile.factory &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="../../../_static/documentation_options.js?v=832b3b9f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -66,10 +66,10 @@
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile">[docs]</a>
 <span class="k">class</span> <span class="nc">Profile</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :ivar dict _storage: internal storage of the profile</span>
-<span class="sd">    :ivar dict _tuple_to_resource_type_map: map of tuple of persistent records of resources to</span>
+<span class="sd">    :ivar _storage: internal storage of the profile</span>
+<span class="sd">    :ivar _tuple_to_resource_type_map: map of tuple of persistent records of resources to</span>
 <span class="sd">        unique identifier of those resources</span>
-<span class="sd">    :ivar Counter _uid_counter: counter of how many resources type uid has</span>
+<span class="sd">    :ivar _uid_counter: counter of how many resources type uid has</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -104,8 +104,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the internal storage</span>
 
-<span class="sd">        :param list args: positional arguments for dictionary</span>
-<span class="sd">        :param kwargs kwargs: keyword arguments for dictionary</span>
+<span class="sd">        :param args: positional arguments for dictionary</span>
+<span class="sd">        :param kwargs: keyword arguments for dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="n">initialization_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -137,11 +137,11 @@
 <span class="sd">        This calls appropriate functions to translate older formats of resources to the</span>
 <span class="sd">        new more efficient representation.</span>
 
-<span class="sd">        :param list resource_list: either list or dict</span>
-<span class="sd">        :param str resource_type: type of the resources in the resources list,</span>
+<span class="sd">        :param resource_list: either list or dict</span>
+<span class="sd">        :param resource_type: type of the resources in the resources list,</span>
 <span class="sd">            can either be snapshots (then it is list of different snapshots), global</span>
 <span class="sd">            (then it is old type of profile) or it can be resource l</span>
-<span class="sd">        :param bool clear_existing_resources: if set to true then the actual storage will be cleared</span>
+<span class="sd">        :param clear_existing_resources: if set to true then the actual storage will be cleared</span>
 <span class="sd">            before updating the resources</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -210,8 +210,8 @@
     <span class="k">def</span> <span class="nf">register_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">persistent_properties</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers tuple of persistent properties under new key or return existing one</span>
 
-<span class="sd">        :param str uid: uid of the resource that will be used to describe the resource type</span>
-<span class="sd">        :param tuple persistent_properties: tuple of persistent properties</span>
+<span class="sd">        :param uid: uid of the resource that will be used to describe the resource type</span>
+<span class="sd">        :param persistent_properties: tuple of persistent properties</span>
 <span class="sd">        :return: uid corresponding to the tuple of persistent properties</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">property_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">persistent_properties</span><span class="p">))</span>
@@ -230,7 +230,7 @@
 
 <span class="sd">        Note: No translation of resources is performed! Use all_resources instead!</span>
 
-<span class="sd">        :param str item: key of the item we are getting</span>
+<span class="sd">        :param item: key of the item we are getting</span>
 <span class="sd">        :return: item stored in the profile</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
@@ -243,8 +243,8 @@
 
 <span class="sd">        Note: No translation of resources is performed! Use update_resources instead!</span>
 
-<span class="sd">        :param str key: key of the value</span>
-<span class="sd">        :param object value:  object we are setting in the profile</span>
+<span class="sd">        :param key: key of the value</span>
+<span class="sd">        :param value:  object we are setting in the profile</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -252,7 +252,7 @@
     <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the item in the storage</span>
 
-<span class="sd">        :param str key: key to be deleted</span>
+<span class="sd">        :param key: key to be deleted</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
@@ -305,7 +305,7 @@
 <span class="sd">                &quot;uid:line&quot;: 22</span>
 <span class="sd">            }</span>
 
-<span class="sd">        :param str resource_type: type of the resource</span>
+<span class="sd">        :param resource_type: type of the resource</span>
 <span class="sd">        :return: flattened resource</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resource_type_to_flattened_resources_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -325,7 +325,7 @@
 <span class="sd">        refer to :pkey:`resources`. Resources are not flattened and, thus, can</span>
 <span class="sd">        contain nested dictionaries (e.g. for `traces` or `uids`).</span>
 
-<span class="sd">        :param bool flatten_values: if set to true, then the persistent values will</span>
+<span class="sd">        :param flatten_values: if set to true, then the persistent values will</span>
 <span class="sd">            be flattened to one level.</span>
 <span class="sd">        :returns: iterable stream of resources represented as pair ``(int, dict)``</span>
 <span class="sd">            of snapshot number and the resources w.r.t. the specification of the</span>
@@ -394,8 +394,8 @@
 <span class="sd">        relevant dictionary with required models or calls the responded functions,</span>
 <span class="sd">        that returns the models according to the specifications.</span>
 
-<span class="sd">        :param str models_strategy: name of detection models strategy to obtains relevant models</span>
-<span class="sd">        :return ModelRecord: required models</span>
+<span class="sd">        :param models_strategy: name of detection models strategy to obtains relevant models</span>
+<span class="sd">        :return: required models</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">models_strategy</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">models_strategy</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all-param&quot;</span><span class="p">,</span> <span class="s2">&quot;all-nonparam&quot;</span><span class="p">):</span>
@@ -432,7 +432,7 @@
 <span class="sd">            &#39;r_square&#39;: 0.007076437903106431, &#39;x_end&#39;: 11892})</span>
 
 
-<span class="sd">        :param str group: the kind of requested models to return</span>
+<span class="sd">        :param group: the kind of requested models to return</span>
 <span class="sd">        :returns: iterable stream of ``(int, dict)`` pairs, where first yields the</span>
 <span class="sd">            positional number of model and latter correponds to one &#39;models&#39;</span>
 <span class="sd">            record (for more details about models refer to :pkey:`models` or</span>
@@ -458,9 +458,9 @@
 <span class="sd">        Finds specific model from profile according to the</span>
 <span class="sd">        given kind of model and specific unique identification.</span>
 
-<span class="sd">        :param str model_type: specific kind of required model (e.g. regressogram, constant, etc.)</span>
-<span class="sd">        :param str uid: specific unique identification of required model</span>
-<span class="sd">        :return dict: dictionary model with all its relevant items</span>
+<span class="sd">        :param model_type: specific kind of required model (e.g. regressogram, constant, etc.)</span>
+<span class="sd">        :param uid: specific unique identification of required model</span>
+<span class="sd">        :return: dictionary model with all its relevant items</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uid</span><span class="p">:</span>
@@ -491,7 +491,7 @@
     <span class="k">def</span> <span class="nf">resources_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the number of resources stored in the internal storage.</span>
 
-<span class="sd">        :return int: the number of stored resources</span>
+<span class="sd">        :return: the number of stored resources</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">])</span></div>
 
@@ -505,7 +505,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="../../../index.html">
     <h3>Perun</h3>
@@ -537,7 +537,7 @@
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>

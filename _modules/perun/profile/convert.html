@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.convert &#8212; Perun 0.23 documentation</title>
+    <title>perun.profile.convert &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="../../../_static/documentation_options.js?v=832b3b9f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -94,7 +94,7 @@
 <span class="sd">        0  main:../memo...:22         main        22   ../memory_collect_test.c</span>
 <span class="sd">        1  main:../memo...:27         main        27   ../memory_collect_test.c</span>
 
-<span class="sd">    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
+<span class="sd">    :param profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
 <span class="sd">    :returns: converted profile to ``pandas.DataFramelist`` with resources</span>
 <span class="sd">        flattened as a pandas dataframe</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -123,7 +123,7 @@
 <span class="sd">    key and value to the tabular representation. Refer to `pandas`_ library for</span>
 <span class="sd">    more possibilities how to work with the tabular representation of models.</span>
 
-<span class="sd">    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
+<span class="sd">    :param profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
 <span class="sd">    :returns: converted models of profile to ``pandas.DataFramelist``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Note that we need to this inefficiently, because some keys can be missing in resources</span>
@@ -166,7 +166,7 @@
 <span class="sd">    allocated memory) preceeded by its trace (i.e. functions or other unique</span>
 <span class="sd">    identifiers joined using ``;`` character).</span>
 
-<span class="sd">    :param Profile profile: the memory profile</span>
+<span class="sd">    :param profile: the memory profile</span>
 <span class="sd">    :param profile_key: key that is used to obtain the data</span>
 <span class="sd">    :param minimize: minimizes the uids</span>
 <span class="sd">    :returns: list of lines, each representing one allocation call stack</span>
@@ -206,8 +206,8 @@
 <span class="k">def</span> <span class="nf">to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create string representing call stack&#39;s frame</span>
 
-<span class="sd">    :param dict frame: call stack&#39;s frame</span>
-<span class="sd">    :returns str: line representing call stack&#39;s frame</span>
+<span class="sd">    :param frame: call stack&#39;s frame</span>
+<span class="sd">    :return: line representing call stack&#39;s frame</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">frame</span>
@@ -226,9 +226,9 @@
 <span class="sd">    plotable as a function or curve. This function serves as a public wrapper</span>
 <span class="sd">    over regression analysis transformation function.</span>
 
-<span class="sd">    :param dict model: the models dictionary from profile (refer to</span>
+<span class="sd">    :param model: the models dictionary from profile (refer to</span>
 <span class="sd">        :pkey:`models`)</span>
-<span class="sd">    :returns dict: updated models dictionary extended with `plot_x` and</span>
+<span class="sd">    :return: updated models dictionary extended with `plot_x` and</span>
 <span class="sd">        `plot_y` lists</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">coefficients_to_points</span><span class="p">(</span><span class="o">**</span><span class="n">model</span><span class="p">))</span>
@@ -243,7 +243,7 @@
 <span class="sd">    rest is left as it is.</span>
 <span class="sd">    TODO: Add caching</span>
 
-<span class="sd">    :param object flattened_value: value that is flattened</span>
+<span class="sd">    :param flattened_value: value that is flattened</span>
 <span class="sd">    :returns: either decimal, string, or something else</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Dictionary is processed recursively according to the all items that are nested</span>
@@ -271,7 +271,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="../../../index.html">
     <h3>Perun</h3>
@@ -303,7 +303,7 @@
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>

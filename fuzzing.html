@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Performance Fuzz-testing &#8212; Perun 0.23 documentation</title>
+    <title>Performance Fuzz-testing &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="_static/documentation_options.js?v=832b3b9f"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -88,7 +88,8 @@ illustrates the illustrates the fuzzing process itself. This allows developers t
 out regular fuzzing testings to achieve best results in best possible time.</p></li>
 </ol>
 </div></blockquote>
-<a class="reference internal image-reference" href="_images/excel-fuzzing-overview.svg"><img alt="_images/excel-fuzzing-overview.svg" class="align-center" src="_images/excel-fuzzing-overview.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/excel-fuzzing-overview.svg"><img alt="_images/excel-fuzzing-overview.svg" class="align-center" src="_images/excel-fuzzing-overview.svg" style="width: 100%;" />
+</a>
 <p>Our solution currently modifies input workload <em>files</em> (one of the most common
 format of program workload) based on <em>mutational</em> approach.
 The feedback loop is extended with coverage information,
@@ -630,7 +631,8 @@ this strategy is to select the workload for mutation from the best rated paren
 experience, selecting only the best rated parent in every iteration does not lead to a better
 results, and other parents are naturally ignored. Hence we do selection from all the parents, but
 the parent with better score has a greater chance to be selected.</p>
-<a class="reference internal image-reference" href="_images/seed_selection.svg"><img alt="_images/seed_selection.svg" class="align-center" src="_images/seed_selection.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/seed_selection.svg"><img alt="_images/seed_selection.svg" class="align-center" src="_images/seed_selection.svg" style="width: 100%;" />
+</a>
 <p>In each iteration of fuzzing we generate new workloads. However, we first determine how many new
 mutation (<span class="math notranslate nohighlight">\(N\)</span>) to generate by rule <span class="math notranslate nohighlight">\(f\)</span> in the current iteration of fuzzing loop. If
 <span class="math notranslate nohighlight">\(N\)</span> is too big and we generate mutations for each rule <span class="math notranslate nohighlight">\(f\)</span> from the set of rules,
@@ -724,7 +726,8 @@ the constant is probably too low, and hence we increase it.</p>
 SIGSEGV, SIGBUS, SIGILL, …) or it can be terminated by timeout. Even though we are not primarily
 focused on faults, they can be interesting for us as well because an incorrect internal program
 state can contain some degradation and in case of error, handlers can also contain degradation.</p>
-<a class="reference internal image-reference" href="_images/lifetime_of_mutation.svg"><img alt="_images/lifetime_of_mutation.svg" class="align-center" src="_images/lifetime_of_mutation.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/lifetime_of_mutation.svg"><img alt="_images/lifetime_of_mutation.svg" class="align-center" src="_images/lifetime_of_mutation.svg" style="width: 100%;" />
+</a>
 </section>
 <section id="interpretation-of-fuzzing-results">
 <h2>Interpretation of Fuzzing Results<a class="headerlink" href="#interpretation-of-fuzzing-results" title="Link to this heading">¶</a></h2>
@@ -761,8 +764,10 @@ denoted three statistically significant values: first quartile, second quartile 
 quartile from the y-axis values. The intention is to illustrate at what point in time we have
 achieved the individual portion of the result. The usage of time series graphs is meant to tune
 the properties and options of the fuzzing process.</p>
-<a class="reference internal image-reference" href="_images/example_deg_ts.svg"><img alt="_images/example_deg_ts.svg" class="align-center" src="_images/example_deg_ts.svg" width="100%" /></a>
-<a class="reference internal image-reference" href="_images/example_cov_ts.svg"><img alt="_images/example_cov_ts.svg" class="align-center" src="_images/example_cov_ts.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/example_deg_ts.svg"><img alt="_images/example_deg_ts.svg" class="align-center" src="_images/example_deg_ts.svg" style="width: 100%;" />
+</a>
+<a class="reference internal image-reference" href="_images/example_cov_ts.svg"><img alt="_images/example_cov_ts.svg" class="align-center" src="_images/example_cov_ts.svg" style="width: 100%;" />
+</a>
 <p>Besides visualisation, we create <strong>diff file</strong> for every output file. It shows the differences
 between files and the original seed, from which the file was created by mutation. The file is in
 HTML format, and the differences are color-coded for better orientation.</p>
@@ -1225,7 +1230,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="index.html">
     <h3>Perun</h3>
@@ -1322,7 +1327,7 @@ removes random characters (T.4 and T.15) were the most frequent.</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

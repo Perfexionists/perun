@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.query &#8212; Perun 0.23 documentation</title>
+    <title>perun.profile.query &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="../../../_static/documentation_options.js?v=832b3b9f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -44,6 +44,7 @@
 <span class="sd">`Pandas library`_ one can obtain efficient interpreter for executing more</span>
 <span class="sd">complex queries and statistical tests over the profiles.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="c1"># Standard Imports</span>
@@ -66,9 +67,9 @@
 <span class="sd">    Flattens all the dictionaries to single level and &lt;key&gt;(:&lt;key&gt;)? values, lists are processed</span>
 <span class="sd">    to comma separated representation and rest is left as it is.</span>
 
-<span class="sd">    :param str or int root_key: name (or index) of the processed key, that is going to be flattened</span>
-<span class="sd">    :param object root_value: value that is flattened</span>
-<span class="sd">    :returns (key, object): either decimal, string, or something else</span>
+<span class="sd">    :param root_key: name (or index) of the processed key, that is going to be flattened</span>
+<span class="sd">    :param root_value: value that is flattened</span>
+<span class="sd">    :return: either decimal, string, or something else</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Dictionary is processed recursively according to the all items that are nested</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -131,7 +132,7 @@
 <span class="sd">        (&quot;uid:function&quot;, &quot;main&quot;)</span>
 <span class="sd">        (&quot;uid:line&quot;: 22)</span>
 
-<span class="sd">    :param dict resource: dictionary representing one resource</span>
+<span class="sd">    :param resource: dictionary representing one resource</span>
 <span class="sd">        w.r.t :pkey:`resources`</span>
 <span class="sd">    :returns: iterable stream of ``(str, value)`` pairs, where the ``value`` is</span>
 <span class="sd">        flattened to either a `string`, or `decimal` representation and ``str``</span>
@@ -157,7 +158,7 @@
 <span class="sd">            &#39;uid:line&#39;, &#39;uid&#39;, &#39;trace&#39;, &#39;subtype&#39;</span>
 <span class="sd">        ]</span>
 
-<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param profile: performance profile w.r.t :ref:`profile-spec`</span>
 <span class="sd">    :returns: iterable stream of model field keys represented as `str`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">yield from</span> <span class="n">_all_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">())</span>
@@ -169,7 +170,7 @@
 <span class="sd">    Generator iterates through all the resources and checks their flattened</span>
 <span class="sd">    keys. In case some of the keys were not yet processed, they are yielded.</span>
 
-<span class="sd">    :param iterable item_generator: iterable stream of items</span>
+<span class="sd">    :param item_generator: iterable stream of items</span>
 <span class="sd">    :return: iterable stream of field keys represented as `str`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resource_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -199,7 +200,7 @@
 <span class="sd">        time_num_resource_fields = [&#39;amount&#39;]</span>
 <span class="sd">        complexity_num_resource_fields = [&#39;amount&#39;, &#39;structure-unit-size&#39;]</span>
 
-<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param profile: performance profile w.r.t :ref:`profile-spec`</span>
 <span class="sd">    :returns: iterable stream of resource fields key as `str`, that takes integer values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resource_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -245,8 +246,8 @@
 <span class="sd">        [&#39;SLList_init(SLList*)&#39;, &#39;SLList_search(SLList*, int)&#39;,</span>
 <span class="sd">         &#39;SLList_insert(SLList*, int)&#39;, &#39;SLList_destroy(SLList*)&#39;]</span>
 
-<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :param str resource_key: the resources key identifier whose unique values</span>
+<span class="sd">    :param profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param resource_key: the resources key identifier whose unique values</span>
 <span class="sd">        will be iterated</span>
 <span class="sd">    :returns: iterable stream of unique resource key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -276,9 +277,9 @@
 <span class="sd">    Note that this is mostly useful for iterating through list or nested</span>
 <span class="sd">    dictionaries.</span>
 
-<span class="sd">    :param dict resource: dictionary representing one resource</span>
+<span class="sd">    :param resource: dictionary representing one resource</span>
 <span class="sd">        w.r.t :pkey:`resources`</span>
-<span class="sd">    :param str resource_key: the resources key identifier whose unique values</span>
+<span class="sd">    :param resource_key: the resources key identifier whose unique values</span>
 <span class="sd">        will be iterated</span>
 <span class="sd">    :returns: iterable stream of all resource key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -327,8 +328,8 @@
 <span class="sd">         0.8391363620083871, 0.9840099999298596, 0.7283427343995424,</span>
 <span class="sd">         0.9709120064750161, 0.9305786182556899]</span>
 
-<span class="sd">    :param Profile profile: performance profile w.r.t :ref:`profile-spec`</span>
-<span class="sd">    :param str model_key: key identifier from `models` for which we query</span>
+<span class="sd">    :param profile: performance profile w.r.t :ref:`profile-spec`</span>
+<span class="sd">    :param model_key: key identifier from `models` for which we query</span>
 <span class="sd">        its unique values</span>
 <span class="sd">    :returns: iterable stream of unique model key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -340,9 +341,9 @@
 <span class="k">def</span> <span class="nf">_unique_values_generator</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">blocks_gen</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator of all unique values of &#39;key&#39; occurring in the profile blocks generated by &#39;blocks_gen&#39;.</span>
 
-<span class="sd">    :param str key: the key identifier whose unique values are returned</span>
-<span class="sd">    :param iterable blocks_gen: the data blocks generator (e.g. all_resources of Profile)</span>
-<span class="sd">    :returns iterable: stream of unique key values</span>
+<span class="sd">    :param key: the key identifier whose unique values are returned</span>
+<span class="sd">    :param blocks_gen: the data blocks generator (e.g. all_resources of Profile)</span>
+<span class="sd">    :return: stream of unique key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># value can be dict, list, set etc. and not only simple type, thus the list</span>
     <span class="n">unique_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -359,7 +360,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="../../../index.html">
     <h3>Perun</h3>
@@ -391,7 +392,7 @@
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>

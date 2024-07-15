@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Automating Runs &#8212; Perun 0.23 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="_static/documentation_options.js?v=832b3b9f"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -54,7 +54,8 @@ serves as a check during registering profiles in the indexes of minor versions. 
 correctness of the performance history of the project. If you want to automatically register the
 newly generated profile into the corresponding minor version index, then set
 <a class="reference internal" href="config.html#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.register_after_run</span></code></a> key to a true value.</p>
-<a class="reference internal image-reference" href="_images/perun-jobs-flow.svg"><img alt="_images/perun-jobs-flow.svg" class="align-center" src="_images/perun-jobs-flow.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/perun-jobs-flow.svg"><img alt="_images/perun-jobs-flow.svg" class="align-center" src="_images/perun-jobs-flow.svg" style="width: 100%;" />
+</a>
 <p>The figure above show the overview of the jobs flow in Perun. The runner module is initialized form
 user interfaces and from local (or shared) configurations and internally generates the matrix of
 jobs which are run in the sequence. Each job is then finished with storing the generated profile in
@@ -270,7 +271,8 @@ of error prints the <code class="docutils literal notranslate"><span class="pre"
 <p>Before this overall process, one can run a custom set of commands by stating the key
 <a class="reference internal" href="config.html#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">execute.pre_run</span></code></a> key. This is mostly meant for compiling of new version or preparing other
 necessary requirements before actual collection.</p>
-<a class="reference internal image-reference" href="_images/lifetime-of-profile.svg"><img alt="_images/lifetime-of-profile.svg" class="align-center" src="_images/lifetime-of-profile.svg" width="70%" /></a>
+<a class="reference internal image-reference" href="_images/lifetime-of-profile.svg"><img alt="_images/lifetime-of-profile.svg" class="align-center" src="_images/lifetime-of-profile.svg" style="width: 70%;" />
+</a>
 <p>For specification and details about collectors, postprocessors and internal storage of Perun refer
 to <a class="reference internal" href="collectors.html"><span class="doc">Collectors Overview</span></a>, <a class="reference internal" href="postprocessors.html"><span class="doc">Postprocessors Overview</span></a> and <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a>.</p>
 </section>
@@ -537,7 +539,7 @@ always be of maximal length (<code class="docutils literal notranslate"><span cl
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="index.html">
     <h3>Perun</h3>
@@ -600,7 +602,7 @@ always be of maximal length (<code class="docutils literal notranslate"><span cl
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

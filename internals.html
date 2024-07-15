@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Internals &#8212; Perun 0.23 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="_static/documentation_options.js?v=832b3b9f"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -43,14 +43,16 @@ control system as described in <a class="reference internal" href="#internals-vc
 Perun is inspired by git: performance profiles are similarly stored as objects compressed by zlib
 method and identified by hashes. <a class="reference internal" href="#internals-store"><span class="std std-ref">Perun Storage</span></a> describes the internal model of Perun more
 briefly.</p>
-<a class="reference internal image-reference" href="_images/perun-vs-vcs.svg"><img alt="_images/perun-vs-vcs.svg" class="align-center" src="_images/perun-vs-vcs.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/perun-vs-vcs.svg"><img alt="_images/perun-vs-vcs.svg" class="align-center" src="_images/perun-vs-vcs.svg" style="width: 100%;" />
+</a>
 <p>The diagram above highlights the responsibilities and storage of individual systems. Version
 control systems manage the functionality of the project—its versions and precise code
 changes—but lack proper support for managing performance. On the other hand, performance
 versioning systems manages the performance of project—its individual performance profiles, data
 visualizations of various statistics—but lack the precise functionality changes. This means that
 vcs stores the actual code chungs and version references and pvs stores the actual profiling data.</p>
-<a class="reference internal image-reference" href="_images/perun-flow.svg"><img alt="_images/perun-flow.svg" class="align-center" src="_images/perun-flow.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/perun-flow.svg"><img alt="_images/perun-flow.svg" class="align-center" src="_images/perun-flow.svg" style="width: 100%;" />
+</a>
 <p>This diagram shows one of the proper usages of Perun’s tool suite. Each developer keeps his own
 instance of both versioning and performance systems. In this mode one can share both the code
 changes and performance measurement through the wider range of developers.</p>
@@ -163,7 +165,8 @@ configuration of Perun.</p>
 <p>Each minor version of vcs, which has any profile assigned, has corresponding index file in the
 <code class="docutils literal notranslate"><span class="pre">.perun/object</span></code> according to its identification. The index file itself is stored in binary format
 with the following specification.</p>
-<a class="reference internal image-reference" href="_images/perun-index-spec.svg"><img alt="_images/perun-index-spec.svg" class="align-center" src="_images/perun-index-spec.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/perun-index-spec.svg"><img alt="_images/perun-index-spec.svg" class="align-center" src="_images/perun-index-spec.svg" style="width: 100%;" />
+</a>
 <dl class="simple">
 <dt><cite>Index signature</cite> [4B]:</dt><dd><p>Signature are the first bytes of the index containing ascii string <cite>pidx</cite>, which serves as an
 quick identification of minor version index.</p>
@@ -198,7 +201,8 @@ string, type of the profile and lenght of the content, and raw content of the pe
 w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. First we compute the checksum for these data, which serves as an
 identification in the minor version indexes and in <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> directory. Finally, the
 object is compressed using zlib method and stored in the <code class="docutils literal notranslate"><span class="pre">.perun/objects</span></code> compressed.</p>
-<a class="reference internal image-reference" href="_images/perun-object-spec.svg"><img alt="_images/perun-object-spec.svg" class="align-center" src="_images/perun-object-spec.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/perun-object-spec.svg"><img alt="_images/perun-object-spec.svg" class="align-center" src="_images/perun-object-spec.svg" style="width: 100%;" />
+</a>
 <dl class="simple">
 <dt><cite>Signature</cite> [7B]:</dt><dd><p>Signature is a 7B prefix containing ascii string “profile”. Serves for quick identification of
 profile.</p>
@@ -246,7 +250,8 @@ profiles in index is increased.</p></li>
 <li><p>Unless it is specified otherwise, the <code class="docutils literal notranslate"><span class="pre">sll-vs-skiplist.perf</span></code> is removed from filesystem.</p></li>
 </ol>
 </div></blockquote>
-<a class="reference internal image-reference" href="_images/register-profile.svg"><img alt="_images/register-profile.svg" class="align-center" src="_images/register-profile.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/register-profile.svg"><img alt="_images/register-profile.svg" class="align-center" src="_images/register-profile.svg" style="width: 100%;" />
+</a>
 </section>
 <section id="removing-profile-from-index">
 <h4>Removing profile from index<a class="headerlink" href="#removing-profile-from-index" title="Link to this heading">¶</a></h4>
@@ -294,7 +299,7 @@ confirmation until the profile is found.</p></li>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="index.html">
     <h3>Perun</h3>
@@ -358,7 +363,7 @@ confirmation until the profile is found.</p></li>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

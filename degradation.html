@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Detecting Performance Changes &#8212; Perun 0.23 documentation</title>
+    <title>Detecting Performance Changes &#8212; Perun 0.23.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=36bc69e8"></script>
+    <script src="_static/documentation_options.js?v=832b3b9f"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,7 +60,8 @@ minor version from two days ago, etc.). During the check of degradation of one p
 corresponding to the target, we find the nearest baseline profile in the history. Then for one pair
 of target and baseline profiles we can use multiple methods and these methods can then report
 multiple performance changes (such as optimizations and degradations).</p>
-<a class="reference internal image-reference" href="_images/diff-analysis.svg"><img alt="_images/diff-analysis.svg" class="align-center" src="_images/diff-analysis.svg" width="100%" /></a>
+<a class="reference internal image-reference" href="_images/diff-analysis.svg"><img alt="_images/diff-analysis.svg" class="align-center" src="_images/diff-analysis.svg" style="width: 100%;" />
+</a>
 <section id="results-of-detection">
 <span id="degradation-output"></span><h2>Results of Detection<a class="headerlink" href="#results-of-detection" title="Link to this heading">¶</a></h2>
 <p>Between the pair of target and baseline profile one can use multiple methods, each suitable for
@@ -225,17 +226,17 @@ just small requirements and have to <cite>yield</cite> the reports about degrada
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>result</strong> (<em>PerformanceChange</em>) – result of the performance change, either can be optimization,
+<li><p><strong>result</strong> – result of the performance change, either can be optimization,
 degradation, no change, or certain type of unknown</p></li>
-<li><p><strong>type</strong> (<em>str</em>) – string representing the type of the degradation, e.g. “order” degradation</p></li>
-<li><p><strong>location</strong> (<em>str</em>) – location, where the degradation has happened</p></li>
-<li><p><strong>from_baseline</strong> (<em>str</em>) – value or model representing the baseline, i.e. from which the new
+<li><p><strong>type</strong> – string representing the type of the degradation, e.g. “order” degradation</p></li>
+<li><p><strong>location</strong> – location, where the degradation has happened</p></li>
+<li><p><strong>from_baseline</strong> – value or model representing the baseline, i.e. from which the new
 version was optimized or degraded</p></li>
-<li><p><strong>to_target</strong> (<em>str</em>) – value or model representing the target, i.e. to which the new version was
+<li><p><strong>to_target</strong> – value or model representing the target, i.e. to which the new version was
 optimized or degraded</p></li>
-<li><p><strong>confidence_type</strong> (<em>str</em>) – type of the confidence we have in the detected degradation, e.g. r^2</p></li>
-<li><p><strong>confidence_rate</strong> (<em>float</em>) – value of the confidence we have in the detected degradation</p></li>
-<li><p><strong>rate_degradation_relative</strong> (<em>float</em>) – relative rate of the degradation</p></li>
+<li><p><strong>confidence_type</strong> – type of the confidence we have in the detected degradation, e.g. r^2</p></li>
+<li><p><strong>confidence_rate</strong> – value of the confidence we have in the detected degradation</p></li>
+<li><p><strong>rate_degradation_relative</strong> – relative rate of the degradation</p></li>
 </ul>
 </dd>
 </dl>
@@ -419,7 +420,7 @@ is asked for confirmation by user.</p></li>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><p class="logo">
   <a href="index.html">
     <h3>Perun</h3>
@@ -491,7 +492,7 @@ is asked for confirmation by user.</p></li>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
