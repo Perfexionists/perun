@@ -53,9 +53,6 @@ registered within Perun. For brief tutorial how to create and register your own 
 refer to :ref:`postprocessors-custom`.
 
 
-Command Line Interface
-""""""""""""""""""""""
-
 .. _postprocessors-regression-analysis:
 
 Regression Analysis
@@ -102,6 +99,8 @@ random). The best fitted model is then chosen and fully computed on the rest of 
 
 The picture shows only one model, namely `linear` which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.
+
+.. _postprocessors-regressogram:
 
 Regressogram method
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -377,8 +376,8 @@ You can register your new postprocessor as follows:
         :linenos:
         :diff: _static/templates/postprocess_run.py
 
-    5. Finally register your newly created module in :func:`get_supported_module_names` located in
-       ``perun.utils.__init__.py``:
+    5. Finally register your newly created module in ``get_supported_module_names`` located in
+       ``perun.utils.common.cli_kit.py``:
 
     .. literalinclude:: _static/templates/supported_module_names_postprocess.py
         :language: python

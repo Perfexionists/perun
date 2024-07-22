@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command Line Interface &#8212; Perun 0.23.1 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -102,7 +102,7 @@ following:</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-no-pager">
 <span class="sig-name descname"><span class="pre">--no-pager</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-no-pager" title="Link to this definition">¶</a></dt>
-<dd><p>Disables the paging of the long standard output (currently affects only <code class="docutils literal notranslate"><span class="pre">status</span></code> and <code class="docutils literal notranslate"><span class="pre">log</span></code> outputs). See <code class="xref std std-ckey docutils literal notranslate"><span class="pre">paging</span></code> to change the default paging strategy.</p>
+<dd><p>Disables the paging of the long standard output (currently affects only <code class="docutils literal notranslate"><span class="pre">status</span></code> and <code class="docutils literal notranslate"><span class="pre">log</span></code> outputs). See <a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.paging</span></code></a> to change the default paging strategy.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -176,6 +176,12 @@ following:</p>
 <dt class="sig sig-object">
 <span class="sig-name descname"><span class="pre">fuzz</span></span></dt>
 <dd><p>Performs fuzzing for the specified command…</p>
+</dd></dl>
+
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">import</span></span></dt>
+<dd><p>Imports Perun profiles from different formats</p>
 </dd></dl>
 
 <dl class="object">
@@ -299,7 +305,7 @@ using the <code class="docutils literal notranslate"><span class="pre">--vcs-par
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-init-c">
 <span id="cmdoption-perun-init-configure"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--configure</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-init-c" title="Link to this definition">¶</a></dt>
-<dd><p>After successful initialization of both systems, opens the local configuration using the <code class="xref std std-ckey docutils literal notranslate"><span class="pre">editor</span></code> set in shared config.</p>
+<dd><p>After successful initialization of both systems, opens the local configuration using the <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.editor</span></code></a> set in shared config.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -626,7 +632,7 @@ prints the lists of tracked and pending (found in <code class="docutils literal 
 lexicographically sorted along with additional information such as their
 types and creation times.</p>
 <p>Unless <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">--no-pager</span> <span class="pre">status</span></code> is issued as command, or appropriate
-<code class="xref std std-ckey docutils literal notranslate"><span class="pre">paging</span></code> option is set, the outputs of status will be paged (by
+<a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.paging</span></code></a> option is set, the outputs of status will be paged (by
 default using <code class="docutils literal notranslate"><span class="pre">less</span></code>).</p>
 <p>An error is raised if the command is executed outside of range of any
 perun, or configuration misses certain configuration keys
@@ -671,7 +677,7 @@ versions, their parents, parents etc.</p>
 outputted.</p>
 <p>In no &lt;hash&gt; is given, then HEAD of the version control system is used as a starting point.</p>
 <p>Unless <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">--no-pager</span> <span class="pre">log</span></code> is issued as command, or appropriate
-<code class="xref std std-ckey docutils literal notranslate"><span class="pre">paging</span></code> option is set, the outputs of log will be paged (by
+<a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.paging</span></code></a> option is set, the outputs of log will be paged (by
 default using <code class="docutils literal notranslate"><span class="pre">less</span></code>).</p>
 <p>Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for information how to customize the outputs of
 <code class="docutils literal notranslate"><span class="pre">log</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.shortlog"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.shortlog</span></code></a> in nearest
@@ -780,7 +786,7 @@ corresponding to <cite>pending tag</cite>, which can be obtained by running <cod
 <p>This commands runs two jobs <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">./otherbin</span>
 <span class="pre">input.txt</span></code> and collects the profiles using the <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.
 The profiles are then postprocessed, first using the
-<span class="xref std std-ref">postprocessors-regressogram</span> and then with
+<a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a> and then with
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <p>Refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="profile.html"><span class="doc">Perun’s Profile Format</span></a> for more details about automation
 and lifetimes of profiles. For list of available collectors and
@@ -1951,7 +1957,7 @@ performance</div>
 the code of these methods, you can visit <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges">SciPy</a>.</p>
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer to
-<span class="xref std std-ref">postprocessors-regressogram</span>.</p>
+<a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a>.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>regressogram<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3767,7 +3773,7 @@ has been manually tampered with and some files or directories were created or de
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

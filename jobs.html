@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Automating Runs &#8212; Perun 0.23.1 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -118,7 +118,7 @@ corresponding to <cite>pending tag</cite>, which can be obtained by running <cod
 <p>This commands runs two jobs <code class="docutils literal notranslate"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">./otherbin</span>
 <span class="pre">input.txt</span></code> and collects the profiles using the <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.
 The profiles are then postprocessed, first using the
-<span class="xref std std-ref">postprocessors-regressogram</span> and then with
+<a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a> and then with
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <p>Refer to <a class="reference internal" href="#"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="profile.html"><span class="doc">Perun’s Profile Format</span></a> for more details about automation
 and lifetimes of profiles. For list of available collectors and
@@ -310,7 +310,7 @@ config and the specification of job matrix is based on <a class="reference exter
 </div></blockquote>
 <p>Given matrix will create four jobs (<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">HEAD</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">HEAD~1</span></code>, <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span>
 <span class="pre">HEAD</span></code> and <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span> <span class="pre">HEAD~1</span></code>) which will be issued for runs. Each job will be collected
-by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> and then postprocessed first by <span class="xref std std-ref">postprocessors-regressogram</span> and then
+by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> and then postprocessed first by <a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a> and then
 by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> with specification <code class="docutils literal notranslate"><span class="pre">{'method':</span> <span class="pre">'full',</span> <span class="pre">'steps':</span>
 <span class="pre">10}</span></code>.</p>
 <p>Run the following to configure the job matrix of the current project:</p>
@@ -602,7 +602,7 @@ always be of maximal length (<code class="docutils literal notranslate"><span cl
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

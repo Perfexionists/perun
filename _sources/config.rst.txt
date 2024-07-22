@@ -87,8 +87,8 @@ List of Supported Options
 
     ``[recursive]`` Sets user choice of text editor, that is e.g. used for manual text-editing of
     configuration files of Perun. Specified editor needs to be executable, has to take the filename
-    as an argument and will be called as ``general.editor config.yml``. By default :ckey:`editor` is
-    set to ``vim``.
+    as an argument and will be called as ``general.editor config.yml``. 
+    By default :ckey:`general.editor` is set to ``vim``.
 
 .. confunit:: format
 

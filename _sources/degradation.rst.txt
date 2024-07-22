@@ -144,42 +144,42 @@ Refer to :ref:`degradation-custom` to create your own detection method.
 Best Model Order Equality
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: perun.check.best_model_order_equality
+.. automodule:: perun.check.methods.best_model_order_equality
 
 .. _degradation-method-aat:
 
 Average Amount Threshold
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: perun.check.average_amount_threshold
+.. automodule:: perun.check.methods.average_amount_threshold
 
 .. _degradation-method-eto:
 
 Exclusive Time Outliers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: perun.check.exclusive_time_outliers
+.. automodule:: perun.check.methods.exclusive_time_outliers
 
 .. _degradation-fast-check:
 
 Fast Check
 ~~~~~~~~~~
 
-.. automodule:: perun.check.fast_check
+.. automodule:: perun.check.methods.fast_check
 
 .. _degradation-lreg:
 
 Linear Regression
 ~~~~~~~~~~~~~~~~~
 
-.. automodule:: perun.check.linear_regression
+.. automodule:: perun.check.methods.linear_regression
 
 .. _degradation-preg:
 
 Polynomial Regression
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: perun.check.polynomial_regression
+.. automodule:: perun.check.methods.polynomial_regression
 
 .. _degradation-config:
 
@@ -230,16 +230,19 @@ Create Your Own Degradation Checker
 
 New performance change checkers can be registered within Perun in several steps. The checkers have
 just small requirements and have to `yield` the reports about degradation as a instances of
-:class:`DegradationInfo` objects specified as follows:
+``DegradationInfo`` objects specified as follows:
 
 .. currentmodule: perun.utils.structs
 .. autoclass::  perun.utils.structs.DegradationInfo
    :members:
 
+.. autoclass::  perun.utils.structs.PerformanceChange
+   :members:
+
 You can register your new performance change checker as follows:
 
     1. Run ``perun utils create check my_degradation_checker`` to generate a new modules in
-       ``perun/check`` directory with the following structure. The command takes a predefined
+       ``perun.check.methods`` directory with the following structure. The command takes a predefined
        templates for new degradation checkers and creates ``my_degradation_checker.py`` according
        to the supplied command line arguments (see :ref:`cli-utils-ref` for more information about
        interface of ``perun utils create`` command)::

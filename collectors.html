@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Collectors Overview &#8212; Perun 0.23.1 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -446,7 +446,7 @@ linked list. Profile captured running times of three functions—<code class="do
 initialization of single linked list), <code class="docutils literal notranslate"><span class="pre">SLList_destroy</span></code> (a destruction of single linked list) and
 <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code> (search over the single linked list).</p>
 <p>Highlighted lines show important keys and regions in the profile, e.g. the <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>,
-<code class="xref std std-preg docutils literal notranslate"><span class="pre">collector-info</span></code> or <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a>.</p>
+<a class="reference internal" href="profile.html#perfreg-collector_info"><code class="xref std std-preg docutils literal notranslate"><span class="pre">collector_info</span></code></a> or <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a>.</p>
 <img alt="_images/complexity-scatter-with-models.png" src="_images/complexity-scatter-with-models.png" />
 <p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the example of visualization of trace profile. Each
 points corresponds to the running time of the <code class="docutils literal notranslate"><span class="pre">SLList_search</span></code> function over the single linked
@@ -646,7 +646,7 @@ examples of <cite>memory</cite> collector.</p>
 </div>
 <p>The above is an example of profiled data on a simple binary, which makes several minor allocations.
 Profile shows a simple allocation followed by deallocation and highlights important keys and
-regions in the <cite>memory</cite> profiles, e.g. the <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>, <code class="xref std std-preg docutils literal notranslate"><span class="pre">collector-info</span></code> or
+regions in the <cite>memory</cite> profiles, e.g. the <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal notranslate"><span class="pre">origin</span></code></a>, <a class="reference internal" href="profile.html#perfreg-collector_info"><code class="xref std std-preg docutils literal notranslate"><span class="pre">collector_info</span></code></a> or
 <a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a></p>
 <img alt="_images/memory-flow.png" src="_images/memory-flow.png" />
 <p>The <a class="reference internal" href="views.html#views-flow"><span class="std std-ref">Flow Plot</span></a> above shows the mean of allocated amounts per each allocation site (i.e.
@@ -1033,7 +1033,7 @@ interface of <code class="docutils literal notranslate"><span class="pre">perun<
 </li>
 <li><p>First, implement the <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file, including the module docstring with brief
 collector descriptions and definitions of constants that are used for automatic setting of
-profiles (namely the <code class="xref std std-preg docutils literal notranslate"><span class="pre">collector-info</span></code>) which has the following structure:</p></li>
+profiles (namely the <a class="reference internal" href="profile.html#perfreg-collector_info"><code class="xref std std-preg docutils literal notranslate"><span class="pre">collector_info</span></code></a>) which has the following structure:</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
 <span class="linenos">2</span>
@@ -1093,8 +1093,8 @@ your collector. This function will is called from command line as <code class="d
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
-<li><p>Finally register your newly created module in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code> located in
-<code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
+<li><p>Finally register your newly created module in function <code class="docutils literal notranslate"><span class="pre">get_supported_module_names</span></code> located in
+<code class="docutils literal notranslate"><span class="pre">perun.utils.common.cli_kit.py</span></code>:</p></li>
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
@@ -1219,7 +1219,7 @@ following to set the job matrix and run the batch collection of profiles:</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Visualizations Overview &#8212; Perun 0.23.1 documentation</title>
+    <title>Visualizations Overview &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -815,8 +815,8 @@ following structure:</p></li>
 <li><p>Next, in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> implement module with the command line interface function, named the
 same as your visualization technique. This function is called from the command line as
 <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">``perun</span> <span class="pre">show</span> <span class="pre">myview</span></code> and is based on <a class="reference external" href="https://click.palletsprojects.com/en/latest/">Click</a> library.</p></li>
-<li><p>Finally register your newly created module in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code> located in
-<code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
+<li><p>Finally register your newly created module in <code class="docutils literal notranslate"><span class="pre">get_supported_module_names</span></code> located in
+<code class="docutils literal notranslate"><span class="pre">perun.utils.common.cli_kit.py</span></code>:</p></li>
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos">2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_views.py</span>
@@ -943,7 +943,7 @@ using the developer installation, then reinstall Perun:</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

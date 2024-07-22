@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Perun 0.23.1 documentation</title>
+    <title>Index &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="#" />
@@ -2190,6 +2190,8 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository">AbstractRepository (class in perun.vcs.abstract_repository)</a>
+</li>
       <li><a href="profile.html#perun.profile.factory.Profile.all_filtered_models">all_filtered_models() (perun.profile.factory.Profile method)</a>
 </li>
       <li><a href="profile.html#perun.profile.query.all_items_of">all_items_of() (in module perun.profile.query)</a>
@@ -2200,10 +2202,10 @@
 </li>
       <li><a href="profile.html#perun.profile.query.all_numerical_resource_fields_of">all_numerical_resource_fields_of() (in module perun.profile.query)</a>
 </li>
-      <li><a href="profile.html#perun.profile.factory.Profile.all_resources">all_resources() (perun.profile.factory.Profile method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="profile.html#perun.profile.factory.Profile.all_resources">all_resources() (perun.profile.factory.Profile method)</a>
+</li>
       <li><a href="profile.html#perun.profile.factory.Profile.all_snapshots">all_snapshots() (perun.profile.factory.Profile method)</a>
 </li>
       <li><a href="fuzzing.html#perun.fuzz.methods.textfile.append_whitespace">append_whitespace() (in module perun.fuzz.methods.textfile)</a>
@@ -2234,6 +2236,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="fuzzing.html#perun.fuzz.methods.textfile.change_character">change_character() (in module perun.fuzz.methods.textfile)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.check_minor_version_validity">check_minor_version_validity() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.checkout">checkout() (perun.vcs.abstract_repository.AbstractRepository method)</a>
 </li>
       <li>
     chunks
@@ -2496,8 +2502,6 @@
         <li><a href="config.html#confkey-general.editor">configuration key</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     general.paging
 
@@ -2505,6 +2509,8 @@
         <li><a href="config.html#confkey-general.paging">configuration key</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     generators.workload
 
@@ -2512,6 +2518,12 @@
         <li><a href="config.html#confkey-generators.workload">configuration key</a>
 </li>
       </ul></li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.get_head_major_version">get_head_major_version() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.get_minor_head">get_minor_head() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.get_minor_version_info">get_minor_version_info() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -2531,6 +2543,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.init">init() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
       <li><a href="fuzzing.html#perun.fuzz.methods.binary.insert_byte">insert_byte() (in module perun.fuzz.methods.binary)</a>
 </li>
   </ul></td>
@@ -2539,12 +2553,16 @@
 </li>
       <li><a href="fuzzing.html#perun.fuzz.methods.binary.insert_zero_byte">insert_zero_byte() (in module perun.fuzz.methods.binary)</a>
 </li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.is_dirty">is_dirty() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.massage_parameter">massage_parameter() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
       <li>
     matrix format unit
 
@@ -2571,6 +2589,18 @@
     module
 
       <ul>
+        <li><a href="degradation.html#module-perun.check.methods.average_amount_threshold">perun.check.methods.average_amount_threshold</a>
+</li>
+        <li><a href="degradation.html#module-perun.check.methods.best_model_order_equality">perun.check.methods.best_model_order_equality</a>
+</li>
+        <li><a href="degradation.html#module-perun.check.methods.exclusive_time_outliers">perun.check.methods.exclusive_time_outliers</a>
+</li>
+        <li><a href="degradation.html#module-perun.check.methods.fast_check">perun.check.methods.fast_check</a>
+</li>
+        <li><a href="degradation.html#module-perun.check.methods.linear_regression">perun.check.methods.linear_regression</a>
+</li>
+        <li><a href="degradation.html#module-perun.check.methods.polynomial_regression">perun.check.methods.polynomial_regression</a>
+</li>
         <li><a href="cli.html#module-perun.cli">perun.cli</a>
 </li>
         <li><a href="collectors.html#module-perun.collect">perun.collect</a>
@@ -2609,7 +2639,7 @@
 </li>
         <li><a href="profile.html#module-perun.profile.query">perun.profile.query</a>
 </li>
-        <li><a href="internals.html#module-perun.vcs">perun.vcs</a>
+        <li><a href="internals.html#module-perun.vcs.abstract_repository">perun.vcs.abstract_repository</a>
 </li>
         <li><a href="views.html#module-perun.view">perun.view</a>
 </li>
@@ -2710,6 +2740,8 @@
         <li><a href="profile.html#perfreg-snapshots">snapshots</a>
 </li>
       </ul></li>
+      <li><a href="degradation.html#perun.utils.structs.PerformanceChange">PerformanceChange (class in perun.utils.structs)</a>
+</li>
       <li>
     perun command line option
 
@@ -3345,8 +3377,6 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving_average-sma-ww">-ww</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving_average-sma-ww">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-moving_average-smm command line option
 
@@ -3360,6 +3390,8 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving_average-smm-ww">-ww</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving_average-smm-ww">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-regression_analysis command line option
 
@@ -3858,6 +3890,48 @@
 </li>
       </ul></li>
       <li>
+    perun.check.methods.average_amount_threshold
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.average_amount_threshold">module</a>
+</li>
+      </ul></li>
+      <li>
+    perun.check.methods.best_model_order_equality
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.best_model_order_equality">module</a>
+</li>
+      </ul></li>
+      <li>
+    perun.check.methods.exclusive_time_outliers
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.exclusive_time_outliers">module</a>
+</li>
+      </ul></li>
+      <li>
+    perun.check.methods.fast_check
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.fast_check">module</a>
+</li>
+      </ul></li>
+      <li>
+    perun.check.methods.linear_regression
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.linear_regression">module</a>
+</li>
+      </ul></li>
+      <li>
+    perun.check.methods.polynomial_regression
+
+      <ul>
+        <li><a href="degradation.html#module-perun.check.methods.polynomial_regression">module</a>
+</li>
+      </ul></li>
+      <li>
     perun.cli
 
       <ul>
@@ -3991,10 +4065,10 @@
 </li>
       </ul></li>
       <li>
-    perun.vcs
+    perun.vcs.abstract_repository
 
       <ul>
-        <li><a href="internals.html#module-perun.vcs">module</a>
+        <li><a href="internals.html#module-perun.vcs.abstract_repository">module</a>
 </li>
       </ul></li>
       <li>
@@ -4130,10 +4204,10 @@
 </li>
       <li><a href="fuzzing.html#perun.fuzz.methods.binary.remove_zero_byte">remove_zero_byte() (in module perun.fuzz.methods.binary)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="fuzzing.html#perun.fuzz.methods.textfile.repeat_whitespace">repeat_whitespace() (in module perun.fuzz.methods.textfile)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="fuzzing.html#perun.fuzz.methods.textfile.repeat_word">repeat_word() (in module perun.fuzz.methods.textfile)</a>
 </li>
       <li>
@@ -4144,6 +4218,8 @@
 </li>
       </ul></li>
       <li><a href="profile.html#perun.profile.convert.resources_to_pandas_dataframe">resources_to_pandas_dataframe() (in module perun.profile.convert)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.restore_state">restore_state() (perun.vcs.abstract_repository.AbstractRepository method)</a>
 </li>
       <li>
     ROOT
@@ -4158,6 +4234,8 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.save_state">save_state() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
       <li>
     snapshots
 
@@ -4262,6 +4340,10 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.walk_major_versions">walk_major_versions() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.abstract_repository.AbstractRepository.walk_minor_versions">walk_minor_versions() (perun.vcs.abstract_repository.AbstractRepository method)</a>
+</li>
       <li>
     workload
 
@@ -4319,7 +4401,7 @@
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>

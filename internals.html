@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Internals &#8212; Perun 0.23.1 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.23.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=832b3b9f"></script>
+    <script src="_static/documentation_options.js?v=b4d3b1f5"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -64,8 +64,74 @@ corresponding the performance profiles in order to detect potential performance 
 in the development. The following subsection <a class="reference internal" href="#internals-vcs-api"><span class="std std-ref">Version Control System API</span></a> describes the layer which
 serves as an interface in Perun which supplies the necessary information between the version
 control and performance versioning systems.</p>
-<section id="module-perun.vcs">
-<span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs" title="Link to this heading">¶</a></h3>
+<section id="module-perun.vcs.abstract_repository">
+<span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs.abstract_repository" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">perun.vcs.abstract_repository.</span></span><span class="sig-name descname"><span class="pre">AbstractRepository</span></span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract Base Class for all repositories</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.init" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.walk_minor_versions">
+<span class="sig-name descname"><span class="pre">walk_minor_versions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.walk_minor_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.walk_minor_versions" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.walk_major_versions">
+<span class="sig-name descname"><span class="pre">walk_major_versions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.walk_major_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.walk_major_versions" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.get_minor_head">
+<span class="sig-name descname"><span class="pre">get_minor_head</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.get_minor_head"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.get_minor_head" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.get_head_major_version">
+<span class="sig-name descname"><span class="pre">get_head_major_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.get_head_major_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.get_head_major_version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.get_minor_version_info">
+<span class="sig-name descname"><span class="pre">get_minor_version_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.get_minor_version_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.get_minor_version_info" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.check_minor_version_validity">
+<span class="sig-name descname"><span class="pre">check_minor_version_validity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.check_minor_version_validity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.check_minor_version_validity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.massage_parameter">
+<span class="sig-name descname"><span class="pre">massage_parameter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.massage_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.massage_parameter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.is_dirty">
+<span class="sig-name descname"><span class="pre">is_dirty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.is_dirty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.is_dirty" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.save_state">
+<span class="sig-name descname"><span class="pre">save_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.save_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.save_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.restore_state">
+<span class="sig-name descname"><span class="pre">restore_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.restore_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.restore_state" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="perun.vcs.abstract_repository.AbstractRepository.checkout">
+<span class="sig-name descname"><span class="pre">checkout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs/abstract_repository.html#AbstractRepository.checkout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.vcs.abstract_repository.AbstractRepository.checkout" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="creating-support-for-custom-vcs">
 <span id="internals-vcs-custom"></span><h3>Creating Support for Custom VCS<a class="headerlink" href="#creating-support-for-custom-vcs" title="Link to this heading">¶</a></h3>
@@ -74,8 +140,8 @@ control and performance versioning systems.</p>
 <div><ol class="arabic simple">
 <li><p>Create a new module in <code class="docutils literal notranslate"><span class="pre">perun/vcs</span></code> directory implementing functions from
 <a class="reference internal" href="#internals-vcs-api"><span class="std std-ref">Version Control System API</span></a>.</p></li>
-<li><p>Finally register your newly created vcs wrapper in <code class="xref py py-func docutils literal notranslate"><span class="pre">get_supported_module_names()</span></code>
-located in <code class="docutils literal notranslate"><span class="pre">perun.utils.__init__.py</span></code>:</p></li>
+<li><p>Finally register your newly created vcs wrapper in function <code class="docutils literal notranslate"><span class="pre">get_supported_module_names</span></code>
+located in <code class="docutils literal notranslate"><span class="pre">perun.utils.common.cli_kit</span></code>:</p></li>
 </ol>
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
@@ -310,7 +376,24 @@ confirmation until the profile is found.</p></li>
     <ul>
 <li><a class="reference internal" href="#">Perun Internals</a><ul>
 <li><a class="reference internal" href="#version-control-systems">Version Control Systems</a><ul>
-<li><a class="reference internal" href="#module-perun.vcs">Version Control System API</a></li>
+<li><a class="reference internal" href="#module-perun.vcs.abstract_repository">Version Control System API</a><ul>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository"><code class="docutils literal notranslate"><span class="pre">AbstractRepository</span></code></a><ul>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.init"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.init()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.walk_minor_versions"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.walk_minor_versions()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.walk_major_versions"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.walk_major_versions()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.get_minor_head"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.get_minor_head()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.get_head_major_version"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.get_head_major_version()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.get_minor_version_info"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.get_minor_version_info()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.check_minor_version_validity"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.check_minor_version_validity()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.massage_parameter"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.massage_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.is_dirty"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.is_dirty()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.save_state"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.save_state()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.restore_state"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.restore_state()</span></code></a></li>
+<li><a class="reference internal" href="#perun.vcs.abstract_repository.AbstractRepository.checkout"><code class="docutils literal notranslate"><span class="pre">AbstractRepository.checkout()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#creating-support-for-custom-vcs">Creating Support for Custom VCS</a></li>
 </ul>
 </li>
@@ -363,7 +446,7 @@ confirmation until the profile is found.</p></li>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

@@ -70,7 +70,7 @@ initialization of single linked list), ``SLList_destroy`` (a destruction of sing
 ``SLList_search`` (search over the single linked list).
 
 Highlighted lines show important keys and regions in the profile, e.g. the :preg:`origin`,
-:preg:`collector-info` or :pkey:`resources`.
+:preg:`collector_info` or :pkey:`resources`.
 
 .. image:: /../examples/complexity-scatter-with-models.*
 
@@ -116,7 +116,7 @@ Examples
 
 The above is an example of profiled data on a simple binary, which makes several minor allocations.
 Profile shows a simple allocation followed by deallocation and highlights important keys and
-regions in the `memory` profiles, e.g. the :preg:`origin`, :preg:`collector-info` or
+regions in the `memory` profiles, e.g. the :preg:`origin`, :preg:`collector_info` or
 :pkey:`resources`
 
 .. image:: /../examples/memory-flow.*
@@ -197,7 +197,7 @@ bound, that represents the whole complexity of the function.
 Creating your own Collector
 ---------------------------
 
-.. currentmodule:: perun.utils
+.. currentmodule:: perun.utils.common.cli_kit
 
 New collectors can be registered within Perun in several steps. Internally they can be implemented
 in any programming language and in order to work with Perun requires three phases to be specified
@@ -225,7 +225,7 @@ You can register your new collector as follows:
 
     2. First, implement the ``__init__.py`` file, including the module docstring with brief
        collector descriptions and definitions of constants that are used for automatic setting of
-       profiles (namely the :preg:`collector-info`) which has the following structure:
+       profiles (namely the :preg:`collector_info`) which has the following structure:
 
     .. literalinclude:: /_static/templates/collectors_init.py
         :language: python
@@ -250,8 +250,8 @@ You can register your new collector as follows:
         :linenos:
         :diff: _static/templates/collectors_run.py
 
-    5. Finally register your newly created module in :func:`get_supported_module_names` located in
-       ``perun.utils.__init__.py``:
+    5. Finally register your newly created module in function ``get_supported_module_names`` located in
+       ``perun.utils.common.cli_kit.py``:
 
     .. literalinclude:: _static/templates/supported_module_names_collectors.py
         :language: python

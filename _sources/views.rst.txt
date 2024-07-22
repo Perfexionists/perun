@@ -230,6 +230,8 @@ coefficient of determination `r_square`. The output uses different format (`late
 Creating your own Visualization
 -------------------------------
 
+.. currentmodule:: perun.utils.common.cli_kit
+
 New interpretation modules can be registered within Perun in several steps. The visualization
 methods has the least requirements and only needs to work over the profiles w.r.t.
 :ref:`profile-spec` and implement method for Click_ api in order to be used from command line.
@@ -264,8 +266,8 @@ You can register your new visualization as follows:
        same as your visualization technique. This function is called from the command line as
        ``perun show ``perun show myview`` and is based on Click_ library.
 
-    4. Finally register your newly created module in :func:`get_supported_module_names` located in
-       ``perun.utils.__init__.py``:
+    4. Finally register your newly created module in ``get_supported_module_names`` located in
+       ``perun.utils.common.cli_kit.py``:
 
     .. literalinclude:: _static/templates/supported_module_names_views.py
         :language: python
