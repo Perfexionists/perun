@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.convert &#8212; Perun 0.23.2 documentation</title>
+    <title>perun.profile.convert &#8212; Perun 0.23.3 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=b4d3b1f5"></script>
+    <script src="../../../_static/documentation_options.js?v=10ab35ec"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -59,6 +59,7 @@
 <span class="c1"># Perun Imports</span>
 <span class="kn">from</span> <span class="nn">perun.postprocess.regression_analysis</span> <span class="kn">import</span> <span class="n">transform</span>
 <span class="kn">from</span> <span class="nn">perun.profile</span> <span class="kn">import</span> <span class="n">query</span>
+<span class="kn">from</span> <span class="nn">perun.utils</span> <span class="kn">import</span> <span class="n">log</span>
 <span class="kn">from</span> <span class="nn">perun.utils.common</span> <span class="kn">import</span> <span class="n">common_kit</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -106,7 +107,9 @@
     <span class="n">values</span><span class="p">[</span><span class="s2">&quot;snapshots&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">)</span>
 
     <span class="c1"># All resources at this point should be flat</span>
-    <span class="k">for</span> <span class="n">snapshot</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_resources</span><span class="p">(</span><span class="n">flatten_values</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">snapshot</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">log</span><span class="o">.</span><span class="n">progress</span><span class="p">(</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">all_resources</span><span class="p">(</span><span class="n">flatten_values</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s2">&quot;Converting To Pandas&quot;</span>
+    <span class="p">):</span>
         <span class="n">values</span><span class="p">[</span><span class="s2">&quot;snapshots&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">resource_key</span> <span class="ow">in</span> <span class="n">resource_keys</span><span class="p">:</span>
             <span class="n">values</span><span class="p">[</span><span class="n">resource_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_key</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
@@ -130,7 +133,7 @@
     <span class="n">model_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_model_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">))</span>
     <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">model_keys</span><span class="p">}</span>
 
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">log</span><span class="o">.</span><span class="n">progress</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">(),</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Converting To Pandas&quot;</span><span class="p">):</span>
         <span class="n">flattened_resources</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">model_key</span> <span class="ow">in</span> <span class="n">model_keys</span><span class="p">:</span>
             <span class="n">values</span><span class="p">[</span><span class="n">model_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flattened_resources</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
@@ -303,8 +306,8 @@
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
 
