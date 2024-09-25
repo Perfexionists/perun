@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.convert &#8212; Perun 0.23.4 documentation</title>
+    <title>perun.profile.convert &#8212; Perun 0.23.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=db22a521"></script>
+    <script src="../../../_static/documentation_options.js?v=7f5a2138"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -179,9 +179,9 @@
         <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;subtype&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alloc</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;subtype&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;free&quot;</span><span class="p">:</span>
                 <span class="c1"># Workaround for total time used in some collectors, so it is not outputted</span>
-                <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;%TOTAL_TIME%&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;%TOTAL_TIME%&quot;</span> <span class="ow">and</span> <span class="n">profile_key</span> <span class="ow">in</span> <span class="n">alloc</span><span class="p">:</span>
                     <span class="n">stack_str</span> <span class="o">=</span> <span class="n">to_uid</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
-                    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;trace&quot;</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">alloc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span> <span class="p">[])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                         <span class="n">line</span> <span class="o">=</span> <span class="n">to_uid</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">minimize</span><span class="p">)</span>
                         <span class="n">stack_str</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
                     <span class="k">if</span> <span class="n">stack_str</span> <span class="ow">and</span> <span class="n">stack_str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">):</span>

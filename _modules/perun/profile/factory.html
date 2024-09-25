@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.factory &#8212; Perun 0.23.4 documentation</title>
+    <title>perun.profile.factory &#8212; Perun 0.23.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=db22a521"></script>
+    <script src="../../../_static/documentation_options.js?v=7f5a2138"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -53,7 +53,7 @@
 <span class="c1"># Perun Imports</span>
 <span class="kn">from</span> <span class="nn">perun.logic</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">perun.postprocess.regression_analysis</span> <span class="kn">import</span> <span class="n">regression_models</span>
-<span class="kn">from</span> <span class="nn">perun.profile</span> <span class="kn">import</span> <span class="n">convert</span><span class="p">,</span> <span class="n">query</span>
+<span class="kn">from</span> <span class="nn">perun.profile</span> <span class="kn">import</span> <span class="n">convert</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">helpers</span>
 <span class="kn">from</span> <span class="nn">perun.utils</span> <span class="kn">import</span> <span class="n">log</span>
 <span class="kn">from</span> <span class="nn">perun.utils.common</span> <span class="kn">import</span> <span class="n">common_kit</span>
 <span class="kn">import</span> <span class="nn">perun.check.detection_kit</span> <span class="k">as</span> <span class="nn">detection</span>
@@ -88,6 +88,10 @@
         <span class="s2">&quot;address&quot;</span><span class="p">,</span>
         <span class="s2">&quot;timestamp&quot;</span><span class="p">,</span>
         <span class="s2">&quot;exclusive&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metric.iteration&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metric.value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metric.score-value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metric.percentile&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">persistent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;subtype&quot;</span><span class="p">,</span> <span class="s2">&quot;uid&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">}</span>
 
@@ -496,6 +500,22 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximal_snapshot</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">snapshot_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
+
+    <span class="k">def</span> <span class="nf">all_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">ProfileStat</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the stats records in the profile.</span>
+
+<span class="sd">        :return: iterable of all stats records</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats&quot;</span><span class="p">,</span> <span class="p">{}):</span>
+            <span class="k">yield</span> <span class="n">stats</span><span class="o">.</span><span class="n">ProfileStat</span><span class="o">.</span><span class="n">from_profile</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">all_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">ProfileMetadata</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the metadata records in the profile.</span>
+
+<span class="sd">        :return: iterable of all metadata records</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">{}):</span>
+            <span class="k">yield</span> <span class="n">helpers</span><span class="o">.</span><span class="n">ProfileMetadata</span><span class="o">.</span><span class="n">from_profile</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
     <span class="c1"># TODO: discuss the intent of __len__ and possibly merge?</span>
     <span class="k">def</span> <span class="nf">resources_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
