@@ -13,6 +13,7 @@ int main() {
         STAP_PROBE(PROV, INSIDE_CYCLE);
         int *input = new int[i];
 
+
         for(int j = 0; j < i; j++) {
             input[j] = i - j - 1;
         }
@@ -21,6 +22,12 @@ int main() {
         delete[] input;
     }
     STAP_PROBE(PROV, BEFORE_CYCLE_end);
+
+    int *calloc_array = (int*)calloc(10, sizeof(int));
+    int *malloc_array = (int*)malloc(11*sizeof(int));
+    malloc_array = (int*)realloc(malloc_array, 12*sizeof(int));
+    free(calloc_array);
+    free(malloc_array);
 
     std::cout << "C++ sort" << std::endl;
     return 0;

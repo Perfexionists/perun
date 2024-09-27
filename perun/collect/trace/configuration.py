@@ -108,13 +108,17 @@ class Configuration:
         the Engine object is not lost due to a received signal etc., which would prevent successful
         cleanup of engine resources.
         """
+        # Imports on demand since eBPF and PIN support is optional
         if self.engine == "stap":
             self.engine = SystemTapEngine(self)
-        else:
-            # Import on demand since eBPF support is optional
-            import perun.collect.trace.ebpf.engine as bpf
+        elif self.engine == "ebpf":
+            import perun.collect.trace.ebpf.engine as ebpf
 
-            self.engine = bpf.BpfEngine(self)
+            self.engine = ebpf.BpfEngine(self)
+        else:
+            import perun.collect.trace.pin.engine as pin
+
+            self.engine = pin.PinEngine(self)
 
     def get_functions(self):
         """Access the configuration of the function probes

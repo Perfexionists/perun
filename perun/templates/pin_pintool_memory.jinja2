@@ -1,0 +1,29 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "pin.H"
+
+#define MALLOC "malloc"
+#define FREE "free"
+#define CALLOC "calloc"
+#define REALLOC "realloc"
+#define NEW "_Znwm"
+#define DELETE "_ZdlPvm"
+#define DYNAMIC_DATA_FILE "{{ dynamic_data_file }}"
+
+PIN_MUTEX dynamicDataLock;
+std::ofstream dynamicData;
+
+{% include 'pin_data_structures.jinja2' %}
+
+// Function is called when the application exits and cleans up the used resources.
+VOID fini(INT32 code, VOID* v){
+    dynamicData.close();
+    PIN_MutexFini(&dynamicDataLock);
+}
+
+{% include 'pin_analysis_functions.jinja2' %}
+
+{% include 'pin_instrumentation_functions.jinja2' %}
+
+{% include 'pin_main_function.jinja2' %}

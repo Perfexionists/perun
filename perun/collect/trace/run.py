@@ -60,14 +60,15 @@ def before(executable, **kwargs):
     check(GLOBAL_DEPENDENCIES)
     config.engine.check_dependencies()
 
-    # Extract and / or post-process the collect configuration
-    extract_configuration(config.engine, kwargs["probes"])
-    if not kwargs["probes"].func and not kwargs["probes"].usdt:
-        msg = (
-            "No profiling probes created (due to invalid specification, failed extraction or "
-            "filtering)"
-        )
-        return CollectStatus.ERROR, msg, dict(kwargs)
+    if config.engine.name != "pin":
+        # Extract and / or post-process the collect configuration
+        extract_configuration(config.engine, kwargs["probes"])
+        if not kwargs["probes"].func and not kwargs["probes"].usdt:
+            msg = (
+                "No profiling probes created (due to invalid specification, failed extraction or "
+                "filtering)"
+            )
+            return CollectStatus.ERROR, msg, dict(kwargs)
 
     # Set the variables for optimization methods
     kwargs["binary"] = config.binary
@@ -118,12 +119,16 @@ def after(**kwargs):
     WATCH_DOG.info(
         "Processing raw performance data. Note that this may take a while for large raw data files."
     )
-    data_size = os.stat(kwargs["config"].engine.data).st_size
+    if kwargs["config"].engine.name == "pin":
+        data_size: int = os.stat(kwargs["config"].engine.dynamic_data).st_size
+        data_size += os.stat(kwargs["config"].engine.static_data).st_size
+    else:
+        data_size: int = os.stat(kwargs["config"].engine.data).st_size
     metrics.add_metric("data_size", data_size)
     WATCH_DOG.info(f"Raw data file size: {stdout.format_file_size(data_size)}")
 
     # Dirty temporary hack
-    if kwargs["config"].engine.name == "ebpf":
+    if kwargs["config"].engine.name in ("ebpf", "pin"):
         kwargs["profile"] = Profile()
         kwargs["profile"].update_resources(
             {"resources": list(kwargs["config"].engine.transform(**kwargs))}, "global"
@@ -173,7 +178,8 @@ def teardown(**kwargs):
     help=(
         "Sets the data collection engine to be used:\n"
         " - stap: the SystemTap framework\n"
-        " - ebpf: the eBPF framework"
+        " - ebpf: the eBPF framework\n"
+        " - pin: the Intel's PIN framework\n"
     ),
 )
 @click.option(
@@ -356,6 +362,45 @@ def teardown(**kwargs):
     is_flag=True,
     default=False,
     help="DEBUG: Disables Dynamic Stats updates",
+)
+@click.option(
+    "--collect-arguments",
+    "-ca",
+    is_flag=True,
+    default=False,
+    help="Collect basic arguments of the functions when possible.",
+)
+@click.option(
+    "--collect-basic-blocks",
+    "-cbb",
+    is_flag=True,
+    default=False,
+    help="Collect run-times of basic blocks along with run-times of functions.",
+)
+@click.option(
+    "--collect-basic-blocks-only",
+    "-cbbo",
+    is_flag=True,
+    default=False,
+    help="Collect run-times of basic blocks only and infer the function runtimes "
+    "based on basic blocks (reduces collection overhead).",
+)
+@click.option(
+    "--probed",
+    "-p",
+    is_flag=True,
+    default=False,
+    help=(
+        "Perform collection using PIN's probed mode "
+        "(can't be used when collection of basic blocks is enabled) [EXPERIMENTAL]."
+    ),
+)
+@click.option(
+    "--mode",
+    "-m",
+    type=str,
+    default="time",
+    help="Select what type of data to collect ['time', 'memory', 'instructions']",
 )
 @click.pass_context
 def trace(ctx, **kwargs):

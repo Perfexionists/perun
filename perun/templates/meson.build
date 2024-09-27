@@ -23,6 +23,14 @@ perun_templates_files = files(
     'postprocess.run.jinja2',
     'view.__init__.jinja2',
     'view.run.jinja2',
+    'pin_analysis_functions.jinja2',
+    'pin_data_structures.jinja2',
+    'pin_instrumentation_functions.jinja2',
+    'pin_main_function.jinja2',
+    'pin_makefile.jinja2',
+    'pin_pintool.jinja2',
+    'pin_pintool_duration.jinja2',
+    'pin_pintool_memory.jinja2',
 )
 
 py3.install_sources(

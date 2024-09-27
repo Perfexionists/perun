@@ -20,7 +20,7 @@ authors = [
     {name = "Radim Podola", email = "rpodola@gmail.com"},
     {name = "Simon Stupinsky", email = "simondestupinsky@gmail.com"},
     {name = "Matus Liscinsky"},
-    {name = "Peter Mocary"},
+    {name = "Peter Mocary", email = "petermocary@gmail.com"},
     {name = "Ondrej Michal"},
     {name = "Vojtech Hajek"},
     {name = "Vladimir Hucovic"}
@@ -50,6 +50,7 @@ dependencies = [
     # File analysis
     "python-magic>=0.4.27",
     "angr>=9.2.102",
+    "pyelftools==0.29",
 
     # Science / math / statistics / ML
     "numpy>=2.0.0",
@@ -66,6 +67,8 @@ dependencies = [
     "tabulate>=0.9.0",
     "holoviews>=1.19.0",
     "progressbar2>=4.4.2",
+    "plotly>=5.14.1",
+    "seaborn>=0.11.2",
 
     # Some of our dependencies still rely on distutils in 3.12, hence we need the setuptools package
     "setuptools>=70.2.0; python_version >= '3.12'"

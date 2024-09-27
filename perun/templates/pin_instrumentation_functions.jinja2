@@ -1,0 +1,261 @@
+{%- if mode in ['time', 'instructions'] and collect_basic_blocks -%}
+{# NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
+VOID instrumentBasicBlocksInTrace(TRACE trace, VOID *v) {
+    RTN routine = TRACE_Rtn(trace);
+
+    // Filter out trace based on the routine it belongs to
+    if (!RTN_Valid(routine) or
+        !IMG_Valid(SEC_Img(RTN_Sec(routine))) or
+        !IMG_IsMainExecutable(SEC_Img(RTN_Sec(routine))) or
+        RTN_IsDynamic(routine) or RTN_IsArtificial(routine) or
+        isBlacklistedRoutine(routine)) { return; }
+
+    BasicBlockMetadata basicBlockMetadata(TRACE_BblHead(trace));
+    std::unordered_map<ADDRINT, BasicBlockMetadata>::const_iterator basicBlockIterator;
+    ADDRINT basicBlockId;
+    IPOINT ipointAfter;
+    // Iterate over basic blocks in the trace
+    for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
+        basicBlockId = BBL_Address(bbl);
+        basicBlockMetadata = BasicBlockMetadata(bbl);
+        {# TODO: Remove the pragma when error is fixed #}
+        // The following pragma ignores the uninitialized variable warning that prevents pintool from compiling
+        // This is a problem with pintools on gcc 12 and newer
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+        basicBlockIterator = basicBlocks.emplace(basicBlockId, basicBlockMetadata).first;
+        #pragma GCC diagnostic pop
+        // Instrument the first instruction of the basic block
+        INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)basicBlockAnalysis,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_ADDRINT, basicBlockIterator->first,
+                       IARG_THREAD_ID,
+                       IARG_UINT32, AnalysisLocation::L_BEFORE,
+                       IARG_UINT32, basicBlockIterator->second.locationInRoutine,
+                       IARG_END);
+
+
+        ipointAfter = IPOINT_BEFORE;
+{#        if (INS_IsValidForIpointAfter(BBL_InsTail(bbl))) {#}
+{#            ipointAfter = IPOINT_AFTER;#}
+{#        }#}
+{#        if (INS_IsValidForIpointTakenBranch(BBL_InsTail(bbl))) {#}
+{#            ipointAfter = IPOINT_TAKEN_BRANCH;#}
+{#        }#}
+        // Instrument the last instruction of the basic block
+        INS_InsertCall(BBL_InsTail(bbl), ipointAfter, (AFUNPTR)basicBlockAnalysis,
+                       IARG_FAST_ANALYSIS_CALL,
+                       IARG_ADDRINT, basicBlockIterator->first,
+                       IARG_THREAD_ID,
+                       IARG_UINT32, AnalysisLocation::L_AFTER,
+                       IARG_UINT32, basicBlockIterator->second.locationInRoutine,
+                       IARG_END);
+    }
+}
+{%- endif %}
+
+{%- if mode == 'time' and collect_functions -%}
+VOID instrumentRoutinesInImage(IMG img, VOID* v) {
+    // Skip images that are not from main executable
+    if (!IMG_IsMainExecutable(img)) { return; }
+
+    UINT32 routineIndex = 0;
+
+    // Iterate over sections in the image
+    for (SEC sec = IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec)) {
+        // Iterate over routines in the section
+        for (RTN routine = SEC_RtnHead(sec); RTN_Valid(routine); routine = RTN_Next(routine)) {
+
+            // Filter out routines that should not be instrumented
+            if (RTN_IsArtificial(routine) or{% if not probed %} RTN_IsDynamic(routine) or{% endif %}
+                isBlacklistedRoutine(routine){% if probed %}or !RTN_IsSafeForProbedInsertion(routine){% endif %}) {
+                continue;
+            }
+
+            // Store information about routine for the output
+            RoutineMetadata routineMetadata(routine);
+            // Skip routines where source file is not found
+            if (routineMetadata.sourceCodeFileId == 0) { continue; }
+            routines.push_back(routineMetadata);
+            routineIndex = routines.size() - 1;
+
+            {% if probed %}
+            // FIXME: Here is the main problem with probed mode. A function prototype needs to be created for every
+            // instrumented function however, providing arguments to this prototype is tricky due to limitations, such as no
+            // support for floats. Documentation in this case is very vague and doesn't provide much information about PROTO
+            // object and its use. For now the prototype is created as a dummy and output of probed mode isn't very
+            // reliable, in some cases even there isn't even output.
+            PROTO after_f = PROTO_Allocate(PIN_PARG(VOID), CALLINGSTD_DEFAULT, "routineAnalysis", PIN_PARG(NULL), PIN_PARG_END());
+            {%- endif -%}
+
+            // Instrument routine with before and after calls
+            {% if not probed %}RTN_Open(routine);{% endif %}
+
+            {% if collect_arguments -%}
+            int found_in_table = 0;
+            for (int i = 0; i < FUNC_CNT; i++) {
+                if (function_names[i] == routineMetadata.name) {
+                    // Function has arguments that need to be collected
+                    found_in_table = 1;
+                    // TODO: create an PARG lists for each function and index it by the i from for cycle. This should eliminate
+                    // the need for so many ifs. The routine index needs to be added at this stage, however the lists can be
+                    // pre-crafted as the global array of function names with arguments.
+                    {% for function in function_arguments_info %}
+                    if (routineMetadata.name == "{{ function.name }}") {
+                        RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysisBefore_{{ function.name }},
+                                                                       IARG_FAST_ANALYSIS_CALL,
+                                                                       IARG_UINT32, routineIndex,
+                                                                       {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                                       {%- for argument in function.arguments %}
+                                                                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, {{ argument.index }},
+                                                                       {%- endfor %}
+                                                                       IARG_END);
+                        break; // found the function and instrumented it
+                    }
+                    {% endfor %}
+                }
+            }
+            if (!found_in_table) { // The function does not require special arguments instrumentation
+                RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis,
+                                                               IARG_FAST_ANALYSIS_CALL,
+                                                               IARG_UINT32, routineIndex,
+                                                               {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                               IARG_UINT32, AnalysisLocation::L_BEFORE,
+                                                               IARG_END);
+            }
+            {% else %} {# Don't collect arguments #}
+            RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_BEFORE, (AFUNPTR)routineAnalysis,
+                                                           IARG_FAST_ANALYSIS_CALL,
+                                                           IARG_UINT32, routineIndex,
+                                                           {% if not probed %}IARG_THREAD_ID,{% endif %}
+                                                           IARG_UINT32, AnalysisLocation::L_BEFORE,
+                                                           IARG_END);
+            {%- endif %}
+            RTN_InsertCall{% if probed %}Probed{% endif %}(routine, IPOINT_AFTER, (AFUNPTR)routineAnalysis,
+                           IARG_FAST_ANALYSIS_CALL,
+                           {% if probed %}IARG_PROTOTYPE, after_f,{% endif %}
+                           IARG_UINT32, routineIndex,
+                           {% if not probed %}IARG_THREAD_ID,{% endif %}
+                           IARG_UINT32, AnalysisLocation::L_AFTER,
+                           IARG_END);
+            {% if not probed %}RTN_Close(routine);{% endif %}
+            {%- if probed %}PROTO_Free(after_f);{% endif %}
+        }
+    }
+}
+{% endif -%}
+
+{% if mode == 'memory' %}
+VOID instrumentMemoryRoutinesInImage(IMG img, VOID* v) {
+    // Find the malloc() function and instrument it.
+    RTN mallocRtn = RTN_FindByName(img, MALLOC);
+    if (RTN_Valid(mallocRtn)) {
+        ADDRINT mallocRtnAddress = RTN_Address(mallocRtn);
+        RTN_Open(mallocRtn);
+        RTN_InsertCall(mallocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_malloc,
+                       IARG_ADDRINT, mallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(mallocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_malloc,
+                       IARG_ADDRINT, mallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(mallocRtn);
+    }
+
+    // Find the calloc() function and instrument it.
+    RTN callocRtn = RTN_FindByName(img, CALLOC);
+    if (RTN_Valid(callocRtn)) {
+        ADDRINT callocRtnAddress = RTN_Address(callocRtn);
+        RTN_Open(callocRtn);
+        RTN_InsertCall(callocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_calloc,
+                       IARG_ADDRINT, callocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 1,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(callocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_calloc,
+                       IARG_ADDRINT, callocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(callocRtn);
+    }
+
+    // Find the realloc() function and instrument it.
+    RTN reallocRtn = RTN_FindByName(img, REALLOC);
+    if (RTN_Valid(reallocRtn)) {
+        ADDRINT reallocRtnAddress = RTN_Address(reallocRtn);
+        RTN_Open(reallocRtn);
+        RTN_InsertCall(reallocRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_realloc,
+                       IARG_ADDRINT, reallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 1,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(reallocRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_realloc,
+                       IARG_ADDRINT, reallocRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(reallocRtn);
+    }
+
+    // Find the free() function.
+    RTN freeRtn = RTN_FindByName(img, FREE);
+    if (RTN_Valid(freeRtn)) {
+        ADDRINT freeRtnAddress = RTN_Address(freeRtn);
+        RTN_Open(freeRtn);
+        RTN_InsertCall(freeRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_free,
+                       IARG_ADDRINT, freeRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_Close(freeRtn);
+    }
+
+    // NOTE: The new operator calls malloc internally so it doesn't have to be
+    // instrumented although the instrumentation works as expected, only the
+    // name of the operator is cryptic.
+    RTN newRtn = RTN_FindByName(img, NEW);
+    if (RTN_Valid(newRtn)) {
+        ADDRINT newRtnAddress = RTN_Address(newRtn);
+        RTN_Open(newRtn);
+        RTN_InsertCall(newRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_new,
+                       IARG_ADDRINT, newRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_InsertCall(newRtn, IPOINT_AFTER, (AFUNPTR)rtn_analysis_after_new,
+                       IARG_ADDRINT, newRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCRET_EXITPOINT_REFERENCE,
+                       IARG_END);
+        RTN_Close(newRtn);
+    }
+
+    // NOTE: The delete operator calls free internally, so it doesn't have to be
+    // instrumented although the instrumentation DOESN'T work as expected because
+    // the IPOINT_AFTER instrumentation doesn't trigger. Same as above the
+    // delete operator has different cryptic name in assembly.
+    RTN deleteRtn = RTN_FindByName(img, DELETE);
+    if (RTN_Valid(deleteRtn)) {
+        ADDRINT deleteRtnAddress = RTN_Address(deleteRtn);
+        RTN_Open(deleteRtn);
+        RTN_InsertCall(deleteRtn, IPOINT_BEFORE, (AFUNPTR)rtn_analysis_before_delete,
+                       IARG_ADDRINT, deleteRtnAddress,
+                       IARG_THREAD_ID,
+                       IARG_FUNCARG_ENTRYPOINT_REFERENCE, 0,
+                       IARG_RETURN_IP,
+                       IARG_END);
+        RTN_Close(deleteRtn);
+    }
+}
+{%- endif %}

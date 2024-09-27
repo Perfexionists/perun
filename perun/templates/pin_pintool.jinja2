@@ -1,0 +1,5 @@
+{% if mode in ['time', 'instructions'] %}
+{% include 'pin_pintool_duration.jinja2' %}
+{% elif mode == 'memory' %}
+{% include 'pin_pintool_memory.jinja2' %}
+{% endif %}

@@ -515,3 +515,42 @@ class SuppressedExceptions:
                       no exception was raised
         """
         return isinstance(exc_val, self.exc)
+
+
+class PinInvalidPinRoot(Exception):
+    """Raised when PIN_ROOT os variable isn't defined or is not valid."""
+
+    def __init__(self):
+        super().__init__("")
+        self.msg = (
+            "Undefined or invalid pin root! Please export the PIN_ROOT variable "
+            "with the absolute path to the pin kit."
+        )
+
+    def __str__(self):
+        return self.msg
+
+
+class PinBinaryScanUnsuccessful(Exception):
+    """Raised when program binary does not include dwarf 4 debug info wasn't included."""
+
+    def __init__(self):
+        super().__init__("")
+        self.msg = (
+            "Couldn't read the DWARF debug info, please ensure that the binary is compiled "
+            "with -g option (when using gcc)."
+        )
+
+    def __str__(self):
+        return self.msg
+
+
+class PinBinaryInstrumentationFailed(Exception):
+    """Raised when PIN fails to instrument program"""
+
+    def __init__(self):
+        super().__init__()
+        self.msg = "Failed to instrument the program!"
+
+    def __str__(self):
+        return self.msg

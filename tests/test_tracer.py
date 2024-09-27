@@ -4,12 +4,16 @@ from __future__ import annotations
 
 # Standard Imports
 import glob
+import json
 import os
 import re
 import shutil
 
 # Third-Party Imports
 from click.testing import CliRunner
+from elftools.dwarf.compileunit import CompileUnit
+import pytest
+from pprint import pprint
 
 # Perun Imports
 from perun import cli
@@ -18,9 +22,13 @@ from perun.logic import config, locks, temp, pcs
 from perun.utils import decorators
 from perun.utils.exceptions import SystemTapStartupException
 from perun.utils.structs import CollectStatus
+from perun.profile.factory import Profile
 import perun.collect.trace.run as trace_run
 import perun.collect.trace.systemtap.engine as stap
+import perun.collect.trace.pin.engine as pin
+from perun.collect.trace.pin.parse import parser, instructions_parser
 import perun.testing.utils as test_utils
+
 
 _mocked_stap_code = 0
 _mocked_stap_file = "tst_stap_record.txt"
@@ -649,3 +657,434 @@ def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
     # )
     # assert result.exit_code == 1
     # assert 'Error while parsing the raw trace record' in result.output
+
+
+@pytest.mark.parametrize(
+    "mode, additional_arguments",
+    [
+        ("time", []),
+        ("time", ["--collect-arguments"]),
+        ("time", ["--collect-basic-blocks"]),
+        ("time", ["--collect-basic-blocks-only"]),
+        ("time", ["--collect-arguments", "--collect-basic-blocks"]),
+        ("instructions", []),
+        ("memory", []),
+    ],
+)
+def test_collect_trace_pin_engine(pcs_full, mode, additional_arguments):
+    expected_functions = ["main", "QuickSortBad", "BadPartition", "Swap"]
+    memory_mode_expected_functions = ["new", "free", "malloc"]
+    profiles_path = os.path.join(os.getcwd(), ".perun", "jobs")
+    trace_files_path = os.path.join(pcs_full.get_tmp_directory(), "trace", "files")
+
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+
+    args_as_str = "_".join(arg[2:] for arg in additional_arguments)
+    current_profile_name = f"pin_trace_{mode}_{args_as_str}.perf"
+
+    result = runner.invoke(
+        cli.collect,
+        [
+            "--profile-name", current_profile_name,
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--mode", mode,
+            "--keep-temps",
+        ]
+        + additional_arguments,
+    )  # fmt: skip
+    pprint(result.output)
+
+    generated_profiles = [file for file in os.listdir(profiles_path) if not file.startswith(".")]
+    trace_files = [file for file in os.listdir(trace_files_path) if not file.startswith(".")]
+
+    pin_root = os.environ["PIN_ROOT"] if "PIN_ROOT" in os.environ else ""
+    if not pin_root or not os.path.isdir(pin_root):
+        assert "Undefined or invalid pin root!" in result.output
+        assert len(generated_profiles) == 0
+        assert len(trace_files) == 2
+        assert all(
+            os.stat(os.path.join(trace_files_path, trace_file)).st_size == 0
+            for trace_file in trace_files
+        )
+        assert result.exit_code == 1
+        return
+
+    assert current_profile_name in generated_profiles
+    assert len(generated_profiles) == 1
+    generated_profile_name = generated_profiles[0]
+    assert len(trace_files) == 2
+    assert any(file.startswith("collect_dynamic-data") for file in trace_files)
+    assert any(file.startswith("collect_static-data") for file in trace_files)
+
+    for trace_file in trace_files:
+        trace_file_path = os.path.join(trace_files_path, trace_file)
+        memory_mode_static_data = mode == "memory" and trace_file.startswith("collect_static-data")
+        # Note: special case - memory mode does not produce static data
+        assert os.stat(trace_file_path).st_size > 0 or (
+            os.stat(trace_file_path).st_size == 0 and memory_mode_static_data
+        )
+    assert result.exit_code == 0
+
+    generated_profile_path = os.path.join(profiles_path, generated_profile_name)
+    with open(generated_profile_path) as profile:
+        profile_contents = json.load(profile)
+
+    expected_function_names = expected_functions
+    if mode == "memory":
+        expected_function_names = memory_mode_expected_functions
+    for expected_function_name in expected_function_names:
+        any(key.startswith(expected_function_name) for key in profile_contents["resources"])
+
+    if "--collect-arguments" in additional_arguments:
+        # Check if some arguments have been collected and that their name and type is present as well
+        found_arg_value = False
+        for resource_key, resource_values in profile_contents["resources"].items():
+            if any(key.startswith("arg_value") for key in resource_values):
+                found_arg_value = True
+                keys = profile_contents["resource_type_map"][resource_key].keys()
+                keys = [key.split("#", 1)[0] for key in keys if "#" in key]
+                assert "arg_name" in keys and "arg_type" in keys
+        assert found_arg_value
+
+    if any(x.startswith("--collect-basic-blocks") for x in additional_arguments):
+        assert any(key.startswith("BBL") for key in profile_contents["resources"])
+
+
+@pytest.mark.parametrize("target_binary", ["nonexistent", "tst-no-debug"])
+def test_collect_trace_pin_engine_wrong_target_binary(monkeypatch, pcs_full, target_binary):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", target_binary)
+    pin_root = os.environ["PIN_ROOT"] if "PIN_ROOT" in os.environ else ""
+    if not pin_root or not os.path.isdir(pin_root):
+        # assign a fake directory to the PIN_ROOT
+        os.environ["PIN_ROOT"] = os.path.abspath(os.path.dirname(__file__))
+
+    result = runner.invoke(
+        cli.collect, [
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+        ]
+    )  # fmt: skip
+
+    # revert the fake PIN_ROOT
+    os.environ["PIN_ROOT"] = pin_root
+
+    assert "does not exist or is not an executable ELF" in result.output
+    assert result.exit_code == 1
+    return
+
+
+def test_collect_trace_pin_engine_invalid_pin_root_path(pcs_full):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+    original_pin_root = os.environ["PIN_ROOT"] if "PIN_ROOT" in os.environ else ""
+
+    os.environ["PIN_ROOT"] = "/invalid/pin/root/path"
+    result = runner.invoke(
+        cli.collect, [
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+        ],
+    )  # fmt: skip
+    os.environ["PIN_ROOT"] = original_pin_root
+    pprint(result.output)
+
+    assert "Undefined or invalid pin root!" in result.output
+    assert result.exit_code == 1
+    return
+
+
+def test_collect_trace_pin_engine_invalid_mode(pcs_full):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+    pin_root = os.environ["PIN_ROOT"] if "PIN_ROOT" in os.environ else ""
+    if not pin_root or not os.path.isdir(pin_root):
+        # skip the test when pin is not available
+        return
+
+    result = runner.invoke(
+        cli.collect, [
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--mode", "nonexistent",
+        ],
+    )  # fmt: skip
+    pprint(result.output)
+
+    assert result.exit_code == 1
+    assert "Unknown pin engine mode!" in result.output
+    return
+
+
+def test_collect_trace_pin_engine_fail_instrumentation(monkeypatch, pcs_full):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+    pin_root = os.environ["PIN_ROOT"] if "PIN_ROOT" in os.environ else ""
+    if not pin_root or not os.path.isdir(pin_root):
+        # skip the test when pin is not available
+        return
+
+    monkeypatch.setattr(pin.PinEngine, "assemble_collect_program", lambda self, **_: None)
+
+    result = runner.invoke(
+        cli.collect, [
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+        ]
+    )  # fmt: skip
+    pprint(result.output)
+
+    assert result.exit_code == 1
+    assert "Failed to instrument the program!" in result.output
+    return
+
+
+def test_pin_parsing_instructions_mode_dynamic_data_has_only_basic_blocks(pcs_full, monkeypatch):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+
+    def _mocked_collect(self, **_):
+        # Write to the file so that the parsing executes
+        with open(self.dynamic_data, "w") as dynamic_data_file:
+            dynamic_data_file.write("00;123;123;123")
+
+    def _mocked_parse_current_dynamic_entry(self):
+        dummy_entry = {
+            "granularity": parser.Granularity.RTN,
+            "location": parser.InstrumentationLocation.BEFORE,
+            "id": 123,
+            "tid": 123,
+            "pid": 123,
+        }
+        return instructions_parser.InstructionDataEntry(**dummy_entry)
+
+    monkeypatch.setattr(pin.PinEngine, "check_dependencies", lambda _: None)
+    monkeypatch.setattr(pin.PinEngine, "assemble_collect_program", lambda self, **_: None)
+    monkeypatch.setattr(pin.PinEngine, "collect", _mocked_collect)
+    monkeypatch.setattr(
+        instructions_parser.PinInstructionOutputParser,
+        "_parse_current_dynamic_entry",
+        _mocked_parse_current_dynamic_entry,
+    )
+
+    result = runner.invoke(
+        cli.collect, [
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--mode", "instructions"
+        ]
+    )  # fmt: skip
+    pprint(result.output)
+
+    expected_error_msg = "expects only basic blocks in the dynamic data file"
+    assert expected_error_msg in result.output
+    assert result.exit_code == 1
+    return
+
+
+@pytest.mark.parametrize(
+    "mode, entry_index",
+    [
+        ("instructions", -2),
+        ("instructions", -1),
+        ("memory", -2),
+        ("memory", -1),
+        ("time", 0),
+        ("time", -1),
+    ],
+)
+def test_pin_parsing_dynamic_data_missing_pair_entries(pcs_full, monkeypatch, mode, entry_index):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+
+    static_data_contents_instructions = (
+        "#Files\n"
+        "/home/jirka/perun/tests/collect_trace/cpp_sources/tst.cpp;1\n"
+        ";0\n"
+        "#Basic blocks\n"
+        "94025837187843;main;1;7;1;9;11;12\n"
+        "94025837187869;main;1;6;1;13;14\n"
+    )
+    dynamic_data_contents_instructions = [
+        "10;94025837187843;0;1205897\n",
+        "11;94025837187843;0;1205897\n",
+        "10;94025837187869;0;1205897\n",
+        "11;94025837187869;0;1205897\n",
+    ]
+
+    static_data_contents_time = (
+        "#Files\n"
+        "/home/jirka/perun/tests/collect_trace/cpp_sources/sorts.h;1\n"
+        ";0\n"
+        "#Routines\n"
+        "0;Swap;1;77;81\n"
+        "1;BadPartition;1;104;120\n"
+    )
+    dynamic_data_contents_time = [
+        "00;1;0;1201051;1724240590601647\n",
+        "00;0;0;1201051;1724240590601880\n",
+        "01;0;0;1201051;1724240590601888\n",
+        "01;1;0;1201051;1724240590601965\n",
+    ]
+
+    dynamic_data_contents_memory = [
+        "140061472141296;malloc;140061474240492;operator new;0;1206663;/path/file.cpp;0;20\n",
+        "140061472141296;malloc;0;1206663;0x5585a9dc62b0\n",
+        "140061472143008;free;94031851818233;QuickSortBad;0;1206663;/path/file.cpp;74;0x5585a9dc62d0\n",
+        "140061474240464;new;94031851819838;main;0;1206663;/path/file.cpp;14;80\n",
+        "140061474240464;new;0;1206663;0x5585a9dc63f0\n",
+    ]
+
+    expected_resources_count = 1
+    basic_blocks_backlog_unpaired = 1
+    functions_backlog_unpaired = 1
+    if mode == "instructions":
+        dynamic_data_contents = dynamic_data_contents_instructions
+        static_data_contents = static_data_contents_instructions
+
+    if mode == "memory":
+        dynamic_data_contents = dynamic_data_contents_memory
+        static_data_contents = ""
+        expected_resources_count = 2
+
+    if mode == "time":
+        dynamic_data_contents = dynamic_data_contents_time
+        static_data_contents = static_data_contents_time
+        basic_blocks_backlog_unpaired = 0
+
+    dynamic_data_contents.pop(entry_index)
+
+    def _mocked_collect(self, **_):
+        with open(self.dynamic_data, "w") as dynamic_data_file:
+            dynamic_data_file.write("".join(dynamic_data_contents))
+        if mode != "memory":
+            with open(self.static_data, "w") as static_data_file:
+                static_data_file.write(static_data_contents)
+
+    def _mocked_after(**kwargs):
+        resources = list(kwargs["config"].engine.transform(**kwargs))
+        assert len(resources) == expected_resources_count
+        kwargs["profile"] = Profile()
+        kwargs["profile"].update_resources({"resources": resources}, "global")
+        return CollectStatus.OK, "", dict(kwargs)
+
+    monkeypatch.setattr(pin.PinEngine, "check_dependencies", lambda _: None)
+    monkeypatch.setattr(pin.PinEngine, "assemble_collect_program", lambda self, **_: None)
+    monkeypatch.setattr(pin.PinEngine, "collect", _mocked_collect)
+    monkeypatch.setattr(trace_run, "after", _mocked_after)
+
+    result = runner.invoke(
+        cli.cli, [
+            "-vvv",
+            "-d",
+            "collect",
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--mode", mode
+        ],
+    )  # fmt: skip
+    pprint(result.output)
+
+    assert result.exit_code == 0
+
+    # check some debug messages
+    if entry_index == -2 or entry_index == 0:  # if removing the opening entry
+        basic_blocks_backlog_unpaired = 0
+        functions_backlog_unpaired = 0
+        assert "Closing entry does not have a pair in the backlog" in result.output
+
+    unpaired_entries_in_backlogs_cnt = basic_blocks_backlog_unpaired + functions_backlog_unpaired
+    if mode in ["instructions", "time"] and unpaired_entries_in_backlogs_cnt > 0:
+        assert (
+            f"Unpaired entries in backlogs: Functions - {functions_backlog_unpaired} "
+            f"and Basic blocks - {basic_blocks_backlog_unpaired}"
+        ) in result.output
+    if mode == "memory" and entry_index == -1:
+        assert "Unpaired memory entries in backlog: 1" in result.output
+
+
+def test_pin_parsing_malformed_static_data(pcs_full, monkeypatch):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+
+    static_data_contents = (
+        "\n\n#Files\n"
+        "/home/jirka/perun/tests/collect_trace/cpp_sources/tst.cpp;1\n"
+        ";0\n\n\n\n"
+        "#Basic blocks\n"
+        "94025837187843;main;1;7;1;9;11;12\n"
+        "94025837187869;main;1;6;1;13;14\n"
+        "#Invalid table header 123\n"
+    )
+    dynamic_data_contents = [
+        "10;94025837187843;0;1205897\n",
+        "11;94025837187843;0;1205897\n",
+    ]
+
+    def _mocked_collect(self, **_):
+        with open(self.dynamic_data, "w") as dynamic_data_file:
+            dynamic_data_file.write("".join(dynamic_data_contents))
+        with open(self.static_data, "w") as static_data_file:
+            static_data_file.write(static_data_contents)
+
+    monkeypatch.setattr(pin.PinEngine, "check_dependencies", lambda _: None)
+    monkeypatch.setattr(pin.PinEngine, "assemble_collect_program", lambda self, **_: None)
+    monkeypatch.setattr(pin.PinEngine, "collect", _mocked_collect)
+
+    result = runner.invoke(
+        cli.cli, [
+            "-vvv",
+            "-d",
+            "collect",
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--mode", "instructions",
+        ],
+    )  # fmt: skip
+    pprint(result.output)
+
+    assert result.exit_code == 0
+    assert (
+        "Skipping table with unknown separator: " "#Invalid table header 123"
+    ) in result.output  # debug message
+    return
+
+
+def test_pin_binary_scan_fail(pcs_full, monkeypatch):
+    runner = CliRunner()
+    target = os.path.join(os.path.split(__file__)[0], "sources", "collect_trace", "tst")
+
+    def _mocked_get_top_DIE(self):
+        raise Exception("Dummy exception")
+
+    monkeypatch.setattr(pin.PinEngine, "check_dependencies", lambda _: None)
+    monkeypatch.setattr(CompileUnit, "get_top_DIE", _mocked_get_top_DIE)
+
+    result = runner.invoke(
+        cli.cli, [
+            "-vvv",
+            "-d",
+            "collect",
+            "--cmd", target,
+            "trace",
+            "--engine", "pin",
+            "--collect-arguments",
+        ],
+    )  # fmt: skip
+    pprint(result.output)
+
+    assert result.exit_code == 1
+    assert (
+        "Couldn't read the DWARF debug info, please ensure that the binary is compiled "
+        "with -g option (when using gcc)."
+    ) in result.output

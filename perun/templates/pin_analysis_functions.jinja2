@@ -1,0 +1,265 @@
+{# NOTE: Probed mode doesn't support thread IDs - the PIN_GetTid() will return process ID instead, however to preserve the output format it is used#}
+{% if mode == 'time' and collect_functions %}
+// Default analysis function for routines without collecting arguments
+VOID PIN_FAST_ANALYSIS_CALL routineAnalysis(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}, UINT32 location){
+    UINT64 timeStamp = 0;
+    PIN_MutexLock(&dynamicDataLock);
+    OS_Time(&timeStamp);
+    dynamicData << Granularity::G_RTN << location // Granularity and loaction flags
+                << ";" << routineMetadataIndex  // Routine ID
+                << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                << ";" << timeStamp  // Time stamp
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+{% endif %}
+
+{%- if mode in ['time', 'instructions'] and collect_basic_blocks -%}
+{# NOTE: Probed mode doesn't support lower granularity than routines, therefore this part doesn't need to handle probed mode differences #}
+// Default analysis function for basic blocks
+VOID PIN_FAST_ANALYSIS_CALL basicBlockAnalysis(ADDRINT basicBlockId, THREADID tid, UINT32 analysisLocation, UINT32 basicBlockLocation) {
+    PIN_MutexLock(&dynamicDataLock);
+    {% if mode == 'time' -%}
+    UINT64 timeStamp;
+    OS_Time(&timeStamp);
+    {% endif -%}
+    dynamicData << Granularity::G_BBL << analysisLocation // Granularity and loaction flags
+                << ";" << basicBlockId  // Basic block ID - address
+                << ";" << tid  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                {% if mode == 'time' -%}
+                << ";" << timeStamp  // Time stamp
+                {% endif -%}
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+{%- endif -%}
+
+{%- if mode == 'time' and collect_functions and collect_arguments %}
+{# collection of arguments is not supported in the instructions mode since it collects only basic blocks #}
+// --- Analysis functions for routines with argument collection ---
+{%- for function in function_arguments_info %}
+VOID PIN_FAST_ANALYSIS_CALL routineAnalysisBefore_{{ function.name }}(UINT32 routineMetadataIndex{% if not probed %}, THREADID tid{% endif %}{% for arg in function.arguments %}, {{ arg.type }} *arg{{ arg.index }}{% endfor %}){
+    UINT64 timeStamp = 0;
+    PIN_MutexLock(&dynamicDataLock);
+    OS_Time(&timeStamp);
+    dynamicData << Granularity::G_RTN << AnalysisLocation::L_BEFORE // Granularity and loaction flags
+                << ";" << routineMetadataIndex  // Routine ID
+                << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}  // Thread ID
+                << ";" << PIN_GetPid()  // Process ID
+                << ";" << timeStamp  // Time stamp
+                {% for arg in function.arguments -%}
+                << ";" << *arg{{ arg.index }}  // Argument of type {{ arg.type }}
+                {% endfor -%}
+                << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+{%- endfor %}
+{%- endif %}
+
+{% if mode == 'memory' and collect_functions -%}
+// -- malloc
+VOID rtn_analysis_before_malloc(ADDRINT routineAddress, THREADID tid, size_t *arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "malloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg // allocated size
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+VOID rtn_analysis_after_malloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "malloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // return value
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+// -- calloc
+VOID rtn_analysis_before_calloc(ADDRINT routineAddress, THREADID tid, int *arg1, size_t *arg2, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "calloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg1 // count
+            << ";" << *arg2 // size
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+VOID rtn_analysis_after_calloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "calloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // return value
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+
+// -- realloc
+VOID rtn_analysis_before_realloc(ADDRINT routineAddress, THREADID tid, void **arg1, size_t *arg2, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "realloc"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg1 << std::dec // reallocation pointer
+            << ";" << *arg2 // size
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+VOID rtn_analysis_after_realloc(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val){
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "realloc"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // returned pointer
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+// -- free
+VOID rtn_analysis_before_free(ADDRINT routineAddress, THREADID tid, ADDRINT **arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "free"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg << std::dec // free pointer
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+// -- new
+VOID rtn_analysis_before_new(ADDRINT routineAddress, THREADID tid, size_t *arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "new"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << *arg // size
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+VOID rtn_analysis_after_new(ADDRINT routineAddress, THREADID tid, ADDRINT **return_val) {
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "new"  // name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << std::hex << *return_val << std::dec // returned pointer
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+
+// -- delete
+VOID rtn_analysis_before_delete(ADDRINT routineAddress, THREADID tid, ADDRINT **arg, ADDRINT return_address){
+    INT32 sourceCodeLine, sourceCodeCol;
+    std::string sourceCodeFile;
+    PIN_LockClient();
+    // Requires debugging information in instrumented binary
+    PIN_GetSourceLocation(return_address, &sourceCodeCol, &sourceCodeLine, &sourceCodeFile);
+    std::string parentRoutineName = PIN_UndecorateSymbolName(RTN_Name(RTN_FindByAddress(return_address)), UNDECORATION_NAME_ONLY);
+    PIN_UnlockClient();
+
+    PIN_MutexLock(&dynamicDataLock);
+    dynamicData << routineAddress // address
+            << ";" << "delete"  // name
+            << ";" << return_address  // Parent address
+            << ";" << parentRoutineName  // Parent name
+            << ";" << tid  // Thread ID
+            << ";" << PIN_GetPid()  // Process ID
+            << ";" << sourceCodeFile // file
+            << ";" << sourceCodeLine // line
+            << ";" << std::hex << *arg << std::dec // deleted pointer
+            << std::endl;
+    dynamicData.flush();
+    PIN_MutexUnlock(&dynamicDataLock);
+}
+{% endif %}

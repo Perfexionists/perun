@@ -21,3 +21,4 @@ py3.install_sources(
 subdir('ebpf')
 subdir('optimizations')
 subdir('systemtap')
+subdir('pin')
