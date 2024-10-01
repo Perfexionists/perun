@@ -2,7 +2,6 @@
 requires = [
     "meson-python >= 0.16.0",
     "meson >= 1.4.1",
-    "patchelf >= 0.17.2",
     "ninja >= 1.11.1",
     "wheel>=0.43.0",
 ]
