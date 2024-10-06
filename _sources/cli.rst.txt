@@ -69,7 +69,7 @@ Perun Commands
 Collect Commands
 ----------------
 
-.. click:: perun.cli:collect
+.. click:: perun.cli_groups.collect_cli:collect
    :prog: perun collect
 
 .. _cli-collect-units-ref:

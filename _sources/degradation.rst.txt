@@ -233,10 +233,10 @@ just small requirements and have to `yield` the reports about degradation as a i
 ``DegradationInfo`` objects specified as follows:
 
 .. currentmodule: perun.utils.structs
-.. autoclass::  perun.utils.structs.DegradationInfo
+.. autoclass::  perun.utils.structs.common_structs.DegradationInfo
    :members:
 
-.. autoclass::  perun.utils.structs.PerformanceChange
+.. autoclass::  perun.utils.structs.common_structs.PerformanceChange
    :members:
 
 You can register your new performance change checker as follows:
