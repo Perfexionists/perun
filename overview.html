@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun: Performance Under Control &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Perun: Performance Under Control &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="_static/documentation_options.js?v=04c08c89"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -267,16 +267,16 @@ the profile.</p></li>
 <p>Each collector should be registered in <code class="docutils literal notranslate"><span class="pre">perun.collect</span></code> package and needs to implement the
 proposed interfaced inside the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module. In order to register and use a new collector one
 needs to implement the following api in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Phase before execution of collector&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
-<span class="k">def</span> <span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">do_collection</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
-<span class="k">def</span> <span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 </pre></div>
@@ -289,16 +289,16 @@ needs to implement the following api in the <code class="docutils literal notran
 <p>Postprocessors in general work the same as collectors and can be broken to three phases as well.
 The required API to be implemented has a similar requirements and one needs to implement the
 following in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Phase before execution of postprocessor&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
-<span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Postprocessing of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">do_postprocessing</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
-<span class="k">def</span> <span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 </pre></div>
@@ -310,12 +310,12 @@ following in the <code class="docutils literal notranslate"><span class="pre">ru
 <h3>Custom Visualization<a class="headerlink" href="#custom-visualization" title="Link to this heading">¶</a></h3>
 <p>New visualizations have to be based on the <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> (or its supported conversions, see
 <a class="reference internal" href="profile.html#profile-conversion-api"><span class="std std-ref">Profile Conversions API</span></a>) and has to just implement the following in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">import</span> <span class="nn">perun.utils.helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">perun.utils.helpers</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">helpers</span>
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@helpers</span><span class="o">.</span><span class="n">pass_profile</span>
-<span class="k">def</span> <span class="nf">visualization_name</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">visualization_name</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the profile in custom format&quot;&quot;&quot;</span>
     <span class="k">pass</span>
 </pre></div>

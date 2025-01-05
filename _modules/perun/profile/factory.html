@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.factory &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <title>perun.profile.factory &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="../../../_static/documentation_options.js?v=04c08c89"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -38,33 +38,33 @@
 <span class="sd">regions and flatten the format.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="c1"># Standard Imports</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 
 <span class="c1"># Third-Party Imports</span>
-<span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 
 <span class="c1"># Perun Imports</span>
-<span class="kn">from</span> <span class="nn">perun</span> <span class="kn">import</span> <span class="n">check</span> <span class="k">as</span> <span class="n">check</span>
-<span class="kn">from</span> <span class="nn">perun.logic</span> <span class="kn">import</span> <span class="n">config</span>
-<span class="kn">from</span> <span class="nn">perun.profile</span> <span class="kn">import</span> <span class="n">convert</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">helpers</span>
-<span class="kn">from</span> <span class="nn">perun.utils</span> <span class="kn">import</span> <span class="n">log</span>
-<span class="kn">from</span> <span class="nn">perun.utils.structs</span> <span class="kn">import</span> <span class="n">postprocess_structs</span>
-<span class="kn">from</span> <span class="nn">perun.utils.common</span> <span class="kn">import</span> <span class="n">common_kit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun</span><span class="w"> </span><span class="kn">import</span> <span class="n">check</span> <span class="k">as</span> <span class="n">check</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">helpers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">postprocess_structs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">common_kit</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">perun.utils.structs.common_structs</span> <span class="kn">import</span> <span class="n">ModelRecord</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.structs.common_structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelRecord</span>
 
 
 <div class="viewcode-block" id="Profile">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile">[docs]</a>
-<span class="k">class</span> <span class="nc">Profile</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Profile</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :ivar _storage: internal storage of the profile</span>
 <span class="sd">    :ivar _tuple_to_resource_type_map: map of tuple of persistent records of resources to</span>
@@ -105,7 +105,7 @@
     <span class="p">]</span>
     <span class="n">dependent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;amount&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the internal storage</span>
 
 <span class="sd">        :param args: positional arguments for dictionary</span>
@@ -130,7 +130,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="n">config</span><span class="o">.</span><span class="n">runtime</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;context.profiles&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agg</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;med&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agg</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;med&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies aggregation function to each counted resource</span>
 
 <span class="sd">        :param agg: name of the aggreagation function</span>
@@ -139,7 +139,7 @@
             <span class="k">for</span> <span class="n">item</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">res</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">common_kit</span><span class="o">.</span><span class="n">aggregate_list</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">agg</span><span class="p">)]</span>
 
-    <span class="k">def</span> <span class="nf">update_resources</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_resources</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resource_list</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
@@ -177,7 +177,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_translate_resources</span><span class="p">(</span><span class="n">resource_list</span><span class="p">,</span> <span class="p">{})</span>
 
-    <span class="k">def</span> <span class="nf">_translate_resources</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_translate_resources</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">resource_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">additional_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Translate the list of resources to efficient format</span>
@@ -220,7 +220,7 @@
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">collectable_properties</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">][</span><span class="n">resource_type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">register_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">persistent_properties</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">persistent_properties</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers tuple of persistent properties under new key or return existing one</span>
 
 <span class="sd">        :param uid: uid of the resource that will be used to describe the resource type</span>
@@ -238,7 +238,7 @@
             <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tuple_to_resource_type_map</span><span class="p">[</span><span class="n">property_key</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the item stored in profile</span>
 
 <span class="sd">        Note: No translation of resources is performed! Use all_resources instead!</span>
@@ -248,7 +248,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the value into the storage under the key.</span>
 
 <span class="sd">        Internally this finds a similar regions and registers them in either</span>
@@ -262,35 +262,35 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the item in the storage</span>
 
 <span class="sd">        :param key: key to be deleted</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through the stuff in storage.</span>
 
 <span class="sd">        :return: storage iterator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the size of the internal storage</span>
 
 <span class="sd">        :return: size of the internal storage</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns serializable representation of the profile</span>
 
 <span class="sd">        :return: serializable representation (i.e. the actual storage)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span>
 
-    <span class="k">def</span> <span class="nf">_get_flattened_persistent_values_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_flattened_persistent_values_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flattens the nested values of the resources to single level</span>
 
 <span class="sd">        E.g. the following resource:</span>
@@ -329,7 +329,7 @@
 
 <div class="viewcode-block" id="Profile.all_resources">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_resources">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flatten_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flatten_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the resources contained in the</span>
 <span class="sd">        performance profile.</span>
 
@@ -364,7 +364,7 @@
                 <span class="k">yield</span> <span class="n">persistent_properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">persistent_properties</span></div>
 
 
-    <span class="k">def</span> <span class="nf">all_resource_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_resource_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator for iterating through all the fields (both flattened and</span>
 <span class="sd">        original) that are occurring in the resources.</span>
 
@@ -398,7 +398,7 @@
 
 <div class="viewcode-block" id="Profile.all_filtered_models">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_filtered_models">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_filtered_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models_strategy</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModelRecord</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_filtered_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models_strategy</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModelRecord</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The function obtains models according to the given strategy.</span>
 
@@ -421,7 +421,7 @@
 
 <div class="viewcode-block" id="Profile.all_models">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_models">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator of all &#39;models&#39; records from the performance profile w.r.t.</span>
 <span class="sd">        :ref:`profile-spec`.</span>
 
@@ -466,7 +466,7 @@
                 <span class="k">yield</span> <span class="n">model_idx</span><span class="p">,</span> <span class="n">model</span></div>
 
 
-    <span class="k">def</span> <span class="nf">get_model_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_model_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Finds specific model from profile according to the</span>
 <span class="sd">        given kind of model and specific unique identification.</span>
@@ -482,7 +482,7 @@
 
 <div class="viewcode-block" id="Profile.all_snapshots">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.factory.Profile.all_snapshots">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the snapshots in resources</span>
 
 <span class="sd">        Note this is required e.g. for heap map, which needs to group the resources by</span>
@@ -500,7 +500,7 @@
             <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">snapshot_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">all_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">ProfileStat</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">ProfileStat</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the stats records in the profile.</span>
 
 <span class="sd">        :return: iterable of all stats records</span>
@@ -508,7 +508,7 @@
         <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stats&quot;</span><span class="p">,</span> <span class="p">{}):</span>
             <span class="k">yield</span> <span class="n">stats</span><span class="o">.</span><span class="n">ProfileStat</span><span class="o">.</span><span class="n">from_profile</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">all_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">ProfileHeaderEntry</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">ProfileHeaderEntry</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through all the metadata records in the profile.</span>
 
 <span class="sd">        :return: iterable of all metadata records</span>
@@ -517,7 +517,7 @@
             <span class="k">yield</span> <span class="n">helpers</span><span class="o">.</span><span class="n">ProfileHeaderEntry</span><span class="o">.</span><span class="n">from_profile</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
     <span class="c1"># TODO: discuss the intent of __len__ and possibly merge?</span>
-    <span class="k">def</span> <span class="nf">resources_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resources_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the number of resources stored in the internal storage.</span>
 
 <span class="sd">        :return: the number of stored resources</span>

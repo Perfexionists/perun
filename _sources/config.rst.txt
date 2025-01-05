@@ -110,13 +110,13 @@ List of Supported Options
     will yield the following status when running ``perun status`` (both for stored and pending
     profiles)::
 
-        ═══════════════════════════════════════════════════════════════════════════════▣
-          id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
-        ═══════════════════════════════════════════════════════════════════════════════▣
-         0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
-         1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
-         2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
-        ═══════════════════════════════════════════════════════════════════════════════▣
+        ══════════════════════════════════════════════════════════════════════▣
+          id ┃   type  ┃  cmd   ┃ workload ┃ collector  ┃         time        ┃
+        ══════════════════════════════════════════════════════════════════════▣
+         0@p ┃ [mixed] ┃ target ┃ hello    ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+         1@p ┃ [time ] ┃ perun  ┃ status   ┃ time       ┃ 2017-10-19 12:30:29 ┃
+         2@p ┃ [time ] ┃ perun  ┃ --help   ┃ time       ┃ 2017-10-19 12:30:31 ┃
+        ══════════════════════════════════════════════════════════════════════▣
 
 .. confkey:: format.shortlog
 
@@ -175,6 +175,10 @@ List of Supported Options
         Placeholder for workload that was supplied to the profiled command (refer to
         :munit:`workloads` or :doc:`jobs` for more details).
 
+    ``%label%``:
+
+        Placeholder for custom user-supplied string label associated with a profile.
+
     ``%type%``:
 
         Placeholder for global type of the resources of the profile, i.e. `memory`, `time`,
@@ -204,6 +208,11 @@ List of Supported Options
 
 .. currentmodule:: perun.profile.helpers
 .. autoattribute:: ProfileInfo.valid_attributes
+
+.. confkey:: format.sort_profiles_order
+
+    ``[recursive]`` Specifies the order which will be used for sorting the output of the
+    ``perun status`` commands. Can be either ``ascending`` or ``descending``.
 
 .. confunit:: execute
 

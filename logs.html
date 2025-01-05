@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Customize Logs and Statuses &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Customize Logs and Statuses &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="_static/documentation_options.js?v=04c08c89"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -58,21 +58,21 @@ configuration, type of profile, creating timestamps, etc.</p>
 </div>
 <p>will yield the following status when running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
 profiles):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
-  id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
-═══════════════════════════════════════════════════════════════════════════════▣
- 0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
- 1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
- 2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
-═══════════════════════════════════════════════════════════════════════════════▣
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>══════════════════════════════════════════════════════════════════════▣
+  id ┃   type  ┃  cmd   ┃ workload ┃ collector  ┃         time        ┃
+══════════════════════════════════════════════════════════════════════▣
+ 0@p ┃ [mixed] ┃ target ┃ hello    ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+ 1@p ┃ [time ] ┃ perun  ┃ status   ┃ time       ┃ 2017-10-19 12:30:29 ┃
+ 2@p ┃ [time ] ┃ perun  ┃ --help   ┃ time       ┃ 2017-10-19 12:30:31 ┃
+══════════════════════════════════════════════════════════════════════▣
 </pre></div>
 </div>
 <p>The first column of the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> output, <code class="docutils literal notranslate"><span class="pre">id</span></code>, has a fixed position and defines a tag for
-the given, which can be used in <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">rm</span></code>, <code class="docutils literal notranslate"><span class="pre">show</span></code> and <code class="docutils literal notranslate"><span class="pre">postprocessby</span></code> commands as a quick
-wildcard for concrete profiles, e.g. <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">add</span> <span class="pre">0&#64;p</span></code> would register the first profile stored in
-the pending <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory to the index of current head. Tags are always in form of
-<code class="docutils literal notranslate"><span class="pre">i&#64;p</span></code> (for pending profiles) and <code class="docutils literal notranslate"><span class="pre">i&#64;i</span></code> for profiles registered in index, where <code class="docutils literal notranslate"><span class="pre">i</span></code> stands for
-position in the corresponding storage, index from zero.</p>
+the given profile, which can be used in <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">rm</span></code>, <code class="docutils literal notranslate"><span class="pre">show</span></code> and <code class="docutils literal notranslate"><span class="pre">postprocessby</span></code> commands as
+a quick wildcard for concrete profiles, e.g. <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">add</span> <span class="pre">0&#64;p</span></code> would register the first profile
+stored in the pending <code class="docutils literal notranslate"><span class="pre">.perun/jobs</span></code> directory to the index of current head. Tags are always in
+form of <code class="docutils literal notranslate"><span class="pre">i&#64;p</span></code> (for pending profiles) and <code class="docutils literal notranslate"><span class="pre">i&#64;i</span></code> for profiles registered in index, where <code class="docutils literal notranslate"><span class="pre">i</span></code>
+stands for position in the corresponding storage, index from zero.</p>
 <p>The specification of the formatting string can contain the following special tags:</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">%type%</span></code>:</dt><dd><p>Lists the most generic type of the profile according to the collected resources serving as
@@ -86,6 +86,10 @@ for more information about profiling jobs and commands.</p>
 program, script or binary. Refer to <a class="reference internal" href="jobs.html#jobs-overview"><span class="std std-ref">Overview of Jobs</span></a> for more information about profiling
 jobs and command workloads.</p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">%label%</span></code>:</dt><dd><p>Lists the optional, user-defined string label associated with the profile. Labels may be used
+to further distinguish profiles, e.g., collected using different environment configuration or
+collected on differently configured machines.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">%collector%</span></code>:</dt><dd><p>Lists the collector which was used to obtain the given profile. Refer to <a class="reference internal" href="collectors.html"><span class="doc">Collectors Overview</span></a> for
 list of supported collectors and more information about collection of profiles.</p>
 </dd>
@@ -95,10 +99,12 @@ list of supported collectors and more information about collection of profiles.<
 and the original path.</p>
 </dd>
 </dl>
-<p>By default the profiles are sorted according to the timestamp. The sort order can be modified by
-setting either the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> or the <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> option <code class="docutils literal notranslate"><span class="pre">--sort-by</span></code> to a
-valid profile information attribute. Setting the command line option <code class="docutils literal notranslate"><span class="pre">--sort-by</span></code> has higher
-priority than the key set in the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
+<p>By default the profiles are sorted in ascending order according to the timestamp. The sort order
+can be modified by setting either the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> and
+<a class="reference internal" href="config.html#confkey-format.sort_profiles_order"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_order</span></code></a> configuration options, or the <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> options <code class="docutils literal notranslate"><span class="pre">--sort-by</span></code>
+and <code class="docutils literal notranslate"><span class="pre">--sort-order</span></code> to a valid profile information attribute and a valid sort order. Setting the
+command line options <code class="docutils literal notranslate"><span class="pre">--sort-by</span></code> and <code class="docutils literal notranslate"><span class="pre">--sort-order</span></code> have higher priority than the keys set in
+the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> and <a class="reference internal" href="config.html#confkey-format.sort_profiles_order"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_order</span></code></a>.</p>
 </section>
 <section id="customizing-logs">
 <span id="logs-log"></span><h2>Customizing Logs<a class="headerlink" href="#customizing-logs" title="Link to this heading">¶</a></h2>

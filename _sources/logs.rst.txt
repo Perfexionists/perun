@@ -34,20 +34,20 @@ E.g. the following formatting string::
 will yield the following status when running ``perun status`` (both for stored and pending
 profiles)::
 
-    ═══════════════════════════════════════════════════════════════════════════════▣
-      id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
-    ═══════════════════════════════════════════════════════════════════════════════▣
-     0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
-     1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
-     2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
-    ═══════════════════════════════════════════════════════════════════════════════▣
+    ══════════════════════════════════════════════════════════════════════▣
+      id ┃   type  ┃  cmd   ┃ workload ┃ collector  ┃         time        ┃
+    ══════════════════════════════════════════════════════════════════════▣
+     0@p ┃ [mixed] ┃ target ┃ hello    ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+     1@p ┃ [time ] ┃ perun  ┃ status   ┃ time       ┃ 2017-10-19 12:30:29 ┃
+     2@p ┃ [time ] ┃ perun  ┃ --help   ┃ time       ┃ 2017-10-19 12:30:31 ┃
+    ══════════════════════════════════════════════════════════════════════▣
 
 The first column of the ``perun status`` output, ``id``, has a fixed position and defines a tag for
-the given, which can be used in ``add``, ``rm``, ``show`` and ``postprocessby`` commands as a quick
-wildcard for concrete profiles, e.g. ``perun add 0@p`` would register the first profile stored in
-the pending ``.perun/jobs`` directory to the index of current head. Tags are always in form of
-``i@p`` (for pending profiles) and ``i@i`` for profiles registered in index, where ``i`` stands for
-position in the corresponding storage, index from zero.
+the given profile, which can be used in ``add``, ``rm``, ``show`` and ``postprocessby`` commands as
+a quick wildcard for concrete profiles, e.g. ``perun add 0@p`` would register the first profile
+stored in the pending ``.perun/jobs`` directory to the index of current head. Tags are always in
+form of ``i@p`` (for pending profiles) and ``i@i`` for profiles registered in index, where ``i``
+stands for position in the corresponding storage, index from zero.
 
 The specification of the formatting string can contain the following special tags:
 
@@ -65,6 +65,11 @@ The specification of the formatting string can contain the following special tag
     program, script or binary. Refer to :ref:`jobs-overview` for more information about profiling
     jobs and command workloads.
 
+``%label%``:
+    Lists the optional, user-defined string label associated with the profile. Labels may be used
+    to further distinguish profiles, e.g., collected using different environment configuration or
+    collected on differently configured machines.
+
 ``%collector%``:
     Lists the collector which was used to obtain the given profile. Refer to :doc:`collectors` for
     list of supported collectors and more information about collection of profiles.
@@ -76,10 +81,12 @@ The specification of the formatting string can contain the following special tag
     Original source of the profile. This corresponds to the name of the generated profile
     and the original path.
 
-By default the profiles are sorted according to the timestamp. The sort order can be modified by
-setting either the :ckey:`format.sort_profiles_by` or the :doc:`cli` option ``--sort-by`` to a
-valid profile information attribute. Setting the command line option ``--sort-by`` has higher
-priority than the key set in the :ckey:`format.sort_profiles_by`.
+By default the profiles are sorted in ascending order according to the timestamp. The sort order
+can be modified by setting either the :ckey:`format.sort_profiles_by` and
+:ckey:`format.sort_profiles_order` configuration options, or the :doc:`cli` options ``--sort-by``
+and ``--sort-order`` to a valid profile information attribute and a valid sort order. Setting the
+command line options ``--sort-by`` and ``--sort-order`` have higher priority than the keys set in
+the :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
 
 .. _logs-log:
 

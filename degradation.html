@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Detecting Performance Changes &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Detecting Performance Changes &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="_static/documentation_options.js?v=04c08c89"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -431,10 +431,10 @@ description of the change check with the following structure:</p></li>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
 <span class="linenos">2</span>
-<span class="linenos">3</span><span class="kn">from</span> <span class="nn">perun.utils.structs.common_structs</span> <span class="kn">import</span> <span class="n">DegradationInfo</span>
+<span class="linenos">3</span><span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.structs.common_structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">DegradationInfo</span>
 <span class="linenos">4</span>
 <span class="linenos">5</span>
-<span class="linenos">6</span><span class="k">def</span> <span class="nf">my_degradation_checker</span><span class="p">(</span><span class="n">baseline_profile</span><span class="p">,</span> <span class="n">target_profile</span><span class="p">):</span>
+<span class="linenos">6</span><span class="k">def</span><span class="w"> </span><span class="nf">my_degradation_checker</span><span class="p">(</span><span class="n">baseline_profile</span><span class="p">,</span> <span class="n">target_profile</span><span class="p">):</span>
 <span class="linenos">7</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
 <span class="linenos">8</span>    <span class="k">yield</span> <span class="n">DegradationInfo</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
 </pre></div>

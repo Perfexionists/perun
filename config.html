@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Configuration files &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Perun Configuration files &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="_static/documentation_options.js?v=04c08c89"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -144,13 +144,13 @@ formatting strings for <code class="docutils literal notranslate"><span class="p
 </div>
 <p>will yield the following status when running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
 profiles):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
-  id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
-═══════════════════════════════════════════════════════════════════════════════▣
- 0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
- 1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
- 2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
-═══════════════════════════════════════════════════════════════════════════════▣
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>══════════════════════════════════════════════════════════════════════▣
+  id ┃   type  ┃  cmd   ┃ workload ┃ collector  ┃         time        ┃
+══════════════════════════════════════════════════════════════════════▣
+ 0@p ┃ [mixed] ┃ target ┃ hello    ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+ 1@p ┃ [time ] ┃ perun  ┃ status   ┃ time       ┃ 2017-10-19 12:30:29 ┃
+ 2@p ┃ [time ] ┃ perun  ┃ --help   ┃ time       ┃ 2017-10-19 12:30:31 ┃
+══════════════════════════════════════════════════════════════════════▣
 </pre></div>
 </div>
 </dd></dl>
@@ -214,6 +214,10 @@ to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="x
 <div><p>Placeholder for workload that was supplied to the profiled command (refer to
 <a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal notranslate"><span class="pre">workloads</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</p>
 </div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">%label%</span></code>:</p>
+<blockquote>
+<div><p>Placeholder for custom user-supplied string label associated with a profile.</p>
+</div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">%type%</span></code>:</p>
 <blockquote>
 <div><p>Placeholder for global type of the resources of the profile, i.e. <cite>memory</cite>, <cite>time</cite>,
@@ -247,8 +251,15 @@ attribute <code class="docutils literal notranslate"><span class="pre">ProfileIn
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
-<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-format.sort_profiles_order">
+<span class="sig-name descname"><span class="pre">format.sort_profiles_order</span></span><a class="headerlink" href="#confkey-format.sort_profiles_order" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the order which will be used for sorting the output of the
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be either <code class="docutils literal notranslate"><span class="pre">ascending</span></code> or <code class="docutils literal notranslate"><span class="pre">descending</span></code>.</p>
+</dd></dl>
 
 <dl class="std confunit">
 <dt class="sig sig-object std" id="confunit-execute">

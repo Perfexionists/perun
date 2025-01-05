@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Collectors Overview &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <title>Collectors Overview &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="_static/documentation_options.js?v=04c08c89"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -1048,17 +1048,17 @@ the profiling data over the given configuration. Each function should return the
 status of the phase, the status message (used in case of error) and dictionary including
 params passed to additional phases and ‘profile’ with dictionary w.r.t <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span> <span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
 <span class="linenos"> 3</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="k">def</span> <span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 6</span><span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="linenos"> 7</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
 <span class="linenos"> 8</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span>
-<span class="linenos">11</span><span class="k">def</span> <span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">11</span><span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="linenos">12</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
 <span class="linenos">13</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>

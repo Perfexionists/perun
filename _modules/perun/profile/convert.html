@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.convert &#8212; Perun 0.23.7 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <title>perun.profile.convert &#8212; Perun 0.23.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=ecda2f4b"></script>
+    <script src="../../../_static/documentation_options.js?v=04c08c89"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -45,30 +45,30 @@
 <span class="sd">complex queries and statistical tests over the profiles.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="c1"># Standard Imports</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
-<span class="kn">import</span> <span class="nn">array</span>
-<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">array</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 
 <span class="c1"># Third-Party Imports</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
 
 <span class="c1"># Perun Imports</span>
-<span class="kn">from</span> <span class="nn">perun.postprocess.regression_analysis</span> <span class="kn">import</span> <span class="n">transform</span>
-<span class="kn">from</span> <span class="nn">perun.profile</span> <span class="kn">import</span> <span class="n">query</span>
-<span class="kn">from</span> <span class="nn">perun.utils</span> <span class="kn">import</span> <span class="n">log</span>
-<span class="kn">from</span> <span class="nn">perun.utils.common</span> <span class="kn">import</span> <span class="n">common_kit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.postprocess.regression_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">common_kit</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">perun.profile.factory</span> <span class="kn">import</span> <span class="n">Profile</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">perun.profile.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">Profile</span>
 
 
 <div class="viewcode-block" id="resources_to_pandas_dataframe">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.convert.resources_to_pandas_dataframe">[docs]</a>
-<span class="k">def</span> <span class="nf">resources_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resources_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the profile (w.r.t :ref:`profile-spec`) to format supported by</span>
 <span class="sd">    `pandas`_ library.</span>
 
@@ -118,7 +118,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">models_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">models_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the models of profile (w.r.t :ref:`profile-spec`) to format</span>
 <span class="sd">    supported by `pandas`_ library.</span>
 
@@ -143,7 +143,7 @@
 
 <div class="viewcode-block" id="to_flame_graph_format">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.convert.to_flame_graph_format">[docs]</a>
-<span class="k">def</span> <span class="nf">to_flame_graph_format</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_flame_graph_format</span><span class="p">(</span>
     <span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span> <span class="n">profile_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;amount&quot;</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the</span>
@@ -193,7 +193,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">to_uid</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_uid</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves uid from record</span>
 
 <span class="sd">    :param record: record for which we are retrieving uid</span>
@@ -206,7 +206,7 @@
     <span class="k">return</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">hide_generics</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">if</span> <span class="n">minimize</span> <span class="k">else</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create string representing call stack&#39;s frame</span>
 
 <span class="sd">    :param frame: call stack&#39;s frame</span>
@@ -223,7 +223,7 @@
 
 <div class="viewcode-block" id="plot_data_from_coefficients_of">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.convert.plot_data_from_coefficients_of">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_data_from_coefficients_of</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_data_from_coefficients_of</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform coefficients computed by</span>
 <span class="sd">    :ref:`postprocessors-regression-analysis` into dictionary of points,</span>
 <span class="sd">    plotable as a function or curve. This function serves as a public wrapper</span>
@@ -239,7 +239,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the value to something that can be used as one value.</span>
 
 <span class="sd">    Flattens the value to single level, lists are processed to comma separated representation and</span>
