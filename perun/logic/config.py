@@ -352,6 +352,8 @@ def lookup_shared_config_dir() -> str:
         perun_config_dir = os.path.join(home_directory, "AppData", "Local", "perun")
     elif sys.platform == "linux":
         perun_config_dir = os.path.join(home_directory, ".config", "perun")
+    elif sys.platform == "darwin":
+        perun_config_dir = os.path.join(home_directory, "Library", "Application Support", "perun")
     else:
         err_msg = f"{sys.platform} platform is currently unsupported.\n\n"
         err_msg += (
