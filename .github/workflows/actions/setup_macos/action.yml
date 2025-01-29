@@ -1,0 +1,37 @@
+name: Setup Environment (macOS)
+description: Performs setup of Perun, Python and its dependencies (macOS)
+inputs:
+  python-version:
+    description: 'Python version to run'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python ${{ inputs.python-version }} (macOS)
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+
+    - name: Install macOS dependencies
+      shell: sh
+      run: |
+        brew update
+        brew install gnu-time gcc git libunwind-headers libmagic
+
+    - name: Initialize Git
+      shell: sh
+      run: |
+        git config --global user.email "perun-allmighty@gmail.com"
+        git config --global user.name "Perun Allmighty"
+
+    - name: Upgrade pip and build dependencies
+      shell: sh
+      run: |
+        python -m pip install --upgrade pip meson meson-python ninja
+
+    - name: Install Tox
+      shell: sh
+      run: |
+        pip install tox

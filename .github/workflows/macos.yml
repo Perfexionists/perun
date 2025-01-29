@@ -1,0 +1,33 @@
+name: MacOS (build-&-test)
+
+on:
+  push:
+    branches:
+      - devel
+  pull_request:
+    branches:
+      - devel
+
+jobs:
+  # Tests classic build using Tox for selected Python versions
+  build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, Ubuntu and Python environment (macOS)
+        uses: ./.github/workflows/actions/setup_macos
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Execute tests for Python ${{ matrix.python-version }} using Tox (macOS)
+        run: tox -e py
+
+      - name: Generate docs for Python ${{ matrix.python-version }} using Tox (macOS)
+        run: |
+          tox -e docs
