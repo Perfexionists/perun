@@ -319,7 +319,7 @@ def test_stats_files_delete(pcs_full_no_prof):
     # It's possible to specify the correct path to the custom directory, but the delete should fail
     with pytest.raises(OSError) as exc:
         stats.delete_stats_file(custom_dir, minor_middle)
-    assert "Is a directory" in str(exc.value)
+    assert "Is a directory" in str(exc.value) or "Operation not permitted" in str(exc.value)
     # The directory should still be in the file system
     _check_objects(
         [(minor_head, []), (minor_middle, ["middle_stats"]), (minor_root, [])],

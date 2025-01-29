@@ -1,13 +1,15 @@
 """Basic tests for running the currently supported collectors"""
 
 # Standard Imports
-from subprocess import SubprocessError, CalledProcessError
 import os
+from subprocess import SubprocessError, CalledProcessError
+import sys
 import subprocess
 import signal
 
 # Third-Party Imports
 from click.testing import CliRunner
+import pytest
 
 # Perun Imports
 from perun.cli_groups import collect_cli
@@ -64,6 +66,10 @@ def _mocked_symbols_extraction(_):
             "ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev"]  # fmt: skip
 
 
+# TODO: Skipping the tests is a temporary solution. Ideally, we would like to have some mechanism
+#  in place that keeps track of various requirements (platform, system, python, ...) for individual
+#  commands and notifies the user when a certain command cannot be executed.
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible compilation for macOS")
 def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
     before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
@@ -133,6 +139,7 @@ def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     asserts.predicate_from_cli(result, "Stored generated profile" in result.output)
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible compilation for macOS")
 def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process."""
 
@@ -253,6 +260,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     monkeypatch.setattr(configurator, "create_runtime_config", old_cfg)
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible compilation for macOS")
 def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
@@ -333,6 +341,7 @@ def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collec
     assert result.exit_code == 0
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible compilation for macOS")
 def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_collect_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
@@ -402,6 +411,7 @@ def test_collect_memory_with_generator(pcs_with_root, memory_collect_job):
     assert len(memory_profiles) == 1
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible clang-3.5 binary for macOS")
 def test_collect_bounds(monkeypatch, pcs_with_root):
     """Test collecting the profile using the bounds collector"""
     current_dir = os.path.split(__file__)[0]
@@ -555,6 +565,7 @@ def test_teardown(pcs_with_root, monkeypatch, capsys):
     assert "while collecting by time: received signal" in err
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Perf not available on macOS")
 def test_collect_kperf(monkeypatch, pcs_with_root, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job

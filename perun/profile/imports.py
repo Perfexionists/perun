@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from typing import Any
 
 # Third-Party Imports
@@ -57,6 +58,10 @@ def import_perf_from_record(
     :param with_sudo: indication whether the data were collected with sudo.
     :param kwargs: rest of the parameters.
     """
+    # TODO: tag commands with (platform, system, ...) requirements and have a unified mechanism
+    #   to detect failures
+    if sys.platform == "darwin":
+        log.error("Import from perf record is not supported on macOS platform.")
     parse_script = script_kit.get_script("stackcollapse-perf.pl")
     profiles, stats = _parse_perf_import_entries(import_entries, stats_headers)
     resources = []

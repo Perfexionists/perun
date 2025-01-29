@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 # Standard Imports
-from subprocess import CalledProcessError
 import os
+from subprocess import CalledProcessError
+import sys
 
 # Third-Party Imports
 import pytest
@@ -26,7 +27,9 @@ from perun.workload.textfile_generator import TextfileGenerator
 def test_integer_generator():
     """Tests generation of integers from given range"""
     collector = Unit("time", {"warmup": 1, "repeat": 1})
-    executable = Executable("factor")
+    # On macOS, GNU factor executable is called 'gfactor'
+    executable_name = "factor" if sys.platform != "darwin" else "gfactor"
+    executable = Executable(executable_name)
     integer_job = Job(collector, [], executable)
     integer_generator = IntegerGenerator(integer_job, 10, 100, 10)
 
@@ -45,7 +48,9 @@ def test_integer_generator_for_each():
     """Tests the profile_for_each_workload option"""
     # When profile_for_each_workload is not set, we yield profiles for each workload
     collector = Unit("time", {"warmup": 1, "repeat": 1})
-    executable = Executable("factor")
+    # On macOS, GNU factor executable is called 'gfactor'
+    executable_name = "factor" if sys.platform != "darwin" else "gfactor"
+    executable = Executable(executable_name)
     integer_job = Job(collector, [], executable)
     integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=True)
 
@@ -62,7 +67,9 @@ def test_loading_generators_from_config(monkeypatch, pcs_with_root):
     """Tests loading generator specification from config"""
     # Initialize the testing configurations
     collector = Unit("time", {"warmup": 1, "repeat": 1})
-    executable = Executable("factor")
+    # On macOS, GNU factor executable is called 'gfactor'
+    executable_name = "factor" if sys.platform != "darwin" else "gfactor"
+    executable = Executable(executable_name)
     integer_job = Job(collector, [], executable)
     temp_local = config.Config(
         "local",
@@ -125,7 +132,9 @@ def test_loading_generators_from_config(monkeypatch, pcs_with_root):
 def test_singleton():
     """Tests singleton generator"""
     collector = Unit("time", {})
-    executable = Executable("factor")
+    # On macOS, GNU factor executable is called 'gfactor'
+    executable_name = "factor" if sys.platform != "darwin" else "gfactor"
+    executable = Executable(executable_name)
     integer_job = Job(collector, [], executable)
     singleton_generator = SingletonGenerator(integer_job, "10")
 
