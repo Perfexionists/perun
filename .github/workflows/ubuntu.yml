@@ -35,7 +35,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          flags: coverage-${{ matrix.python-version }}
+          flags: coverage-ubuntu-${{ matrix.python-version }}
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
 

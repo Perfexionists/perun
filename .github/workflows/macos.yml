@@ -33,6 +33,13 @@ jobs:
         run: |
           tox -e docs
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: coverage-macos-${{ matrix.python-version }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+
   # Tests editable build using Tox for selected Python versions
   # We limit the test to version 3.12 in order to have less clutter in Actions
   build-editable:

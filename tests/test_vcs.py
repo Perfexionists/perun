@@ -115,8 +115,9 @@ def test_abstract_base():
 def test_svs(pcs_with_svs):
     """Tests working with svs"""
     svs = pcs_with_svs.vcs()
-    assert svs.init({}) == True
+    assert svs.init({})
     assert svs.get_minor_head() == svs_repository.SINGLE_VERSION_TAG
+    assert svs.get_default_major_version() == svs_repository.SINGLE_VERSION_BRANCH
     minors = list(svs.walk_minor_versions(svs_repository.SINGLE_VERSION_TAG))
     assert len(minors) == 1
     assert minors[0].checksum == svs_repository.SINGLE_VERSION_TAG

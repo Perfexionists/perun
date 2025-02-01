@@ -196,10 +196,8 @@ class GitRepository(AbstractRepository):
                     # The line should be formatted as GIT_DEFAULT_BRANCH=<value>
                     default_major_v = line.split("=", maxsplit=1)[1]
                     break
-            if not default_major_v:
-                # If not configured anywhere, fallback to 'master' according to git source code
-                default_major_v = "master"
-        return default_major_v
+        # If not configured anywhere, fallback to 'master' according to git source code
+        return default_major_v if default_major_v else "master"
 
     def check_minor_version_validity(self, minor_version: str) -> None:
         """
