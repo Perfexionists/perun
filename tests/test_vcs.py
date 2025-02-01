@@ -30,8 +30,7 @@ def test_major_versions(pcs_full_no_prof):
 
     Expecting correct behaviour and no error
     """
-    git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
+    git_default_branch_name = pcs.vcs().get_default_major_version()
 
     major_versions = list(pcs.vcs().walk_major_versions())
 
