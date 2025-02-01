@@ -173,7 +173,6 @@ def generate_flamegraphs(
                     rhs_flame,
                     "Baseline-Target Diff Flamegraph",
                     img_width=width,
-                    fg_flags="--negate",
                     fg_max_trace=max_trace,
                     fg_max_resource=max_resources,
                 )
@@ -183,6 +182,7 @@ def generate_flamegraphs(
                     lhs_flame,
                     "Target-Baseline Diff Flamegraph",
                     img_width=width,
+                    fg_flags="--negate",
                     fg_max_trace=max_trace,
                     fg_max_resource=max_resources,
                 )
