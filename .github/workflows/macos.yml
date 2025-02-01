@@ -10,7 +10,32 @@ on:
 
 jobs:
   # Tests classic build using Tox for selected Python versions
+  # Version 3.9 is omitted due to some dependencies not being compatible with ARM CPUs.
   build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, macOS and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Execute tests for Python ${{ matrix.python-version }} using Tox
+        run: tox -e py
+
+      - name: Generate docs for Python ${{ matrix.python-version }} using Tox
+        run: |
+          tox -e docs
+
+  # Tests editable build using Tox for selected Python versions
+  # We limit the test to version 3.12 in order to have less clutter in Actions
+  build-editable:
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -20,14 +45,38 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Python, Ubuntu and Python environment (macOS)
+      - name: Setup Python, macOS and Python environment
         uses: ./.github/workflows/actions/setup
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Execute tests for Python ${{ matrix.python-version }} using Tox (macOS)
-        run: tox -e py
+      - name: Execute tests for Python ${{ matrix.python-version }} using Tox
+        run: tox -e editable
 
-      - name: Generate docs for Python ${{ matrix.python-version }} using Tox (macOS)
+  # Tests that perun is buildable from distribution packages (this is precursor for pypi install).
+  # We limit the test to version 3.12 in order to have less clutter in Actions
+  build-from-dist:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [ "3.12" ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python, macOS and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create tarball or wheel
         run: |
-          tox -e docs
+          pip3 install -q build
+          make release
+
+      - name: Install from dist (tar.gz)
+        run: |
+          pip3 install dist/*.tar.gz
+
+      - name: Try running perun and getting help
+        run: |
+          perun --help

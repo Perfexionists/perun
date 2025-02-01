@@ -59,12 +59,12 @@ jobs:
         run: tox -e editable
 
   # Tests that perun is buildable from distribution packages (this is precursor for pypi install).
-  # We limit the test to version 3.11 in order to have less clutter in Actions
+  # We limit the test to version 3.12 in order to have less clutter in Actions
   build-from-dist:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v3
 
@@ -86,27 +86,7 @@ jobs:
         run: |
           perun --help
 
-  # Tests that documentation is buildable. We limit the test to version 3.11 in order to have less clutter in Actions
-  build-docs:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11"]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Python, Ubuntu and Python environment
-        uses: ./.github/workflows/actions/setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Generate docs for Python ${{ matrix.python-version }} using Tox
-        run: |
-          tox -e docs
-
-  # Tests correctes of typing for all versions
+  # Tests correctness of typing for all versions
   typing:
     runs-on: ubuntu-latest
     strategy:
@@ -126,12 +106,12 @@ jobs:
         run: |
           tox -e typing
 
-  # Test linting only for the latest version of python
+  # Test linting only for one version of python
   linting:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v3
