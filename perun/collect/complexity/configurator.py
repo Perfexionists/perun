@@ -1,10 +1,10 @@
-""" Module for internal collector configuration file generator.
+"""Module for internal collector configuration file generator.
 
-    The complexity collector library needs some specific configuration settings in order to work
-    properly and efficiently. The library uses the circ.conf file to pass the configuration data
-    at collector's runtime.
+The complexity collector library needs some specific configuration settings in order to work
+properly and efficiently. The library uses the circ.conf file to pass the configuration data
+at collector's runtime.
 
-    This module handles all the necessary operations to create correct circ.conf file.
+This module handles all the necessary operations to create correct circ.conf file.
 
 """
 

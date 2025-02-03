@@ -1,4 +1,4 @@
-""" The wrapper for invoking angr tool since Perun currently runs on Python 3.5 which is
+"""The wrapper for invoking angr tool since Perun currently runs on Python 3.5 which is
 incompatible with angr atm.
 
 """

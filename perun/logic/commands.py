@@ -997,7 +997,7 @@ def print_status_profiles(
                 perun_log.cprint(token, list_config.colour)
         perun_log.newline()
         if profile_no % 5 == 0 or profile_no == list_config.list_len - 1:
-            perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+            perun_log.cprintln("\u2550" * list_config.header_width + "\u25a3", list_config.colour)
 
 
 def print_status_profile_list_header(
@@ -1017,7 +1017,7 @@ def print_status_profile_list_header(
     :param list_config: configuration of the output profile list
     :param max_lengths: mapping of token types ot their maximal lengths for alignment
     """
-    perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+    perun_log.cprintln("\u2550" * list_config.header_width + "\u25a3", list_config.colour)
     perun_log.write(" ", end="")
     perun_log.cprint("id".center(list_config.id_width + 2, " "), list_config.colour)
     perun_log.write(" ", end="")
@@ -1036,7 +1036,7 @@ def print_status_profile_list_header(
             # Print the rest (non token stuff)
             perun_log.cprint(token, list_config.colour)
     perun_log.newline()
-    perun_log.cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
+    perun_log.cprintln("\u2550" * list_config.header_width + "\u25a3", list_config.colour)
 
 
 def adjust_header_length(

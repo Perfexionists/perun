@@ -1,5 +1,4 @@
-""" The SystemTap engine implementation.
-"""
+"""The SystemTap engine implementation."""
 
 import time
 import os

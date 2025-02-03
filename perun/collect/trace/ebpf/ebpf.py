@@ -1,4 +1,4 @@
-""" The eBPF collection process that has to be invoked with elevated sudo privileges in order to
+"""The eBPF collection process that has to be invoked with elevated sudo privileges in order to
 attach the selected probes.
 """
 

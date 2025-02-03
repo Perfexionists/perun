@@ -1,4 +1,4 @@
-""" A module containing the necessary constants, enumerations, classes, etc., that have to be used
+"""A module containing the necessary constants, enumerations, classes, etc., that have to be used
 by numerous other modules.
 """
 

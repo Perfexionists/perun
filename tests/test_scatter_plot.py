@@ -1,4 +1,4 @@
-""" Basic tests for scatter plot visualization """
+"""Basic tests for scatter plot visualization"""
 
 from __future__ import annotations
 

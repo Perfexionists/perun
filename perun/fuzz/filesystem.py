@@ -1,4 +1,4 @@
-""" Module contains functions dedicated for various operations over files and directories in
+"""Module contains functions dedicated for various operations over files and directories in
 file system, helpful for fuzzing process."""
 
 from __future__ import annotations

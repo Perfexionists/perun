@@ -68,7 +68,7 @@ def postprocess(
 
 
 def common_sma_options(
-    func_obj: Callable[..., Any]
+    func_obj: Callable[..., Any],
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """
     The wrapper of common options for both supported commands represents simple

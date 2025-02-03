@@ -445,7 +445,7 @@ def in_color(
 
 
 def count_degradations_per_group(
-    degradation_list: list[tuple[DegradationInfo, str, str]]
+    degradation_list: list[tuple[DegradationInfo, str, str]],
 ) -> dict[str, int]:
     """Counts the number of optimizations and degradations
 
@@ -493,7 +493,7 @@ def get_degradation_change_colours(
 
 
 def print_short_summary_of_degradations(
-    degradation_list: list[tuple[DegradationInfo, str, str]]
+    degradation_list: list[tuple[DegradationInfo, str, str]],
 ) -> None:
     """Prints a short string representing the summary of the found changes.
 
@@ -603,7 +603,7 @@ def _print_models_info(deg_info: DegradationInfo) -> None:
 
 
 def _print_partial_intervals(
-    partial_intervals: list[tuple[PerformanceChange, float, float, float]]
+    partial_intervals: list[tuple[PerformanceChange, float, float, float]],
 ) -> None:
     """
     The function prints information about detected changes on the partial intervals.

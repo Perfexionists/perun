@@ -1,15 +1,15 @@
-""" Dynamic Statistics refer to a set of statistics that are obtained from an actual
-    Tracer run. These statistics can be used in subsequent runs to optimize the profiling.
+"""Dynamic Statistics refer to a set of statistics that are obtained from an actual
+Tracer run. These statistics can be used in subsequent runs to optimize the profiling.
 
-    Currently, the statistics are divided into four distinct categories:
-    1) Global Stats aggregate statistics across all of the bottom* processes.
-    2) Per-thread Stats contain statistics on a per-thread basis, i.e., the statistics
-       are computed for each thread separately.
-    3) Process Hierarchy contains traced processes and their parents (ppid), children
-       and spawned threads.
-    4) Threads that are spawned by traced processes during the profiling.
+Currently, the statistics are divided into four distinct categories:
+1) Global Stats aggregate statistics across all of the bottom* processes.
+2) Per-thread Stats contain statistics on a per-thread basis, i.e., the statistics
+   are computed for each thread separately.
+3) Process Hierarchy contains traced processes and their parents (ppid), children
+   and spawned threads.
+4) Threads that are spawned by traced processes during the profiling.
 
-    *bottom processes are those that spawn no other process
+*bottom processes are those that spawn no other process
 """
 
 import array

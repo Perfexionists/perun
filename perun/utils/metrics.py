@@ -1,4 +1,4 @@
-""" Gathers various user defined metrics and stores them in the specified temporary file under
+"""Gathers various user defined metrics and stores them in the specified temporary file under
 the specified ID.
 """
 

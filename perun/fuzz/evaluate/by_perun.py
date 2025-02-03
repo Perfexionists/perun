@@ -1,4 +1,4 @@
-""" Collects functions for init and common testing for performance change.
+"""Collects functions for init and common testing for performance change.
 
 In general, this testing is trying to find performance degradation in newly generated target
 profile comparing with baseline profile.

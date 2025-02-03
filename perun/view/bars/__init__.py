@@ -1,4 +1,4 @@
-""" `Bar graphs` displays resources as bars, with moderate customization
+"""`Bar graphs` displays resources as bars, with moderate customization
 possibilities (regarding the sources for axes, or grouping keys). The output
 backend of `Bars` is both Bokeh_ and ncurses_ (with limited possibilities
 though). Bokeh_ graphs support either the stacked format (bars of different

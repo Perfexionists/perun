@@ -1,4 +1,4 @@
-"""Set of helpers for working with traces """
+"""Set of helpers for working with traces"""
 
 from __future__ import annotations
 

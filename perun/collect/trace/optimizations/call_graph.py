@@ -1,4 +1,4 @@
-""" A module that implements the Call Graph Resource and all related operations needed for
+"""A module that implements the Call Graph Resource and all related operations needed for
 easy manipulation with its structure.
 
 The Call Graph Structure stores the extracted call graph as well as the control flow graph.

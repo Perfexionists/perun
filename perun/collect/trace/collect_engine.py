@@ -1,4 +1,4 @@
-""" The collection itself is done by a so-called 'engine'. Each engine must implement the same
+"""The collection itself is done by a so-called 'engine'. Each engine must implement the same
 mandatory methods so that it can be used in a generic way. This is ensured by the abstract class
 CollectEngine which is used as a base class for all future engines.
 """

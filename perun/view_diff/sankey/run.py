@@ -377,7 +377,7 @@ def delete_node(point, pred, succ):
 
 
 def minimize_sankey_maps(
-    sankey_map: dict[str, dict[str, SankeyNode]]
+    sankey_map: dict[str, dict[str, SankeyNode]],
 ) -> dict[str, dict[str, SankeyNode]]:
     """Merges chains of unbranched code
 
@@ -404,7 +404,7 @@ def minimize_sankey_maps(
 
 
 def extract_graphs_from_sankey_map(
-    sankey_map: dict[str, dict[str, SankeyNode]]
+    sankey_map: dict[str, dict[str, SankeyNode]],
 ) -> list[SankeyGraph]:
     """For computed maps of sankey edges computes the list of actual sankey graphs
 

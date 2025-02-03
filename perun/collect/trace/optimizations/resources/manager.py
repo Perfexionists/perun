@@ -1,4 +1,4 @@
-""" The dispatcher for various resource extraction and storage functions.
+"""The dispatcher for various resource extraction and storage functions.
 
 Specifically, each resource should implement an 'extract' / 'storage' function so that the
 interface is unified.
