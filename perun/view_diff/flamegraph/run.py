@@ -219,7 +219,7 @@ def process_maxima(
         if is_inclusive:
             for key in resource:
                 amount = common_kit.try_convert(resource[key], [float])
-                if amount is None or key == "time":
+                if amount is None or key in ("time", "command", "uid"):
                     continue
                 counts[key] += amount
     for key in counts.keys():

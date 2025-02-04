@@ -430,7 +430,7 @@ def process_max(
     """
     for key in resource:
         amount = common_kit.try_convert(resource[key], [float])
-        if amount is None or key == "time":
+        if amount is None or key in ("time", "command", "uid"):
             continue
         readable_key = mapping.get_readable_key(key)
         counts[readable_key] += amount
@@ -452,7 +452,7 @@ def process_node(
     node = graph.get_node(uid)
     for key in resource:
         amount = common_kit.try_convert(resource[key], [float])
-        if amount is None or key == "time":
+        if amount is None or key in ("time", "command", "uid"):
             continue
         readable_key = mapping.get_readable_key(key)
         node.stats.add_stat(profile_type, readable_key, amount)
@@ -477,7 +477,7 @@ def process_edge(
     tgt_stats = graph.get_caller_stats(tgt, src)
     for key in resource:
         amount = common_kit.try_convert(resource[key], [float])
-        if amount is None or key == "time":
+        if amount is None or key in ("time", "command", "uid"):
             continue
         readable_key = mapping.get_readable_key(key)
         src_stats.add_stat(profile_type, readable_key, amount)
