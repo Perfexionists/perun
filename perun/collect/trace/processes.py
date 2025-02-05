@@ -1,5 +1,4 @@
-""" A module with multiprocessing wrappers and classes.
-"""
+"""A module with multiprocessing wrappers and classes."""
 
 import queue
 from multiprocessing import Queue, Event

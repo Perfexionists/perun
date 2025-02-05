@@ -1,5 +1,4 @@
-""" The eBPF engine implementation.
-"""
+"""The eBPF engine implementation."""
 
 import os
 import json

@@ -1,4 +1,4 @@
-"""Module for various means of regression data acquisition. """
+"""Module for various means of regression data acquisition."""
 
 from __future__ import annotations
 

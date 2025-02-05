@@ -1,5 +1,4 @@
-""" The Configuration class stores the CLI configuration provided by the user.
-"""
+"""The Configuration class stores the CLI configuration provided by the user."""
 
 import os
 import time

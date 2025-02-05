@@ -1,4 +1,4 @@
-""" This Mixin class is used to inject specific "Call Graph Level Estimation" functionality
+"""This Mixin class is used to inject specific "Call Graph Level Estimation" functionality
 into the Call Graph class.
 
 The call graph level estimation is implemented using various techniques and heuristics that

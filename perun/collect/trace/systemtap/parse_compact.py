@@ -1,4 +1,4 @@
-""" Module for parsing and transforming the raw performance records from trace collector
+"""Module for parsing and transforming the raw performance records from trace collector
 (systemtap engine) into a perun profile.
 """
 

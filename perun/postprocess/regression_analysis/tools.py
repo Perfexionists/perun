@@ -1,6 +1,4 @@
-"""Regression tools module. Contains utility functions used by the other regression modules.
-
-"""
+"""Regression tools module. Contains utility functions used by the other regression modules."""
 
 from __future__ import annotations
 

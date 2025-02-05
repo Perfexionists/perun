@@ -1,4 +1,4 @@
-""" Basic tests for table plot visualization """
+"""Basic tests for table plot visualization"""
 
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
 """All generators can be configured using the following generic settings:
 
-  * ``profile_for_each_workload``: by default this option is set to false, and then when one uses
-    the generator to generate the workload, the collected resources will be merged into one single
-    profile. If otherwise this option is set to true value (true, 1, yes, etc.) then Perun will
-    generate profile for each of the generated workload.
+* ``profile_for_each_workload``: by default this option is set to false, and then when one uses
+  the generator to generate the workload, the collected resources will be merged into one single
+  profile. If otherwise this option is set to true value (true, 1, yes, etc.) then Perun will
+  generate profile for each of the generated workload.
 
 """
 

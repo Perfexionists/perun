@@ -1,22 +1,22 @@
-""" Module for cmake generator and executables build process.
+"""Module for cmake generator and executables build process.
 
-    In order to create final collector executable, some mid-step stages are required. Notably,
-    the configuration executable is required, as it provides useful data for creation of time
-    efficient collector executable.
+In order to create final collector executable, some mid-step stages are required. Notably,
+the configuration executable is required, as it provides useful data for creation of time
+efficient collector executable.
 
-    Configuration executable is simply an executable built from workload source and header files,
-    with no additional compiler settings or libraries. It is used for function symbols extraction
-    and their filtering in order to create symbols exclude list (see symbols.py).
+Configuration executable is simply an executable built from workload source and header files,
+with no additional compiler settings or libraries. It is used for function symbols extraction
+and their filtering in order to create symbols exclude list (see symbols.py).
 
-    Collector executable is the final executable used to collect the profiling data. Additional
-    compiler settings are configured, such as -finstrument-functions flag and exclude list.
-    The C++ profiling library is dynamically linked to this executable to allow the capture,
-    processing and storage of records.
+Collector executable is the final executable used to collect the profiling data. Additional
+compiler settings are configured, such as -finstrument-functions flag and exclude list.
+The C++ profiling library is dynamically linked to this executable to allow the capture,
+processing and storage of records.
 
-    Thoughts: - not only source files but also libraries - requires also heavy extension of
-                profiling library
-              - add global error log
-              - enable the users to also specify their own compiler flags and settings?
+Thoughts: - not only source files but also libraries - requires also heavy extension of
+            profiling library
+          - add global error log
+          - enable the users to also specify their own compiler flags and settings?
 """
 
 from __future__ import annotations

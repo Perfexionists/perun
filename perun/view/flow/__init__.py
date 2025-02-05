@@ -1,4 +1,4 @@
-""" `Flow graphs` displays resources as classic plots, with moderate
+"""`Flow graphs` displays resources as classic plots, with moderate
 customization possibilities (regarding the sources for axes, or grouping keys).
 The output backend of `Flow` is both Bokeh_ and ncurses_ (with limited
 possibilities though). Bokeh_ graphs support either the classic display of

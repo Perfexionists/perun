@@ -1,4 +1,4 @@
-""" Assembles the eBPF collection program according to the supplied probe specification.
+"""Assembles the eBPF collection program according to the supplied probe specification.
 Inspired by:
  - https://github.com/iovisor/bcc/blob/master/tools/funcslower.py
  - https://github.com/iovisor/bcc/blob/master/tools/funccount.py

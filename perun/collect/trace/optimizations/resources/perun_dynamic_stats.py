@@ -1,5 +1,4 @@
-""" The extraction and storage methods for the Dynamic Stats resource.
-"""
+"""The extraction and storage methods for the Dynamic Stats resource."""
 
 import perun.logic.stats as stats
 import perun.logic.temp as temp
