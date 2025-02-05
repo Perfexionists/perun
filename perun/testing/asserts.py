@@ -62,6 +62,7 @@ def invalid_param_choice(
     cli_result: click.testing.Result, choice: str, file: Optional[str] = None
 ) -> None:
     """Checks that click correctly ended with invalid choice and 1 return code
+
     :param cli_result: result of the commandline interface
     :param choice: choice that we tried
     :param file: name of the file that should not be created (optional)
@@ -70,3 +71,39 @@ def invalid_param_choice(
     predicate_from_cli(cli_result, f"Invalid value '{choice}'" in cli_result.output)
     if file:
         assert file not in os.listdir(os.getcwd())
+
+
+def perun_successfully_init_at(path: str) -> None:
+    """Checks that the perun was successfully initialized at the given path
+
+    param path: the path to the working directory
+    """
+    perun_dir = os.path.join(path, ".perun")
+    perun_content = os.listdir(perun_dir)
+    assert "cache" in perun_content
+    assert "objects" in perun_content
+    assert "jobs" in perun_content
+    assert "logs" in perun_content
+    assert "stats" in perun_content
+    assert "tmp" in perun_content
+    assert os.path.exists(os.path.join(perun_dir, "local.yml"))
+    assert len(perun_content) == 7
+
+
+def git_successfully_init_at(path, is_bare=False):
+    """Checks that the git was successfully initialized at the given path
+
+    param path: the path to the working directory
+    param is_bare: indication whether the git was initialized as a bare repo
+    """
+    git_dir = os.path.join(path, "" if is_bare else ".git")
+    git_content = os.listdir(git_dir)
+    # On some versions of git, the 'branches' directory is not created
+    assert 7 <= len(git_content) <= 8
+    assert "hooks" in git_content
+    assert "info" in git_content
+    assert "objects" in git_content
+    assert "refs" in git_content
+    assert "config" in git_content
+    assert "description" in git_content
+    assert "HEAD" in git_content

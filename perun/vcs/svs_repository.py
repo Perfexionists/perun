@@ -125,6 +125,13 @@ class SvsRepository(AbstractRepository):
         """
         return SINGLE_VERSION_BRANCH
 
+    def get_default_major_version(self) -> str:
+        """For SVS, the default major version is the same as the HEAD major version.
+
+        :return: default major version
+        """
+        return SINGLE_VERSION_BRANCH
+
     def check_minor_version_validity(self, minor_version: str) -> None:
         """Only SINGLE_VERSION_TAG is valid minor version in SVS
 

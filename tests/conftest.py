@@ -243,9 +243,6 @@ def pcs_with_degradations():
     |/
     * merge commit [] p3
     """
-    git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
-
     pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
     profiles = [
         os.path.join(pool_path, "linear_base.perf"),
@@ -262,6 +259,9 @@ def pcs_with_degradations():
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
+
+    # Obtain the default branch name of the repo
+    git_default_branch_name = pcs.vcs().get_default_major_version()
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")

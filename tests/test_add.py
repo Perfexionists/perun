@@ -109,8 +109,7 @@ def test_add_on_empty_repo(pcs_with_empty_git, valid_profile_pool, capsys):
 
     Expecting an error and system exist as there is no commit, so nothing can be add.
     """
-    git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
+    git_default_branch_name = pcs_with_empty_git.vcs().get_default_major_version()
 
     assert os.getcwd() == os.path.split(pcs_with_empty_git.get_path())[0]
     before_count = test_utils.count_contents_on_path(pcs_with_empty_git.get_path())

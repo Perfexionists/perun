@@ -111,6 +111,7 @@ It is possible that some of the Perun commands may not be working at first, or t
 likely due to some missing system dependencies:
 - `g++`
 - `python-devel`
+- `libmagic`
 - `cmake` (complexity collector)
 - `perf` (kperf collector)
 - `libunwind`, `libunwind-devel` (memory collector)

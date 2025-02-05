@@ -148,6 +148,7 @@ def test_paging_and_config(monkeypatch, capsys):
     assert "warning" in out.lower() and "missing ``general.paging``" in out
 
 
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible executables format on macOS")
 def test_binaries_lookup():
     # Build test binaries using non-blocking make
     script_dir = os.path.split(__file__)[0]
@@ -194,6 +195,9 @@ def test_size_formatting():
     assert log.format_file_size(87329487294792342394293489232) == "77564166018710.8 PiB"
 
 
+# TODO: Temporary workaround, we should properly compile the executables on the target machine
+#   using meson instead of shipping the binaries directly.
+@pytest.mark.skipif(sys.platform == "darwin", reason="Incompatible executables format on macOS")
 def test_nonblocking_subprocess():
     """Test the nonblocking_process utility with interruptions caused by various exceptions"""
 

@@ -132,6 +132,12 @@ def get_machine_specification() -> dict[str, Any]:
     :return: machine specification as dictionary
     """
     system = platform.uname()
+    try:
+        cpu_freq = psutil.cpu_freq().current
+    except RuntimeError:
+        # There are issues with CPU freq on some Apple Silicon VMs
+        # https://github.com/giampaolo/psutil/pull/2222#issuecomment-2000755602
+        cpu_freq = 0.0
     machine_info: dict[str, Any] = {
         "architecture": system.machine,
         "system": system.system,
@@ -140,7 +146,7 @@ def get_machine_specification() -> dict[str, Any]:
         "cpu": {
             "physical": psutil.cpu_count(logical=False),
             "total": psutil.cpu_count(logical=True),
-            "frequency": f"{psutil.cpu_freq().current:.2f}Mhz",
+            "frequency": f"{cpu_freq:.2f}Mhz",
         },
         "memory": {
             "total_ram": log.format_file_size(psutil.virtual_memory().total).strip(),

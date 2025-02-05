@@ -7,6 +7,7 @@ this is done in appropriate test files, only the API is tested."""
 import os
 import re
 import shutil
+import sys
 import time
 import warnings
 
@@ -1319,12 +1320,7 @@ def test_init_correct_with_params_and_flags():
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "sepdir" in os.listdir(os.getcwd())
     initialized_dir = os.path.join(os.getcwd(), "sepdir")
-    dir_content = os.listdir(initialized_dir)
-
-    # Should be enough for sanity check
-    assert "HEAD" in dir_content
-    assert "refs" in dir_content
-    assert "branches" in dir_content
+    asserts.git_successfully_init_at(initialized_dir, is_bare=True)
 
 
 def test_add_correct(pcs_with_root):
@@ -1409,18 +1405,19 @@ def test_collect_correct(pcs_with_root):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof.perf" in os.listdir(".")
 
-    current_dir = os.path.split(__file__)[0]
-    src_dir = os.path.join(current_dir, "sources", "collect_bounds")
-    src_file = os.path.join(src_dir, "partitioning.c")
-    result = runner.invoke(
-        collect_cli.collect, ["-c echo", "-w hello", "bounds", "-d", f"{src_dir}"]
-    )
-    asserts.predicate_from_cli(result, result.exit_code == 0)
+    if sys.platform != "darwin":
+        current_dir = os.path.split(__file__)[0]
+        src_dir = os.path.join(current_dir, "sources", "collect_bounds")
+        src_file = os.path.join(src_dir, "partitioning.c")
+        result = runner.invoke(
+            collect_cli.collect, ["-c echo", "-w hello", "bounds", "-d", f"{src_dir}"]
+        )
+        asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    result = runner.invoke(
-        collect_cli.collect, ["-c echo", "-w hello", "bounds", "-s", f"{src_file}"]
-    )
-    asserts.predicate_from_cli(result, result.exit_code == 0)
+        result = runner.invoke(
+            collect_cli.collect, ["-c echo", "-w hello", "bounds", "-s", f"{src_file}"]
+        )
+        asserts.predicate_from_cli(result, result.exit_code == 0)
 
     assert len(os.listdir(os.path.join(".perun", "logs"))) == 0
     result = runner.invoke(
@@ -2626,6 +2623,10 @@ def test_svs():
     dst = str(os.getcwd())
     result = runner.invoke(cli.init, [dst])
     asserts.predicate_from_cli(result, result.exit_code == 0)
+
+    if sys.platform == "darwin":
+        # Perf is unavailable on macOS
+        return
 
     result = runner.invoke(collect_cli.collect, ["-c echo", "-w hello", "-o", "prof.perf", "kperf"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
