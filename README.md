@@ -112,10 +112,21 @@ likely due to some missing system dependencies:
 - `g++`
 - `python-devel`
 - `libmagic`
+- `coreutils`
 - `cmake` (complexity collector)
 - `perf` (kperf collector)
 - `libunwind`, `libunwind-devel` (memory collector)
 - `perl-open` (flamegraph view)
+
+On macOS, additional system dependencies may be needed:
+- `gnu-time`
+- `libunwind-headers`
+
+## Limited support for macOS
+
+Although Perun can be installed on macOS machines as well, most of the Perun collectors are not supported
+yet. Namely: bounds, complexity, kperf, memory and trace. Moreover, the `perun import record` is not
+supported as well due to the `perf` tool not being available on macOS.
 
 ## Checking Perun Installation
 

@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.24.0 (2025-02-06)
+-------------------
+
+  - Perun now officially supports macOS machines, albeit with some limitations.
+  - Fix a showdiff bug that resulted in diff flamegraphs inverting colors for optimization/degradation.
+  - Fix a showdiff bug that caused crashes on perf profiles with float-convertible attributes other than 'amount'.
+  - Delta debugging is now integrated into the Perun fuzzing loop.
+
+
 0.23.8 (2025-01-05)
 -------------------
 
