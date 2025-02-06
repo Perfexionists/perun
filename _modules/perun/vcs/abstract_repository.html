@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.vcs.abstract_repository &#8212; Perun 0.23.8 documentation</title>
+    <title>perun.vcs.abstract_repository &#8212; Perun 0.24.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=04c08c89"></script>
+    <script src="../../../_static/documentation_options.js?v=a9084e48"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -157,6 +157,13 @@
 <span class="sd">        :returns: string representation of the major version</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_default_major_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the default major version string of the wrapped repository.</span>
+
+<span class="sd">        :returns: string representation of the default major version</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AbstractRepository.check_minor_version_validity">
 <a class="viewcode-back" href="../../../internals.html#perun.vcs.abstract_repository.AbstractRepository.check_minor_version_validity">[docs]</a>
