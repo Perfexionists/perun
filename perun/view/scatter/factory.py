@@ -1,4 +1,4 @@
-""" Module with graphs creation and configuration functions. """
+"""Module with graphs creation and configuration functions."""
 
 from __future__ import annotations
 

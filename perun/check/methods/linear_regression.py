@@ -87,9 +87,7 @@ def exec_linear_regression(
             and abs(diff_b0 - intercept) < 0.000000000001
         ):
             change_type = "constant"
-        elif (
-            common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95
-        ):
+        elif common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value**2 > 0.95:
             change_type = "linear"
     else:
         if (
@@ -98,9 +96,7 @@ def exec_linear_regression(
             and common_kit.abs_in_relative_range(diff_b0, intercept, 0.05)
         ):
             change_type = "constant"
-        elif (
-            common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value ** 2 > 0.95
-        ):
+        elif common_kit.abs_in_relative_range(linear_diff_b1, gradient, 0.3) and r_value**2 > 0.95:
             change_type = "linear"
 
     std_err_profile = fast_check.exec_fast_check(

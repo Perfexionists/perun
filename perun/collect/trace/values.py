@@ -1,4 +1,4 @@
-""" The values module contains various utility classes, enums and constants that are used in
+"""The values module contains various utility classes, enums and constants that are used in
 multiple other modules across the whole trace collector.
 """
 

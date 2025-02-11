@@ -1,4 +1,4 @@
-""" The 'locks' module provides the necessary features for locking some of the resources
+"""The 'locks' module provides the necessary features for locking some of the resources
 used by the trace collector. Namely the resources contained within the LockType enum.
 
 The locks are needed to ensure that certain resources are not re-used by another running

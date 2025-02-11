@@ -107,6 +107,13 @@ class AbstractRepository(ABC):
         """
 
     @abstractmethod
+    def get_default_major_version(self) -> str:
+        """Returns the default major version string of the wrapped repository.
+
+        :returns: string representation of the default major version
+        """
+
+    @abstractmethod
     def check_minor_version_validity(self, minor_version: str) -> None:
         """Checks whether the given minor version specification corresponds to the
         wrapped version control system, and is not in wrong format.

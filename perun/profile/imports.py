@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from typing import Any
 
 # Third-Party Imports
@@ -57,6 +58,10 @@ def import_perf_from_record(
     :param with_sudo: indication whether the data were collected with sudo.
     :param kwargs: rest of the parameters.
     """
+    # TODO: tag commands with (platform, system, ...) requirements and have a unified mechanism
+    #   to detect failures
+    if sys.platform == "darwin":
+        log.error("Import from perf record is not supported on macOS platform.")
     parse_script = script_kit.get_script("stackcollapse-perf.pl")
     profiles, stats = _parse_perf_import_entries(import_entries, stats_headers)
     resources = []
@@ -331,7 +336,7 @@ def load_perf_file(filepath: Path) -> str:
 
 
 def extract_from_elk(
-    elk_query: list[dict[str, Any]]
+    elk_query: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, profile.ProfileHeaderEntry]]:
     """For the given elk query, extracts resources and metadata.
 
@@ -397,7 +402,7 @@ def get_machine_info(machine_info: str, import_dir: Path) -> dict[str, Any]:
 
 
 def extract_machine_info_from_elk_metadata(
-    metadata: dict[str, profile.ProfileHeaderEntry]
+    metadata: dict[str, profile.ProfileHeaderEntry],
 ) -> dict[str, Any]:
     """Extracts the parts of the profile that correspond to machine info.
 

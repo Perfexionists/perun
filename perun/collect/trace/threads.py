@@ -1,5 +1,4 @@
-""" Module containing various thread related features such as timeout or periodic timers.
-"""
+"""Module containing various thread related features such as timeout or periodic timers."""
 
 import sys
 from threading import Thread, Event

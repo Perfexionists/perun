@@ -1,14 +1,14 @@
-""" Module with trace collector strategies for tracing.
+"""Module with trace collector strategies for tracing.
 
-    The strategies are meant to be useful default settings for collection so that user
-    does not have to specify every detail for each collection. The strategies focus on
-    collection of userspace / all symbols with sampling / no sampling etc.
+The strategies are meant to be useful default settings for collection so that user
+does not have to specify every detail for each collection. The strategies focus on
+collection of userspace / all symbols with sampling / no sampling etc.
 
-    Using the strategies, one can automatically extract collection configuration from target
-    executable(s) and / or postprocess the configuration (such as remove duplicate rules,
-    pair USDT rules, merge the sampled / non-sampled rules etc.)
+Using the strategies, one can automatically extract collection configuration from target
+executable(s) and / or postprocess the configuration (such as remove duplicate rules,
+pair USDT rules, merge the sampled / non-sampled rules etc.)
 
-    extract_configuration serves as a recommended module interface
+extract_configuration serves as a recommended module interface
 """
 
 # Standard Imports

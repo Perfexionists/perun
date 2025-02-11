@@ -1,4 +1,4 @@
-""" The watchdog module provides logging features for the trace collector.
+"""The watchdog module provides logging features for the trace collector.
 
 The watchdog redirects messages to a console as well as to a log file depending on the selected
 type of message (warn, info, debug). The debug messages will be stored only in the log file whereas

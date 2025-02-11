@@ -1,5 +1,4 @@
-""" The new Perun architecture extension that handles the optimization routine.
-"""
+"""The new Perun architecture extension that handles the optimization routine."""
 
 import collections
 

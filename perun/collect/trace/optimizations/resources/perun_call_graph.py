@@ -1,4 +1,4 @@
-""" The extraction and storage methods for the internal Perun call graph format. While
+"""The extraction and storage methods for the internal Perun call graph format. While
 angr call graph provider extracts the call graph from a binary file or the current project version,
 the Perun call graph provider handles storage of the internal call graph format in the 'stats'
 and loading call graphs from previous project versions.

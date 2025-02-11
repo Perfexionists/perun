@@ -1,4 +1,4 @@
-""" Basic tests for regression analysis extensions and transformations."""
+"""Basic tests for regression analysis extensions and transformations."""
 
 from __future__ import annotations
 

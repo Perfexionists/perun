@@ -173,7 +173,6 @@ def generate_flamegraphs(
                     rhs_flame,
                     "Baseline-Target Diff Flamegraph",
                     img_width=width,
-                    fg_flags="--negate",
                     fg_max_trace=max_trace,
                     fg_max_resource=max_resources,
                 )
@@ -183,6 +182,7 @@ def generate_flamegraphs(
                     lhs_flame,
                     "Target-Baseline Diff Flamegraph",
                     img_width=width,
+                    fg_flags="--negate",
                     fg_max_trace=max_trace,
                     fg_max_resource=max_resources,
                 )
@@ -219,7 +219,7 @@ def process_maxima(
         if is_inclusive:
             for key in resource:
                 amount = common_kit.try_convert(resource[key], [float])
-                if amount is None or key == "time":
+                if amount is None or key in ("time", "command", "uid"):
                     continue
                 counts[key] += amount
     for key in counts.keys():

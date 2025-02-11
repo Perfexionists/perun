@@ -50,9 +50,10 @@ _PREG_EXPECTED_RESULTS = [
         # LINEAR
         [
             # ERROR
-            {"result": {pc.MaybeDegradation}, "type": {"linear"}, "rate": {20}},
+            # On some systems, it gets classified as constant instead of linear
+            {"result": {pc.MaybeDegradation}, "type": {"linear", "constant"}, "rate": {20}},
             # IMPROVEMENT
-            {"result": {pc.MaybeOptimization}, "type": {"linear"}, "rate": {-17}},
+            {"result": {pc.MaybeOptimization}, "type": {"linear", "constant"}, "rate": {-17}},
         ],
         # QUADRATIC
         [

@@ -4,26 +4,44 @@ from __future__ import annotations
 
 # Standard Imports
 import os
+import sys
 
 # Third-Party Imports
 from click.testing import CliRunner
+import pytest
 
 # Perun Imports
 from perun import cli
 
 
-def test_imports(pcs_with_svs):
+@pytest.mark.skipif(sys.platform == "darwin", reason="Import perf record is unsupported on macOS")
+def test_import_record(pcs_with_svs):
     pool_path = os.path.join(os.path.split(__file__)[0], "sources", "imports")
 
     assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
     runner = CliRunner()
     result = runner.invoke(
         cli.cli,
-        ["import", "-c", "ls", "-w", ".", "perf", "record", os.path.join(pool_path, "import.data")],
+        [
+            "import",
+            "-c",
+            "ls",
+            "-w",
+            ".",
+            "perf",
+            "record",
+            os.path.join(pool_path, "import.data"),
+        ],
     )
     assert result.exit_code == 0
     assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
 
+
+def test_import_script(pcs_with_svs):
+    pool_path = os.path.join(os.path.split(__file__)[0], "sources", "imports")
+
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
+    runner = CliRunner()
     result = runner.invoke(
         cli.cli,
         [
@@ -38,8 +56,14 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 3
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
 
+
+def test_import_stack(pcs_with_svs):
+    pool_path = os.path.join(os.path.split(__file__)[0], "sources", "imports")
+
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
+    runner = CliRunner()
     result = runner.invoke(
         cli.cli,
         [
@@ -54,7 +78,7 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 4
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
 
     result = runner.invoke(
         cli.cli,
@@ -72,7 +96,7 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 4
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
 
     result = runner.invoke(
         cli.cli,
@@ -108,9 +132,16 @@ def test_imports(pcs_with_svs):
     )
     assert result.exit_code == 0
     profiles = os.listdir(os.path.join(".perun", "jobs"))
-    assert len(profiles) == 5 and "custom_import_profile.perf" in profiles
+    assert len(profiles) == 3 and "custom_import_profile.perf" in profiles
 
+
+def test_import_error(pcs_with_svs):
+    pool_path = os.path.join(os.path.split(__file__)[0], "sources", "imports")
+
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
+    runner = CliRunner()
     # Try to import stack profile using import perf record, we expect failure
+    # On macOS, this test will fail due to perf being unavailable
     result = runner.invoke(
         cli.cli,
         [
@@ -125,7 +156,7 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 1
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 5
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
 
     # Supplied invalid path for metadata (recoverable error) and profile (fatal error).
     # We expect failure.
@@ -143,8 +174,14 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 1
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 5
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
 
+
+def test_import_elk(pcs_with_svs):
+    pool_path = os.path.join(os.path.split(__file__)[0], "sources", "imports")
+
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 0
+    runner = CliRunner()
     result = runner.invoke(
         cli.cli,
         [
@@ -155,4 +192,4 @@ def test_imports(pcs_with_svs):
         ],
     )
     assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 6
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2

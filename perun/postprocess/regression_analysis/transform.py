@@ -1,5 +1,5 @@
-""" Module for regression analysis transformations. Serves as a simple interface for higher-level
-    modules (e.g. profile/converters).
+"""Module for regression analysis transformations. Serves as a simple interface for higher-level
+modules (e.g. profile/converters).
 
 """
 

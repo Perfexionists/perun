@@ -7,7 +7,7 @@ with version control systems.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Optional, Iterator, Any
+from typing import Optional, Iterator, Any, cast
 import os
 
 # Third-Party Imports
@@ -176,6 +176,28 @@ class GitRepository(AbstractRepository):
             return str(self.git_repo.head.commit)
         else:
             return str(self.git_repo.active_branch)
+
+    def get_default_major_version(self) -> str:
+        """Returns the default major version (branch name) of the git repository.
+
+        The default branch name may be either set in the configuration files or, if absent,
+        may be obtained by listing git's logical variables.
+
+        :returns: string representation of the default major version
+        """
+        config_parser = git.config.GitConfigParser()
+        # The get_value function is incorrectly typed, hence we need to cast it
+        default_major_v: str = cast(str, config_parser.get_value("init", "defaultBranch", ""))
+        if not default_major_v:
+            # The defaultBranch option is not configured, we need to check git's logical variables
+            logic_vars: str = self.git_repo.git.var("-l")
+            for line in logic_vars.splitlines():
+                if "GIT_DEFAULT_BRANCH" in line:
+                    # The line should be formatted as GIT_DEFAULT_BRANCH=<value>
+                    default_major_v = line.split("=", maxsplit=1)[1]
+                    break
+        # If not configured anywhere, fallback to 'master' according to git source code
+        return default_major_v if default_major_v else "master"
 
     def check_minor_version_validity(self, minor_version: str) -> None:
         """

@@ -30,8 +30,7 @@ def test_major_versions(pcs_full_no_prof):
 
     Expecting correct behaviour and no error
     """
-    git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value("init", "defaultBranch", "master")
+    git_default_branch_name = pcs.vcs().get_default_major_version()
 
     major_versions = list(pcs.vcs().walk_major_versions())
 
@@ -116,8 +115,9 @@ def test_abstract_base():
 def test_svs(pcs_with_svs):
     """Tests working with svs"""
     svs = pcs_with_svs.vcs()
-    assert svs.init({}) == True
+    assert svs.init({})
     assert svs.get_minor_head() == svs_repository.SINGLE_VERSION_TAG
+    assert svs.get_default_major_version() == svs_repository.SINGLE_VERSION_BRANCH
     minors = list(svs.walk_minor_versions(svs_repository.SINGLE_VERSION_TAG))
     assert len(minors) == 1
     assert minors[0].checksum == svs_repository.SINGLE_VERSION_TAG

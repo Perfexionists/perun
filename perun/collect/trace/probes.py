@@ -1,5 +1,4 @@
-""" The Probes class stores the probe specification as well as several other related parameters.
-"""
+"""The Probes class stores the probe specification as well as several other related parameters."""
 
 from enum import Enum
 

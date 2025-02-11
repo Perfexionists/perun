@@ -1,11 +1,11 @@
-""" Module for function symbols extraction, filtering and processing.
+"""Module for function symbols extraction, filtering and processing.
 
-    This module produces function symbols exclude list from configuration executable's symbol table.
-    The list is then used for compile-time exclusion of functions that need not to be instrumented.
+This module produces function symbols exclude list from configuration executable's symbol table.
+The list is then used for compile-time exclusion of functions that need not to be instrumented.
 
-    It also provides functions that handle symbol to address mapping, but only of compile-time known
-    symbols (i.e. not symbols that are provided by shared libraries). This mapping is useful for
-    runtime configuration of collector executable (ccicc, see configurator.py).
+It also provides functions that handle symbol to address mapping, but only of compile-time known
+symbols (i.e. not symbols that are provided by shared libraries). This mapping is useful for
+runtime configuration of collector executable (ccicc, see configurator.py).
 
 """
 

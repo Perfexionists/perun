@@ -17,45 +17,9 @@ import pytest
 
 # Perun Imports
 from perun.logic import commands
+from perun.testing import asserts
 from perun.utils.common import common_kit
 from perun.utils.exceptions import UnsupportedModuleException
-
-
-def assert_perun_successfully_init_at(path):
-    """Asserts that the perun was successfully initialized at the given path
-
-    Arguments:
-        path(str): path
-    """
-    perun_dir = os.path.join(path, ".perun")
-    perun_content = os.listdir(perun_dir)
-    assert "cache" in perun_content
-    assert "objects" in perun_content
-    assert "jobs" in perun_content
-    assert "logs" in perun_content
-    assert "stats" in perun_content
-    assert "tmp" in perun_content
-    assert os.path.exists(os.path.join(perun_dir, "local.yml"))
-    assert len(perun_content) == 7
-
-
-def assert_git_successfully_init_at(path, is_bare=False):
-    """Asserts that the git was sucessfully initialized at the given path
-
-    Arguments:
-        path(str): path to the source of the git directory
-    """
-    git_dir = os.path.join(path, "" if is_bare else ".git")
-    git_content = os.listdir(git_dir)
-    assert len(git_content) == 8
-    assert "branches" in git_content
-    assert "hooks" in git_content
-    assert "info" in git_content
-    assert "objects" in git_content
-    assert "refs" in git_content
-    assert "config" in git_content
-    assert "description" in git_content
-    assert "HEAD" in git_content
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -71,7 +35,7 @@ def test_no_params():
     dir_content = os.listdir(pcs_path)
 
     # Assert that the directory was correctly initialized
-    assert_perun_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
     assert ".perun" in dir_content
     assert len(dir_content) == 1
 
@@ -88,7 +52,7 @@ def test_no_params_exists_pcs_in_same_dir(capsys):
     commands.init(pcs_path, **{"vcs_type": None, "vcs_path": None, "vcs_params": None})
 
     # Assert that the directory was correctly initialized
-    assert_perun_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
 
     # Flush the current buffer
     capsys.readouterr()
@@ -99,7 +63,7 @@ def test_no_params_exists_pcs_in_same_dir(capsys):
     commands.init(pcs_path, **{"vcs_type": None, "vcs_path": None, "vcs_params": None})
 
     # Asser that the directory is still correctly initialized even after the malfunction
-    assert_perun_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
 
     # Check if user was warned, that at the given path, the perun pcs was reinitialized
     out, _ = capsys.readouterr()
@@ -122,13 +86,13 @@ def test_no_params_exists_pcs_in_parent(capsys):
     capsys.readouterr()
 
     # Assert that the directory was correctly initialized
-    assert_perun_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
     sub_pcs_path = os.path.join(pcs_path, "subdir")
     os.mkdir(sub_pcs_path)
 
     # Create pcs in sub dir, assert that it was correctly initialized
     commands.init(sub_pcs_path, **{"vcs_type": None, "vcs_path": None, "vcs_params": None})
-    assert_perun_successfully_init_at(sub_pcs_path)
+    asserts.perun_successfully_init_at(sub_pcs_path)
 
     # Assert that user was warned, there is a super perun directory
     out, _ = capsys.readouterr()
@@ -149,8 +113,8 @@ def test_git():
     dir_content = os.listdir(pcs_path)
 
     # Assert that the directories was correctly initialized
-    assert_perun_successfully_init_at(pcs_path)
-    assert_git_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(pcs_path)
     assert ".perun" in dir_content
     assert ".git" in dir_content
     assert len(dir_content) == 2
@@ -168,12 +132,12 @@ def test_git_exists_already(capsys):
     # Init empty repo at the current path and flush the output
     git.Repo.init(pcs_path, **{})
     capsys.readouterr()
-    assert_git_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(pcs_path)
 
     # Init perun and moreover init the git as well
     commands.init(pcs_path, **{"vcs_type": "git", "vcs_path": None, "vcs_params": None})
-    assert_git_successfully_init_at(pcs_path)
-    assert_perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(pcs_path)
+    asserts.perun_successfully_init_at(pcs_path)
 
     # Capture the out and check if the message contained "Reinitialized"
     out, _ = capsys.readouterr()
@@ -196,8 +160,8 @@ def test_git_other_path():
     commands.init(pcs_path, **{"vcs_type": "git", "vcs_path": git_path, "vcs_params": None})
 
     # Assert everything was correctly created
-    assert_perun_successfully_init_at(pcs_path)
-    assert_git_successfully_init_at(git_path)
+    asserts.perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(git_path)
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -216,8 +180,8 @@ def test_git_with_params():
     )
 
     # Assert everything was correctly created
-    assert_perun_successfully_init_at(pcs_path)
-    assert_git_successfully_init_at(git_path, is_bare=True)
+    asserts.perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(git_path, is_bare=True)
 
     # Assert that the directory is bare
     assert git.Repo(git_path).bare
@@ -292,8 +256,8 @@ def test_developer_config():
     )
 
     # Assert everything was correctly created
-    assert_perun_successfully_init_at(pcs_path)
-    assert_git_successfully_init_at(git_path, is_bare=True)
+    asserts.perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(git_path, is_bare=True)
 
     # Assert that the directory is bare
     assert git.Repo(git_path).bare
@@ -338,8 +302,8 @@ def test_user_config():
     )
 
     # Assert everything was correctly created
-    assert_perun_successfully_init_at(pcs_path)
-    assert_git_successfully_init_at(git_path, is_bare=True)
+    asserts.perun_successfully_init_at(pcs_path)
+    asserts.git_successfully_init_at(git_path, is_bare=True)
 
     # Assert that the directory is bare
     assert git.Repo(git_path).bare
