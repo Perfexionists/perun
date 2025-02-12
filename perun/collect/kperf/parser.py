@@ -28,7 +28,7 @@ def parse_events(perf_events: list[str]) -> list[dict[str, Any]]:
         if event.strip():
             *record, samples = event.split(" ")
             parts = " ".join(record).split(";")
-            command, trace, uid = parts[0], parts[1:-1], parts[-1]
+            command, trace, uid = parts[0], parts[0:-1], parts[-1]
             resources.append(
                 {
                     "amount": int(samples),
