@@ -21,6 +21,8 @@ perun_templates_files = files(
     'plotly-2.30.0.min.js',
     'postprocess.__init__.jinja2',
     'postprocess.run.jinja2',
+    'ssp_report.html.jinja2',
+    'ssp_table.html.jinja2',
     'view.__init__.jinja2',
     'view.run.jinja2',
 )
@@ -29,3 +31,5 @@ py3.install_sources(
     perun_templates_files,
     subdir: perun_templates_dir
 )
+
+subdir('style')
