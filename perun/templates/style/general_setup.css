@@ -1,7 +1,7 @@
 :root {
     --color-baseline: rgba(80, 201, 206, 1);
     --color-target: rgba(152, 131, 229, 1);
-    --color-common: rgba(248, 117, 117, 1);
+    --color-common: rgba(239, 122, 133, 1);
 
     --color-baseline-transparent: rgba(80, 201, 206, 0.3);
     --color-target-transparent: rgba(152, 131, 229, 0.3);

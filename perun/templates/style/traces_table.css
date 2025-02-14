@@ -1,0 +1,122 @@
+.traces_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-white-tinted);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Headers */
+.traces_table thead {
+    background-color: var(--color-mid-gray);
+    color: var(--color-text-tag);
+}
+
+.traces_table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+/* rows */
+.traces_table tbody tr {
+    background-color: white;
+    transition: background 0.2s ease-in-out;
+}
+
+.traces_table tbody tr:nth-child(even) {
+    background-color: var(--color-white-tinted);
+}
+
+.traces_table tbody tr:hover {
+    background-color: var(--color-mid-gray-hover);
+    color: white;
+}
+
+div.dt-container {
+    width: 90% !important;
+}
+
+/* cells */
+.traces_table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--color-light-gray);
+}
+
+/* search input */
+.dataTables_filter label {
+    font-weight: bold !important;
+    color: var(--color-mid-gray) !important;
+    font-size: 14px !important;
+}
+
+.dt-input {
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--color-light-gray) !important;
+    background: var(--color-white-tinted) !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+.dt-input:focus {
+    border-color: var(--color-target) !important;
+    box-shadow: 0 0 5px var(--color-target-transparent) !important;
+    background: white !important;
+}
+
+/* pagination */
+.dt-paging {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: end !important;
+    padding: 10px 0 !important;
+}
+
+/* Pagination buttons */
+.dt-paging-button {
+    border: none !important;
+    padding: 6px 12px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: var(--color-mid-gray) !important;
+    background: var(--color-white-tinted) !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+/* Pagination hover effect */
+.dt-paging-button:hover {
+    background: var(--color-target-transparent) !important;
+    color: var(--color-target) !important;
+}
+
+/* Active/current page */
+.dt-paging-button.current {
+    background: var(--color-target) !important;
+    color: var(--color-text-tag) !important;
+    border: none !important;
+}
+
+/* Disabled pagination buttons */
+.dt-paging-button.disabled {
+    background: var(--color-light-gray) !important;
+    color: var(--color-white-tinted) !important;
+    cursor: not-allowed !important;
+}
+
+/* Next & Previous buttons */
+.dt-paging-button.next, .dt-paging-button.last,
+.dt-paging-button.first, .dt-paging-button.previous {
+    font-size: 16px !important;
+}
+
+.ellipsis {
+    font-size: 14px !important;
+    color: var(--color-light-gray) !important;
+    padding: 6px 12px !important;
+}
+

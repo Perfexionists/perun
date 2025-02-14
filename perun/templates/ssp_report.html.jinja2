@@ -35,6 +35,8 @@
             {% include 'style/pins.css' %}
             {% include 'style/tag.css' %}
             {% include 'style/tooltip.css' %}
+
+            {% include 'style/traces_table.css' %}
         </style>
 </head>
 <body>
@@ -154,51 +156,49 @@
 
     <div id="traces" class="section">
         <div class="section-header">
+            <span class="material-icons pin-icon pin-icon__header info-icon__header"
+                  data-tooltip="Click on a row to explore the results in a form of Sankey Graph (below the table).
+                Click on [+] to open a detailed report about concrete calling contexts.
+                Filter the results through select form on the bottom of table (for selected columns).">
+                info
+            </span>
             <h1>Traces Table</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="Flame Graphs">push_pin</span>
         </div>
 
-        <div id="all" class="tabcontent">
-            {{ widgets.help('toggleTableHelp', 'table-help', [
-                "Click on a row to explore the results in a form of Sankey Graph (below the table).",
-                "Click on [+] to open a detailed report about concrete calling contexts.",
-                "Filter the results through select form on the bottom of table (for selected columns)."
-            ]) }}
-            <br>
-            <table id="table" class="display" style="width: 100%;">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th>Unit</th>
-                    <th>Change</th>
-                    <th>Metric</th>
-                    <th>Absolute Difference</th>
-                    <th>Relative Difference</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
+        <table id="table" class="traces_table" style="width: 100%;">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Unit</th>
+                <th>Change</th>
+                <th>Metric</th>
+                <th>Absolute Difference</th>
+                <th>Relative Difference</th>
+            </tr>
+            </thead>
+            <tfoot>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            </tfoot>
+        </table>
 
     </div>
 
     <div id="flame" class="section">
         <div class="section-header">
             <span class="material-icons pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="[1] Look for the topmost widest rectangle.
-                    [2] Click on the node to explore the results in a form of Sankey Graph (below the table).
-                    [3] Colours are picked randomly (but uniformly); they don't signal any scale.
-                    [4] The bigger the rectangle the more often the UID was seen on the stack.
-                    [5] The higher the flame the more nested calls were made in the context.">
+                  data-tooltip="Look for the topmost widest rectangle.
+                    Click on the node to explore the results in a form of Sankey Graph (below the table).
+                    Colours are picked randomly (but uniformly); they don't signal any scale.
+                    The bigger the rectangle the more often the UID was seen on the stack.
+                    The higher the flame the more nested calls were made in the context.">
                 info
             </span>
             <h1>Flame Graphs</h1>
@@ -237,8 +237,8 @@
     <div id="sankey" class="section">
         <div class="section-header">
             <span class="material-icons pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="[1] Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
-                [2] Wide red edges are (generally) bad; wide green edges are (generally) good.">
+                  data-tooltip="Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
+                Wide red edges are (generally) bad; wide green edges are (generally) good.">
                 info
             </span>
             <h1>Sankey Graph</h1>
@@ -407,7 +407,11 @@
             document.addEventListener("mouseover", function (event) {
                 const target = event.target.closest(".info-icon__header");
                 if (target) {
-                    section_guide.innerHTML = target.getAttribute("data-tooltip").replace(/\n/g, "<br><br>");
+                    section_guide.innerHTML = target.getAttribute("data-tooltip")
+                        .trim()
+                        .split("\n")
+                        .map((line, index) => `[${index + 1}] ${line.trim()}`)
+                        .join("<br><br>");
                     section_guide.classList.add("visible");
                     section_guide.style.left = event.pageX + 10 + "px";
                     section_guide.style.top = event.pageY + 10 + "px";
@@ -574,9 +578,9 @@
                 render: function (data, type) {
                     if (type ==='display') {
                         if (data === "not in baseline") {
-                            return '<span style="font-weight: bold; color: {{ palette.DarkTarget }}">' + data + "</span>";
+                            return '<span style="font-weight: bold; color: {{ palette.Target }}">' + data + "</span>";
                         } else if (data == "not in target") {
-                            return '<span style="font-weight: bold; color: {{ palette.DarkBaseline }}">' + data + "</span>";
+                            return '<span style="font-weight: bold; color: {{ palette.Baseline }}">' + data + "</span>";
                         } else {
                             return '<span style="font-weight: bold; color: {{ palette.Equal }}">' + data + "</span>";
                         }
@@ -1296,64 +1300,6 @@
     {% if stat_list|length > 1 %}
     document.getElementById("metricSelection").addEventListener('change', initializeGraph);
     {% endif %}
-
-    function openTab(evt, tabName, metricNo) {
-      // Declare all variables
-      var i, tabcontent, tablinks;
-      curr_tab = tabName;
-
-      // Get all elements with class="tabcontent" and hide them
-      tabcontent = document.getElementsByClassName("tabcontent");
-      for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-      }
-
-      // Get all elements with class="tablinks" and remove the class "active"
-      tablinks = document.getElementsByClassName("tablinks");
-      for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-      }
-
-      // Show the current tab, and add an "active" class to the button that opened the tab
-      const tab = document.getElementById(tabName);
-      tab.style.display = "block";
-      evt.currentTarget.className += " active";
-
-      // Select correct metric
-      if (metricNo != -1) {
-        {%- if stat_list|length > 1 %}
-        document.getElementById("metricSelection").selectedIndex = metricNo;
-        {%- endif %}
-        if (sel_uid != -1)
-            initializeGraph();
-      }
-
-      // Try to position flamegraphs
-      const svgContents = tab.getElementsByClassName('svg-content');
-      const lhs_svgContainer = tab.getElementsByClassName('svg-container')[0];
-      if (lhs_svgContainer) {
-        let max_box = 0, max_viewBox = "", max_height = 0;
-        for (let i = 0; i < svgContents.length; i++) {
-            const svgContent = svgContents[i];
-            const viewBox = svgContent.getAttribute('viewBox');
-            if (viewBox) {
-                const viewBoxValues = viewBox.split(' ');
-                const height = parseInt(viewBoxValues[3]);
-                if (height > max_box) {
-                    max_box = height;
-                    max_viewBox = viewBox;
-                }
-            }
-        };
-        for (let i = 0; i < svgContents.length; i++) {
-            const svgContent = svgContents[i];
-            svgContent.setAttribute("viewBox", max_viewBox);
-            svgContent.viewBox = max_viewBox;
-            svgContent.getElementsByTagName("rect")[0].setAttribute("height", max_box);
-        };
-      }
-      resize();
-    }
 
     function openSankey(el) {
         var text = el.parentNode.querySelector('title');

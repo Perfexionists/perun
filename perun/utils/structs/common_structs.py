@@ -710,11 +710,11 @@ class SortOrder(Enum):
 class WebColorPalette:
     """Colour palette for HTML/JS visualizations"""
 
-    Baseline: str = "rgba(49, 48, 77, 0.4)"
-    Target: str = "rgba(255, 201, 74, 0.4)"
+    Baseline: str = "rgba(80, 201, 206, 1)"
+    Target: str = "rgba(152, 131, 229, 1)"
     Increase: str = "rgba(255, 0, 0, 0.7)"
     Decrease: str = "rgba(0, 255, 0, 0.7)"
-    Equal: str = "rgba(0, 0, 255, 0.7)"
+    Equal: str = "rgba(239, 122, 133, 1)"
     DarkTarget: str = "rgba(255, 201, 74, 1)"
     DarkBaseline: str = "rgba(49, 48, 77, 1)"
     DarkIncrease: str = "#ea5545"
