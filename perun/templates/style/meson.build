@@ -8,7 +8,8 @@ perun_templates_style_files = files(
     'notes_sidebar.css',
     'pins.css',
     'side_panel.css',
-    'tag.css'
+    'tag.css',
+    'tooltip.css'
 )
 
 py3.install_sources(

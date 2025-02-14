@@ -1,8 +1,8 @@
-{% macro general_comparison_container(type, section_id, records) %}
+{% macro nested_comparison_container(type, section_id, records) %}
 
     {% if records %}
         <div class="column {{ type }}">
-            {%- for (key, value, title, nested_values) in records %}
+            {%- for key, value in records.items() %}
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
                     <span class="material-icons pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">push_pin</span>

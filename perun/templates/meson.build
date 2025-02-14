@@ -23,6 +23,8 @@ perun_templates_files = files(
     'postprocess.run.jinja2',
     'ssp_report.html.jinja2',
     'ssp_table.html.jinja2',
+    'ssp_table_nested.html.jinja2',
+    'ssp_table_traces.html.jinja2',
     'view.__init__.jinja2',
     'view.run.jinja2',
 )
