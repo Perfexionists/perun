@@ -66,3 +66,8 @@ h2 {
     font-weight: bold;
     color: var(--color-correct);
 }
+
+.not-provided-box {
+    padding: 10px;
+    margin-top: 10px;
+}

@@ -91,7 +91,9 @@
             <span class="material-icons pin-icon" data-section="Vulnerabilities">push_pin</span>
         </div>
 
-        <!-- HERE WILL BE VULNERABILITIES SCRIPT -->
+        <div class="not-provided-box">
+            <h3>No vulnerabilities provided.</h3>
+        </div>
     </div>
 
     <div id="profile-stats" class="section">
@@ -112,10 +114,16 @@
             <span class="material-icons pin-icon" data-section="Profile Metadata">push_pin</span>
         </div>
 
-        <div class="comparison-container">
-            {{ table_generator.general_comparison_container('baseline', 'profile-metadata', lhs_metadata) }}
-            {{ table_generator.general_comparison_container('target', 'profile-metadata', rhs_metadata) }}
-        </div>
+        {%  if lhs_metadata and rhs_metadata %}
+            <div class="comparison-container">
+                {{ table_generator.general_comparison_container('baseline', 'profile-metadata', lhs_metadata) }}
+                {{ table_generator.general_comparison_container('target', 'profile-metadata', rhs_metadata) }}
+            </div>
+        {% else %}
+            <div class="not-provided-box">
+                <h3>No metadata provided.</h3>
+            </div>
+        {% endif %}
     </div>
 
     <div id="flame" class="section">
@@ -126,12 +134,12 @@
 
         {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
             <div class="comparison-container">
-                <div class="left column">
+                <div class="left column column_extended">
                     <div class='svg-container'>
                     {{ lhs_flamegraph }}
                     </div>
                 </div>
-                <div class="right column">
+                <div class="right column column_extended">
                     <div class='svg-container'>
                     {{ rhs_flamegraph }}
                     </div>
@@ -139,12 +147,12 @@
             </div>
 
             <div class="comparison-container">
-                <div class="left column" style="margin-top: 1%">
+                <div class="left column column_extended" style="margin-top: 1%">
                     <div class='svg-container'>
                     {{ lhs_diff_flamegraph }}
                     </div>
                 </div>
-                <div class="right column" style="margin-top: 1%">
+                <div class="right column column_extended" style="margin-top: 1%">
                     <div class='svg-container'>
                     {{ rhs_diff_flamegraph }}
                     </div>
