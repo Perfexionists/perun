@@ -7,7 +7,6 @@
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Headers */
 .traces_table thead {
     background-color: var(--color-mid-gray);
     color: var(--color-text-tag);
@@ -75,7 +74,6 @@ div.dt-container {
     padding: 10px 0 !important;
 }
 
-/* Pagination buttons */
 .dt-paging-button {
     border: none !important;
     padding: 6px 12px !important;
@@ -88,27 +86,23 @@ div.dt-container {
     transition: all 0.3s ease-in-out !important;
 }
 
-/* Pagination hover effect */
 .dt-paging-button:hover {
     background: var(--color-target-transparent) !important;
     color: var(--color-target) !important;
 }
 
-/* Active/current page */
 .dt-paging-button.current {
     background: var(--color-target) !important;
     color: var(--color-text-tag) !important;
     border: none !important;
 }
 
-/* Disabled pagination buttons */
 .dt-paging-button.disabled {
     background: var(--color-light-gray) !important;
     color: var(--color-white-tinted) !important;
     cursor: not-allowed !important;
 }
 
-/* Next & Previous buttons */
 .dt-paging-button.next, .dt-paging-button.last,
 .dt-paging-button.first, .dt-paging-button.previous {
     font-size: 16px !important;
