@@ -35,3 +35,4 @@ py3.install_sources(
 )
 
 subdir('style')
+subdir('scripts')

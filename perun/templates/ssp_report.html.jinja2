@@ -1,8 +1,6 @@
 {% import 'ssp_table.html.jinja2' as table_generator %}
 {% import 'ssp_table_nested.html.jinja2' as nested_table_generator %}
-{% import 'macros_html_widgets.html.jinja2' as widgets %}
 {% import 'macros_profile_overview.html.jinja2' as profile_overview %}
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +11,7 @@
 
         {% if not offline %}
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
         <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>
@@ -37,6 +36,7 @@
             {% include 'style/tooltip.css' %}
 
             {% include 'style/traces_table.css' %}
+            {% include 'style/flamegraphs.css' %}
         </style>
 </head>
 <body>
@@ -71,10 +71,11 @@
             <span class="material-icons">local_fire_department</span>
             <span class="side-panel__description">Flame Graphs</span>
         </a>
+        <!--
         <a href="#sankey">
             <span class="material-icons">timeline</span>
             <span class="side-panel__description">Sankey Graph</span>
-        </a>
+        </a> -->
     </div>
 
     <div class="notes-sidebar">
@@ -154,42 +155,7 @@
         {% endif %}
     </div>
 
-    <div id="traces" class="section">
-        <div class="section_header">
-            <span class="material-icons pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="Click on a row to explore the results in a form of Sankey Graph (below the table).
-                Click on [+] to open a detailed report about concrete calling contexts.
-                Filter the results through select form on the bottom of table (for selected columns).">
-                info
-            </span>
-            <h1>Traces Table</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Traces Table">push_pin</span>
-        </div>
-
-        <table id="table" class="traces_table" style="width: 100%;">
-            <thead>
-            <tr>
-                <th></th>
-                <th>Unit</th>
-                <th>Change</th>
-                <th>Metric</th>
-                <th>Absolute Difference</th>
-                <th>Relative Difference</th>
-            </tr>
-            </thead>
-            <tfoot>
-            <tr>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-            </tfoot>
-        </table>
-
-    </div>
+    {% include 'ssp_table_traces.html.jinja2' %}
 
     <div id="flame" class="section">
         <div class="section_header">
@@ -205,8 +171,22 @@
             <span class="material-icons pin-icon pin-icon__header" data-section="Flame Graphs">push_pin</span>
         </div>
 
+        <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px">
+            <div class="flamegraph_search_box">
+                <span>View Type: </span>
+                <span class="material-symbols-outlined" id="flamegraph_visualization_switch">view_column_2</span>
+            </div>
+
+            <div class="flamegraph_search_box">
+                <label for="flamegraph_search_all" class="flamegraph_search_input_label">Search:</label>
+                <input id="flamegraph_search_all" class="dt-input" />
+                <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Search For All</button>
+            </div>
+        </div>
+
         {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
-            <div class="comparison_container comparison_container_non_scale">
+
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
                 <div class="left column column_non_scale column_extended">
                     <div class='svg-container'>
                     {{ lhs_flamegraph }}
@@ -219,7 +199,7 @@
                 </div>
             </div>
 
-            <div class="comparison_container comparison_container_non_scale">
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
                 <div class="left column column_non_scale column_extended" style="margin-top: 1%">
                     <div class='svg-container'>
                     {{ lhs_diff_flamegraph }}
@@ -234,45 +214,10 @@
         {%- endfor %}
     </div>
 
-    <div id="sankey" class="section">
-        <div class="section_header">
-            <span class="material-icons pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
-                Wide red edges are (generally) bad; wide green edges are (generally) good.">
-                info
-            </span>
-            <h1>Sankey Graph</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Sankey Graph">push_pin</span>
-        </div>
-
-        <div id="sankey_tools" style="display: none">
-            <table>
-                <tbody>
-                    <tr>
-                        <td class="key" style="width: 20%;">Threshold:</td>
-                        <td colspan="6">{{ widgets.range_picker() }}</td>
-                    </tr>
-                    {{ widgets.checkboxes([('baseline', 'Baseline'), ('target', 'Target'), ('incr', 'Incr (vs base)'), ('both', 'Equal'), ('decr', 'Decr (vs base)')], 'show_edges', 'Show') }}
-                    {%- if stat_list|length > 1 %}
-                    <tr>
-                        <td class="key" style="width: 20%;">Metric:</td>
-                        <td colspan="6">
-                            <select class="dt-input" id="metricSelection">
-                                {%- for metric in stat_list %}
-                                    <option value="{{ loop.index0 }}">{{ metric }}</option>
-                                {%- endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                {%- endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <div id="sankey_container" style="height: {{container_height}}px;">
-            <div id="sankey_graph" style="height: 100%;"><!-- DO NOT CHANGE: SANKEY GRAPH IS RENDERED HERE--></div>
-        </div>
-    </div>
+    <!--
+    SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
+    {#% include 'ssp_sankey.html.jinja2' %#}
+    -->
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -434,984 +379,104 @@
     </script>
 
     <script>
-    {%- if offline %}
-    {% include 'jquery-3.6.0.min.js' %}
-    {% include 'plotly-2.30.0.min.js' %}
-    {% include 'dataTables.min.js' %}
-    {% include 'dataTables.select.min.js' %}
-    {%- endif %}
-    //<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
-    const selection_icon = {'width': 512, 'height': 512, 'path': 'M256 0c-25.3 0-47.2 14.7-57.6 36c-7-2.6-14.5-4-22.4-4c-35.3 0-64 28.7-64 64V261.5l-2.7-2.7c-25-25-65.5-25-90.5 0s-25 65.5 0 90.5L106.5 437c48 48 113.1 75 181 75H296h8c1.5 0 3-.1 4.5-.4c91.7-6.2 165-79.4 171.1-171.1c.3-1.5 .4-3 .4-4.5V160c0-35.3-28.7-64-64-64c-5.5 0-10.9 .7-16 2V96c0-35.3-28.7-64-64-64c-7.9 0-15.4 1.4-22.4 4C303.2 14.7 281.3 0 256 0zM240 96.1c0 0 0-.1 0-.1V64c0-8.8 7.2-16 16-16s16 7.2 16 16V95.9c0 0 0 .1 0 .1V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96c0 0 0 0 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16v55.9c0 0 0 .1 0 .1v80c0 13.3 10.7 24 24 24s24-10.7 24-24V160.1c0 0 0-.1 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16V332.9c-.1 .6-.1 1.3-.2 1.9c-3.4 69.7-59.3 125.6-129 129c-.6 0-1.3 .1-1.9 .2H296h-8.5c-55.2 0-108.1-21.9-147.1-60.9L52.7 315.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L119 336.4c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V96c0-8.8 7.2-16 16-16c8.8 0 16 7.1 16 15.9V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96.1z'}
-    const plus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z'}
-    const minus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z'}
-    const rotate_icon = {'width': 512, 'height': 512, 'path': 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z'}
-    const maximize_icon = {'width': 512, 'height': 512, 'path': 'M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z'}
-    const minimize_icon = {'width': 512, 'height': 512, 'path': 'M456 224H312c-13.3 0-24-10.7-24-24V56c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l40 40L442.3 5.7C446 2 450.9 0 456 0s10 2 13.7 5.7l36.7 36.7C510 46 512 50.9 512 56s-2 10-5.7 13.7L433 143l40 40c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8zm0 64c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-40 40 73.4 73.4c3.6 3.6 5.7 8.5 5.7 13.7s-2 10-5.7 13.7l-36.7 36.7C466 510 461.1 512 456 512s-10-2-13.7-5.7L369 433l-40 40c-6.9 6.9-17.2 8.9-26.2 5.2s-14.8-12.5-14.8-22.2V312c0-13.3 10.7-24 24-24H456zm-256 0c13.3 0 24 10.7 24 24V456c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-40-40L69.7 506.3C66 510 61.1 512 56 512s-10-2-13.7-5.7L5.7 469.7C2 466 0 461.1 0 456s2-10 5.7-13.7L79 369 39 329c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8H200zM56 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l40-40L5.7 69.7C2 66 0 61.1 0 56s2-10 5.7-13.7L42.3 5.7C46 2 50.9 0 56 0s10 2 13.7 5.7L143 79l40-40c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2V200c0 13.3-10.7 24-24 24H56z'}
+        {%- if offline %}
+        {% include 'jquery-3.6.0.min.js' %}
+        {% include 'plotly-2.30.0.min.js' %}
+        {% include 'dataTables.min.js' %}
+        {% include 'dataTables.select.min.js' %}
+        {%- endif %}
+        //<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+        const selection_icon = {'width': 512, 'height': 512, 'path': 'M256 0c-25.3 0-47.2 14.7-57.6 36c-7-2.6-14.5-4-22.4-4c-35.3 0-64 28.7-64 64V261.5l-2.7-2.7c-25-25-65.5-25-90.5 0s-25 65.5 0 90.5L106.5 437c48 48 113.1 75 181 75H296h8c1.5 0 3-.1 4.5-.4c91.7-6.2 165-79.4 171.1-171.1c.3-1.5 .4-3 .4-4.5V160c0-35.3-28.7-64-64-64c-5.5 0-10.9 .7-16 2V96c0-35.3-28.7-64-64-64c-7.9 0-15.4 1.4-22.4 4C303.2 14.7 281.3 0 256 0zM240 96.1c0 0 0-.1 0-.1V64c0-8.8 7.2-16 16-16s16 7.2 16 16V95.9c0 0 0 .1 0 .1V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96c0 0 0 0 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16v55.9c0 0 0 .1 0 .1v80c0 13.3 10.7 24 24 24s24-10.7 24-24V160.1c0 0 0-.1 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16V332.9c-.1 .6-.1 1.3-.2 1.9c-3.4 69.7-59.3 125.6-129 129c-.6 0-1.3 .1-1.9 .2H296h-8.5c-55.2 0-108.1-21.9-147.1-60.9L52.7 315.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L119 336.4c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V96c0-8.8 7.2-16 16-16c8.8 0 16 7.1 16 15.9V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96.1z'}
+        const plus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z'}
+        const minus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z'}
+        const rotate_icon = {'width': 512, 'height': 512, 'path': 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z'}
+        const maximize_icon = {'width': 512, 'height': 512, 'path': 'M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z'}
+        const minimize_icon = {'width': 512, 'height': 512, 'path': 'M456 224H312c-13.3 0-24-10.7-24-24V56c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l40 40L442.3 5.7C446 2 450.9 0 456 0s10 2 13.7 5.7l36.7 36.7C510 46 512 50.9 512 56s-2 10-5.7 13.7L433 143l40 40c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8zm0 64c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-40 40 73.4 73.4c3.6 3.6 5.7 8.5 5.7 13.7s-2 10-5.7 13.7l-36.7 36.7C466 510 461.1 512 456 512s-10-2-13.7-5.7L369 433l-40 40c-6.9 6.9-17.2 8.9-26.2 5.2s-14.8-12.5-14.8-22.2V312c0-13.3 10.7-24 24-24H456zm-256 0c13.3 0 24 10.7 24 24V456c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-40-40L69.7 506.3C66 510 61.1 512 56 512s-10-2-13.7-5.7L5.7 469.7C2 466 0 461.1 0 456s2-10 5.7-13.7L79 369 39 329c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8H200zM56 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l40-40L5.7 69.7C2 66 0 61.1 0 56s2-10 5.7-13.7L42.3 5.7C46 2 50.9 0 56 0s10 2 13.7 5.7L143 79l40-40c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2V200c0 13.3-10.7 24-24 24H56z'}
 
-    // Graph data
-    {% autoescape off %}
-    let callee_graph = {{ callee_graph }}
-    let caller_graph = {{ caller_graph }}
-    let nodes = {{ nodes }}
-    let stats = {{ stats }}
-    let stat_map = {{ stat_list }}
-    let unit_map = {{ units }}
-    let node_map = {{ node_map }}
-    {% endautoescape %}
+        {% autoescape off %}
+        let callee_graph = {{ callee_graph }}
+        let caller_graph = {{ caller_graph }}
+        let nodes = {{ nodes }}
+        let stats = {{ stats }}
+        let stat_map = {{ stat_list }}
+        let unit_map = {{ units }}
+        let node_map = {{ node_map }}
+        {% endautoescape %}
+    </script>
 
-    let sankey_data = [{
-        type: "sankey",
-        arrangement: "snap",
-        orientation: "v",
-        node: {
-            pad: 15,
-            thickness: 20,
-            line: {
-                color: "black",
-                width: 1
-            },
-            label: [],
-            color: [],
-            customdata: []
-        },
-        link: {
-            source: [],
-            target: [],
-            value: [],
-            color: [],
-            customdata: [],
-            hovertemplate: "%{customdata.display}<extra></extra>"
-        }
-        }],
-        shown_nodes = [],
-        processed_edges = new Set();
-        steps = [1],
-        config = {
-            responsive: true,
-            modeBarButtonsToAdd: [
-                {
-                    name: 'Move Nodes',
-                    icon: selection_icon,
-                    click: function(gd) {
-                        modification_mode = "none";
-                        cursor = "grab";
-                        update_cursors();
-                        Plotly.update(gd, {arrangement: "snap"});
-                    }
-                }, {
-                    name: 'Expand Nodes',
-                    icon: plus_icon,
-                    click: function (gd) {
-                        modification_mode = "unfold";
-                        cursor = "zoom-in";
-                        update_cursors();
-                        Plotly.update(gd, {arrangement: "fixed"});
-                    }
-                }, {
-                    name: "Fold Nodes",
-                    icon: minus_icon,
-                    click: function (gd) {
-                        modification_mode = "fold";
-                        cursor = "zoom-out";
-                        update_cursors();
-                        Plotly.update(gd, {arrangement: "fixed"});
-                    }
-                }, {
-                    name: "Minimize Graph",
-                    icon: minimize_icon,
-                    click: function (gd) {
-                        initializeGraph();
-                    }
-                }, {
-                    name: "Expand By One Level",
-                    icon: maximize_icon,
-                    click: function (gd) {
-                        expandOneLevel();
-                    }
-                }, {
-                    name: 'Rotate Graph',
-                    icon: rotate_icon,
-                    click: function(gd) {
-                        if (sankey_data[0].orientation === "v") {
-                            sankey_data[0].orientation = "h";
-                        } else {
-                            sankey_data[0].orientation = "v";
-                        }
-                        Plotly.update(gd, {orientation: sankey_data[0].orientation});
-                    }
-                },
-            ],
-            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-        },
-        layout = {
-            title: "",
-            font: {
-                size: 14
-            },
-            height: {{ height }},
-        },
-        sel_metric = 0,
-        modification_mode = "none",
-        cursor = 'pointer',
-        metric_no = {{ stat_list|length }},
-        sel_uid = -1,
-        sel_uid_text = "",
-        curr_tab = "",
-        plot = document.getElementById('sankey_graph');
+    {% include 'scripts/ssp_value_formatters.html.jinja2' %}
+    {% include 'scripts/ssp_selection_table.html.jinja2' %}
 
-    // Selection table
-    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","abs": "{{ val.abs_amount }}","rel": "{{ val.rel_amount }}" },{%- endfor %}]};
-    let selection_table = $("#table").DataTable({
-        data: table.data,
-        columns: [
-            {
-                className: "details-control",
-                orderable: false,
-                data: null,
-                defaultContent: "",
-                render: function () {return '<span class="plus">[+]</span><span class="minus">[-]</span>';},
-                width: "15px"
-            },
-            { data: "uid" , className: "details-uid"},
-            {
-                data: "fresh",
-                render: function (data, type) {
-                    if (type ==='display') {
-                        if (data === "not in baseline") {
-                            return '<span style="font-weight: bold; color: {{ palette.Target }}">' + data + "</span>";
-                        } else if (data == "not in target") {
-                            return '<span style="font-weight: bold; color: {{ palette.Baseline }}">' + data + "</span>";
-                        } else {
-                            return '<span style="font-weight: bold; color: {{ palette.Equal }}">' + data + "</span>";
-                        }
-                    }
-                    return data;
+    <script>
+        {%- if flamegraphs %}
+        searchBar = document.getElementById("flamegraph_search_all");
+
+        {% for index in range(0, flamegraphs|length) %}
+
+            searchBar.addEventListener('input', function() {
+                let searchTerm = searchBar.value.trim();
+
+                lhs_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    lhs_{{index}}_currentSearchTerm = searchBar.value;
+                    lhs_{{index}}_search();
                 }
-            },
-            {
-                data: "type",
-                render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
-            }, {
-                data: "abs",
-                className: "dt-body-right",
-                render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
-            },
-            {
-                data: "rel",
-                render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
-            },
-            { data: "index", visible: false},
-        ],
-        order: [[4, "desc"]],
-        iDisplayLength: 10,
-        select: true,
-        createdRow: function( row, data, dataIndex ) {
-            $( row ).addClass('hidden');
-        },
-        initComplete: function() {
-            this.api().columns().every(function(i) {
-                if (i == 0 || i > 3)
-                    return;
-                let column = this;
 
-                let select = document.createElement('select');
-                select.add(new Option(''));
-                column.footer().replaceChildren(select);
-
-                select.addEventListener('change', function() {
-                    column.search(select.value, {exact: true}).draw();
-                });
-
-                column.data().unique().sort().each(function(d, j) {
-                    if (i == 3)
-                        select.add(new Option(stat_id_to_name(d)));
-                    else
-                        select.add(new Option(d));
-                })
-            });
-        }
-    })
-    selection_table.on('user-select', function (e, dt, type, cell, originalEvent) {
-        if (originalEvent.target.cellIndex === 0 || originalEvent.target.tagName === "SPAN") {
-            e.preventDefault();
-        }
-    });
-
-    {{ profile_overview.toggle_script('toggleSpecificationCollapse', 'left-specification-info', 'right-specification-info') }}
-    {{ profile_overview.toggle_script('toggleStatsCollapse', 'left-stats-info', 'right-stats-info') }}
-    {{ profile_overview.toggle_script('toggleMetadataCollapse', 'left-metadata-info', 'right-metadata-info') }}
-    {% for (key, value, title, nested_values) in lhs_stats %}
-    {% if nested_values %}
-    {{ profile_overview.toggle_nested_table('toggleStatsCollapse' ~ loop.index0, 'left-stats-info' ~ loop.index0, 'right-stats-info' ~ loop.index0) }}
-    {% endif %}
-    {% endfor %}
-    {% for (key, value, title, nested_values) in lhs_header %}
-    {% if nested_values %}
-    {{ profile_overview.toggle_nested_table('toggleSpecificationCollapse' ~ loop.index0, 'left-specification-info' ~ loop.index0, 'right-specification-info' ~ loop.index0) }}
-    {% endif %}
-    {% endfor %}
-    {% for (key, value, title, nested_values) in lhs_header %}
-    {% if nested_values %}
-    {{ profile_overview.toggle_nested_table('toggleMetadataCollapse' ~ loop.index0, 'left-metadata-info' ~ loop.index0, 'right-metadata-info' ~ loop.index0) }}
-    {% endif %}
-    {% endfor %}
-    {% for index in range(0, stat_list|length ) %}
-    {{ widgets.toggle_help('toggleFlameHelp_' + index|string, 'flame-help-' + index|string) }}
-    {% endfor %}
-    {{ widgets.toggle_help('toggleTableHelp', 'table-help') }}
-    {{ widgets.toggle_help('toggleSankeyHelp', 'sankey-help') }}
-    {{ widgets.checkbox_handler() }}
-    {{ widgets.range_handlers() }}
-
-    function update_cursors() {
-        document.querySelectorAll('.sankey-node text').forEach(node => {
-            node.addEventListener('mouseenter', function(){
-                node.style.cursor = cursor;
-            });
-            node.addEventListener('mouseleave', function(){
-                node.style.cursor = "pointer";
-            });
-        })
-        document.querySelectorAll('.sankey-node rect').forEach(node => {
-            node.addEventListener('mouseenter', function(){
-                node.style.cursor = cursor;
-            });
-            node.addEventListener('mouseleave', function(){
-                node.style.cursor = "pointer";
-            });
-        })
-    };
-
-    function format_value(val) {
-        let result = "<span";
-        val = ensureNumber(val);
-        if (val > 0) {
-            result += ' style="font-weight: bold; color: {{ palette.DarkIncrease }}';
-        } else if (val < 0) {
-            result += ' style="font-weight: bold; color: {{ palette.DarkDecrease }}';
-        }
-        return result + '">' + val.toLocaleString() + "</span>";
-    }
-
-    function format_relative(value) {
-        value = ensureNumber(value);
-        if (Math.abs(value) >= 0 && Math.abs(value) <= 1) {
-            value = value * 100
-        }
-        let fixedValue = Number(value).toFixed(2)
-        let result = '<span style="font-weight: bold; ';
-        if (value > 0 && value <= 100) {
-            result += 'color: {{ palette.DarkIncrease }}"';
-        } else if (value >= -100 && value < 0) {
-            result += 'color: {{ palette.DarkDecrease }}"';
-        } else {
-            result += 'color: {{ palette.DarkEqual}}"';
-        }
-        return result + '">' + fixedValue + "%</span>";
-    }
-
-    function formatMs(ms) {
-        ms = Math.abs(ms);
-        let units = ["ms", "s", "min", "h"];
-        let divs = [1000.0, 60.0, 60.0, 60.0];
-        for (let i = 0; i < divs.length; i++) {
-            let unit = units[i], div = divs[i];
-            if (ms < div) {
-                return `${ms.toFixed(2)} ${unit}`;
-            }
-            ms /= div;
-        }
-        return `${size.toFixed(2)} days`;
-    }
-
-    function format(value, unit) {
-        value = ensureNumber(value);
-        if (unit === "ms") {
-            return formatMs(value);
-        } else if (unit === "%") {
-            return `${value.toFixed(2)}%`;
-        } else {
-            return formatSize(value);
-        }
-    }
-
-    function format_stat(base, tgt, stat_unit) {
-        let result = "";
-        if (base === tgt) {
-            result += '<span class="equal">' + format(base, stat_unit) + '</span>';
-        } else if (base < tgt) {
-            result += '<span class="increase">' + format(base, stat_unit) + ' ↗ ' + format(tgt, stat_unit) + '</span>';
-        } else {
-            result += '<span class="decrease">' + format(base, stat_unit) + ' ↘ ' + format(tgt, stat_unit) + '</span>';
-        }
-        return result;
-    };
-
-    function format_path_prex(path_stats, index, path_cost) {
-        let result = '<span class="';
-        let prefix_sum = path_stats.slice(0, index+1).reduce((acc, v) => acc + v, 0);
-        let prefix_rate = (path_cost === 0) ? 0 : (prefix_sum / path_cost);
-        if (prefix_rate < 0.5) {
-            result += 'decrease';
-        } else if (prefix_rate > 0.5) {
-            result += 'increase';
-        } else {
-            result += 'equal';
-        }
-        result += '">' + format_value(prefix_sum) + ' (' + (prefix_rate * 100).toFixed(2) + '%)</span>';
-        result += '{{ widgets.tooltip("Prefix cost: the sum up to the current uid") }}'
-        return result;
-    }
-
-    function getColor(n) {
-        let R = (255 * n) / 100, G = (255 * (100 - n)) / 100, B = 0;
-        return "rgba(" + R + ", " + G + ", " + B + ", 1.0)";
-    }
-
-    function format_bottleneck(stat, min) {
-        let result = '<span style="font-weight: bold; color: ';
-        let bottleneck_rate = (stat === 0) ? 0 : min / stat;
-        result += getColor(bottleneck_rate * 100);
-        result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
-        result += '{{ widgets.tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
-        return result;
-    };
-
-    function format_sub_row(d, uid) {
-        let result = '<table style="width: 100%; border: none;" class="nested">';
-        let stat_type = stat_map[d[2]].toLowerCase(), stat_unit = unit_map[stat_map.indexOf(d[2])];
-        let parts = d[5].split('#');
-        let traces = parts[0].split(';'), base = parts[1].split(';').map(Number), tgt = parts[2].split(';').map(Number);
-        let min_base = Math.min(...base), min_tgt = Math.min(...tgt);
-        let sum_base = base.reduce((acc, v) => acc + v, 0), sum_tgt = tgt.reduce((acc, v) => acc + v, 0);
-        traces.forEach((v, i) => {
-            let node = nodes[v];
-            result += '<tr><td style="white-space: pre-wrap">';
-            if (i != 0 && i != traces.length) {
-                let base_stat = base[i-1],
-                    tgt_stat = tgt[i-1];
-                let diff = base_stat - tgt_stat;
-                result += '  '.repeat(i) + "⎸ " + format_stat(base_stat, tgt_stat, stat_unit);
-                if (stat_type.includes("inclusive")) {
-                    result += "    " + format_bottleneck(base_stat, min_base) + " | " + format_bottleneck(tgt_stat, min_tgt);
-                } else if (stat_type.includes("exclusive")) {
-                    result += "    " + format_path_prex(base, i-1, sum_base) + " | " + format_path_prex(tgt, i-1, sum_tgt);
+                rhs_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    rhs_{{index}}_currentSearchTerm = searchBar.value;
+                    rhs_{{index}}_search();
                 }
-                result += " "
-            }
-            result += '</td></tr><tr'
-            if (node === uid)
-                result += ' class="highlight"';
-            result += '><td style="white-space: pre-wrap">';
-            if (i !== 0)
-                result += '  '.repeat(i) + "⤷ ";
-            result += (node === uid) ? '<span style="font-weight: bold">' + node + '</span>' : node;
-            result += "</td></tr>";
+
+                lhs_diff_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                    lhs_diff_{{index}}_search();
+                }
+
+                rhs_diff_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                    rhs_diff_{{index}}_search();
+                }
+            })
+        {%- endfor%}
+
+        document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
+            {%- for index in range(0, flamegraphs|length) %}
+                const resetSearch0Base = document.getElementById("lhs_{{ index }}_search");
+                const resetSearch0Target = document.getElementById("rhs_{{ index }}_search");
+                const resetSearchDiff0Base = document.getElementById("lhs_diff_{{ index }}_search");
+                const resetSearchDiff0Target = document.getElementById("rhs_diff_{{ index }}_search");
+
+                const resetElements = [
+                    resetSearch0Base,
+                    resetSearch0Target,
+                    resetSearchDiff0Base,
+                    resetSearchDiff0Target,
+                ];
+
+                resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
+            {%- endfor %}
         });
-        result += '</table>';
-        return result
-    };
 
-    function format_row(d) {
-        let result = '<table id="metrics' + d.index + '" class="display" style="width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th>Metric</th><th>Absolute</th><th>Relative</th></tr></thead><tbody>";
-        d.stats.forEach((value, index) => {
-            result += "<tr>";
-            result += '<td style="white-space: pre-wrap">' + value[0] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
-            result += "</tr>";
-        });
-        result += '</tbody></table>';
-        result += '<h4 style="text-align: center; width: 100%; border-bottom: 1px solid #ddd;">Top ' + d.traces.length + ' Traces</h4>';
-        result += '<table id="traces' + d.index + '" class="display" style="margin-top: -30px; width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th></th><th>Trace</th><th>Metric</th><th>Abs</th><th>Rel</th></tr></thead><tbody>";
-        d.traces.forEach((value, index) => {
-            result += "<tr>";
-            result += '<td style="white-space: pre-wrap"></td>';
-            let uids = value[0].toString().split(';');
-            result += '<td style="white-space: pre-wrap">' + nodes[uids[0]] + ' ⇢ ' + nodes[uids[1]] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
-            result += "</tr>";
-        });
-        result += '</tbody></table>';
-        return result;
-    }
+        const visualization_switch = document.getElementById("flamegraph_visualization_switch");
+        visualization_switch.addEventListener("click", function () {
+            const elements = document.querySelectorAll(".comparison_container_stacked");
+            elements.forEach(element => {
+                const currentDirection = window.getComputedStyle(element).flexDirection;
 
-    function render() {
-        Plotly.react('sankey_graph', sankey_data, layout, config);
-        update_cursors();
-    }
-
-    function newplot() {
-        Plotly.newPlot('sankey_graph', sankey_data, layout, config);
-        refreshHandlers();
-    }
-
-    function hideNodes(worklist) {
-        for (let i = sankey_data[0].link.source.length - 1; i >= 0; i--) {
-            if (worklist.includes(sankey_data[0].link.source[i]) || worklist.includes(sankey_data[0].link.target[i])) {
-                let key = sankey_data[0].link.source[i] + "," + sankey_data[0].link.target[i];
-                processed_edges.delete(key);
-                sankey_data[0].link.source.splice(i, 1);
-                sankey_data[0].link.target.splice(i, 1);
-                sankey_data[0].link.value.splice(i, 1);
-                sankey_data[0].link.color.splice(i, 1);
-                sankey_data[0].link.customdata.splice(i, 1);
-            }
-        }
-    }
-
-    function addToWorklist(worklist, nodedata) {
-        let callers = caller_graph[nodedata.index][nodedata.pos]
-        if (callers !== undefined) {
-            for (caller in callers) {
-                if (!hasNode(caller, nodedata.pos-1))
-                    continue
-
-                tgt = getNode(caller, nodedata.pos-1)
-                if (custom_data[tgt].type === "none" || (nodedata.type !== custom_data[tgt].type && custom_data[tgt].type !== 'root')) {
-                    if (!worklist.includes(tgt)) {
-                        worklist.push(tgt);
-                        addToWorklist(worklist, sankey_data[0].node.customdata[tgt]);
-                    }
-                }
-            }
-        }
-        let callees = callee_graph[nodedata.index][nodedata.pos]
-        if (callees !== undefined) {
-            for (callee in callees) {
-                if (!hasNode(callee, nodedata.pos+1))
-                    continue
-
-                tgt = getNode(callee, nodedata.pos+1)
-                if (custom_data[tgt].type === "none" || (nodedata.type !== custom_data[tgt].type && custom_data[tgt].type !== 'root')) {
-                    if (!worklist.includes(tgt)) {
-                        worklist.push(tgt);
-                        addToWorklist(worklist, sankey_data[0].node.customdata[tgt]);
-                    }
-                }
-            }
-        }
-    }
-
-    function foldnode(nodedata) {
-        clickedNode = getNode(nodedata.index, nodedata.pos);
-        custom_data = sankey_data[0].node.customdata;
-        if (!nodedata.hidden && nodedata.type !== "root") {
-            sankey_data[0].node.label[nodedata.id] = "[+] (" + nodedata.label + ")";
-            nodedata.hidden = true;
-            worklist = []
-            addToWorklist(worklist, nodedata)
-            hideNodes(worklist, nodedata.type)
-        }
-    }
-
-    function unfoldnode(nodedata) {
-        clickedNode = getNode(nodedata.index, nodedata.pos);
-        if (nodedata.hidden) {
-            addAllEdgesFor(clickedNode, nodedata.pos, caller_graph[nodedata.index][nodedata.pos], false, nodedata.type);
-            addAllEdgesFor(clickedNode, nodedata.pos, callee_graph[nodedata.index][nodedata.pos], true, nodedata.type);
-            sankey_data[0].node.label[nodedata.id] = nodedata.label;
-            nodedata.hidden = false;
-        }
-    }
-
-    function refreshHandlers() {
-        plot.on('plotly_click', function (idata) {
-            for (let i = 0; i < idata.points.length; i++) {
-                clicked = idata.points[i];
-                if (clicked.customdata !== undefined) {
-                    if (modification_mode === 'fold') {
-                        foldnode(clicked.customdata)
-                    } else {
-                        unfoldnode(clicked.customdata)
-                    }
-                }
-            }
-            // This will call render as well
-            filterEdges();
-        })
-    }
-
-    function filterEdges() {
-        edges = sankey_data[0].link;
-        let fromInput = document.getElementById('fromSlider').value, toInput = document.getElementById('toSlider').value;
-        for (let i = 0; i < edges.customdata.length; i++) {
-            newValue = recomputeValue(edges.customdata[i].type, edges.customdata[i].stats);
-            edges.value[i] = (fromInput <= newValue && newValue <= toInput) ? newValue : 0;
-            edges.customdata[i].display = format(edges.value[i], unit_map[sel_metric]);
-        }
-        render();
-    }
-
-    function hasNode(node, pos) {
-        node_len = shown_nodes.length;
-        for (let i = 0; i < node_len; i++) {
-            if (shown_nodes[i][0] === node && shown_nodes[i][1] === pos) {
-                return i;
-            }
-        }
-    }
-
-    function ensureNumber(val) {
-        if (typeof val !== "number") {
-            val = Number(val);
-        }
-        return val;
-    }
-
-    // Graph Operations
-    function getNode(node, pos) {
-        node = ensureNumber(node);
-        pos = ensureNumber(pos);
-        let node_len = shown_nodes.length;
-
-        for (let i = 0; i < node_len; i++) {
-            if (shown_nodes[i][0] === node && shown_nodes[i][1] === pos) {
-                return i;
-            }
-        }
-
-        if (nodes[node] === sel_uid_text) {
-            sankey_data[0].node.color.push("rgba(0, 0, 0, 0.7)");
-            sankey_data[0].node.label.push(nodes[node]);
-            sankey_data[0].node.customdata.push({label: nodes[node], index: node, pos: pos, hidden: false, type: "root", id: node_len});
-        } else {
-            sankey_data[0].node.color.push("rgba(0, 0, 0, 0.2)");
-            sankey_data[0].node.label.push("[+] (" + nodes[node] + ")");
-            sankey_data[0].node.customdata.push({label: nodes[node], index: node, pos: pos, hidden: true, type: "none", id: node_len});
-        }
-        shown_nodes.push([node, pos]);
-        return node_len;
-    }
-
-    function clearGraph() {
-        sankey_data[0].node.label = [];
-        sankey_data[0].node.color = [];
-        sankey_data[0].node.customdata = [];
-        sankey_data[0].link.source = [];
-        sankey_data[0].link.target = [];
-        sankey_data[0].link.value = [];
-        sankey_data[0].link.color = [];
-        sankey_data[0].link.customdata = [];
-        shown_nodes = [];
-        processed_edges = new Set();
-        steps = [];
-    }
-
-    function setInput(label, value) {
-        label.textContent = format(value, unit_map[sel_metric]);
-    }
-
-    function fillSliders(fromMin, fromVal, fromMax, toMin, toVal, toMax) {
-        let fromSlider = document.getElementById('fromSlider'), toSlider = document.getElementById('toSlider');
-
-        fromSlider.min = fromMin;
-        fromSlider.value = fromVal;
-        fromSlider.max = fromMax;
-        toSlider.min = toMin;
-        toSlider.value = toVal;
-        toSlider.max = toMax;
-
-        setInput(fromInput, fromVal);
-        setInput(toInput, toVal);
-
-        fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
-    }
-
-    function updateSliders(val) {
-        if (val == 0 || val == 0.0)
-            return;
-
-        let fromSlider = document.getElementById('fromSlider');
-        let toSlider = document.getElementById('toSlider');
-
-        let minVal = Math.min(fromSlider.min, val);
-        let maxVal = Math.max(toSlider.max, val);
-
-        if (fromSlider.value !== fromSlider.min)
-            minVal = fromSlider.value
-        if (toSlider.value !== toSlider.max)
-            maxVal = toSlider.value
-
-        if (steps.length === 1)
-            fillSliders(val, val, val, val, val, val);
-        else
-            fillSliders(Math.min(fromSlider.min, val), minVal, Math.max(fromSlider.max, val), Math.min(toSlider.min, val), maxVal, Math.max(toSlider.max, val));
-    }
-
-    function addToSteps(val) {
-        let low = 0, high = steps.length - 1;
-
-        while (low <= high) {
-            let mid = Math.floor((low + high) / 2);
-            if (steps[mid] === val)
-                return;
-            else if(steps[mid] < val)
-                low = mid + 1;
-            else
-                high = mid - 1;
-        }
-
-        steps.splice(low, 0, val);
-        updateSliders(val);
-    }
-
-    function addToSankey(src, tgt, val, color, type, edge_stats) {
-        sankey_data[0].link.source.push(src);
-        sankey_data[0].link.target.push(tgt);
-        sankey_data[0].link.value.push(val);
-        sankey_data[0].link.color.push(color);
-        sankey_data[0].link.customdata.push({stats: edge_stats, type: type, display: format(val, unit_map[sel_metric])})
-        addToSteps(val);
-    }
-
-    function recomputeValue(stat_type, edge_stats) {
-        if (!isChecked(stat_type))
-            return 0;
-
-        let base_stat = edge_stats[sel_metric], tgt_stat = edge_stats[sel_metric+metric_no];
-        if (stat_type === "baseline")
-            return base_stat;
-        if (stat_type === "target")
-            return tgt_stat;
-        let diff = base_stat - tgt_stat;
-        if (stat_type === "decr")
-            return diff > 0 ? Math.abs(diff) : 0;
-        if (stat_type === "incr")
-            return diff <= 0 ? Math.abs(diff) : 0;
-        if (stat_type === "both")
-            return Math.min(base_stat, tgt_stat);
-    }
-
-    function expandOneLevel() {
-        let nodes = sankey_data[0].node, callee_worklist = [], caller_worklist = [];
-        for (let i = 0; i < nodes.customdata.length; i++) {
-            let nodedata = nodes.customdata[i];
-            if (nodedata.hidden) {
-                if (nodedata.type === "caller")
-                    caller_worklist.push(nodedata);
-                else if (nodedata.type === "callee")
-                    callee_worklist.push(nodedata);
-            }
-        }
-
-        // Worklists
-        while (callee_worklist.length != 0) {
-            item = callee_worklist.shift();
-            unfoldnode(item);
-        }
-        while (caller_worklist.length != 0) {
-            item = caller_worklist.shift();
-            unfoldnode(item);
-        }
-
-        filterEdges();
-    }
-
-    function addEdge(src, tgt, edge_stats) {
-        // base data
-        let key = src + "," + tgt;
-        if (processed_edges.has(key))
-            return;
-
-        let base_stat = edge_stats[sel_metric], tgt_stat = edge_stats[sel_metric+metric_no];
-        if (base_stat) {
-            addToSankey(src, tgt, base_stat, "rgba(49, 48, 77, 0.4)", "baseline", edge_stats)
-        }
-        if (tgt_stat) {
-            addToSankey(src, tgt, tgt_stat, "rgba(255, 201, 74, 0.4)", "target", edge_stats)
-        }
-        let diff = base_stat - tgt_stat;
-        if (diff > 0) {
-            // Baseline is higher
-            addToSankey(src, tgt, diff, "rgba(0, 250, 0, 0.4)", "decr", edge_stats);
-            addToSankey(src, tgt, 0, "rgba(255, 0, 0, 0.4)", "incr", edge_stats);
-        } else {
-            addToSankey(src, tgt, Math.abs(diff), "rgba(250, 0, 0, 0.4)", "incr", edge_stats);
-            addToSankey(src, tgt, 0, "rgba(0, 250, 0, 0.4)", "decr", edge_stats);
-        }
-        addToSankey(src, tgt, Math.min(base_stat, tgt_stat), "rgba(0, 0, 255, 0.4)", "both", edge_stats);
-        processed_edges.add(key);
-    }
-
-    function adjustType(tgt, type) {
-        tgt_data = sankey_data[0].node.customdata[tgt];
-        if (tgt_data.type === "none")
-            tgt_data.type = type;
-    }
-
-    function addAllEdgesFor(node, pos, edges, isfwd, newtype) {
-        if (edges !== undefined) {
-            for (edge in edges) {
-                if (isfwd) {
-                    let tgt = getNode(edge, pos+1);
-                    addEdge(node, tgt, stats[edges[edge]]);
-                    if (newtype === "callee")
-                        adjustType(tgt, newtype)
-                } else {
-                    let tgt = getNode(edge, pos-1);
-                    addEdge(tgt, node, stats[edges[edge]]);
-                    if (newtype === "caller")
-                        adjustType(tgt, newtype)
-                }
-            }
-        }
-    }
-
-    function addRootNode(index) {
-        // Add node to labels
-        for (let i = 0; i < node_map[index].length; i++) {
-            pos = node_map[index][i];
-            rootNode = getNode(index, pos);
-            addAllEdgesFor(rootNode, pos, caller_graph[index][pos], false, "caller");
-            addAllEdgesFor(rootNode, pos, callee_graph[index][pos], true, "callee");
-        }
-    }
-
-    function stat_id_to_name(stat_id) {
-        let metric_len = stat_map.length, metric = stat_id % metric_len;
-        if (stat_id >= metric_len)
-            console.error("There is no id in the map for " + stat_id)
-        return stat_map[metric];
-    }
-
-    // Event handlers
-    selection_table.on('click', 'td.details-control', function(el) {
-        var tr = $(this).closest('tr');
-        var row = selection_table.row(tr);
-
-        if (row.child.isShown()) {
-            row.child.hide();
-            tr.removeClass('shown');
-            tr.addClass('hidden');
-        } else {
-            let d = row.data();
-            row.child(format_row(d)).show();
-            new DataTable("#metrics" + d.index, {paging: false, info: false, searching: false, order: [[1, 'desc']], columns: [
-                    {
-                        render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
-                    }, {
-                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
-                    }, {
-                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
-                    }
-                ]});
-            trace_table = new DataTable("#traces" + d.index, {
-                columns: [
-                    {
-                        className: "inner-details-control",
-                        orderable: false,
-                        data: null,
-                        defaultContent: "",
-                        render: function () {return '<span class="plus">[+]</span><span class="minus">[-]</span>';},
-                        width: "15px"
-                    }, {}, {
-                        render: function(data, type) {return (type === 'display') ? stat_map[data] : data; }
-                    }, {
-                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
-                    }, {
-                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
-                    }, {visible: false},
-                ],
-                createdRow: function( row, data, dataIndex ) {
-                    $( row ).addClass('hidden');
-                },
-                paging: false,
-                info: false,
-                searching: false,
-                order: [[3, "desc"]]
-            });
-            trace_table.on('click', 'td.inner-details-control', function(el) {
-                var sub_tr = $(this).closest('tr');
-                var sub_row = trace_table.row(sub_tr);
-
-                if (sub_row.child.isShown()) {
-                    sub_row.child.hide();
-                    sub_tr.removeClass('shown');
-                    sub_tr.addClass('hidden');
-                } else {
-                    sub_row.child(format_sub_row(sub_row.data(), d.uid)).show();
-                    sub_tr.removeClass('hidden');
-                    sub_tr.addClass('shown');
+                if (currentDirection === "row") {
+                    element.style.flexDirection = "column";
+                    visualization_switch.textContent = "view_agenda";
+                } else if (currentDirection === "column") {
+                    element.style.flexDirection = "row";
+                    visualization_switch.textContent = "view_column_2";
                 }
             });
-            tr.removeClass('hidden');
-            tr.addClass('shown');
-        }
-    });
-
-    function initializeGraph() {
-        metric_changed();
-        clearGraph();
-        addRootNode(sel_uid);
-        newplot();
-        fillSliders(steps[0], steps[0], steps[steps.length-1], steps[0], steps[steps.length-1], steps[steps.length-1]);
-        filterEdges();
-    }
-
-    selection_table.on('select', function(e, dt, type, indexes) {
-        if (type === 'row') {
-            let data = selection_table.rows(indexes).data();
-            if (data.length > 0) {
-                var div = document.getElementById('sankey_tools');
-                if (div.style.display === "none")
-                    div.style.display = "block";
-                sel_uid = data[0].index;
-                sel_uid_text = data[0].uid;
-                layout.title = sel_uid_text;
-                initializeGraph();
-            }
-        }
-    })
-
-    function metric_changed() {
-        {% if stat_list|length > 1 %}
-        sel_metric = parseInt(document.getElementById("metricSelection").value);
-        {% else %}
-        sel_metric = 0;
-        {% endif %}
-        let values = [];
-        let edge_values = sankey_data[0].link.customdata;
-        for (let i = 0; i < edge_values.length; i++) {
-            base_metric = edge_values[i].stats[sel_metric];
-            tgt_metric = edge_values[i].stats[sel_metric+metric_no]
-            // We skip empty metrics
-            if (base_metric !== 0)
-                values.push(base_metric);
-            if (tgt_metric !== 0)
-                values.push(tgt_metric);
-        }
-
-        // We adjust empty values
-        if (values.length === 0)
-            steps = [0];
-        else
-            steps = Array.from(new Set(values)).sort((a, b) => a - b);
-
-        fillSliders(steps[0], steps[0], steps[steps.length-1], steps[0], steps[steps.length-1], steps[steps.length-1]);
-        filterEdges();
-    }
-
-    {% if stat_list|length > 1 %}
-    document.getElementById("metricSelection").addEventListener('change', initializeGraph);
-    {% endif %}
-
-    function openSankey(el) {
-        var text = el.parentNode.querySelector('title');
-        var innerText = text.textContent.trim().replace(/\([^()]*\)$/, "").trim();
-        var div = document.getElementById('sankey_tools');
-        if (div.style.display === "none")
-            div.style.display = "block";
-        let index = nodes.indexOf(innerText);
-        if (index != -1) {
-            sel_uid = index;
-            sel_uid_text = innerText;
-            layout.title = sel_uid_text;
-            initializeGraph();
-        }
-    }
-
-    function addListeners(unit, i, child) {
-        var els = document.querySelectorAll("#" + unit + "_" + i + "_frames " + child);
-        els.forEach(function (el) {
-            el.addEventListener('click', function() {openSankey(el)})
-        })
-    }
-
-    function resize() {
-        if (curr_tab == "")
-            return;
-        const tab = document.getElementById(curr_tab);
-        const searchContent = tab.getElementsByClassName('middle')[0];
-        const svgContents = tab.getElementsByClassName('svg-content');
-        const lhs_svgContainer = tab.getElementsByClassName('svg-container')[0];
-        const rhs_svgContainer = tab.getElementsByClassName('svg-container')[1];
-        const lhs_diff_svgContainer = tab.getElementsByClassName('svg-container')[2];
-        const rhs_diff_svgContainer = tab.getElementsByClassName('svg-container')[3];
-        if (lhs_svgContainer) {
-            let max_box = 0, max_height = 0;
-            for (let i = 0; i < svgContents.length; i++) {
-                const svgContent = svgContents[i];
-                const viewBox = svgContent.getAttribute('viewBox');
-                const svgHeight = svgContent.getBoundingClientRect().height;
-                const viewBoxValues = viewBox.split(' ');
-                const height = parseInt(viewBoxValues[3]);
-                if (svgHeight > max_height)
-                    max_height = svgHeight;
-                if (height > max_box)
-                    max_box = height;
-            };
-            const searchHeight = searchContent.getBoundingClientRect().height;
-            lhs_svgContainer.style.height = `${max_height}px`;
-            rhs_svgContainer.style.height = `${max_height}px`;
-            lhs_diff_svgContainer.style.height = `${max_height}px`;
-            rhs_diff_svgContainer.style.height = `${max_height}px`;
-            tab.style.height = `${max_height * 2.1 + searchHeight}px`;
-        }
-    }
-
-    resize();
-    window.addEventListener('resize', resize);
-
-    document.querySelector('input[name="incr"]').addEventListener('change', filterEdges);
-    document.querySelector('input[name="decr"]').addEventListener('change', filterEdges);
-    document.querySelector('input[name="both"]').addEventListener('change', filterEdges);
-    document.querySelector('input[name="baseline"]').addEventListener('change', filterEdges);
-    document.querySelector('input[name="baseline"]').checked = false;
-    document.querySelector('input[name="target"]').addEventListener('change', filterEdges);
-    document.querySelector('input[name="target"]').checked = false;
-    document.querySelector('#fromSlider').addEventListener('change', filterEdges);
-    document.querySelector('#toSlider').addEventListener('change', filterEdges);
-
-    for (let i = 0; i < metric_no; i++) {
-        addListeners("lhs", i, "rect");
-        addListeners("lhs", i, "text");
-        addListeners("rhs", i, "rect");
-        addListeners("rhs", i, "text");
-        addListeners("lhs_diff", i, "rect");
-        addListeners("lhs_diff", i, "text");
-        addListeners("rhs_diff", i, "rect");
-        addListeners("rhs_diff", i, "text");
-    };
-
-    {%- if flamegraphs %}
-    document.getElementById("defaultOpen").click();
-    {% for index in range(0, flamegraphs|length) %}
-        searchBar_{{index}} = document.getElementById("flamegraph_search_{{ index }}");
-        searchBar_{{index}}.addEventListener('input', function() {
-            lhs_{{index}}_reset_search();
-            lhs_{{index}}_currentSearchTerm = searchBar_{{index}}.value;
-            lhs_{{index}}_search();
-            rhs_{{index}}_reset_search();
-            rhs_{{index}}_currentSearchTerm = searchBar_{{index}}.value;
-            rhs_{{index}}_search();
-            lhs_diff_{{index}}_reset_search();
-            lhs_diff_{{index}}_currentSearchTerm = searchBar_{{index}}.value;
-            lhs_diff_{{index}}_search();
-            rhs_diff_{{index}}_reset_search();
-            rhs_diff_{{index}}_currentSearchTerm = searchBar_{{index}}.value;
-            rhs_diff_{{index}}_search();
-        })
-    {%- endfor%}
-    {%- endif %}
-    newplot();
-    {% for index in range(0, stat_list|length )%}
-    toggleFlameHelp_{{ index }}();
-    {% endfor %}
-    toggleTableHelp();
-    toggleSankeyHelp();
-    toggleLeftCollapse();
-    toggleLeftProfileCollapse();
-    toggleLeftMetadataCollapse();
-    toggleRightCollapse();
-    toggleRightProfileCollapse();
-    toggleRightMetadataCollapse();
-</script>
+        });
+        {%- endif %}
+    </script>
 
 </body>
 </html>

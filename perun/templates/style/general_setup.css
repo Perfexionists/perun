@@ -12,7 +12,8 @@
     --color-bs-secondary: rgba(108, 117, 125);
 
     --color-light-white: #FFFFFF;
-    --color-white-tinted: #DDDDDDFF;
+    --color-almost-white: rgba(234, 234, 234);
+    --color-white-tinted: #DDDDDD;
     --color-light-gray: #999999;
 
     --color-correct: rgba(40, 167, 69);

@@ -2,6 +2,7 @@ perun_templates_style_dir = perun_templates_dir / 'style'
 
 perun_templates_style_files = files(
     'division_anchor.css',
+    'flamegraphs.css',
     'general_setup.css',
     'general_sidebar.css',
     'layout.css',
