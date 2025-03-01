@@ -1,6 +1,7 @@
 {% import 'ssp_table.html.jinja2' as table_generator %}
 {% import 'ssp_table_nested.html.jinja2' as nested_table_generator %}
 {% import 'macros_profile_overview.html.jinja2' as profile_overview %}
+{% import 'ssp_general_sidebar_property.html.jinja2' as general_sidebar_property %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -188,12 +189,12 @@
 
             <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
                 <div class="left column column_non_scale column_extended">
-                    <div class='svg-container'>
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_baseline">
                     {{ lhs_flamegraph }}
                     </div>
                 </div>
                 <div class="right column column_non_scale column_extended">
-                    <div class='svg-container'>
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_target">
                     {{ rhs_flamegraph }}
                     </div>
                 </div>
@@ -201,12 +202,12 @@
 
             <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
                 <div class="left column column_non_scale column_extended" style="margin-top: 1%">
-                    <div class='svg-container'>
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
                     {{ lhs_diff_flamegraph }}
                     </div>
                 </div>
                 <div class="right column column_non_scale column_extended" style="margin-top: 1%">
-                    <div class='svg-container'>
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_target">
                     {{ rhs_diff_flamegraph }}
                     </div>
                 </div>
@@ -218,6 +219,23 @@
     SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
     {#% include 'ssp_sankey.html.jinja2' %#}
     -->
+
+    <div class="general-sidebar">
+    <span class="material-icons general-sidebar__icon">info</span>
+        <div class="general-sidebar-content">
+
+            {{ general_sidebar_property.general_sidebar_common_property("stejny", 1234) }}
+            {{ general_sidebar_property.general_sidebar_difference_property("zmena", 1234, 4321) }}
+            <!-- MOCK DATA ABOVE !!!
+            LIST OF NEEDS:
+                - Kernel
+                - Boot Info
+                - Host
+                - CPU
+                - Memory
+            -->
+        </div>
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
