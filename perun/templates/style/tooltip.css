@@ -1,6 +1,6 @@
 .section_guide {
     position: absolute;
-    background-color: var(--color-mid-gray-hover);
+    background-color: var(--color-info);
     color: var(--color-text-tag);
     padding: 20px;
     border-radius: 5px;

@@ -312,12 +312,12 @@
                 noteItem.classList.add("note-item", "note-item--attention");
 
                 noteItem.innerHTML = `
-        <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
-        <div class="note-item--content" data-note-value="">
-            <textarea class="note-input" placeholder="Enter your note"></textarea>
-            <span class="material-icons" style="cursor: pointer; margin: 0">delete</span>
-            <button class="note-status-toggle attention">Attention</button>
-        </div>`;
+                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
+                    <div class="note-item--content" data-note-value="">
+                        <textarea class="note-input" placeholder="Enter your note"></textarea>
+                        <span class="material-icons" style="cursor: pointer; margin: 0">delete</span>
+                        <button class="note-status-toggle attention">Attention</button>
+                    </div>`;
 
                 const noteInput = noteItem.querySelector(".note-input");
                 attachInputListener(noteInput);
