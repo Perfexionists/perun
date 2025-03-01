@@ -30,7 +30,7 @@
 }
 
 .data-row:hover .pin-icon,
-.section-header:hover .pin-icon {
+.:hover .pin-icon {
     visibility: visible;
     opacity: 1;
 }

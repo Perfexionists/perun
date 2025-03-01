@@ -88,14 +88,14 @@
     </div>
 
     <div class="section" id="general">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Perun Performance Analysis</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="General">push_pin</span>
         </div>
         <p>Perun version: v{{ perun_version }}</p>
         <p>Generated on: {{ timestamp }}</p>
 
-        <div class="comparison-container">
+        <div class="comparison_container">
             {{ table_generator.general_comparison_container('baseline', 'General', lhs_header) }}
             {{ table_generator.general_comparison_container('target', 'General', rhs_header) }}
         </div>
@@ -106,13 +106,13 @@
     {% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
 
     <div id="profile-vulnerabilities" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Vulnerabilities</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="Vulnerabilities">push_pin</span>
         </div>
 
         {% if lhs_vulnerabilities or rhs_vulnerabilities %}
-            <div class="comparison-container">
+            <div class="comparison_container">
                 {{ nested_table_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
                 {{ nested_table_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
             </div>
@@ -125,25 +125,25 @@
 
 
     <div id="profile-stats" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Profile Statistics</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="Profile Statistics">push_pin</span>
         </div>
 
-        <div class="comparison-container">
+        <div class="comparison_container">
             {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', lhs_stats) }}
             {{ table_generator.general_comparison_container('target', 'Profile Statistics', rhs_stats) }}
         </div>
     </div>
 
     <div id="profile-metadata" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Profile Metadata</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="Profile Metadata">push_pin</span>
         </div>
 
         {%  if lhs_metadata or rhs_metadata %}
-            <div class="comparison-container">
+            <div class="comparison_container">
                 {{ table_generator.general_comparison_container('baseline', 'Profile Metadata', lhs_metadata) }}
                 {{ table_generator.general_comparison_container('target', 'Profile Metadata', rhs_metadata) }}
             </div>
@@ -155,7 +155,7 @@
     </div>
 
     <div id="traces" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <span class="material-icons pin-icon pin-icon__header info-icon__header"
                   data-tooltip="Click on a row to explore the results in a form of Sankey Graph (below the table).
                 Click on [+] to open a detailed report about concrete calling contexts.
@@ -192,7 +192,7 @@
     </div>
 
     <div id="flame" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <span class="material-icons pin-icon pin-icon__header info-icon__header"
                   data-tooltip="Look for the topmost widest rectangle.
                     Click on the node to explore the results in a form of Sankey Graph (below the table).
@@ -206,26 +206,26 @@
         </div>
 
         {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
-            <div class="comparison-container">
-                <div class="left column column_extended">
+            <div class="comparison_container comparison_container_non_scale">
+                <div class="left column column_non_scale column_extended">
                     <div class='svg-container'>
                     {{ lhs_flamegraph }}
                     </div>
                 </div>
-                <div class="right column column_extended">
+                <div class="right column column_non_scale column_extended">
                     <div class='svg-container'>
                     {{ rhs_flamegraph }}
                     </div>
                 </div>
             </div>
 
-            <div class="comparison-container">
-                <div class="left column column_extended" style="margin-top: 1%">
+            <div class="comparison_container comparison_container_non_scale">
+                <div class="left column column_non_scale column_extended" style="margin-top: 1%">
                     <div class='svg-container'>
                     {{ lhs_diff_flamegraph }}
                     </div>
                 </div>
-                <div class="right column column_extended" style="margin-top: 1%">
+                <div class="right column column_non_scale column_extended" style="margin-top: 1%">
                     <div class='svg-container'>
                     {{ rhs_diff_flamegraph }}
                     </div>
@@ -235,7 +235,7 @@
     </div>
 
     <div id="sankey" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <span class="material-icons pin-icon pin-icon__header info-icon__header"
                   data-tooltip="Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
                 Wide red edges are (generally) bad; wide green edges are (generally) good.">
