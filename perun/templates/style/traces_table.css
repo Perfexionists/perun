@@ -21,12 +21,12 @@
 
 /* rows */
 .traces_table tbody tr {
-    background-color: white;
     transition: background 0.2s ease-in-out;
 }
 
 .traces_table tbody tr:hover {
     background-color: var(--color-light-white);
+    color: var(--color-primary);
 }
 
 div.dt-container {

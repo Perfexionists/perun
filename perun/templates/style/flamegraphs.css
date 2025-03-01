@@ -16,3 +16,7 @@
     flex-direction: column;
     justify-content: center;
 }
+
+#flamegraph_visualization_switch {
+    cursor: pointer;
+}
