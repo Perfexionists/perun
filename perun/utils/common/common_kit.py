@@ -41,6 +41,13 @@ T = TypeVar("T")
 KT = TypeVar("KT")
 VT = TypeVar("VT")
 
+# Color types based on variables in perun/templates/style/general_setup.css
+ColorVariableType = Literal[
+    "correct",
+    "wrong",
+    "primary",
+]
+
 # Types
 ColorChoiceType = Literal[
     "black",

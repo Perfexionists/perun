@@ -1,7 +1,7 @@
 .section_guide {
     position: absolute;
-    background-color: var(--color-info);
-    color: var(--color-text-tag);
+    background-color: var(--color-primary);
+    color: var(--color-light-white);
     padding: 20px;
     border-radius: 5px;
     max-width: 50%;

@@ -4,7 +4,7 @@
     bottom: 10%;
     width: 50px;
     height: 45px;
-    background-color: var(--color-mid-gray-hover);
+    background-color: var(--color-primary-hover);
     border-radius: 8px 0 0 8px;
     transition: all 0.3s ease-in-out;
     overflow: hidden;
@@ -22,7 +22,7 @@
 
 .notes-sidebar-content {
     display: none;
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
     padding: 10px;
     width: 100%;
     flex-direction: column;
@@ -30,14 +30,14 @@
 
 .notes-sidebar .material-icons {
     font-size: 24px;
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
     cursor: pointer;
     margin: 10px 0;
 }
 
 .notes-sidebar .notes-sidebar-content {
     display: none;
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
     padding: 10px;
     width: 100%;
 }
@@ -85,19 +85,19 @@
     padding: 5px 10px;
     border-radius: 5px;
     background-color: var(--color-white-tinted);
-    color: var(--color-mid-gray-hover);
+    color: var(--color-primary-hover);
     border: none;
     font-size: 0.9em;
 }
 
 .note-status-toggle.attention {
     background-color: var(--color-wrong);
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
 }
 
 .note-status-toggle.approved {
     background-color: var(--color-correct);
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
 }
 
 .note-input {
@@ -110,7 +110,7 @@
 
 .note-link {
     text-decoration: none;
-    color: var(--color-text-tag);
+    color: var(--color-light-white);
     transition: all 0.3s ease-in-out;
 }
 
