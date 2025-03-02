@@ -441,72 +441,114 @@
 
     <script>
         {%- if flamegraphs %}
-        searchBar = document.getElementById("flamegraph_search_all");
 
-        {% for index in range(0, flamegraphs|length) %}
+            // Search logic for both mouseover and search bar
+            searchBar = document.getElementById("flamegraph_search_all");
 
-            searchBar.addEventListener('input', function() {
-                let searchTerm = searchBar.value.trim();
+            {% for index in range(0, flamegraphs|length) %}
+                if (searchBar) {
+                    searchBar.addEventListener('input', function () {
+                        let searchTerm = searchBar.value.trim();
 
-                lhs_{{index}}_reset_search();
-                if (searchTerm !== "") {
-                    lhs_{{index}}_currentSearchTerm = searchBar.value;
-                    lhs_{{index}}_search();
+                        lhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_{{index}}_search();
+                        }
+
+                        rhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_{{index}}_search();
+                        }
+
+                        lhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_diff_{{index}}_search();
+                        }
+
+                        rhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_diff_{{index}}_search();
+                        }
+                    })
                 }
 
-                rhs_{{index}}_reset_search();
-                if (searchTerm !== "") {
-                    rhs_{{index}}_currentSearchTerm = searchBar.value;
-                    rhs_{{index}}_search();
-                }
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                    document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
+                        node.addEventListener("mouseenter", function () {
+                            const textElement = node.querySelector("title");
+                            console.log(textElement.innerHTML);
 
-                lhs_diff_{{index}}_reset_search();
-                if (searchTerm !== "") {
-                    lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
-                    lhs_diff_{{index}}_search();
-                }
+                            if (textElement && textElement.innerHTML) {
+                                const searchTerm = cleanTitle(textElement.innerHTML);
 
-                rhs_diff_{{index}}_reset_search();
-                if (searchTerm !== "") {
-                    rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
-                    rhs_diff_{{index}}_search();
-                }
-            })
-        {%- endfor%}
+                                window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_{{index}}_search`]();
 
-        document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
-            {%- for index in range(0, flamegraphs|length) %}
-                const resetSearch0Base = document.getElementById("lhs_{{ index }}_search");
-                const resetSearch0Target = document.getElementById("rhs_{{ index }}_search");
-                const resetSearchDiff0Base = document.getElementById("lhs_diff_{{ index }}_search");
-                const resetSearchDiff0Target = document.getElementById("rhs_diff_{{ index }}_search");
+                                window[`rhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_{{index}}_search`]();
 
-                const resetElements = [
-                    resetSearch0Base,
-                    resetSearch0Target,
-                    resetSearchDiff0Base,
-                    resetSearchDiff0Target,
-                ];
+                                window[`lhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_diff_{{index}}_search`]();
 
-                resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
-            {%- endfor %}
-        });
+                                window[`rhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_diff_{{index}}_search`]();
+                            }
+                        });
 
-        const visualization_switch = document.getElementById("flamegraph_visualization_switch");
-        visualization_switch.addEventListener("click", function () {
-            const elements = document.querySelectorAll(".comparison_container_stacked");
-            elements.forEach(element => {
-                const currentDirection = window.getComputedStyle(element).flexDirection;
+                        node.addEventListener("mouseleave", function () {
+                            window[`lhs_{{index}}_reset_search`]();
+                            window[`rhs_{{index}}_reset_search`]();
+                            window[`lhs_diff_{{index}}_reset_search`]();
+                            window[`rhs_diff_{{index}}_reset_search`]();
+                        });
+                    });
+                });
 
-                if (currentDirection === "row") {
-                    element.style.flexDirection = "column";
-                    visualization_switch.textContent = "view_agenda";
-                } else if (currentDirection === "column") {
-                    element.style.flexDirection = "row";
-                    visualization_switch.textContent = "view_column_2";
-                }
+            {%- endfor%}
+
+            document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
+                {%- for index in range(0, flamegraphs|length) %}
+                    const resetSearch0Base = document.getElementById("lhs_{{ index }}_search");
+                    const resetSearch0Target = document.getElementById("rhs_{{ index }}_search");
+                    const resetSearchDiff0Base = document.getElementById("lhs_diff_{{ index }}_search");
+                    const resetSearchDiff0Target = document.getElementById("rhs_diff_{{ index }}_search");
+
+                    const resetElements = [
+                        resetSearch0Base,
+                        resetSearch0Target,
+                        resetSearchDiff0Base,
+                        resetSearchDiff0Target,
+                    ];
+
+                    resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
+                {%- endfor %}
             });
-        });
+
+            // Different types of flamegraph ordering switch
+            const visualization_switch = document.getElementById("flamegraph_visualization_switch");
+            visualization_switch.addEventListener("click", function () {
+                const elements = document.querySelectorAll(".comparison_container_stacked");
+                elements.forEach(element => {
+                    const currentDirection = window.getComputedStyle(element).flexDirection;
+
+                    if (currentDirection === "row") {
+                        element.style.flexDirection = "column";
+                        visualization_switch.textContent = "view_agenda";
+                    } else if (currentDirection === "column") {
+                        element.style.flexDirection = "row";
+                        visualization_switch.textContent = "view_column_2";
+                    }
+                });
+            });
+
+            function cleanTitle(title) {
+                return title.replace(/\s*\(.*?\).*/, '').trim();
+            }
+
         {%- endif %}
     </script>
 
