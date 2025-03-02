@@ -8,7 +8,7 @@
     --color-common-transparent: rgba(248, 117, 117, 0.3);
 
     --color-primary: rgba(51, 51, 51);
-    --color-primary-hover: #444;
+    --color-primary-hover: #444444;
     --color-bs-secondary: rgba(108, 117, 125);
 
     --color-light-white: #FFFFFF;
@@ -26,6 +26,9 @@
     --color-info-transparent: rgba(23, 162, 184, 0.3);
     --color-warning-transparent: rgba(255, 193, 7, 0.3);
     --color-bs-secondary-transparent: rgba(108, 117, 125, 0.3);
+
+    --dt-row-selected: 68, 68, 68 !important;
+    --dt-row-selected-text: 234, 234, 234 !important;
 }
 
 * {
