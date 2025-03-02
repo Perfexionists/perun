@@ -7,7 +7,7 @@
     background-color: var(--color-primary-hover);
     border-radius: 0 8px 8px 0;
     transition: all 0.3s ease-in-out;
-    overflow: hidden;
+    overflow: scroll;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,7 +15,7 @@
 }
 
 .general-sidebar:hover {
-    width: 350px;
+    width: 30%;
     height: 500px;
     overflow: scroll;
 }
@@ -40,7 +40,7 @@
 }
 
 .general-property {
-    margin-bottom: 15px;
+    margin-bottom: 30px;
 }
 
 .general-property h2 {

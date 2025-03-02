@@ -84,7 +84,7 @@
         <a> <p id="export-notes">Export with notes</p> </a>
         <div class="notes-sidebar-content">
             <div id="notes-list">
-                <!-- place for added notes -->
+                <!-- place for dynamically added notes -->
             </div>
         </div>
     </div>
@@ -224,16 +224,30 @@
     <span class="material-icons general-sidebar__icon">info</span>
         <div class="general-sidebar-content">
 
-            {{ general_sidebar_property.general_sidebar_common_property("stejny", 1234) }}
-            {{ general_sidebar_property.general_sidebar_difference_property("zmena", 1234, 4321) }}
-            <!-- MOCK DATA ABOVE !!!
-            LIST OF NEEDS:
-                - Kernel
-                - Boot Info
-                - Host
-                - CPU
-                - Memory
-            -->
+            {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
+
+            {%- set lhs_data = {} %}
+            {%- set rhs_data = {} %}
+
+            {%- for (key, value, title, nested_values) in lhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = lhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for (key, value, title, nested_values) in rhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = rhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for key in required_keys %}
+                {{ general_sidebar_property.general_sidebar_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
+            {%- endfor %}
         </div>
     </div>
 
