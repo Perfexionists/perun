@@ -203,7 +203,10 @@ def generate_flamegraphs(
             # Attempt to remove the leftover temporary 'palette.map' file that is no longer needed
             pathlib.Path("palette.map").unlink(missing_ok=True)
         except CalledProcessError as exc:
-            log.warn(f"could not generate flamegraphs: {exc}")
+            log.warn(
+                f"could not generate flamegraphs: {exc}\n"
+                f"Error message: {exc.stderr.decode('utf-8')}"
+            )
     return flamegraphs
 
 
