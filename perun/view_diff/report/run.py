@@ -826,7 +826,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
 @click.option(
     "--flamegraph-width",
     type=int,
-    default=1200,
+    default=flamegraph_run.FG_DEFAULT_IMAGE_WIDTH,
     help="Specifies the width of the flamegraph images in pixels. This option is forwarded to the "
     "flamegraph.pl script.",
 )
@@ -839,7 +839,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
 @click.option(
     "--flamegraph-minwidth",
     type=str,
-    default=0.1,
+    default=flamegraph_run.FG_DEFAULT_MIN_WIDTH,
     help="Filter out fast functions in flamegraphs. May be specified either in pixels (integer or "
     "float value) or as a percentage of time if suffixed with '%'. This option is forwarded "
     "to the flamegraph.pl script.",

@@ -24,7 +24,10 @@ from perun.view.flamegraph import flamegraph as flamegraph_factory
 from perun.view_diff.short import run as table_run
 
 
-DEFAULT_WIDTH: int = 600
+# Default values of some flamegraph.pl arguments that our code needs as well
+FG_DEFAULT_IMAGE_WIDTH: int = 1200
+FG_DEFAULT_MIN_WIDTH: float = 0.1
+
 TAGS_TO_INDEX: list[str] = []
 
 
@@ -278,7 +281,7 @@ def generate_flamegraph_difference(
     lhs_final_stats, rhs_final_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
 
     log.major_info("Generating Flamegraph Difference")
-    flamegraphs = generate_flamegraphs(lhs_profile, rhs_profile, data_types)
+    flamegraphs = generate_flamegraphs(lhs_profile, rhs_profile, data_types, width=kwargs["width"])
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
         diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
     )
@@ -319,8 +322,8 @@ def generate_flamegraph_difference(
     "--width",
     "-w",
     type=click.INT,
-    default=DEFAULT_WIDTH,
-    help="Sets the width of the flamegraph (default=600px).",
+    default=FG_DEFAULT_IMAGE_WIDTH,
+    help=f"Sets the width of the flamegraph (default={FG_DEFAULT_IMAGE_WIDTH}px).",
 )
 @click.option("--output-file", "-o", help="Sets the output file (default=automatically generated).")
 def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
