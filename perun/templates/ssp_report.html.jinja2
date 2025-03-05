@@ -79,6 +79,37 @@
         </a> -->
     </div>
 
+    <div class="general-sidebar">
+        <span class="material-icons general-sidebar__icon">info</span>
+        <div class="general-sidebar-content">
+
+            {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
+
+            {%- set lhs_data = {} %}
+            {%- set rhs_data = {} %}
+
+            {%- for (key, value, title, nested_values) in lhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = lhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for (key, value, title, nested_values) in rhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = rhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for key in required_keys %}
+                {{ general_sidebar_property.general_sidebar_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
+            {%- endfor %}
+        </div>
+    </div>
+
     <div class="notes-sidebar">
         <span class="material-icons general-sidebar__icon">push_pin</span>
         <a> <p id="export-notes">Export with notes</p> </a>
@@ -102,7 +133,6 @@
             {{ table_generator.general_comparison_container('target', 'General', rhs_header) }}
         </div>
     </div>
-
 
     {% set lhs_vulnerabilities = lhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
     {% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
@@ -219,37 +249,6 @@
     SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
     {#% include 'ssp_sankey.html.jinja2' %#}
     -->
-
-    <div class="general-sidebar">
-    <span class="material-icons general-sidebar__icon">info</span>
-        <div class="general-sidebar-content">
-
-            {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
-
-            {%- set lhs_data = {} %}
-            {%- set rhs_data = {} %}
-
-            {%- for (key, value, title, nested_values) in lhs_header %}
-                {%- for required in required_keys %}
-                    {%- if required in key %}
-                        {%- set _ = lhs_data.update({required: value}) %}
-                    {%- endif %}
-                {%- endfor %}
-            {%- endfor %}
-
-            {%- for (key, value, title, nested_values) in rhs_header %}
-                {%- for required in required_keys %}
-                    {%- if required in key %}
-                        {%- set _ = rhs_data.update({required: value}) %}
-                    {%- endif %}
-                {%- endfor %}
-            {%- endfor %}
-
-            {%- for key in required_keys %}
-                {{ general_sidebar_property.general_sidebar_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
-            {%- endfor %}
-        </div>
-    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -483,7 +482,9 @@
                             console.log(textElement.innerHTML);
 
                             if (textElement && textElement.innerHTML) {
-                                const searchTerm = cleanTitle(textElement.innerHTML);
+                                let searchTerm = cleanTitle(textElement.innerHTML);
+                                searchTerm = "^" + searchTerm;
+                                console.log(searchTerm);
 
                                 window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
                                 window[`lhs_{{index}}_search`]();
@@ -512,16 +513,16 @@
 
             document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
                 {%- for index in range(0, flamegraphs|length) %}
-                    const resetSearch0Base = document.getElementById("lhs_{{ index }}_search");
-                    const resetSearch0Target = document.getElementById("rhs_{{ index }}_search");
-                    const resetSearchDiff0Base = document.getElementById("lhs_diff_{{ index }}_search");
-                    const resetSearchDiff0Target = document.getElementById("rhs_diff_{{ index }}_search");
+                    const resetSearchBase = document.getElementById("lhs_{{ index }}_search");
+                    const resetSearchTarget = document.getElementById("rhs_{{ index }}_search");
+                    const resetSearchDiffBase = document.getElementById("lhs_diff_{{ index }}_search");
+                    const resetSearchDiffTarget = document.getElementById("rhs_diff_{{ index }}_search");
 
                     const resetElements = [
-                        resetSearch0Base,
-                        resetSearch0Target,
-                        resetSearchDiff0Base,
-                        resetSearchDiff0Target,
+                        resetSearchBase,
+                        resetSearchTarget,
+                        resetSearchDiffBase,
+                        resetSearchDiffTarget,
                     ];
 
                     resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
@@ -546,7 +547,7 @@
             });
 
             function cleanTitle(title) {
-                return title.replace(/\s*\(.*?\).*/, '').trim();
+                return title.replace(/\(\d.*?\).*/, '').trim();
             }
 
         {%- endif %}

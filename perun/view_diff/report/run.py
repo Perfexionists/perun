@@ -751,7 +751,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     content = template.render(
         title="Perun report - differences of profiles",
         perun_version=perun.__version__,
-        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_stats=lhs_diff_stats,
