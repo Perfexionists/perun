@@ -187,7 +187,9 @@ def run_safely_external_command(
                     log.cprintln(f"captured stderr: {cmderr.decode('utf-8')}", "red")
                 save_output_of_command(cmd, cmdout, "stdout", verbosity=log_verbosity, tag=log_tag)
                 save_output_of_command(cmd, cmderr, "stderr", verbosity=log_verbosity, tag=log_tag)
-                raise subprocess.CalledProcessError(objects[i].returncode, unpiped_commands[i])
+                raise subprocess.CalledProcessError(
+                    objects[i].returncode, unpiped_commands[i], cmdout, cmderr
+                )
 
     # We set exit code to 0 since everything was OK
     set_exit_code(0, log_verbosity)

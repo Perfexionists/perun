@@ -708,6 +708,12 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     :param rhs_profile: target profile
     :param kwargs: additional arguments
     """
+    fg_forward_kwargs = {
+        arg.replace("flamegraph_", ""): val
+        for arg, val in kwargs.items()
+        if arg.startswith("flamegraph_")
+    }
+
     # We automatically set the value of True for kperf, which samples
     Config().minimize = kwargs.get("minimize", False)
     Config().top_n_traces = kwargs.get("top_n", Config().DefaultTopN)
@@ -736,6 +742,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         Stats.all_stats(),
         skip_diff=False,
         minimize=Config().minimize,
+        **fg_forward_kwargs,
     )
     log.minor_success("Sankey graphs", "generated")
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
@@ -816,9 +823,50 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     is_flag=True,
     help="Minimizes the traces, folds the recursive calls, hides the generic types.",
 )
+@click.option(
+    "--flamegraph-width",
+    type=int,
+    default=flamegraph_run.FG_DEFAULT_IMAGE_WIDTH,
+    help="Specifies the width of the flamegraph images in pixels. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-height",
+    type=int,
+    help="Specifies the height of each flamegraph frame in pixels. This option is forwarded to "
+    "the flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-minwidth",
+    type=str,
+    default=flamegraph_run.FG_DEFAULT_MIN_WIDTH,
+    help="Filter out fast functions in flamegraphs. May be specified either in pixels (integer or "
+    "float value) or as a percentage of time if suffixed with '%'. This option is forwarded "
+    "to the flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-fonttype",
+    type=str,
+    help="Specifies the font type to use in flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-fontsize",
+    type=int,
+    help="Specifies the font size of text in flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-bgcolors",
+    type=str,
+    help="Specifies the background colors for flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
 @click.pass_context
 def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
-    """Creates sankey graphs representing the differences between two profiles"""
+    """Creates a composite interactive difference report of two profiles that combines multiple
+    visualizations and data tables.
+    """
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     profile_list = ctx.parent.params["profile_list"]
     generate_report(profile_list[0], profile_list[1], **kwargs)

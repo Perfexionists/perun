@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 # Standard Imports
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
-import os
+from pathlib import Path
 import tempfile
-from typing import Any
+from typing import Any, Iterator
 
 # Third-Party Imports
 
@@ -16,104 +17,142 @@ from perun.utils.common import script_kit
 from perun.utils.external import commands
 
 
-def draw_flame_graph_difference(
-    lhs_flame_data: list[str],
-    rhs_flame_data: list[str],
-    title: str,
-    units: str = "samples",
-    img_width: int = 1200,
-    fg_flags: str = "",
-    fg_min_width: str = "1",
-    fg_max_trace: int = 0,
-    fg_max_resource: float = 0.0,
-) -> str:
-    """Draws difference of two flame graphs from two profiles
+@contextmanager
+def fg_optional_tempfile(flame_data: list[str] | Path) -> Iterator[Path]:
+    """A helper context manager that wraps flame graph data into a file path.
 
-    :param lhs_flame_data: baseline flame graph data
-    :param rhs_flame_data: target flame graph data
-    :param title: title of the flame graph
-    :param units: the units of the flame graph data
-    :param img_width: width of the graph
-    :param fg_flags: additional flags to pass to the flame graph generator script
-    :param fg_min_width: minimum width of the flame graph rectangles that will be drawn
-    :param fg_max_trace: maximum length of traces that are being drawn
-    :param fg_max_resource: maximum number of samples collected
+    If the provided flame graph data are already stored in a file, the file path is wrapped in
+    a context manager. Otherwise, a new temporary file is created, the data are stored in it
+    and the context manager wraps the path. The created temporary file will be deleted when the
+    context manager wrapper exits.
 
-    :return: the difference flame graph
+    :param flame_data: the flame graph data to wrap
+
+    :return: a wrapper context manager
     """
-    with open("lhs.flame", "w") as lhs_handle:
-        lhs_handle.write("".join(lhs_flame_data))
-
-    with open("rhs.flame", "w") as rhs_handle:
-        rhs_handle.write("".join(rhs_flame_data))
-
-    diff_script = script_kit.get_script("difffolded.pl")
-    flame_script = script_kit.get_script("flamegraph.pl")
-    difference_script = (
-        f"{diff_script} -n lhs.flame rhs.flame "
-        f"| {flame_script} --title '{title}' --countname {units} --reverse "
-        f"--width {img_width} --minwidth {fg_min_width} --maxtrace {fg_max_trace}"
-    )
-    if fg_max_resource > 0.0:
-        difference_script += f' --total {fg_max_resource} --rootnode "Maximum (Baseline, Target)"'
-    if fg_flags:
-        difference_script += f" {fg_flags}"
-    out, _ = commands.run_safely_external_command(difference_script)
-    os.remove("lhs.flame")
-    os.remove("rhs.flame")
-
-    return out.decode("utf-8")
+    if isinstance(flame_data, Path):
+        # Wrap the path in a nullcontext so that we can use it as if it was a context manager
+        with nullcontext(flame_data) as tmp:
+            yield tmp
+    else:
+        # Save the flame data into a temporary file
+        with tempfile.NamedTemporaryFile(mode="w") as tmp:
+            tmp.write("".join(flame_data))
+            # The flush ensures that all data are in the file when the flamegraph scripts read them
+            tmp.flush()
+            yield Path(tmp.name)
 
 
 def draw_flame_graph(
-    flame_data: list[str],
+    flame_data: list[str] | Path,
     title: str,
     units: str = "samples",
-    img_width: int = 1200,
-    fg_min_width: str = "1",
-    fg_max_trace: int = 0,
-    fg_max_resource: float = 0.0,
+    *fg_flags: str,
+    **fg_kwargs: Any,
 ) -> str:
     """Draw Flame graph from flame data.
 
-        To create Flame graphs we use perl script created by Brendan Gregg.
-        https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
+    To create Flame graphs we use perl script created by Brendan Gregg.
+    https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
+
+    If the flame graph data are provided directly, they are first stored in a temporary file that
+    can be read by the flame graph scripts.
 
     :param flame_data: the data to generate the flame graph from
     :param title: title of the flame graph
     :param units: the units of the flame graph data
-    :param img_width: width of the graph
-    :param fg_min_width: minimum width of the flame graph rectangles that will be drawn
-    :param fg_max_trace: maximum length of traces that are being drawn
-    :param fg_max_resource: maximum number of samples collected
+    :param fg_flags: additional flags to pass to the flamegraph.pl script
+    :param fg_kwargs: additional parameters forwarded to the flamegraph.pl
+
+    :return: the generated flame graph
     """
     # converting profile format to format suitable to Flame graph visualization
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        tmp.write("".join(flame_data).encode("utf-8"))
-        tmp.close()
-        cmd = " ".join(
+    with fg_optional_tempfile(flame_data) as tmp:
+        # We extend the flags with 'cp' for consistent palette
+        cmd = build_flamegraph_command(tmp, title, units, "cp", *fg_flags, **fg_kwargs)
+        out, _ = commands.run_safely_external_command(cmd)
+    return out.decode("utf-8")
+
+
+def draw_differential_flame_graph(
+    lhs_flame_data: list[str] | Path,
+    rhs_flame_data: list[str] | Path,
+    title: str,
+    units: str = "samples",
+    *fg_flags: str,
+    **fg_kwargs: Any,
+) -> str:
+    """Draws a lhs->rhs differential flame graph.
+
+    If the LHS or RHS flame graph data are provided directly, they are first stored in temporary
+    files that can be read by the flame graph scripts.
+
+    :param lhs_flame_data: the data of the baseline profile to generate the flame graph diff from
+    :param rhs_flame_data: the data of the target profile to generate the flame graph diff from
+    :param title: title of the flame graph
+    :param units: the units of the flame graph data
+    :param fg_flags: additional flags to pass to the flamegraph.pl script
+    :param fg_kwargs: additional parameters forwarded to the flamegraph.pl script
+
+    :return: the lhs->rhs differential flame graph
+    """
+    with (
+        fg_optional_tempfile(lhs_flame_data) as lhs_flame,
+        fg_optional_tempfile(rhs_flame_data) as rhs_flame,
+    ):
+        diff_cmd = " ".join(
             [
-                script_kit.get_script("flamegraph.pl"),
-                tmp.name,
-                "--cp",
-                "--title",
-                f'"{title}"',
-                "--countname",
-                f"{units}",
-                "--reverse",
-                "--width",
-                f"{img_width}",
-                "--maxtrace",
-                f"{fg_max_trace}",
-                "--minwidth",
-                f"{fg_min_width}",
+                script_kit.get_script("difffolded.pl"),
+                "-n",
+                str(lhs_flame),
+                str(rhs_flame),
             ]
         )
-        if fg_max_resource > 0.0:
-            cmd += f' --total {fg_max_resource} --rootnode "Maximum (Baseline, Target)"'
-        out, _ = commands.run_safely_external_command(cmd)
-        os.remove(tmp.name)
+        fg_cmd = build_flamegraph_command(None, title, units, *fg_flags, **fg_kwargs)
+        out, _ = commands.run_safely_external_command(f"{diff_cmd} | {fg_cmd}")
     return out.decode("utf-8")
+
+
+def build_flamegraph_command(
+    input_path: Path | None,
+    title: str,
+    units: str = "samples",
+    *flags: str,
+    total: int | None = None,
+    **kwargs: Any,
+) -> str:
+    """Creates the flamegraph.pl command that generates a (possibly differential) flame graph.
+
+    :param input_path: path to the file with folded flame graph data
+    :param title: title of the flame graph
+    :param units: the units of the flame graph data
+    :param flags: additional flags to pass to the flamegraph.pl script
+    :param total: the 'total' parameter of the flamegraph.pl script, if provided
+    :param kwargs: additional parameters forwarded to the flamegraph.pl script
+
+    :return: the resulting command for generating a flame graph
+    """
+    cmd = [
+        script_kit.get_script("flamegraph.pl"),
+        str(input_path) if input_path is not None else "",
+        "--title",
+        f"'{title}'",
+        "--countname",
+        f"'{units}'",
+        "--reverse",
+    ]
+    # Additional flags
+    cmd.extend(f"--{flag}" for flag in flags)
+    # Additional parameters
+    for key, val in kwargs.items():
+        if val is not None:
+            cmd.append(f"--{key}")
+            cmd.append(f"'{val}'")
+    # The 'total' parameter needs special handling: add a rootnode that scales the flamegraph
+    # on X axis according to the 'total' value
+    if total is not None and total > 0.0:
+        cmd.extend(["--total", str(total), "--rootnode", "'Maximum (Baseline, Target)'"])
+    return " ".join(cmd)
 
 
 def generate_title(profile_header: dict[str, Any]) -> str:
@@ -177,6 +216,8 @@ def _compute_minwidth_samples(max_resource: float, img_width: float, min_width: 
     :param max_resource: the total number of samples collected
     :param img_width: the width of the graph image
     :param min_width: the minimum width of the flame graph rectangles that will be drawn
+
+    :return: the minimum width threshold
     """
     try:
         if min_width.endswith("%"):
