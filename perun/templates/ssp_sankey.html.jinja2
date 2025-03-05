@@ -1,0 +1,619 @@
+<div id="sankey" class="section">
+    <div class="section_header">
+        <span class="material-icons pin-icon pin-icon__header info-icon__header"
+              data-tooltip="Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
+            Wide red edges are (generally) bad; wide green edges are (generally) good.">
+            info
+        </span>
+        <h1>Sankey Graph</h1>
+        <span class="material-icons pin-icon pin-icon__header" data-section="Sankey Graph">push_pin</span>
+    </div>
+
+    <div id="sankey_tools" style="display: none">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="key" style="width: 20%;">Threshold:</td>
+                    <td colspan="6">{{ widgets.range_picker() }}</td>
+                </tr>
+                {{ widgets.checkboxes([('baseline', 'Baseline'), ('target', 'Target'), ('incr', 'Incr (vs base)'), ('both', 'Equal'), ('decr', 'Decr (vs base)')], 'show_edges', 'Show') }}
+                {%- if stat_list|length > 1 %}
+                <tr>
+                    <td class="key" style="width: 20%;">Metric:</td>
+                    <td colspan="6">
+                        <select class="dt-input" id="metricSelection">
+                            {%- for metric in stat_list %}
+                                <option value="{{ loop.index0 }}">{{ metric }}</option>
+                            {%- endfor %}
+                        </select>
+                    </td>
+                </tr>
+            {%- endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="sankey_container" style="height: {{container_height}}px;">
+        <div id="sankey_graph" style="height: 100%;"><!-- DO NOT CHANGE: SANKEY GRAPH IS RENDERED HERE--></div>
+    </div>
+</div>
+
+<script>
+    // GRAPH DATA:
+    {% autoescape off %}
+    let callee_graph = {{ callee_graph }}
+    let caller_graph = {{ caller_graph }}
+    let nodes = {{ nodes }}
+    let stats = {{ stats }}
+    let stat_map = {{ stat_list }}
+    let unit_map = {{ units }}
+    let node_map = {{ node_map }}
+    {% endautoescape %}
+
+    let sankey_data = [{
+        type: "sankey",
+        arrangement: "snap",
+        orientation: "v",
+        node: {
+            pad: 15,
+            thickness: 20,
+            line: {
+                color: "black",
+                width: 1
+            },
+            label: [],
+            color: [],
+            customdata: []
+        },
+        link: {
+            source: [],
+            target: [],
+            value: [],
+            color: [],
+            customdata: [],
+            hovertemplate: "%{customdata.display}<extra></extra>"
+        }
+        }],
+        shown_nodes = [],
+        processed_edges = new Set();
+        steps = [1],
+        config = {
+            responsive: true,
+            modeBarButtonsToAdd: [
+                {
+                    name: 'Move Nodes',
+                    icon: selection_icon,
+                    click: function(gd) {
+                        modification_mode = "none";
+                        cursor = "grab";
+                        update_cursors();
+                        Plotly.update(gd, {arrangement: "snap"});
+                    }
+                }, {
+                    name: 'Expand Nodes',
+                    icon: plus_icon,
+                    click: function (gd) {
+                        modification_mode = "unfold";
+                        cursor = "zoom-in";
+                        update_cursors();
+                        Plotly.update(gd, {arrangement: "fixed"});
+                    }
+                }, {
+                    name: "Fold Nodes",
+                    icon: minus_icon,
+                    click: function (gd) {
+                        modification_mode = "fold";
+                        cursor = "zoom-out";
+                        update_cursors();
+                        Plotly.update(gd, {arrangement: "fixed"});
+                    }
+                }, {
+                    name: "Minimize Graph",
+                    icon: minimize_icon,
+                    click: function (gd) {
+                        initializeGraph();
+                    }
+                }, {
+                    name: "Expand By One Level",
+                    icon: maximize_icon,
+                    click: function (gd) {
+                        expandOneLevel();
+                    }
+                }, {
+                    name: 'Rotate Graph',
+                    icon: rotate_icon,
+                    click: function(gd) {
+                        if (sankey_data[0].orientation === "v") {
+                            sankey_data[0].orientation = "h";
+                        } else {
+                            sankey_data[0].orientation = "v";
+                        }
+                        Plotly.update(gd, {orientation: sankey_data[0].orientation});
+                    }
+                },
+            ],
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        },
+        layout = {
+            title: "",
+            font: {
+                size: 14
+            },
+            height: {{ height }},
+        },
+        sel_metric = 0,
+        modification_mode = "none",
+        cursor = 'pointer',
+        metric_no = {{ stat_list|length }},
+        sel_uid = -1,
+        sel_uid_text = "",
+        curr_tab = "",
+        plot = document.getElementById('sankey_graph');
+
+    function update_cursors() {
+        document.querySelectorAll('.sankey-node text').forEach(node => {
+            node.addEventListener('mouseenter', function(){
+                node.style.cursor = cursor;
+            });
+            node.addEventListener('mouseleave', function(){
+                node.style.cursor = "pointer";
+            });
+        })
+        document.querySelectorAll('.sankey-node rect').forEach(node => {
+            node.addEventListener('mouseenter', function(){
+                node.style.cursor = cursor;
+            });
+            node.addEventListener('mouseleave', function(){
+                node.style.cursor = "pointer";
+            });
+        })
+    }
+
+    function render() {
+        Plotly.react('sankey_graph', sankey_data, layout, config);
+        update_cursors();
+    }
+
+    function newplot() {
+        Plotly.newPlot('sankey_graph', sankey_data, layout, config);
+        refreshHandlers();
+    }
+
+    function hideNodes(worklist) {
+        for (let i = sankey_data[0].link.source.length - 1; i >= 0; i--) {
+            if (worklist.includes(sankey_data[0].link.source[i]) || worklist.includes(sankey_data[0].link.target[i])) {
+                let key = sankey_data[0].link.source[i] + "," + sankey_data[0].link.target[i];
+                processed_edges.delete(key);
+                sankey_data[0].link.source.splice(i, 1);
+                sankey_data[0].link.target.splice(i, 1);
+                sankey_data[0].link.value.splice(i, 1);
+                sankey_data[0].link.color.splice(i, 1);
+                sankey_data[0].link.customdata.splice(i, 1);
+            }
+        }
+    }
+
+    function addToWorklist(worklist, nodedata) {
+        let callers = caller_graph[nodedata.index][nodedata.pos]
+        if (callers !== undefined) {
+            for (caller in callers) {
+                if (!hasNode(caller, nodedata.pos-1))
+                    continue
+
+                tgt = getNode(caller, nodedata.pos-1)
+                if (custom_data[tgt].type === "none" || (nodedata.type !== custom_data[tgt].type && custom_data[tgt].type !== 'root')) {
+                    if (!worklist.includes(tgt)) {
+                        worklist.push(tgt);
+                        addToWorklist(worklist, sankey_data[0].node.customdata[tgt]);
+                    }
+                }
+            }
+        }
+        let callees = callee_graph[nodedata.index][nodedata.pos]
+        if (callees !== undefined) {
+            for (callee in callees) {
+                if (!hasNode(callee, nodedata.pos+1))
+                    continue
+
+                tgt = getNode(callee, nodedata.pos+1)
+                if (custom_data[tgt].type === "none" || (nodedata.type !== custom_data[tgt].type && custom_data[tgt].type !== 'root')) {
+                    if (!worklist.includes(tgt)) {
+                        worklist.push(tgt);
+                        addToWorklist(worklist, sankey_data[0].node.customdata[tgt]);
+                    }
+                }
+            }
+        }
+    }
+
+    function foldnode(nodedata) {
+        clickedNode = getNode(nodedata.index, nodedata.pos);
+        custom_data = sankey_data[0].node.customdata;
+        if (!nodedata.hidden && nodedata.type !== "root") {
+            sankey_data[0].node.label[nodedata.id] = "[+] (" + nodedata.label + ")";
+            nodedata.hidden = true;
+            worklist = []
+            addToWorklist(worklist, nodedata)
+            hideNodes(worklist, nodedata.type)
+        }
+    }
+
+    function unfoldnode(nodedata) {
+        clickedNode = getNode(nodedata.index, nodedata.pos);
+        if (nodedata.hidden) {
+            addAllEdgesFor(clickedNode, nodedata.pos, caller_graph[nodedata.index][nodedata.pos], false, nodedata.type);
+            addAllEdgesFor(clickedNode, nodedata.pos, callee_graph[nodedata.index][nodedata.pos], true, nodedata.type);
+            sankey_data[0].node.label[nodedata.id] = nodedata.label;
+            nodedata.hidden = false;
+        }
+    }
+
+    function refreshHandlers() {
+        plot.on('plotly_click', function (idata) {
+            for (let i = 0; i < idata.points.length; i++) {
+                clicked = idata.points[i];
+                if (clicked.customdata !== undefined) {
+                    if (modification_mode === 'fold') {
+                        foldnode(clicked.customdata)
+                    } else {
+                        unfoldnode(clicked.customdata)
+                    }
+                }
+            }
+            // This will call render as well
+            filterEdges();
+        })
+    }
+
+    function filterEdges() {
+        edges = sankey_data[0].link;
+        let fromInput = document.getElementById('fromSlider').value, toInput = document.getElementById('toSlider').value;
+        for (let i = 0; i < edges.customdata.length; i++) {
+            newValue = recomputeValue(edges.customdata[i].type, edges.customdata[i].stats);
+            edges.value[i] = (fromInput <= newValue && newValue <= toInput) ? newValue : 0;
+            edges.customdata[i].display = format(edges.value[i], unit_map[sel_metric]);
+        }
+        render();
+    }
+
+    function hasNode(node, pos) {
+        node_len = shown_nodes.length;
+        for (let i = 0; i < node_len; i++) {
+            if (shown_nodes[i][0] === node && shown_nodes[i][1] === pos) {
+                return i;
+            }
+        }
+    }
+
+    // Graph Operations
+    function getNode(node, pos) {
+        node = ensureNumber(node);
+        pos = ensureNumber(pos);
+        let node_len = shown_nodes.length;
+
+        for (let i = 0; i < node_len; i++) {
+            if (shown_nodes[i][0] === node && shown_nodes[i][1] === pos) {
+                return i;
+            }
+        }
+
+        if (nodes[node] === sel_uid_text) {
+            sankey_data[0].node.color.push("rgba(0, 0, 0, 0.7)");
+            sankey_data[0].node.label.push(nodes[node]);
+            sankey_data[0].node.customdata.push({label: nodes[node], index: node, pos: pos, hidden: false, type: "root", id: node_len});
+        } else {
+            sankey_data[0].node.color.push("rgba(0, 0, 0, 0.2)");
+            sankey_data[0].node.label.push("[+] (" + nodes[node] + ")");
+            sankey_data[0].node.customdata.push({label: nodes[node], index: node, pos: pos, hidden: true, type: "none", id: node_len});
+        }
+        shown_nodes.push([node, pos]);
+        return node_len;
+    }
+
+    function clearGraph() {
+        sankey_data[0].node.label = [];
+        sankey_data[0].node.color = [];
+        sankey_data[0].node.customdata = [];
+        sankey_data[0].link.source = [];
+        sankey_data[0].link.target = [];
+        sankey_data[0].link.value = [];
+        sankey_data[0].link.color = [];
+        sankey_data[0].link.customdata = [];
+        shown_nodes = [];
+        processed_edges = new Set();
+        steps = [];
+    }
+
+    function setInput(label, value) {
+        label.textContent = format(value, unit_map[sel_metric]);
+    }
+
+    function fillSliders(fromMin, fromVal, fromMax, toMin, toVal, toMax) {
+        let fromSlider = document.getElementById('fromSlider'), toSlider = document.getElementById('toSlider');
+
+        fromSlider.min = fromMin;
+        fromSlider.value = fromVal;
+        fromSlider.max = fromMax;
+        toSlider.min = toMin;
+        toSlider.value = toVal;
+        toSlider.max = toMax;
+
+        setInput(fromInput, fromVal);
+        setInput(toInput, toVal);
+
+        fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+    }
+
+    function updateSliders(val) {
+        if (val == 0 || val == 0.0)
+            return;
+
+        let fromSlider = document.getElementById('fromSlider');
+        let toSlider = document.getElementById('toSlider');
+
+        let minVal = Math.min(fromSlider.min, val);
+        let maxVal = Math.max(toSlider.max, val);
+
+        if (fromSlider.value !== fromSlider.min)
+            minVal = fromSlider.value
+        if (toSlider.value !== toSlider.max)
+            maxVal = toSlider.value
+
+        if (steps.length === 1)
+            fillSliders(val, val, val, val, val, val);
+        else
+            fillSliders(Math.min(fromSlider.min, val), minVal, Math.max(fromSlider.max, val), Math.min(toSlider.min, val), maxVal, Math.max(toSlider.max, val));
+    }
+
+    function addToSteps(val) {
+        let low = 0, high = steps.length - 1;
+
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            if (steps[mid] === val)
+                return;
+            else if(steps[mid] < val)
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+
+        steps.splice(low, 0, val);
+        updateSliders(val);
+    }
+
+    function addToSankey(src, tgt, val, color, type, edge_stats) {
+        sankey_data[0].link.source.push(src);
+        sankey_data[0].link.target.push(tgt);
+        sankey_data[0].link.value.push(val);
+        sankey_data[0].link.color.push(color);
+        sankey_data[0].link.customdata.push({stats: edge_stats, type: type, display: format(val, unit_map[sel_metric])})
+        addToSteps(val);
+    }
+
+    function recomputeValue(stat_type, edge_stats) {
+        if (!isChecked(stat_type))
+            return 0;
+
+        let base_stat = edge_stats[sel_metric], tgt_stat = edge_stats[sel_metric+metric_no];
+        if (stat_type === "baseline")
+            return base_stat;
+        if (stat_type === "target")
+            return tgt_stat;
+        let diff = base_stat - tgt_stat;
+        if (stat_type === "decr")
+            return diff > 0 ? Math.abs(diff) : 0;
+        if (stat_type === "incr")
+            return diff <= 0 ? Math.abs(diff) : 0;
+        if (stat_type === "both")
+            return Math.min(base_stat, tgt_stat);
+    }
+
+    function expandOneLevel() {
+        let nodes = sankey_data[0].node, callee_worklist = [], caller_worklist = [];
+        for (let i = 0; i < nodes.customdata.length; i++) {
+            let nodedata = nodes.customdata[i];
+            if (nodedata.hidden) {
+                if (nodedata.type === "caller")
+                    caller_worklist.push(nodedata);
+                else if (nodedata.type === "callee")
+                    callee_worklist.push(nodedata);
+            }
+        }
+
+        // Worklists
+        while (callee_worklist.length != 0) {
+            item = callee_worklist.shift();
+            unfoldnode(item);
+        }
+        while (caller_worklist.length != 0) {
+            item = caller_worklist.shift();
+            unfoldnode(item);
+        }
+
+        filterEdges();
+    }
+
+    function addEdge(src, tgt, edge_stats) {
+        // base data
+        let key = src + "," + tgt;
+        if (processed_edges.has(key))
+            return;
+
+        let base_stat = edge_stats[sel_metric], tgt_stat = edge_stats[sel_metric+metric_no];
+        if (base_stat) {
+            addToSankey(src, tgt, base_stat, "rgba(49, 48, 77, 0.4)", "baseline", edge_stats)
+        }
+        if (tgt_stat) {
+            addToSankey(src, tgt, tgt_stat, "rgba(255, 201, 74, 0.4)", "target", edge_stats)
+        }
+        let diff = base_stat - tgt_stat;
+        if (diff > 0) {
+            // Baseline is higher
+            addToSankey(src, tgt, diff, "rgba(0, 250, 0, 0.4)", "decr", edge_stats);
+            addToSankey(src, tgt, 0, "rgba(255, 0, 0, 0.4)", "incr", edge_stats);
+        } else {
+            addToSankey(src, tgt, Math.abs(diff), "rgba(250, 0, 0, 0.4)", "incr", edge_stats);
+            addToSankey(src, tgt, 0, "rgba(0, 250, 0, 0.4)", "decr", edge_stats);
+        }
+        addToSankey(src, tgt, Math.min(base_stat, tgt_stat), "rgba(0, 0, 255, 0.4)", "both", edge_stats);
+        processed_edges.add(key);
+    }
+
+    function adjustType(tgt, type) {
+        tgt_data = sankey_data[0].node.customdata[tgt];
+        if (tgt_data.type === "none")
+            tgt_data.type = type;
+    }
+
+    function addAllEdgesFor(node, pos, edges, isfwd, newtype) {
+        if (edges !== undefined) {
+            for (edge in edges) {
+                if (isfwd) {
+                    let tgt = getNode(edge, pos+1);
+                    addEdge(node, tgt, stats[edges[edge]]);
+                    if (newtype === "callee")
+                        adjustType(tgt, newtype)
+                } else {
+                    let tgt = getNode(edge, pos-1);
+                    addEdge(tgt, node, stats[edges[edge]]);
+                    if (newtype === "caller")
+                        adjustType(tgt, newtype)
+                }
+            }
+        }
+    }
+
+    function addRootNode(index) {
+        // Add node to labels
+        for (let i = 0; i < node_map[index].length; i++) {
+            pos = node_map[index][i];
+            rootNode = getNode(index, pos);
+            addAllEdgesFor(rootNode, pos, caller_graph[index][pos], false, "caller");
+            addAllEdgesFor(rootNode, pos, callee_graph[index][pos], true, "callee");
+        }
+    }
+
+    function initializeGraph() {
+        metric_changed();
+        clearGraph();
+        addRootNode(sel_uid);
+        newplot();
+        fillSliders(steps[0], steps[0], steps[steps.length-1], steps[0], steps[steps.length-1], steps[steps.length-1]);
+        filterEdges();
+    }
+
+    function metric_changed() {
+        {% if stat_list|length > 1 %}
+        sel_metric = parseInt(document.getElementById("metricSelection").value);
+        {% else %}
+        sel_metric = 0;
+        {% endif %}
+        let values = [];
+        let edge_values = sankey_data[0].link.customdata;
+        for (let i = 0; i < edge_values.length; i++) {
+            base_metric = edge_values[i].stats[sel_metric];
+            tgt_metric = edge_values[i].stats[sel_metric+metric_no]
+            // We skip empty metrics
+            if (base_metric !== 0)
+                values.push(base_metric);
+            if (tgt_metric !== 0)
+                values.push(tgt_metric);
+        }
+
+        // We adjust empty values
+        if (values.length === 0)
+            steps = [0];
+        else
+            steps = Array.from(new Set(values)).sort((a, b) => a - b);
+
+        fillSliders(steps[0], steps[0], steps[steps.length-1], steps[0], steps[steps.length-1], steps[steps.length-1]);
+        filterEdges();
+    }
+
+    {% if stat_list|length > 1 %}
+    document.getElementById("metricSelection").addEventListener('change', initializeGraph);
+    {% endif %}
+
+    function openSankey(el) {
+        var text = el.parentNode.querySelector('title');
+        var innerText = text.textContent.trim().replace(/\([^()]*\)$/, "").trim();
+        var div = document.getElementById('sankey_tools');
+        if (div.style.display === "none")
+            div.style.display = "block";
+        let index = nodes.indexOf(innerText);
+        if (index != -1) {
+            sel_uid = index;
+            sel_uid_text = innerText;
+            layout.title = sel_uid_text;
+            initializeGraph();
+        }
+    }
+
+    function addListeners(unit, i, child) {
+        var els = document.querySelectorAll("#" + unit + "_" + i + "_frames " + child);
+        els.forEach(function (el) {
+            el.addEventListener('click', function() {openSankey(el)})
+        })
+    }
+
+    function resize() {
+        if (curr_tab == "")
+            return;
+        const tab = document.getElementById(curr_tab);
+        const searchContent = tab.getElementsByClassName('middle')[0];
+        const svgContents = tab.getElementsByClassName('svg-content');
+        const lhs_svgContainer = tab.getElementsByClassName('svg-container')[0];
+        const rhs_svgContainer = tab.getElementsByClassName('svg-container')[1];
+        const lhs_diff_svgContainer = tab.getElementsByClassName('svg-container')[2];
+        const rhs_diff_svgContainer = tab.getElementsByClassName('svg-container')[3];
+        if (lhs_svgContainer) {
+            let max_box = 0, max_height = 0;
+            for (let i = 0; i < svgContents.length; i++) {
+                const svgContent = svgContents[i];
+                const viewBox = svgContent.getAttribute('viewBox');
+                const svgHeight = svgContent.getBoundingClientRect().height;
+                const viewBoxValues = viewBox.split(' ');
+                const height = parseInt(viewBoxValues[3]);
+                if (svgHeight > max_height)
+                    max_height = svgHeight;
+                if (height > max_box)
+                    max_box = height;
+            };
+            const searchHeight = searchContent.getBoundingClientRect().height;
+            lhs_svgContainer.style.height = `${max_height}px`;
+            rhs_svgContainer.style.height = `${max_height}px`;
+            lhs_diff_svgContainer.style.height = `${max_height}px`;
+            rhs_diff_svgContainer.style.height = `${max_height}px`;
+            tab.style.height = `${max_height * 2.1 + searchHeight}px`;
+        }
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    document.querySelector('input[name="incr"]').addEventListener('change', filterEdges);
+    document.querySelector('input[name="decr"]').addEventListener('change', filterEdges);
+    document.querySelector('input[name="both"]').addEventListener('change', filterEdges);
+    document.querySelector('input[name="baseline"]').addEventListener('change', filterEdges);
+    document.querySelector('input[name="baseline"]').checked = false;
+    document.querySelector('input[name="target"]').addEventListener('change', filterEdges);
+    document.querySelector('input[name="target"]').checked = false;
+    document.querySelector('#fromSlider').addEventListener('change', filterEdges);
+    document.querySelector('#toSlider').addEventListener('change', filterEdges);
+
+
+    for (let i = 0; i < metric_no; i++) {
+        addListeners("lhs", i, "rect");
+        addListeners("lhs", i, "text");
+        addListeners("rhs", i, "rect");
+        addListeners("rhs", i, "text");
+        addListeners("lhs_diff", i, "rect");
+        addListeners("lhs_diff", i, "text");
+        addListeners("rhs_diff", i, "rect");
+        addListeners("rhs_diff", i, "text");
+    }
+
+    newplot();
+
+</script>

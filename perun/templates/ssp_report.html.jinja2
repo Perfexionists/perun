@@ -1,4 +1,7 @@
 {% import 'ssp_table.html.jinja2' as table_generator %}
+{% import 'ssp_table_nested.html.jinja2' as nested_table_generator %}
+{% import 'macros_profile_overview.html.jinja2' as profile_overview %}
+{% import 'ssp_general_sidebar_property.html.jinja2' as general_sidebar_property %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,19 +12,33 @@
 
         {% if not offline %}
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
+        <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
         {% endif %}
 
-        <link rel="stylesheet" href="style/general_setup.css">
-        <link rel="stylesheet" href="style/layout.css">
 
-        <link rel="stylesheet" href="style/division_anchor.css">
+        <style>
+            {% include 'style/general_setup.css' %}
+            {% include 'style/layout.css' %}
 
-        <link rel="stylesheet" href="style/side_panel.css">
-        <link rel="stylesheet" href="style/notes_sidebar.css">
-        <link rel="stylesheet" href="style/general_sidebar.css">
+            {% include 'style/division_anchor.css' %}
 
-        <link rel="stylesheet" href="style/pins.css">
-        <link rel="stylesheet" href="style/tag.css">
+            {% include 'style/side_panel.css' %}
+            {% include 'style/notes_sidebar.css' %}
+            {% include 'style/general_sidebar.css' %}
+
+            {% include 'style/pins.css' %}
+            {% include 'style/tag.css' %}
+            {% include 'style/tooltip.css' %}
+
+            {% include 'style/traces_table.css' %}
+            {% include 'style/flamegraphs.css' %}
+        </style>
 </head>
 <body>
 
@@ -47,14 +64,50 @@
             <span class="material-icons">account_tree</span>
             <span class="side-panel__description">Profile Metadata</span>
         </a>
+        <a href="#traces">
+            <span class="material-icons">move_down</span>
+            <span class="side-panel__description">Traces Table</span>
+        </a>
         <a href="#flame">
             <span class="material-icons">local_fire_department</span>
             <span class="side-panel__description">Flame Graphs</span>
         </a>
+        <!--
         <a href="#sankey">
             <span class="material-icons">timeline</span>
             <span class="side-panel__description">Sankey Graph</span>
-        </a>
+        </a> -->
+    </div>
+
+    <div class="general-sidebar">
+        <span class="material-icons general-sidebar__icon">info</span>
+        <div class="general-sidebar-content">
+
+            {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
+
+            {%- set lhs_data = {} %}
+            {%- set rhs_data = {} %}
+
+            {%- for (key, value, title, nested_values) in lhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = lhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for (key, value, title, nested_values) in rhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = rhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for key in required_keys %}
+                {{ general_sidebar_property.general_sidebar_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
+            {%- endfor %}
+        </div>
     </div>
 
     <div class="notes-sidebar">
@@ -62,57 +115,140 @@
         <a> <p id="export-notes">Export with notes</p> </a>
         <div class="notes-sidebar-content">
             <div id="notes-list">
-                <!-- place for added notes -->
+                <!-- place for dynamically added notes -->
             </div>
         </div>
     </div>
 
     <div class="section" id="general">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Perun Performance Analysis</h1>
             <span class="material-icons pin-icon pin-icon__header" data-section="General">push_pin</span>
         </div>
-        <p>Perun version: v{{ perun_version }}</p
+        <p>Perun version: v{{ perun_version }}</p>
         <p>Generated on: {{ timestamp }}</p>
 
-        <div class="comparison-container">
-            {{ table_generator.general_comparison_container('baseline', 'general', lhs_header) }}
-            {{ table_generator.general_comparison_container('target', 'general', rhs_header) }}
+        <div class="comparison_container">
+            {{ table_generator.general_comparison_container('baseline', 'General', lhs_header) }}
+            {{ table_generator.general_comparison_container('target', 'General', rhs_header) }}
         </div>
     </div>
+
+    {% set lhs_vulnerabilities = lhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
+    {% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
 
     <div id="profile-vulnerabilities" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Vulnerabilities</h1>
-            <span class="material-icons pin-icon" data-section="Vulnerabilities">push_pin</span>
+            <span class="material-icons pin-icon pin-icon__header" data-section="Vulnerabilities">push_pin</span>
         </div>
 
-        <!-- HERE WILL BE VULNERABILITIES SCRIPT -->
+        {% if lhs_vulnerabilities or rhs_vulnerabilities %}
+            <div class="comparison_container">
+                {{ nested_table_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
+                {{ nested_table_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
+            </div>
+        {% else %}
+            <div class="not-provided-box">
+                <h3>No vulnerabilities provided.</h3>
+            </div>
+        {% endif %}
     </div>
 
+
     <div id="profile-stats" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Profile Statistics</h1>
-            <span class="material-icons pin-icon" data-section="Profile Statistics">push_pin</span>
+            <span class="material-icons pin-icon pin-icon__header" data-section="Profile Statistics">push_pin</span>
         </div>
 
-        <div class="comparison-container">
-            {{ table_generator.general_comparison_container('baseline', 'profile-stats', lhs_stats) }}
-            {{ table_generator.general_comparison_container('target', 'profile-stats', rhs_stats) }}
+        <div class="comparison_container">
+            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', lhs_stats) }}
+            {{ table_generator.general_comparison_container('target', 'Profile Statistics', rhs_stats) }}
         </div>
     </div>
 
     <div id="profile-metadata" class="section">
-        <div class="section-header">
+        <div class="section_header">
             <h1>Profile Metadata</h1>
-            <span class="material-icons pin-icon" data-section="Profile Metadata">push_pin</span>
+            <span class="material-icons pin-icon pin-icon__header" data-section="Profile Metadata">push_pin</span>
         </div>
 
-        <div class="comparison-container">
-            {{ table_generator.general_comparison_container('baseline', 'profile-metadata', lhs_metadata) }}
-            {{ table_generator.general_comparison_container('target', 'profile-metadata', rhs_metadata) }}
-        </div>
+        {%  if lhs_metadata or rhs_metadata %}
+            <div class="comparison_container">
+                {{ table_generator.general_comparison_container('baseline', 'Profile Metadata', lhs_metadata) }}
+                {{ table_generator.general_comparison_container('target', 'Profile Metadata', rhs_metadata) }}
+            </div>
+        {% else %}
+            <div class="not-provided-box">
+                <h3>No metadata provided.</h3>
+            </div>
+        {% endif %}
     </div>
+
+    {% include 'ssp_table_traces.html.jinja2' %}
+
+    <div id="flame" class="section">
+        <div class="section_header">
+            <span class="material-icons pin-icon pin-icon__header info-icon__header"
+                  data-tooltip="Look for the topmost widest rectangle.
+                    Click on the node to explore the results in a form of Sankey Graph (below the table).
+                    Colours are picked randomly (but uniformly); they don't signal any scale.
+                    The bigger the rectangle the more often the UID was seen on the stack.
+                    The higher the flame the more nested calls were made in the context.">
+                info
+            </span>
+            <h1>Flame Graphs</h1>
+            <span class="material-icons pin-icon pin-icon__header" data-section="Flame Graphs">push_pin</span>
+        </div>
+
+        <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
+            <div class="flamegraph_search_box">
+                <span>View Type: </span>
+                <span class="material-symbols-outlined" id="flamegraph_visualization_switch">view_column_2</span>
+            </div>
+
+            <div class="flamegraph_search_box">
+                <label for="flamegraph_search_all" class="flamegraph_search_input_label">Search:</label>
+                <input id="flamegraph_search_all" class="dt-input" />
+                <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Search For All</button>
+            </div>
+        </div>
+
+        {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
+
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+                <div class="left column column_non_scale column_extended">
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_baseline">
+                    {{ lhs_flamegraph }}
+                    </div>
+                </div>
+                <div class="right column column_non_scale column_extended">
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_target">
+                    {{ rhs_flamegraph }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+                <div class="left column column_non_scale column_extended" style="margin-top: 1%">
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
+                    {{ lhs_diff_flamegraph }}
+                    </div>
+                </div>
+                <div class="right column column_non_scale column_extended" style="margin-top: 1%">
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_target">
+                    {{ rhs_diff_flamegraph }}
+                    </div>
+                </div>
+            </div>
+        {%- endfor %}
+    </div>
+
+    <!--
+    SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
+    {#% include 'ssp_sankey.html.jinja2' %#}
+    -->
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -152,12 +288,12 @@
                 noteItem.classList.add("note-item", "note-item--attention");
 
                 noteItem.innerHTML = `
-        <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
-        <div class="note-item--content" data-note-value="">
-            <textarea class="note-input" placeholder="Enter your note"></textarea>
-            <span class="material-icons" style="cursor: pointer; margin: 0">delete</span>
-            <button class="note-status-toggle attention">Attention</button>
-        </div>`;
+                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
+                    <div class="note-item--content" data-note-value="">
+                        <textarea class="note-input" placeholder="Enter your note"></textarea>
+                        <span class="material-icons" style="cursor: pointer; margin: 0">delete</span>
+                        <button class="note-status-toggle attention">Attention</button>
+                    </div>`;
 
                 const noteInput = noteItem.querySelector(".note-input");
                 attachInputListener(noteInput);
@@ -238,5 +374,184 @@
         });
     </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const section_guide = document.createElement("div");
+            section_guide.classList.add("section_guide");
+            document.body.appendChild(section_guide);
+
+            document.addEventListener("mouseover", function (event) {
+                const target = event.target.closest(".info-icon__header");
+                if (target) {
+                    section_guide.innerHTML = target.getAttribute("data-tooltip")
+                        .trim()
+                        .split("\n")
+                        .map((line, index) => `[${index + 1}] ${line.trim()}`)
+                        .join("<br><br>");
+                    section_guide.classList.add("visible");
+                    section_guide.style.left = event.pageX + 10 + "px";
+                    section_guide.style.top = event.pageY + 10 + "px";
+                }
+            });
+
+            document.addEventListener("mousemove", function (event) {
+                if (section_guide.classList.contains("visible")) {
+                    section_guide.style.left = event.pageX + 10 + "px";
+                    section_guide.style.top = event.pageY + 10 + "px";
+                }
+            });
+
+            document.addEventListener("mouseout", function (event) {
+                if (event.target.classList.contains("info-icon__header")) {
+                    section_guide.classList.remove("visible");
+                }
+            });
+        });
+    </script>
+
+    <script>
+        {%- if offline %}
+        {% include 'jquery-3.6.0.min.js' %}
+        {% include 'plotly-2.30.0.min.js' %}
+        {% include 'dataTables.min.js' %}
+        {% include 'dataTables.select.min.js' %}
+        {%- endif %}
+        //<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+        const selection_icon = {'width': 512, 'height': 512, 'path': 'M256 0c-25.3 0-47.2 14.7-57.6 36c-7-2.6-14.5-4-22.4-4c-35.3 0-64 28.7-64 64V261.5l-2.7-2.7c-25-25-65.5-25-90.5 0s-25 65.5 0 90.5L106.5 437c48 48 113.1 75 181 75H296h8c1.5 0 3-.1 4.5-.4c91.7-6.2 165-79.4 171.1-171.1c.3-1.5 .4-3 .4-4.5V160c0-35.3-28.7-64-64-64c-5.5 0-10.9 .7-16 2V96c0-35.3-28.7-64-64-64c-7.9 0-15.4 1.4-22.4 4C303.2 14.7 281.3 0 256 0zM240 96.1c0 0 0-.1 0-.1V64c0-8.8 7.2-16 16-16s16 7.2 16 16V95.9c0 0 0 .1 0 .1V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96c0 0 0 0 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16v55.9c0 0 0 .1 0 .1v80c0 13.3 10.7 24 24 24s24-10.7 24-24V160.1c0 0 0-.1 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16V332.9c-.1 .6-.1 1.3-.2 1.9c-3.4 69.7-59.3 125.6-129 129c-.6 0-1.3 .1-1.9 .2H296h-8.5c-55.2 0-108.1-21.9-147.1-60.9L52.7 315.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L119 336.4c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V96c0-8.8 7.2-16 16-16c8.8 0 16 7.1 16 15.9V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96.1z'}
+        const plus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z'}
+        const minus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z'}
+        const rotate_icon = {'width': 512, 'height': 512, 'path': 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z'}
+        const maximize_icon = {'width': 512, 'height': 512, 'path': 'M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z'}
+        const minimize_icon = {'width': 512, 'height': 512, 'path': 'M456 224H312c-13.3 0-24-10.7-24-24V56c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l40 40L442.3 5.7C446 2 450.9 0 456 0s10 2 13.7 5.7l36.7 36.7C510 46 512 50.9 512 56s-2 10-5.7 13.7L433 143l40 40c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8zm0 64c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-40 40 73.4 73.4c3.6 3.6 5.7 8.5 5.7 13.7s-2 10-5.7 13.7l-36.7 36.7C466 510 461.1 512 456 512s-10-2-13.7-5.7L369 433l-40 40c-6.9 6.9-17.2 8.9-26.2 5.2s-14.8-12.5-14.8-22.2V312c0-13.3 10.7-24 24-24H456zm-256 0c13.3 0 24 10.7 24 24V456c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-40-40L69.7 506.3C66 510 61.1 512 56 512s-10-2-13.7-5.7L5.7 469.7C2 466 0 461.1 0 456s2-10 5.7-13.7L79 369 39 329c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8H200zM56 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l40-40L5.7 69.7C2 66 0 61.1 0 56s2-10 5.7-13.7L42.3 5.7C46 2 50.9 0 56 0s10 2 13.7 5.7L143 79l40-40c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2V200c0 13.3-10.7 24-24 24H56z'}
+
+        {% autoescape off %}
+        let callee_graph = {{ callee_graph }}
+        let caller_graph = {{ caller_graph }}
+        let nodes = {{ nodes }}
+        let stats = {{ stats }}
+        let stat_map = {{ stat_list }}
+        let unit_map = {{ units }}
+        let node_map = {{ node_map }}
+        {% endautoescape %}
+    </script>
+
+    {% include 'scripts/ssp_value_formatters.html.jinja2' %}
+    {% include 'scripts/ssp_selection_table.html.jinja2' %}
+
+    <script>
+        {%- if flamegraphs %}
+
+            // Search logic for both mouseover and search bar
+            searchBar = document.getElementById("flamegraph_search_all");
+
+            {% for index in range(0, flamegraphs|length) %}
+                if (searchBar) {
+                    searchBar.addEventListener('input', function () {
+                        let searchTerm = searchBar.value.trim();
+
+                        lhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_{{index}}_search();
+                        }
+
+                        rhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_{{index}}_search();
+                        }
+
+                        lhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_diff_{{index}}_search();
+                        }
+
+                        rhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_diff_{{index}}_search();
+                        }
+                    })
+                }
+
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                    document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
+                        node.addEventListener("mouseenter", function () {
+                            const textElement = node.querySelector("title");
+                            console.log(textElement.innerHTML);
+
+                            if (textElement && textElement.innerHTML) {
+                                let searchTerm = cleanTitle(textElement.innerHTML);
+                                searchTerm = "^" + searchTerm;
+                                console.log(searchTerm);
+
+                                window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_{{index}}_search`]();
+
+                                window[`rhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_{{index}}_search`]();
+
+                                window[`lhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_diff_{{index}}_search`]();
+
+                                window[`rhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_diff_{{index}}_search`]();
+                            }
+                        });
+
+                        node.addEventListener("mouseleave", function () {
+                            window[`lhs_{{index}}_reset_search`]();
+                            window[`rhs_{{index}}_reset_search`]();
+                            window[`lhs_diff_{{index}}_reset_search`]();
+                            window[`rhs_diff_{{index}}_reset_search`]();
+                        });
+                    });
+                });
+
+            {%- endfor%}
+
+            document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
+                {%- for index in range(0, flamegraphs|length) %}
+                    const resetSearchBase = document.getElementById("lhs_{{ index }}_search");
+                    const resetSearchTarget = document.getElementById("rhs_{{ index }}_search");
+                    const resetSearchDiffBase = document.getElementById("lhs_diff_{{ index }}_search");
+                    const resetSearchDiffTarget = document.getElementById("rhs_diff_{{ index }}_search");
+
+                    const resetElements = [
+                        resetSearchBase,
+                        resetSearchTarget,
+                        resetSearchDiffBase,
+                        resetSearchDiffTarget,
+                    ];
+
+                    resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
+                {%- endfor %}
+            });
+
+            // Different types of flamegraph ordering switch
+            const visualization_switch = document.getElementById("flamegraph_visualization_switch");
+            visualization_switch.addEventListener("click", function () {
+                const elements = document.querySelectorAll(".comparison_container_stacked");
+                elements.forEach(element => {
+                    const currentDirection = window.getComputedStyle(element).flexDirection;
+
+                    if (currentDirection === "row") {
+                        element.style.flexDirection = "column";
+                        visualization_switch.textContent = "view_agenda";
+                    } else if (currentDirection === "column") {
+                        element.style.flexDirection = "row";
+                        visualization_switch.textContent = "view_column_2";
+                    }
+                });
+            });
+
+            function cleanTitle(title) {
+                return title.replace(/\(\d.*?\).*/, '').trim();
+            }
+
+        {%- endif %}
+    </script>
+
 </body>
-</html
+</html>

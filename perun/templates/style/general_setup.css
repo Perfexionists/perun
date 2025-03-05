@@ -1,24 +1,34 @@
 :root {
     --color-baseline: rgba(80, 201, 206, 1);
     --color-target: rgba(152, 131, 229, 1);
-    --color-common: rgba(248, 117, 117, 1);
+    --color-common: rgba(239, 122, 133, 1);
 
     --color-baseline-transparent: rgba(80, 201, 206, 0.3);
     --color-target-transparent: rgba(152, 131, 229, 0.3);
     --color-common-transparent: rgba(248, 117, 117, 0.3);
 
-    --color-text-tag: #FFFFFF;
-    --color-mid-gray: #333;
-    --color-mid-gray-hover: #444;
+    --color-primary: rgba(51, 51, 51);
+    --color-primary-hover: #444444;
+    --color-bs-secondary: rgba(108, 117, 125);
 
+    --color-light-white: #FFFFFF;
+    --color-almost-white: rgba(234, 234, 234);
+    --color-white-tinted: #DDDDDD;
     --color-light-gray: #999999;
-    --color-white-tinted: #DDDDDDFF;
 
-    --color-correct: #27ae60;
-    --color-wrong: #c0392b;
+    --color-correct: rgba(40, 167, 69);
+    --color-wrong: rgba(220, 53, 69);
+    --color-info: rgba(23, 162, 184);
+    --color-warning: rgba(255, 193, 7);
 
-    --color-correct-transparent: rgba(39, 174, 96, 0.3);
-    --color-wrong-transparent: rgba(192, 57, 43, 0.3);
+    --color-correct-transparent: rgba(40, 167, 69, 0.3);
+    --color-wrong-transparent: rgba(220, 53, 69, 0.3);
+    --color-info-transparent: rgba(23, 162, 184, 0.3);
+    --color-warning-transparent: rgba(255, 193, 7, 0.3);
+    --color-bs-secondary-transparent: rgba(108, 117, 125, 0.3);
+
+    --dt-row-selected: 68, 68, 68 !important;
+    --dt-row-selected-text: 234, 234, 234 !important;
 }
 
 * {
@@ -46,7 +56,7 @@ h2 {
     text-align: center;
     margin-bottom: 20px;
     font-size: 1.5em;
-    color: var(--color-mid-gray);
+    color: var(--color-primary);
 }
 
 .baseline {
@@ -65,4 +75,9 @@ h2 {
 .highlight-diff-green {
     font-weight: bold;
     color: var(--color-correct);
+}
+
+.not-provided-box {
+    padding: 10px;
+    margin-top: 10px;
 }

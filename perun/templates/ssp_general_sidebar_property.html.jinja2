@@ -1,0 +1,49 @@
+{% macro general_sidebar_difference_property(name, record_baseline, record_target) %}
+    {% if record_baseline and record_target and record_baseline == record_target %}
+        <div class="general-property">
+            <h2>
+                {{ name }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="toggle-arrow" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 15.36 16.95 10.4H7.05Z" />
+                </svg>
+            </h2>
+            <div class="general-values">
+                <div class="general-value">
+                    <span class="tag-element tag-common">Common</span>
+                    <span class="value">{{ record_baseline }}</span>
+                </div>
+            </div>
+        </div>
+    {% elif record_baseline or record_target %}
+        <div class="general-property">
+            <h2>
+                {{ name }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="toggle-arrow" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 15.36 16.95 10.4H7.05Z" />
+                </svg>
+            </h2>
+            <div class="general-values">
+                {% if record_baseline %}
+                    <div class="general-value">
+                        <span class="tag-element tag-baseline">Baseline</span>
+                        <span class="value">{{ record_baseline }}</span>
+                    </div>
+                {% else %}
+                    <h4>No value for {{ name }} baseline provided</h4>
+                {% endif %}
+
+                {% if record_baseline %}
+                <div class="general-value">
+                    <span class="tag-element tag-target">Target</span>
+                    <span class="value">{{ record_target }}</span>
+                </div>
+                {% else %}
+                    <h4>No value for {{ name }} target provided</h4>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <h3>No generals for {{ name }} provided</h3>
+    {% endif %}
+{%- endmacro %}
+

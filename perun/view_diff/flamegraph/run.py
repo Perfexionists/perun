@@ -82,7 +82,10 @@ def escape_content(tag: str, content: str) -> str:
         (r"svg =", f"{tag}_svg ="),
         (r"svg,", f"{tag}_svg,"),
         (r">\s*\n<", r"><"),
-        (r"svg\"\)\[0\]", f'svg")[{TAGS_TO_INDEX.index(tag)}]'),
+        (
+            r"getElementsByTagName\(\"svg\"\)\[0\]",
+            f'getElementsByClassName("svg-content")[{TAGS_TO_INDEX.index(tag)}]',
+        ),
         (r"document.", f"{tag}_svg."),
         (
             f"({tag}_(svg|details|searchbtn|matchedtxt|ignorecaseBtn|unzoombtn)) = {tag}_svg.",

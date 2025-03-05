@@ -747,11 +747,11 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     )
 
     env_filters = {"sanitize_variable_name": filters.sanitize_variable_name}
-    template = templates.get_template("diff_view_report.html.jinja2", filters=env_filters)
+    template = templates.get_template("ssp_report.html.jinja2", filters=env_filters)
     content = template.render(
-        title="Differences of profiles (with sankey)",
+        title="Perun report - differences of profiles",
         perun_version=perun.__version__,
-        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_stats=lhs_diff_stats,
