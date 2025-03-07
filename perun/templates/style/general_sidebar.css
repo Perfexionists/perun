@@ -7,7 +7,6 @@
     background-color: var(--color-primary-hover);
     border-radius: 0 8px 8px 0;
     transition: all 0.3s ease-in-out;
-    overflow: scroll;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -58,7 +57,7 @@
     flex-direction: column;
     margin-top: 5px;
     gap: 5px;
-    overflow: hidden;
+    overflow: scroll;
     transition: height 0.3s ease, opacity 0.3s ease;
 }
 
@@ -100,4 +99,5 @@
     color: var(--color-light-white);
     font-size: 0.9em;
     text-align: right;
+    overflow: auto;
 }
