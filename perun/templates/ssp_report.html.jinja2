@@ -79,8 +79,9 @@
         </a> -->
     </div>
 
-    <div class="general-sidebar">
+    <div class="general-sidebar" id="general-sidebar">
         <span class="material-icons general-sidebar__icon">info</span>
+
         <div class="general-sidebar-content">
 
             {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
@@ -204,14 +205,15 @@
 
         <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
             <div class="flamegraph_search_box">
-                <span>View Type: </span>
+                <span>Layout: </span>
                 <span class="material-symbols-outlined" id="flamegraph_visualization_switch">view_column_2</span>
             </div>
 
             <div class="flamegraph_search_box">
-                <label for="flamegraph_search_all" class="flamegraph_search_input_label">Search:</label>
+                <label for="flamegraph_search_all" class="flamegraph_search_input_label">Global Search:</label>
                 <input id="flamegraph_search_all" class="dt-input" />
-                <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Search For All</button>
+                <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Global Search</button>
+                <button id="flamegraph_zoom_reset_all" class="dt-paging-button">Reset Global Zoom</button>
             </div>
         </div>
 
@@ -525,7 +527,34 @@
                         resetSearchDiffTarget,
                     ];
 
-                    resetElements.forEach(el => el?.dispatchEvent(new Event("click", {bubbles: true})));
+                    searchBar.value = "";
+                    resetElements.forEach(el => {
+                        if (el && el.classList.contains("show")) {
+                            el.dispatchEvent(new Event("click", {bubbles: true}));
+                        }
+                    });
+                {%- endfor %}
+            });
+
+            document.getElementById("flamegraph_zoom_reset_all").addEventListener("click", function () {
+                {%- for index in range(0, flamegraphs|length) %}
+                    const resetZoomBase = document.getElementById("lhs_{{ index }}_unzoom");
+                    const resetZoomTarget = document.getElementById("rhs_{{ index }}_unzoom");
+                    const resetZoomDiffBase = document.getElementById("lhs_diff_{{ index }}_unzoom");
+                    const resetZoomDiffTarget = document.getElementById("rhs_diff_{{ index }}_unzoom");
+
+                    const resetElements = [
+                        resetZoomBase,
+                        resetZoomTarget,
+                        resetZoomDiffBase,
+                        resetZoomDiffTarget,
+                    ];
+
+                    resetElements.forEach(el => {
+                        if (el && !el.classList.contains("hide")) {
+                            el.dispatchEvent(new Event("click", {bubbles: true}));
+                        }
+                    });
                 {%- endfor %}
             });
 
