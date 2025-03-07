@@ -156,6 +156,7 @@
         {% endif %}
     </div>
 
+    {% set general_stats_keys = ["Maximum Trace Length [#] (value)", "Overall Inclusive Samples  [#] (value)"] %}
 
     <div id="profile-stats" class="section">
         <div class="section_header">
@@ -164,8 +165,17 @@
         </div>
 
         <div class="comparison_container">
-            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', lhs_stats) }}
-            {{ table_generator.general_comparison_container('target', 'Profile Statistics', rhs_stats) }}
+            {% set general_stats_records_baseline = lhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
+            {% set general_stats_records_tgt = rhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
+            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', general_stats_records_baseline) }}
+            {{ table_generator.general_comparison_container('target', 'Profile Statistics', general_stats_records_tgt) }}
+        </div>
+
+        <div class="comparison_container">
+            {% set other_records_baseline = lhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
+            {% set other_records_tgt = rhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
+            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', other_records_baseline) }}
+            {{ table_generator.general_comparison_container('target', 'Profile Statistics', other_records_tgt) }}
         </div>
     </div>
 
