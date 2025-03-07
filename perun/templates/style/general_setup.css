@@ -81,3 +81,8 @@ h2 {
     padding: 10px;
     margin-top: 10px;
 }
+
+.full_visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+}

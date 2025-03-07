@@ -62,6 +62,7 @@
 
 .column_extended {
     padding: 6px;
+    max-width: 100% !important;
 }
 
 .graph_wrapper_container {

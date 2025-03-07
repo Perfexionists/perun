@@ -49,27 +49,39 @@
 
     <div class="side-panel navigation-panel">
         <a href="#general">
-            <span class="material-icons">home</span>
+            <span class="full_visible">
+                {% include 'assets/home.svg' %}
+            </span>
             <span class="side-panel__description">General</span>
         </a>
         <a href="#profile-vulnerabilities">
-            <span class="material-icons">gpp_maybe</span>
+            <span class="full_visible">
+                {% include 'assets/vulnerabilities.svg' %}
+            </span>
             <span class="side-panel__description">Vulnerabilities</span>
         </a>
         <a href="#profile-stats">
-            <span class="material-icons">equalizer</span>
+            <span class="full_visible">
+                {% include 'assets/stats.svg' %}
+            </span>
             <span class="side-panel__description">Profile Stats</span>
         </a>
         <a href="#profile-metadata">
-            <span class="material-icons">account_tree</span>
+            <span class="full_visible">
+                {% include 'assets/tree.svg' %}
+            </span>
             <span class="side-panel__description">Profile Metadata</span>
         </a>
         <a href="#traces">
-            <span class="material-icons">move_down</span>
+            <span class="full_visible">
+                {% include 'assets/trace.svg' %}
+            </span>
             <span class="side-panel__description">Traces Table</span>
         </a>
         <a href="#flame">
-            <span class="material-icons">local_fire_department</span>
+            <span class="full_visible">
+                {% include 'assets/fire.svg' %}
+            </span>
             <span class="side-panel__description">Flame Graphs</span>
         </a>
         <!--
@@ -80,7 +92,9 @@
     </div>
 
     <div class="general-sidebar" id="general-sidebar">
-        <span class="material-icons general-sidebar__icon">info</span>
+        <span class="general-sidebar__icon">
+            {% include 'assets/info.svg' %}
+        </span>
 
         <div class="general-sidebar-content">
 
@@ -112,7 +126,9 @@
     </div>
 
     <div class="notes-sidebar">
-        <span class="material-icons general-sidebar__icon">push_pin</span>
+        <span class="general-sidebar__icon">
+            {% include 'assets/pin_w.svg' %}
+        </span>
         <a> <p id="export-notes">Export with notes</p> </a>
         <div class="notes-sidebar-content">
             <div id="notes-list">
@@ -124,7 +140,9 @@
     <div class="section" id="general">
         <div class="section_header">
             <h1>Perun Performance Analysis</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="General">push_pin</span>
+            <span class="material-icons pin-icon pin-icon__header" data-section="General">
+                push_pin
+            </span>
         </div>
         <p>Perun version: v{{ perun_version }}</p>
         <p>Generated on: {{ timestamp }}</p>
