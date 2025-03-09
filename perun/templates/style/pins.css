@@ -22,9 +22,16 @@
     opacity: 1;
 }
 
-.pin-icon__header:hover,
-.data-row:hover .pin-icon {
+.pin-icon__header:hover {
     color: var(--color-bs-secondary);
+}
+
+.data-row svg {
+    transition: all 0.3s ease-out;
+}
+
+.data-row:hover svg {
+    fill: var(--color-bs-secondary);
 }
 
 .info-icon__header {
