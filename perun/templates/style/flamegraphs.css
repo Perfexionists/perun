@@ -20,3 +20,15 @@
 #flamegraph_visualization_switch {
     cursor: pointer;
 }
+
+.svg_switch_container {
+    display: none;
+}
+
+.svg_switch_container.visible {
+    display: inline-block;
+}
+
+.svg_switch_container.hidden {
+    display: none;
+}
