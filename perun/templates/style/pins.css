@@ -6,15 +6,6 @@
     left: 0;
     font-size: 16px;
     cursor: pointer;
-    color: var(--color-bs-secondary-transparent);
-}
-
-.pin-icon__header {
-    position: unset;
-    left: unset;
-    scale: 1.5;
-    opacity: 1;
-    visibility: visible;
 }
 
 .column:hover .pin-icon {
@@ -22,11 +13,25 @@
     opacity: 1;
 }
 
-.pin-icon__header:hover {
-    color: var(--color-bs-secondary);
+.pin-icon__header {
+    position: unset;
+    left: unset;
+    scale: 1.1;
+    opacity: 1;
+    visibility: visible;
+}
+
+.pin-icon__header svg {
+    fill: var(--color-white-tinted);
+    transition: all 0.3s ease-out;
+}
+
+.pin-icon__header:hover svg {
+    fill: var(--color-bs-secondary);
 }
 
 .data-row svg {
+    fill: var(--color-white-tinted);
     transition: all 0.3s ease-out;
 }
 
@@ -34,10 +39,11 @@
     fill: var(--color-bs-secondary);
 }
 
-.info-icon__header {
-    color: var(--color-info-transparent);
+.info-icon__header svg {
+    fill: var(--color-info-transparent) !important;
+    transition: all 0.3s ease-out;
 }
 
-.info-icon__header:hover {
-    color: var(--color-info);
+.info-icon__header:hover svg {
+    fill: var(--color-info) !important;
 }

@@ -1,5 +1,4 @@
-{% import 'ssp_table.html.jinja2' as table_generator %}
-{% import 'ssp_table_nested.html.jinja2' as nested_table_generator %}
+{% import 'ssp_table.html.jinja2' as property_generator %}
 {% import 'macros_profile_overview.html.jinja2' as profile_overview %}
 {% import 'ssp_general_sidebar_property.html.jinja2' as general_sidebar_property %}
 
@@ -138,18 +137,14 @@
     </div>
 
     <div class="section" id="general">
-        <div class="section_header">
-            <h1>Perun Performance Analysis</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="General">
-                push_pin
-            </span>
-        </div>
+
+        {{ property_generator.display_title("Perun Performance Analysis", "general") }}
         <p>Perun version: v{{ perun_version }}</p>
         <p>Generated on: {{ timestamp }}</p>
 
         <div class="comparison_container">
-            {{ table_generator.general_comparison_container('baseline', 'General', lhs_header) }}
-            {{ table_generator.general_comparison_container('target', 'General', rhs_header) }}
+            {{ property_generator.general_comparison_container('baseline', 'general', lhs_header) }}
+            {{ property_generator.general_comparison_container('target', 'general', rhs_header) }}
         </div>
     </div>
 
@@ -157,15 +152,13 @@
     {% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
 
     <div id="profile-vulnerabilities" class="section">
-        <div class="section_header">
-            <h1>Vulnerabilities</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Vulnerabilities">push_pin</span>
-        </div>
+
+        {{ property_generator.display_title("Vulnerabilities", "vulnerabilities") }}
 
         {% if lhs_vulnerabilities or rhs_vulnerabilities %}
             <div class="comparison_container">
-                {{ nested_table_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
-                {{ nested_table_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
+                {{ property_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
+                {{ property_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
             </div>
         {% else %}
             <div class="not-provided-box">
@@ -177,36 +170,32 @@
     {% set general_stats_keys = ["Maximum Trace Length [#] (value)", "Overall Inclusive Samples  [#] (value)"] %}
 
     <div id="profile-stats" class="section">
-        <div class="section_header">
-            <h1>Profile Statistics</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Profile Statistics">push_pin</span>
-        </div>
+
+        {{ property_generator.display_title("Profile Statistics", "profile statistics") }}
 
         <div class="comparison_container">
             {% set general_stats_records_baseline = lhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
             {% set general_stats_records_tgt = rhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
-            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', general_stats_records_baseline) }}
-            {{ table_generator.general_comparison_container('target', 'Profile Statistics', general_stats_records_tgt) }}
+            {{ property_generator.general_comparison_container('baseline', 'Profile Statistics', general_stats_records_baseline) }}
+            {{ property_generator.general_comparison_container('target', 'Profile Statistics', general_stats_records_tgt) }}
         </div>
 
         <div class="comparison_container">
             {% set other_records_baseline = lhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
             {% set other_records_tgt = rhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
-            {{ table_generator.general_comparison_container('baseline', 'Profile Statistics', other_records_baseline) }}
-            {{ table_generator.general_comparison_container('target', 'Profile Statistics', other_records_tgt) }}
+            {{ property_generator.general_comparison_container('baseline', 'Profile Statistics', other_records_baseline) }}
+            {{ property_generator.general_comparison_container('target', 'Profile Statistics', other_records_tgt) }}
         </div>
     </div>
 
     <div id="profile-metadata" class="section">
-        <div class="section_header">
-            <h1>Profile Metadata</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Profile Metadata">push_pin</span>
-        </div>
+
+        {{ property_generator.display_title("Profile Metadata", "profile metadata") }}
 
         {%  if lhs_metadata or rhs_metadata %}
             <div class="comparison_container">
-                {{ table_generator.general_comparison_container('baseline', 'Profile Metadata', lhs_metadata) }}
-                {{ table_generator.general_comparison_container('target', 'Profile Metadata', rhs_metadata) }}
+                {{ property_generator.general_comparison_container('baseline', 'Profile Metadata', lhs_metadata) }}
+                {{ property_generator.general_comparison_container('target', 'Profile Metadata', rhs_metadata) }}
             </div>
         {% else %}
             <div class="not-provided-box">
@@ -216,25 +205,27 @@
     </div>
 
     {% include 'ssp_table_traces.html.jinja2' %}
-
-    <div id="flame" class="section">
-        <div class="section_header">
-            <span class="material-icons pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="Look for the topmost widest rectangle.
+    {% set flame_graphs_info = "Look for the topmost widest rectangle.
                     Click on the node to explore the results in a form of Sankey Graph (below the table).
                     Colours are picked randomly (but uniformly); they don't signal any scale.
                     The bigger the rectangle the more often the UID was seen on the stack.
-                    The higher the flame the more nested calls were made in the context.">
-                info
-            </span>
-            <h1>Flame Graphs</h1>
-            <span class="material-icons pin-icon pin-icon__header" data-section="Flame Graphs">push_pin</span>
-        </div>
+                    The higher the flame the more nested calls were made in the context." %}
+
+    <div id="flame" class="section">
+
+        {{ property_generator.display_title_with_info("Flame Graphs", "flame graphs", flame_graphs_info ) }}
 
         <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
             <div class="flamegraph_search_box">
                 <span>Layout: </span>
-                <span class="material-symbols-outlined" id="flamegraph_visualization_switch">view_column_2</span>
+                <span id="flamegraph_visualization_switch" class="visualization_icon">
+                    <span class="svg_switch_container visible">
+                        {% include 'assets/grid_view.svg' %}
+                    </span>
+                    <span class="svg_switch_container hidden">
+                        {% include 'assets/row_view.svg' %}
+                    </span>
+                </span>
             </div>
 
             <div class="flamegraph_search_box">
@@ -321,7 +312,7 @@
                     <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
                     <div class="note-item--content" data-note-value="">
                         <textarea class="note-input" placeholder="Enter your note"></textarea>
-                        <span class="material-icons" style="cursor: pointer; margin: 0">delete</span>
+                        <span class="" style="cursor: pointer; margin: 0">{% include 'assets/bin.svg' %}</span>
                         <button class="note-status-toggle attention">Attention</button>
                     </div>`;
 
@@ -432,7 +423,7 @@
             });
 
             document.addEventListener("mouseout", function (event) {
-                if (event.target.classList.contains("info-icon__header")) {
+                if (!event.relatedTarget || !event.relatedTarget.closest(".info-icon__header")) {
                     section_guide.classList.remove("visible");
                 }
             });
@@ -509,12 +500,10 @@
                     document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
                         node.addEventListener("mouseenter", function () {
                             const textElement = node.querySelector("title");
-                            console.log(textElement.innerHTML);
 
                             if (textElement && textElement.innerHTML) {
                                 let searchTerm = cleanTitle(textElement.innerHTML);
                                 searchTerm = "^" + searchTerm;
-                                console.log(searchTerm);
 
                                 window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
                                 window[`lhs_{{index}}_search`]();
@@ -587,21 +576,25 @@
             });
 
             // Different types of flamegraph ordering switch
-            const visualization_switch = document.getElementById("flamegraph_visualization_switch");
-            visualization_switch.addEventListener("click", function () {
+            const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");
+            visualizationSwitch.addEventListener("click", function () {
                 const elements = document.querySelectorAll(".comparison_container_stacked");
+
                 elements.forEach(element => {
                     const currentDirection = window.getComputedStyle(element).flexDirection;
-
                     if (currentDirection === "row") {
                         element.style.flexDirection = "column";
-                        visualization_switch.textContent = "view_agenda";
-                    } else if (currentDirection === "column") {
+                    } else {
                         element.style.flexDirection = "row";
-                        visualization_switch.textContent = "view_column_2";
                     }
                 });
+
+                visualizationSwitch.querySelectorAll(".svg_switch_container").forEach(svg => {
+                    svg.classList.toggle("hidden");
+                    svg.classList.toggle("visible");
+                });
             });
+
 
             function cleanTitle(title) {
                 return title.replace(/\(\d.*?\).*/, '').trim();
