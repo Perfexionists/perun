@@ -24,7 +24,6 @@ perun_templates_files = files(
     'ssp_report.html.jinja2',
     'ssp_sankey.html.jinja2',
     'ssp_table.html.jinja2',
-    'ssp_table_traces.html.jinja2',
     'view.__init__.jinja2',
     'view.run.jinja2',
 )
@@ -34,5 +33,7 @@ py3.install_sources(
     subdir: perun_templates_dir
 )
 
-subdir('style')
+subdir('assets')
 subdir('scripts')
+subdir('ssp_sections')
+subdir('style')

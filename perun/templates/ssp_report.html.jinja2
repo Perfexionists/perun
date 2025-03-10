@@ -136,75 +136,22 @@
         </div>
     </div>
 
-    <div class="section" id="general">
+    <!-- GENERAL STATS -->
+    {% include 'ssp_sections/section_general_stats.html.jinja2' %}
 
-        {{ property_generator.display_title("Perun Performance Analysis", "general") }}
-        <p>Perun version: v{{ perun_version }}</p>
-        <p>Generated on: {{ timestamp }}</p>
+    <!-- VULNERABILITIES -->
+    {% include 'ssp_sections/section_vulnerabilities.html.jinja2' %}
 
-        <div class="comparison_container">
-            {{ property_generator.general_comparison_container('baseline', 'general', lhs_header) }}
-            {{ property_generator.general_comparison_container('target', 'general', rhs_header) }}
-        </div>
-    </div>
+    <!-- PROFILE STATS -->
+    {% include 'ssp_sections/section_profile_stats.html.jinja2' %}
 
-    {% set lhs_vulnerabilities = lhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
-    {% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
+    <!-- PROFILE METADATA -->
+    {% include 'ssp_sections/section_metadata.html.jinja2' %}
 
-    <div id="profile-vulnerabilities" class="section">
+    <!-- TABLE WITH TRACES -->
+    {% include 'ssp_sections/section_table_traces.html.jinja2' %}
 
-        {{ property_generator.display_title("Vulnerabilities", "vulnerabilities") }}
-
-        {% if lhs_vulnerabilities or rhs_vulnerabilities %}
-            <div class="comparison_container">
-                {{ property_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
-                {{ property_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
-            </div>
-        {% else %}
-            <div class="not-provided-box">
-                <h3>No vulnerabilities provided.</h3>
-            </div>
-        {% endif %}
-    </div>
-
-    {% set general_stats_keys = ["Maximum Trace Length [#] (value)", "Overall Inclusive Samples  [#] (value)"] %}
-
-    <div id="profile-stats" class="section">
-
-        {{ property_generator.display_title("Profile Statistics", "profile statistics") }}
-
-        <div class="comparison_container">
-            {% set general_stats_records_baseline = lhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
-            {% set general_stats_records_tgt = rhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
-            {{ property_generator.general_comparison_container('baseline', 'Profile Statistics', general_stats_records_baseline) }}
-            {{ property_generator.general_comparison_container('target', 'Profile Statistics', general_stats_records_tgt) }}
-        </div>
-
-        <div class="comparison_container">
-            {% set other_records_baseline = lhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
-            {% set other_records_tgt = rhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
-            {{ property_generator.general_comparison_container('baseline', 'Profile Statistics', other_records_baseline) }}
-            {{ property_generator.general_comparison_container('target', 'Profile Statistics', other_records_tgt) }}
-        </div>
-    </div>
-
-    <div id="profile-metadata" class="section">
-
-        {{ property_generator.display_title("Profile Metadata", "profile metadata") }}
-
-        {%  if lhs_metadata or rhs_metadata %}
-            <div class="comparison_container">
-                {{ property_generator.general_comparison_container('baseline', 'Profile Metadata', lhs_metadata) }}
-                {{ property_generator.general_comparison_container('target', 'Profile Metadata', rhs_metadata) }}
-            </div>
-        {% else %}
-            <div class="not-provided-box">
-                <h3>No metadata provided.</h3>
-            </div>
-        {% endif %}
-    </div>
-
-    {% include 'ssp_table_traces.html.jinja2' %}
+    <!-- FLAME GRAPHS -->
     {% set flame_graphs_info = "Look for the topmost widest rectangle.
                     Click on the node to explore the results in a form of Sankey Graph (below the table).
                     Colours are picked randomly (but uniformly); they don't signal any scale.
