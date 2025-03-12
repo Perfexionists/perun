@@ -8,6 +8,18 @@
     cursor: pointer;
 }
 
+.pin-icon__pinned {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+.pin-icon__pinned svg {
+    fill: var(--color-primary) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 .column:hover .pin-icon {
     visibility: visible;
     opacity: 1;

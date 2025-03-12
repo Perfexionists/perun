@@ -67,7 +67,7 @@
         </a>
         <a href="#profile-metadata">
             <span class="full_visible">
-                {% include 'assets/tree.svg' %}
+                {% include 'assets/metadata.svg' %}
             </span>
             <span class="side-panel__description">Profile Metadata</span>
         </a>
@@ -124,9 +124,9 @@
         </div>
     </div>
 
-    <div class="notes-sidebar">
+    <div class="notes-sidebar" id="notes-sidebar">
         <span class="general-sidebar__icon">
-            {% include 'assets/pin_w.svg' %}
+            {% include 'assets/pin_g.svg' %}
         </span>
         <a> <p id="export-notes">Export with notes</p> </a>
         <div class="notes-sidebar-content">
@@ -251,13 +251,19 @@
                 }
             }
 
-            function addNoteForSection(sectionId) {
+            function deleteNoteForSection(noteItemToDelete, pinToDelete) {
+                noteItemToDelete.remove();
+                pinToDelete.classList.remove("pin-icon__pinned");
+            }
+
+            function addNoteForSection(pin, sectionId) {
                 const noteItem = document.createElement("div");
                 noteItem.classList.add("note-item", "note-item--attention");
+                noteItem.setAttribute("id", `${sectionId}-note-item`);
 
                 noteItem.innerHTML = `
                     <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
-                    <div class="note-item--content" data-note-value="">
+                    <div class="note-item--content">
                         <textarea class="note-input" placeholder="Enter your note"></textarea>
                         <span class="" style="cursor: pointer; margin: 0">{% include 'assets/bin.svg' %}</span>
                         <button class="note-status-toggle attention">Attention</button>
@@ -266,7 +272,9 @@
                 const noteInput = noteItem.querySelector(".note-input");
                 attachInputListener(noteInput);
 
-                noteItem.querySelector("span").onclick = () => noteItem.remove();
+                noteItem.querySelector("span").onclick = () => {
+                    deleteNoteForSection(noteItem, pin)
+                }
 
                 const statusButton = noteItem.querySelector(".note-status-toggle");
                 statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
@@ -276,8 +284,15 @@
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
                 pin.onclick = () => {
-                    addNoteForSection(pin.dataset.section);
-                    pin.parentElement.setAttribute("id", pin.dataset.section.toString());
+                    if (!pin.classList.contains("pin-icon__pinned")) {
+                        addNoteForSection(pin, pin.dataset.section);
+                        pin.classList.add("pin-icon__pinned");
+                        pin.parentElement.setAttribute("id", pin.dataset.section.toString());
+                    }
+                    else {
+                        const noteItemToDelete = document.getElementById(pin.dataset.section + "-note-item");
+                        deleteNoteForSection(noteItemToDelete, pin)
+                    }
                 }
             });
 
