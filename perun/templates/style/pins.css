@@ -11,6 +11,7 @@
 .pin-icon__pinned {
     visibility: visible !important;
     opacity: 1 !important;
+    rotate: -30deg;
 }
 
 
