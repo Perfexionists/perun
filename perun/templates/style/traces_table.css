@@ -22,11 +22,17 @@
 /* rows */
 .traces_table tbody tr {
     transition: background 0.2s ease-in-out;
+    height: 45px;
 }
 
-.traces_table tbody tr:hover {
+.traces_table tbody tr.hidden:hover {
     background-color: var(--color-light-white);
     color: var(--color-primary);
+}
+
+.traces_table tbody tr td h4 {
+    border-bottom: none !important;
+    margin-bottom: 10px;
 }
 
 div.dt-container {
