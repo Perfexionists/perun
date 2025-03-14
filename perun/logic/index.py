@@ -70,7 +70,7 @@ class BasicIndexEntry:
         self.checksum: str = checksum
         self.path: str = path
         self.offset: int = offset
-        # For backward compatibility, we set everything to 'unknown', but it is not stored in the index
+        # For backward compatibility, we set everything to 'unknown', but not store it in the index
         self.type: str = "??"
         self.cmd: str = "??"
         self.workload: str = "??"
@@ -92,8 +92,6 @@ class BasicIndexEntry:
 
         This is basic version, which stores only the information of timestamp, sha and path of the
         file.
-
-        TODO: add check for index version
 
         :param index_handle: opened index handle
         :param index_version: version of the opened index
@@ -231,19 +229,19 @@ class ExtendedIndexEntry(BasicIndexEntry):
         """
         basic_entry = BasicIndexEntry.read_from(index_handle, get_older_version(index_version))
         profile: dict[str, Any] = {
-            "header": {},
-            "collector_info": {},
-            "postprocessors": [],
+            "header": {
+                "type": store.read_string_from_handle(index_handle),
+                "cmd": store.read_string_from_handle(index_handle),
+                "workload": store.read_string_from_handle(index_handle),
+                "label": store.read_string_from_handle(index_handle),
+            },
+            "collector_info": {
+                "name": store.read_string_from_handle(index_handle),
+            },
+            "postprocessors": [
+                {"name": post} for post in store.read_list_from_handle(index_handle)
+            ],
         }
-
-        profile["header"]["type"] = store.read_string_from_handle(index_handle)
-        profile["header"]["cmd"] = store.read_string_from_handle(index_handle)
-        profile["header"]["workload"] = store.read_string_from_handle(index_handle)
-        profile["header"]["label"] = store.read_string_from_handle(index_handle)
-        profile["collector_info"]["name"] = store.read_string_from_handle(index_handle)
-        profile["postprocessors"] = [
-            {"name": post} for post in store.read_list_from_handle(index_handle)
-        ]
 
         # Read the rest of the stored profile
         return ExtendedIndexEntry(
@@ -320,8 +318,7 @@ def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
     entry_constructor = INDEX_ENTRY_CONSTRUCTORS[INDEX_VERSION - 1]
 
     while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
-        entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))  # type: ignore
-        # Fixme: ^--- there is an issue with mypy, that type has no attribute read_from, but it is syntactically correct
+        entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))
         loaded_objects += 1
         yield entry
 
@@ -350,7 +347,8 @@ def print_index_from_handle(index_handle: BinaryIO) -> None:
     number_of_entries = store.read_int_from_handle(index_handle)
 
     perun_log.write(
-        f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n"
+        f"{index_prefix.decode('utf-8')}, index version {index_version} with "
+        f"{number_of_entries} entries\n"
     )
 
     for entry in walk_index(index_handle):
@@ -421,52 +419,63 @@ def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[
 def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry) -> None:
     """Writes the file_entry to its appropriate position within the index.
 
-    Given the file entry, writes the entry within the file, moving everything by the given offset
-    and then incrementing the number of entries within the index.
+    The position is determined by lexicographic ordering over the entry paths.
+
+    If the index already contains an entry with the same path as file_entry, then the original
+    entry in the index is overwritten with the file_entry. Hence, the index works as an ordered
+    set of entries with the key being the entry path.
+
+    Offset specifications in the file_entry are ignored, as they may be unaligned or incorrect
+    w.r.t. to the ordering of entries.
 
     :param index_file: path to the index file
     :param file_entry: index entry that will be written to the file
     """
     with open(index_file, "rb+") as index_handle:
-        # Lookup the position of the registered file within the index
-        if file_entry.offset == -1:
-            try:
-                predicate = lambda entry: entry.path > file_entry.path or (
-                    entry.path == file_entry.path and entry.time >= file_entry.time
+        try:
+            # Look for an index entry that occupies the space where this entry should be stored.
+            looked_up_entry = lookup_entry_within_index(
+                index_handle, lambda entry: entry.path >= file_entry.path, file_entry.path
+            )
+            # An identical entry already exists, skip any index update.
+            if (
+                looked_up_entry.path == file_entry.path
+                and looked_up_entry.time == file_entry.time
+                and looked_up_entry.label == file_entry.label
+            ):
+                perun_log.warn(
+                    f"{file_entry.path} ({file_entry.time}) already registered in {index_file}",
                 )
-                looked_up_entry = lookup_entry_within_index(
-                    index_handle, predicate, file_entry.path
-                )
+                return
+            # A non-identical index entry with the same path has been found, overwrite.
+            elif looked_up_entry.path == file_entry.path:
+                placement_offset, preserve_offset = looked_up_entry.offset, index_handle.tell()
+            # This is a completely new entry.
+            else:
+                placement_offset = preserve_offset = looked_up_entry.offset
+        except EntryNotFoundException:
+            # This entry should be placed as the last one within the index.
+            index_handle.seek(0, 2)
+            placement_offset = preserve_offset = index_handle.tell()
 
-                # If there is an exact match, we do not add the entry to the index
-                if (
-                    looked_up_entry.path == file_entry.path
-                    and looked_up_entry.time == file_entry.time
-                ):
-                    perun_log.warn(
-                        f"{file_entry.path} ({file_entry.time}) already registered in {index_file}",
-                    )
-                    return
-                offset_in_file = looked_up_entry.offset
-            except EntryNotFoundException:
-                # Move to end of the file and set the offset to the end of the file
-                index_handle.seek(0, 2)
-                offset_in_file = index_handle.tell()
-        else:
-            offset_in_file = file_entry.offset
+        # placement_offset: an index offset indicating where to store the entry.
+        # preserve_offset: an index offset marking the position of the first index entry that
+        #    should be stored directly after the newly inserted entry. This offset is used to fill
+        #    a buffer with index entries that are to be shifted to make space for the new entry.
+        # When placement and preserve offsets are identical, a new entry is to be written.
+        # Otherwise, an existing entry is to be overwritten.
+        if placement_offset == preserve_offset:
+            modify_number_of_entries_in_index(index_handle, lambda x: x + 1)
 
-        # Modify the number of entries in index and return to position
-        modify_number_of_entries_in_index(index_handle, lambda x: x + 1)
-        index_handle.seek(offset_in_file)
-
-        # Read previous entries to buffer and return back to the position
+        # Read the entries that are to be preserved into a buffer
+        index_handle.seek(preserve_offset)
         buffer = index_handle.read()
-        index_handle.seek(offset_in_file)
 
-        # Write the index_file entry to index
+        # (Over)write an entry in the index at the placement offset
+        index_handle.seek(placement_offset)
         file_entry.write_to(index_handle)
 
-        # Write the stuff stored in buffer
+        # Write back the entries stored in the buffer
         index_handle.write(buffer)
 
         # Finally update the index version, if it was the older one
@@ -610,7 +619,7 @@ def remove_from_index(
     index. The index is walked just once.
 
     :param base_dir: base directory of the minor version
-    :param minor_version: sha-1 representation of the minor version of vcs (like e..g commit)
+    :param minor_version: sha-1 representation of the minor version of vcs (like e.g. commit)
     :param removed_file_generator: generator of filenames, that will be removed from the
         tracking
     """
@@ -643,7 +652,10 @@ def remove_from_index(
                 else:
                     return looked_entry.path == removed_file
 
-            count_status = f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/{removed_profile_number}"
+            count_status = (
+                f"{common_kit.format_counter_number(i + 1, removed_profile_number)}/"
+                f"{removed_profile_number}"
+            )
             try:
                 found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
                 removed_entries.append(found_entry)
@@ -761,4 +773,4 @@ def save_custom_index(index_path: str, records: list[Any] | dict[Any, Any]) -> N
         index_handle.write(compressed)
 
 
-INDEX_ENTRY_CONSTRUCTORS = [BasicIndexEntry, ExtendedIndexEntry]
+INDEX_ENTRY_CONSTRUCTORS = (BasicIndexEntry, ExtendedIndexEntry)

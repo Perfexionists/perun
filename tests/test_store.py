@@ -124,6 +124,46 @@ def test_versions(tmpdir, monkeypatch):
 
 
 @pytest.mark.usefixtures("cleandir")
+def test_index_duplicate_entries(tmpdir):
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "degradation_profiles")
+    base_path = os.path.join(pool_path, "linear_base.perf")
+    target_path = os.path.join(pool_path, "linear_target.perf")
+    baseline_profile = store.load_profile_from_file(base_path, True, True)
+    target_profile = store.load_profile_from_file(target_path, True, True)
+
+    index_file = os.path.join(str(tmpdir), "index")
+    index.touch_index(index_file)
+
+    st_base = timestamps.timestamp_to_str(os.stat(base_path).st_mtime)
+    st_target = timestamps.timestamp_to_str(os.stat(target_path).st_mtime)
+    sha_base = store.compute_checksum("Baseline checksum".encode("utf-8"))
+    sha_target = store.compute_checksum("Target checksum".encode("utf-8"))
+    entry_base = index.ExtendedIndexEntry(st_base, sha_base, base_path, -1, baseline_profile)
+    entry_target = index.ExtendedIndexEntry(st_target, sha_target, target_path, -1, target_profile)
+
+    # Write both entries into the same index.
+    index.write_entry_to_index(index_file, entry_base)
+    index.write_entry_to_index(index_file, entry_target)
+
+    with open(index_file, "rb+") as index_handle:
+        # There should be two entries in the index.
+        entries = list(index.walk_index(index_handle))
+        assert len(entries) == 2
+
+        # Attempt to insert an identical entry, nothing should happen
+        index.write_entry_to_index(index_file, entries[1])
+        assert len(list(index.walk_index(index_handle))) == 2
+
+        # Attempt to insert an entry with identical path but different label.
+        # The original entry should be overwritten.
+        entry_base.label = "user-defined label"
+        index.write_entry_to_index(index_file, entry_base)
+        entries_after = list(index.walk_index(index_handle))
+        assert len(entries_after) == 2
+        assert entries_after[0].label == "user-defined label"
+
+
+@pytest.mark.usefixtures("cleandir")
 def test_helpers(tmpdir):
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
