@@ -94,6 +94,11 @@ def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]
             "The version control version, for which the profile was measured.",
         ),
         helpers.ProfileHeaderEntry(
+            "profile label",
+            profile["header"].get("label", ""),
+            "A label associated with this profile, if any.",
+        ),
+        helpers.ProfileHeaderEntry(
             "command", command, "The workload / command, for which the profile was measured."
         ),
         helpers.ProfileHeaderEntry(
