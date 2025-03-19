@@ -185,6 +185,40 @@ def test_diff_incremental_sankey_kperf(pcs_with_root):
     assert "diff.html" in os.listdir(os.getcwd())
 
 
+def test_diff_report_invalid_forward_param(pcs_with_root):
+    runner = CliRunner()
+    baseline_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-baseline-stats-metadata.perf"
+    )
+    target_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-target-stats-metadata.perf"
+    )
+
+    result = runner.invoke(
+        cli.showdiff,
+        [
+            baseline_profilename,
+            target_profilename,
+            "report",
+            "-o",
+            "diff_warn",
+            "--flamegraph-width",
+            1000,
+            "--flamegraph-height",
+            15,
+            "--flamegraph-minwidth",
+            0.1,
+            "--flamegraph-fontsize",
+            14,
+            "--flamegraph-bgcolors",
+            "invalid_color",
+        ],
+    )
+    assert result.exit_code == 0
+    assert 'Unrecognized bgcolor option "invalid_color"' in result.output
+    assert "diff_warn.html" in os.listdir(os.getcwd())
+
+
 def test_diff_incremental_sankey_ktrace(pcs_with_root):
     """Test creating sankey diff graph out of the two profile"""
     runner = CliRunner()

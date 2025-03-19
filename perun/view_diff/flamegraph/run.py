@@ -24,7 +24,10 @@ from perun.view.flamegraph import flamegraph as flamegraph_factory
 from perun.view_diff.short import run as table_run
 
 
-DEFAULT_WIDTH: int = 600
+# Default values of some flamegraph.pl arguments that our code needs as well
+FG_DEFAULT_IMAGE_WIDTH: int = 1200
+FG_DEFAULT_MIN_WIDTH: float = 0.1
+
 TAGS_TO_INDEX: list[str] = []
 
 
@@ -120,18 +123,21 @@ def generate_flamegraphs(
     lhs_profile: Profile,
     rhs_profile: Profile,
     data_types: list[str],
-    width: int = DEFAULT_WIDTH,
     skip_diff: bool = False,
     minimize: bool = False,
+    **fg_forward_kwargs: Any,
 ) -> list[tuple[str, str, str, str, str]]:
     """Constructs a list of tuples of flamegraphs for list of data_types
 
     :param lhs_profile: baseline profile
     :param rhs_profile: target profile
     :param data_types: list of data types (resources)
-    :param width: width of the flame graph
     :param skip_diff: whether the flamegraph diff should be skipped or not
     :param minimize: whether the flamegraph should be minimized or not
+    :param fg_forward_kwargs: additional parameters forwarded to the flamegraph scripts
+
+    :return: a collection of (data_type, lhs flamegraph, rhs flamegraph, lhs_rhs_diff_flamegraph,
+             rhs_lhs_diff_flamegraph) tuples
     """
     flamegraphs = []
     for i, dtype in log.progress(enumerate(data_types), description="Generating Flamegraphs"):
@@ -143,61 +149,70 @@ def generate_flamegraphs(
             rhs_flame = convert.to_flame_graph_format(
                 rhs_profile, profile_key=data_type, minimize=minimize
             )
-            _, lhs_max_trace, lhs_max_res = flamegraph_factory.compute_max_traces(lhs_flame, width)
-            _, rhs_max_trace, rhs_max_res = flamegraph_factory.compute_max_traces(rhs_flame, width)
-            max_trace = max(lhs_max_trace, rhs_max_trace)
-            max_resources = max(lhs_max_res, rhs_max_res)
-
-            lhs_graph = flamegraph_factory.draw_flame_graph(
-                lhs_flame,
-                "Baseline Flamegraph",
-                img_width=width,
-                fg_max_trace=max_trace,
-                fg_max_resource=max_resources,
+            fg_image_width = fg_forward_kwargs["width"]
+            _, lhs_max_trace, lhs_max_res = flamegraph_factory.compute_max_traces(
+                lhs_flame, fg_image_width
             )
-            escaped_lhs = escape_content(f"lhs_{i}", lhs_graph)
-            log.minor_success(f"Baseline flamegraph ({dtype})", "generated")
-
-            rhs_graph = flamegraph_factory.draw_flame_graph(
-                rhs_flame,
-                "Target Flamegraph",
-                img_width=width,
-                fg_max_trace=max_trace,
-                fg_max_resource=max_resources,
+            _, rhs_max_trace, rhs_max_res = flamegraph_factory.compute_max_traces(
+                rhs_flame, fg_image_width
             )
-            escaped_rhs = escape_content(f"rhs_{i}", rhs_graph)
-            log.minor_success(f"Target flamegraph ({dtype})", "generated")
+            fg_forward_kwargs["maxtrace"] = max(lhs_max_trace, rhs_max_trace)
+            fg_forward_kwargs["total"] = max(lhs_max_res, rhs_max_res)
 
-            if skip_diff:
-                lhs_escaped_diff, rhs_escaped_diff = "", ""
-            else:
-                lhs_diff_graph = flamegraph_factory.draw_flame_graph_difference(
-                    lhs_flame,
-                    rhs_flame,
-                    "Baseline-Target Diff Flamegraph",
-                    img_width=width,
-                    fg_max_trace=max_trace,
-                    fg_max_resource=max_resources,
+            with (
+                flamegraph_factory.fg_optional_tempfile(lhs_flame) as lhs_file,
+                flamegraph_factory.fg_optional_tempfile(rhs_flame) as rhs_file,
+            ):
+                lhs_graph = flamegraph_factory.draw_flame_graph(
+                    lhs_file,
+                    "Baseline Flamegraph",
+                    **fg_forward_kwargs,
                 )
-                lhs_escaped_diff = escape_content(f"lhs_diff_{i}", lhs_diff_graph)
-                rhs_diff_graph = flamegraph_factory.draw_flame_graph_difference(
-                    rhs_flame,
-                    lhs_flame,
-                    "Target-Baseline Diff Flamegraph",
-                    img_width=width,
-                    fg_flags="--negate",
-                    fg_max_trace=max_trace,
-                    fg_max_resource=max_resources,
+                escaped_lhs = escape_content(f"lhs_{i}", lhs_graph)
+                log.minor_success(f"Baseline flamegraph ({dtype})", "generated")
+
+                rhs_graph = flamegraph_factory.draw_flame_graph(
+                    rhs_file,
+                    "Target Flamegraph",
+                    **fg_forward_kwargs,
                 )
-                rhs_escaped_diff = escape_content(f"rhs_diff_{i}", rhs_diff_graph)
-                log.minor_success(f"Diff flamegraph ({dtype})", "generated")
+                escaped_rhs = escape_content(f"rhs_{i}", rhs_graph)
+                log.minor_success(f"Target flamegraph ({dtype})", "generated")
+
+                if skip_diff:
+                    lhs_escaped_diff, rhs_escaped_diff = "", ""
+                else:
+                    lhs_rhs_diff = flamegraph_factory.draw_differential_flame_graph(
+                        lhs_file,
+                        rhs_file,
+                        "Baseline-Target Diff Flamegraph",
+                        **fg_forward_kwargs,
+                    )
+                    lhs_escaped_diff = escape_content(f"lhs_diff_{i}", lhs_rhs_diff)
+                    log.minor_success(f"Baseline-target diff flamegraph ({dtype})", "generated")
+
+                    # We add the '--negate' for consistent diff colors in the rhs to lhs
+                    # flamegraph diff
+                    rhs_lhs_diff = flamegraph_factory.draw_differential_flame_graph(
+                        rhs_file,
+                        lhs_file,
+                        "Target-Baseline Diff Flamegraph",
+                        "samples",
+                        "negate",
+                        **fg_forward_kwargs,
+                    )
+                    rhs_escaped_diff = escape_content(f"rhs_diff_{i}", rhs_lhs_diff)
+                    log.minor_success(f"Target-baseline diff flamegraph ({dtype})", "generated")
             flamegraphs.append(
                 (dtype, escaped_lhs, escaped_rhs, lhs_escaped_diff, rhs_escaped_diff)
             )
             # Attempt to remove the leftover temporary 'palette.map' file that is no longer needed
             pathlib.Path("palette.map").unlink(missing_ok=True)
         except CalledProcessError as exc:
-            log.warn(f"could not generate flamegraphs: {exc}")
+            log.warn(
+                f"could not generate flamegraphs: {exc}\n"
+                f"Error message: {exc.stderr.decode('utf-8')}"
+            )
     return flamegraphs
 
 
@@ -269,7 +284,7 @@ def generate_flamegraph_difference(
     lhs_final_stats, rhs_final_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
 
     log.major_info("Generating Flamegraph Difference")
-    flamegraphs = generate_flamegraphs(lhs_profile, rhs_profile, data_types)
+    flamegraphs = generate_flamegraphs(lhs_profile, rhs_profile, data_types, width=kwargs["width"])
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
         diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
     )
@@ -310,8 +325,8 @@ def generate_flamegraph_difference(
     "--width",
     "-w",
     type=click.INT,
-    default=DEFAULT_WIDTH,
-    help="Sets the width of the flamegraph (default=600px).",
+    default=FG_DEFAULT_IMAGE_WIDTH,
+    help=f"Sets the width of the flamegraph (default={FG_DEFAULT_IMAGE_WIDTH}px).",
 )
 @click.option("--output-file", "-o", help="Sets the output file (default=automatically generated).")
 def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
