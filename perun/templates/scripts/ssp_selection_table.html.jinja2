@@ -9,7 +9,7 @@
                 orderable: false,
                 data: null,
                 defaultContent: "",
-                render: function () {return '<span class="plus">[+]</span><span class="minus">[-]</span>';},
+                render: function () {return '<span class="plus">{% include 'assets/add.svg' %}</span>';},
                 width: "15px"
             },
             { data: "uid" , className: "details-uid"},
@@ -115,7 +115,7 @@
                         orderable: false,
                         data: null,
                         defaultContent: "",
-                        render: function () {return '<span class="plus">[+]</span><span class="minus">[-]</span>';},
+                        render: function () {return '<span class="plus">{% include 'assets/add.svg' %}</span>';},
                         width: "15px"
                     }, {}, {
                         render: function(data, type) {return (type === 'display') ? stat_map[data] : data; }
