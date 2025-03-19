@@ -25,7 +25,7 @@ from perun.view_diff.short import run as table_run
 
 
 # Default values of some flamegraph.pl arguments that our code needs as well
-FG_DEFAULT_IMAGE_WIDTH: int = 1200
+FG_DEFAULT_IMAGE_WIDTH: int = 800
 FG_DEFAULT_MIN_WIDTH: float = 0.1
 
 TAGS_TO_INDEX: list[str] = []
@@ -150,11 +150,12 @@ def generate_flamegraphs(
                 rhs_profile, profile_key=data_type, minimize=minimize
             )
             fg_image_width = fg_forward_kwargs["width"]
+            fg_minwidth = fg_forward_kwargs.get("minwidth", f"{FG_DEFAULT_MIN_WIDTH}")
             _, lhs_max_trace, lhs_max_res = flamegraph_factory.compute_max_traces(
-                lhs_flame, fg_image_width
+                lhs_flame, fg_image_width, fg_minwidth
             )
             _, rhs_max_trace, rhs_max_res = flamegraph_factory.compute_max_traces(
-                rhs_flame, fg_image_width
+                rhs_flame, fg_image_width, fg_minwidth
             )
             fg_forward_kwargs["maxtrace"] = max(lhs_max_trace, rhs_max_trace)
             fg_forward_kwargs["total"] = max(lhs_max_res, rhs_max_res)

@@ -180,7 +180,7 @@ def get_units(profile_key: str) -> str:
 def compute_max_traces(
     flame_data: list[str],
     img_width: float,
-    min_width: str = "1",
+    min_width: str,
 ) -> tuple[int, int, int]:
     """Recreate Brendan Gregg's max trace depth computation for correct flamegraph height.
 
