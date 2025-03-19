@@ -233,7 +233,7 @@
                anchorsBase.style.display = "none";
                anchorTgt.style.display = "none";
            }
-           if (traces_table.offsetTop > window.scrollY) {
+           else {
                anchorsBase.style.display = "unset";
                anchorTgt.style.display = "unset";
            }
@@ -488,7 +488,6 @@
                             if (textElement && textElement.innerHTML) {
                                 let searchTerm = cleanTitle(textElement.innerHTML);
                                 searchTerm = "^" + searchTerm;
-                                console.log(searchTerm);
 
                                 window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
                                 window[`lhs_{{index}}_search`]();
@@ -580,11 +579,15 @@
                 });
             });
 
-
             function cleanTitle(title) {
                 // regex takes string, throws away everything after
                 // first '(' with a digit inside and escapes opening parenthesis with \ symbol
-                return title.replace(/\(\d.*?\).*/, '\\(').replace(/\[/, '\\[');
+                let index = title.search(/\(\d/);
+                if (index !== -1) {
+                    title = title.slice(0, index) + '\\(';
+                }
+                console.log(title);
+                return title.replace('[', '\\[');
             }
 
         {%- endif %}
