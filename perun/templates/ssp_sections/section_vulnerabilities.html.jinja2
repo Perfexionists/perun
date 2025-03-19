@@ -1,5 +1,5 @@
-{% set lhs_vulnerabilities = lhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
-{% set rhs_vulnerabilities = rhs_header | selectattr(0, "equalto", "vulnerabilities") | map(attribute=3) | first | default([]) %}
+{% set lhs_vulnerabilities_items = lhs_vulnerabilities | map(attribute=3) | first | default([]) %}
+{% set rhs_vulnerabilities_items = rhs_vulnerabilities | map(attribute=3) | first | default([]) %}
 
 <div id="profile-vulnerabilities" class="section">
 
@@ -7,8 +7,8 @@
 
     {% if lhs_vulnerabilities or rhs_vulnerabilities %}
         <div class="comparison_container">
-            {{ property_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities) }}
-            {{ property_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities) }}
+            {{ property_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities_items) }}
+            {{ property_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities_items) }}
         </div>
     {% else %}
         <div class="not-provided-box">

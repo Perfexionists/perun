@@ -77,6 +77,23 @@ def get_candidate_keys(candidate_keys: Iterable[str]) -> list[str]:
     return sorted([candidate for candidate in candidate_keys if candidate in allowed_keys])
 
 
+def generate_vulnerabilities(profile: Profile) -> list[helpers.ProfileHeaderEntry]:
+    """Generates vulnerabilities from the given profile
+
+    :param profile: profile for which we are generating the specification
+    :return: vulnerabilities as an entry
+    """
+    machine_info = profile.get("machine", {})
+    return [
+        helpers.ProfileHeaderEntry(
+            "vulnerabilities",
+            "?" if "cpu_vulnerabilities" not in machine_info else "",
+            "CPU vulnerabilities summary.",
+            machine_info.get("cpu_vulnerabilities", {}),
+        )
+    ]
+
+
 def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]:
     """Generates profile specification from the given profile
 
@@ -118,12 +135,6 @@ def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]
             "boot info",
             machine_info.get("boot_info", "?"),
             "The contents of `/proc/cmdline` containing boot information about kernel",
-        ),
-        helpers.ProfileHeaderEntry(
-            "vulnerabilities",
-            "?" if "cpu_vulnerabilities" not in machine_info else "",
-            "CPU vulnerabilities summary.",
-            machine_info.get("cpu_vulnerabilities", {}),
         ),
         helpers.ProfileHeaderEntry(
             "host", machine_info["host"], "The hostname, where the results were measured."

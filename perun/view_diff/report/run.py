@@ -748,6 +748,10 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
         diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
     )
+    lhs_vulnerabilities, rhs_vulnerabilities = diff_kit.generate_diff_of_headers(
+        diff_kit.generate_vulnerabilities(lhs_profile),
+        diff_kit.generate_vulnerabilities(rhs_profile),
+    )
     lhs_diff_stats, rhs_diff_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
     lhs_meta, rhs_meta = diff_kit.generate_diff_of_headers(
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
@@ -761,10 +765,12 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
+        lhs_vulnerabilities=lhs_vulnerabilities,
         lhs_stats=lhs_diff_stats,
         lhs_metadata=lhs_meta,
         rhs_tag="Target (tgt)",
         rhs_header=rhs_header,
+        rhs_vulnerabilities=rhs_vulnerabilities,
         rhs_stats=rhs_diff_stats,
         rhs_metadata=rhs_meta,
         palette=WebColorPalette,
