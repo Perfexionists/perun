@@ -31,7 +31,7 @@ import perun
 from perun.logic import config
 from perun.profile import convert, stats as profile_stats
 from perun.profile.factory import Profile
-from perun.templates import filters, factory as templates
+from perun.templates import factory as templates
 from perun.utils import log, mapping
 from perun.utils.common import diff_kit, common_kit
 from perun.utils.structs.common_structs import WebColorPalette
@@ -757,8 +757,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
     )
 
-    env_filters = {"sanitize_variable_name": filters.sanitize_variable_name}
-    template = templates.get_template("ssp_report.html.jinja2", filters=env_filters)
+    template = templates.get_template("ssp_report.html.jinja2")
     content = template.render(
         title="Perun report - differences of profiles",
         perun_version=perun.__version__,
