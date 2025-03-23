@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.25.0 (2025-03-23)
+-------------------
+
+  - Perun showdiff report now uses a different visual template that supports annotations.
+  - Change flamegraph generation to show the processes bars as well.
+  - Perun showdiff report now allows forwarding certain options (all optional) to flamegraph.pl.
+  - Perun showdiff report now shows profile labels as well.
+  - Enhance index to support profile overwriting.
+  - Fix a bug where profile labels were not correctly updating when profiles were overwritten.
+
+
 0.24.0 (2025-02-06)
 -------------------
 
