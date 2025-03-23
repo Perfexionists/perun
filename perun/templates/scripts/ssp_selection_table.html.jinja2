@@ -1,0 +1,169 @@
+<script>
+    // Selection table
+    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","abs": "{{ val.abs_amount }}","rel": "{{ val.rel_amount }}" },{%- endfor %}]};
+    let selection_table = $("#table").DataTable({
+        data: table.data,
+        columns: [
+            {
+                className: "details-control",
+                orderable: false,
+                data: null,
+                defaultContent: "",
+                render: function () {return '<span class="plus">{% include 'assets/add.svg' %}</span>';},
+                width: "15px"
+            },
+            { data: "uid" , className: "details-uid"},
+            {
+                data: "fresh",
+                render: function (data, type) {
+                    if (type ==='display') {
+                        if (data === "not in baseline") {
+                            return '<span style="font-weight: bold; color: {{ palette.Target }}">' + data + "</span>";
+                        } else if (data == "not in target") {
+                            return '<span style="font-weight: bold; color: {{ palette.Baseline }}">' + data + "</span>";
+                        } else {
+                            return '<span style="font-weight: bold; color: {{ palette.Equal }}">' + data + "</span>";
+                        }
+                    }
+                    return data;
+                }
+            },
+            {
+                data: "type",
+                render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
+            }, {
+                data: "abs",
+                className: "dt-body-right",
+                render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+            },
+            {
+                data: "rel",
+                render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+            },
+            { data: "index", visible: false},
+        ],
+        order: [[4, "desc"]],
+        iDisplayLength: 10,
+        select: true,
+        scrollY: "550px",
+        scrollCollapse: true,
+        paging: true,
+        createdRow: function( row, data, dataIndex ) {
+            $( row ).addClass('hidden');
+        },
+        initComplete: function() {
+            this.api().columns().every(function(i) {
+                if (i == 0 || i > 3)
+                    return;
+                let column = this;
+
+                let select = document.createElement('select');
+                select.add(new Option(''));
+                column.footer().replaceChildren(select);
+
+                select.addEventListener('change', function() {
+                    column.search(select.value, {exact: true}).draw();
+                });
+
+                column.data().unique().sort().each(function(d, j) {
+                    if (i == 3)
+                        select.add(new Option(stat_id_to_name(d)));
+                    else
+                        select.add(new Option(d));
+                })
+            });
+        }
+    })
+    selection_table.on('user-select', function (e, dt, type, cell, originalEvent) {
+        if (originalEvent.target.cellIndex === 0 || originalEvent.target.tagName === "SPAN") {
+            e.preventDefault();
+        }
+    });
+
+    function stat_id_to_name(stat_id) {
+        let metric_len = stat_map.length, metric = stat_id % metric_len;
+        if (stat_id >= metric_len)
+            console.error("There is no id in the map for " + stat_id)
+        return stat_map[metric];
+    }
+
+    // Event handlers
+    selection_table.on('click', 'td.details-control', function(el) {
+        var tr = $(this).closest('tr');
+        var row = selection_table.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            tr.addClass('hidden');
+        } else {
+            let d = row.data();
+            row.child(format_row(d)).show();
+            new DataTable("#metrics" + d.index, {paging: false, info: false, searching: false, order: [[1, 'desc']], columns: [
+                    {
+                        render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+                    }
+                ]});
+            trace_table = new DataTable("#traces" + d.index, {
+                columns: [
+                    {
+                        className: "inner-details-control",
+                        orderable: false,
+                        data: null,
+                        defaultContent: "",
+                        render: function () {return '<span class="plus">{% include 'assets/add.svg' %}</span>';},
+                        width: "15px"
+                    }, {}, {
+                        render: function(data, type) {return (type === 'display') ? stat_map[data] : data; }
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+                    }, {visible: false},
+                ],
+                createdRow: function( row, data, dataIndex ) {
+                    $( row ).addClass('hidden');
+                },
+                paging: false,
+                info: false,
+                searching: false,
+                order: [[3, "desc"]]
+            });
+            trace_table.on('click', 'td.inner-details-control', function(el) {
+                var sub_tr = $(this).closest('tr');
+                var sub_row = trace_table.row(sub_tr);
+
+                if (sub_row.child.isShown()) {
+                    sub_row.child.hide();
+                    sub_tr.removeClass('shown');
+                    sub_tr.addClass('hidden');
+                } else {
+                    sub_row.child(format_sub_row(sub_row.data(), d.uid)).show();
+                    sub_tr.removeClass('hidden');
+                    sub_tr.addClass('shown');
+                }
+            });
+            tr.removeClass('hidden');
+            tr.addClass('shown');
+        }
+    });
+
+    selection_table.on('select', function(e, dt, type, indexes) {
+        if (type === 'row') {
+            let data = selection_table.rows(indexes).data();
+            if (data.length > 0) {
+                var div = document.getElementById('sankey_tools');
+                if (div.style.display === "none")
+                    div.style.display = "block";
+                sel_uid = data[0].index;
+                sel_uid_text = data[0].uid;
+                layout.title = sel_uid_text;
+                initializeGraph();
+            }
+        }
+    })
+</script>

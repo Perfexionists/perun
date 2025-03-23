@@ -1,0 +1,26 @@
+.tag-element {
+    color: var(--color-light-white);
+    padding: 2px 6px;
+    font-size: 0.8em;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+.tag-baseline {
+    background-color: var(--color-baseline);
+}
+
+.tag-target {
+    background-color: var(--color-target);
+}
+
+.tag-common {
+    background-color: var(--color-common);
+}
+
+.tag-heading {
+    width: fit-content;
+    font-size: 1.6rem;
+    margin: auto;
+    border-radius: 6px;
+}

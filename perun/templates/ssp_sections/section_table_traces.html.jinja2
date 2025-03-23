@@ -1,0 +1,48 @@
+{% import 'ssp_table.html.jinja2' as property_generator %}
+
+{% set traces_table_info = "Click on a row to explore the results in a form of Sankey Graph (below the table).
+            Click on [+] to open a detailed report about concrete calling contexts.
+            Filter the results through select form on the bottom of table (for selected columns)." %}
+
+<div id="traces" class="section">
+
+    {{ property_generator.display_title_with_info("Traces Table", "traces table", traces_table_info) }}
+
+    <table id="table" class="traces_table" style="width: 100%;">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Unit</th>
+                <th>Change</th>
+                <th>Metric</th>
+                <th>Absolute Δ</th>
+                <th>Relative Δ</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </tfoot>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // this needs to be done in order to have filters right
+    // under the column names, otherwise the css just bugs itself
+    document.addEventListener("DOMContentLoaded", function() {
+        let scrollBody = document.querySelector(".dt-scroll-body");
+        let scrollFoot = document.querySelector(".dt-scroll-foot");
+
+        if (scrollBody && scrollFoot) {
+            scrollFoot.after(scrollBody);
+        }
+    });
+</script>

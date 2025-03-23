@@ -1,0 +1,60 @@
+.side-panel {
+    position: fixed;
+    right: 0;
+    width: 50px;
+    background-color: var(--color-primary);
+    border-radius: 8px 0 0 8px;
+    transition: width 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+}
+
+.side-panel:hover {
+    width: 230px;
+}
+
+.side-panel a {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+    text-decoration: none;
+    color: var(--color-light-white);
+    transition: all 0.2s;
+}
+
+.side-panel a:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.side-panel .material-icons {
+    font-size: 24px;
+    color: var(--color-light-white);
+    transition: opacity 0.3s ease;
+}
+
+.side-panel span {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.side-panel:hover span {
+    opacity: 1;
+}
+
+.side-panel .material-icons {
+    opacity: 1;
+}
+
+.side-panel__description {
+    padding-left: 10px;
+}
+
+.navigation-panel {
+    top: 30%;
+    transform: translateY(-50%);
+}

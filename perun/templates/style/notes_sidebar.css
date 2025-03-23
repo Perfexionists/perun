@@ -1,0 +1,128 @@
+.notes-sidebar {
+    position: fixed;
+    right: 0;
+    bottom: 10%;
+    width: 50px;
+    height: 45px;
+    background-color: var(--color-primary-hover);
+    border-radius: 8px 0 0 8px;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+}
+
+.notes-sidebar:hover {
+    width: 650px;
+    height: 350px;
+    overflow: scroll;
+}
+
+.notes-sidebar-content {
+    display: none;
+    color: var(--color-light-white);
+    padding: 10px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.notes-sidebar .material-icons {
+    font-size: 24px;
+    color: var(--color-light-white);
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+.notes-sidebar .notes-sidebar-content {
+    display: none;
+    color: var(--color-light-white);
+    padding: 10px;
+    width: 100%;
+}
+
+.notes-sidebar:hover .notes-sidebar-content {
+    display: block;
+}
+
+.note-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #666;
+    border-radius: 5px;
+}
+
+.note-item p {
+    margin: 4px 0;
+    font-size: 0.9em;
+}
+
+.note-item--content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 5px;
+    gap: 10px;
+}
+
+.note-item--attention {
+    background-color: var(--color-wrong-transparent);
+}
+
+.note-item--approved {
+    background-color: var(--color-correct-transparent);
+}
+
+.note-status-toggle {
+    margin: 0;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: var(--color-white-tinted);
+    color: var(--color-primary-hover);
+    border: none;
+    font-size: 0.9em;
+}
+
+.note-status-toggle.attention {
+    background-color: var(--color-wrong);
+    color: var(--color-light-white);
+}
+
+.note-status-toggle.approved {
+    background-color: var(--color-correct);
+    color: var(--color-light-white);
+}
+
+.note-input {
+    width: 90%;
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    font-size: 0.9em;
+}
+
+.note-link {
+    text-decoration: none;
+    color: var(--color-light-white);
+    transition: all 0.3s ease-in-out;
+}
+
+.note-link:hover {
+    color: var(--color-light-gray);
+}
+
+#export-notes {
+    margin-right: 0;
+    margin-left: auto;
+    background-color: var(--color-light-gray);
+    padding: 3px;
+    border-radius: 5px;
+    cursor: pointer;
+}

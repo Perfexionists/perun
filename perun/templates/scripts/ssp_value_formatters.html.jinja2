@@ -1,0 +1,190 @@
+{% import 'macros_html_widgets.html.jinja2' as widgets %}
+
+<script>
+    {{ widgets.checkbox_handler() }}
+    {{ widgets.range_handlers() }}
+
+    function ensureNumber(val) {
+        if (typeof val !== "number") {
+            val = Number(val);
+        }
+        return val;
+    }
+
+    function format_value(val) {
+        let result = "<span";
+        val = ensureNumber(val);
+        if (val > 0) {
+            result += ' style="font-weight: bold; color: {{ palette.DarkIncrease }}';
+        } else if (val < 0) {
+            result += ' style="font-weight: bold; color: {{ palette.DarkDecrease }}';
+        }
+        return result + '">' + formatNumber(val) + "</span>";
+    }
+
+    function formatNumber(value) {
+    const absValue = Math.abs(value);
+    let formatted;
+
+    if (absValue >= 1_000_000_000) {
+        formatted = (value / 1_000_000_000).toFixed(3) + " B";
+    } else if (absValue >= 1_000_000) {
+        formatted = (value / 1_000_000).toFixed(3) + " M";
+    } else if (absValue >= 1_000) {
+        formatted = (value / 1_000).toFixed(3) + " K";
+    } else {
+        formatted = value;
+    }
+
+    return formatted.toLocaleString().replace(/,/g, " ");
+}
+
+
+    function format_relative(value) {
+        value = ensureNumber(value);
+        if (Math.abs(value) >= 0 && Math.abs(value) <= 1) {
+            value = value * 100
+        }
+        let fixedValue = Number(value).toFixed(2)
+        let result = '<span style="font-weight: bold; ';
+        if (value > 0 && value <= 100) {
+            result += 'color: {{ palette.DarkIncrease }}"';
+        } else if (value >= -100 && value < 0) {
+            result += 'color: {{ palette.DarkDecrease }}"';
+        } else {
+            result += 'color: {{ palette.DarkEqual}}"';
+        }
+        return result + '">' + fixedValue + "%</span>";
+    }
+
+    function formatMs(ms) {
+        ms = Math.abs(ms);
+        let units = ["ms", "s", "min", "h"];
+        let divs = [1000.0, 60.0, 60.0, 60.0];
+        for (let i = 0; i < divs.length; i++) {
+            let unit = units[i], div = divs[i];
+            if (ms < div) {
+                return `${ms.toFixed(2)} ${unit}`;
+            }
+            ms /= div;
+        }
+        return `${size.toFixed(2)} days`;
+    }
+
+    function format(value, unit) {
+        value = ensureNumber(value);
+        if (unit === "ms") {
+            return formatMs(value);
+        } else if (unit === "%") {
+            return `${value.toFixed(2)}%`;
+        } else {
+            return formatSize(value);
+        }
+    }
+
+    function format_stat(base, tgt, stat_unit) {
+        let result = "";
+        if (base === tgt) {
+            result += '<span class="equal">' + format(base, stat_unit) + '</span>';
+        } else if (base < tgt) {
+            result += '<span class="increase">' + format(base, stat_unit) + ' ↗ ' + format(tgt, stat_unit) + '</span>';
+        } else {
+            result += '<span class="decrease">' + format(base, stat_unit) + ' ↘ ' + format(tgt, stat_unit) + '</span>';
+        }
+        return result;
+    };
+
+    function format_path_prex(path_stats, index, path_cost) {
+        let result = '<span class="';
+        let prefix_sum = path_stats.slice(0, index+1).reduce((acc, v) => acc + v, 0);
+        let prefix_rate = (path_cost === 0) ? 0 : (prefix_sum / path_cost);
+        if (prefix_rate < 0.5) {
+            result += 'decrease';
+        } else if (prefix_rate > 0.5) {
+            result += 'increase';
+        } else {
+            result += 'equal';
+        }
+        result += '">' + format_value(prefix_sum) + ' (' + (prefix_rate * 100).toFixed(2) + '%)</span>';
+        result += '{{ widgets.tooltip("Prefix cost: the sum up to the current uid") }}'
+        return result;
+    }
+
+    function getColor(n) {
+        let R = (255 * n) / 100, G = (255 * (100 - n)) / 100, B = 0;
+        return "rgba(" + R + ", " + G + ", " + B + ", 1.0)";
+    }
+
+    function format_bottleneck(stat, min) {
+        let result = '<span style="font-weight: bold; color: ';
+        let bottleneck_rate = (stat === 0) ? 0 : min / stat;
+        result += getColor(bottleneck_rate * 100);
+        result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
+        result += '{{ widgets.tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
+        return result;
+    };
+
+    function format_sub_row(d, uid) {
+        let result = '<table style="width: 100%; border: none;" class="nested">';
+        let stat_type = stat_map[d[2]].toLowerCase(), stat_unit = unit_map[stat_map.indexOf(d[2])];
+        let parts = d[5].split('#');
+        let traces = parts[0].split(';'), base = parts[1].split(';').map(Number), tgt = parts[2].split(';').map(Number);
+        let min_base = Math.min(...base), min_tgt = Math.min(...tgt);
+        let sum_base = base.reduce((acc, v) => acc + v, 0), sum_tgt = tgt.reduce((acc, v) => acc + v, 0);
+        traces.forEach((v, i) => {
+            let node = nodes[v];
+            result += '<tr><td style="white-space: pre-wrap">';
+            if (i != 0 && i != traces.length) {
+                let base_stat = base[i-1],
+                    tgt_stat = tgt[i-1];
+                let diff = base_stat - tgt_stat;
+                result += '  '.repeat(i) + "⎸ " + format_stat(base_stat, tgt_stat, stat_unit);
+                if (stat_type.includes("inclusive")) {
+                    result += "    " + format_bottleneck(base_stat, min_base) + " | " + format_bottleneck(tgt_stat, min_tgt);
+                } else if (stat_type.includes("exclusive")) {
+                    result += "    " + format_path_prex(base, i-1, sum_base) + " | " + format_path_prex(tgt, i-1, sum_tgt);
+                }
+                result += " "
+            }
+            result += '</td></tr><tr'
+            if (node === uid)
+                result += ' class="highlight"';
+            result += '><td style="white-space: pre-wrap">';
+            if (i !== 0)
+                result += '  '.repeat(i) + "⤷ ";
+            result += (node === uid) ? '<span style="font-weight: bold">' + node + '</span>' : node;
+            result += "</td></tr>";
+        });
+        result += '</table>';
+        return result
+    };
+
+    function format_row(d) {
+        let result = '<table id="metrics' + d.index + '" class="display" style="width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
+        result += "<thead><tr><th>Metric</th><th>Absolute</th><th>Relative</th></tr></thead><tbody>";
+        d.stats.forEach((value, index) => {
+            result += "<tr>";
+            result += '<td style="white-space: pre-wrap">' + value[0] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
+            result += "</tr>";
+        });
+        result += '</tbody></table>';
+        result += '<h4 style="text-align: center; width: 100%; border-bottom: 1px solid #ddd;">Top ' + d.traces.length + ' Traces</h4>';
+        result += '<table id="traces' + d.index + '" class="display" style="margin-top: -30px; width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
+        result += "<thead><tr><th></th><th>Trace</th><th>Metric</th><th>Abs</th><th>Rel</th></tr></thead><tbody>";
+        d.traces.forEach((value, index) => {
+            result += "<tr>";
+            result += '<td style="white-space: pre-wrap"></td>';
+            let uids = value[0].toString().split(';');
+            result += '<td style="white-space: pre-wrap">' + nodes[uids[0]] + ' ⇢ ' + nodes[uids[1]] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
+            result += "</tr>";
+        });
+        result += '</tbody></table>';
+        return result;
+    }
+</script>

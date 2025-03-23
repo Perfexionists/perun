@@ -1,0 +1,17 @@
+.division_anchor {
+    position: fixed;
+    top: 5px;
+    padding: 5px;
+    border-radius: 4px;
+    color: var(--color-light-white);
+    z-index: 99999;
+    box-shadow: 2px 2px 5px rgba(0 0 0 / 20%);
+}
+
+.division_anchor__baseline {
+    right: 52%;
+}
+
+.division_anchor__target {
+    left: 52%;
+}

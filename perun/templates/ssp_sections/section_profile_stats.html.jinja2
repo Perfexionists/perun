@@ -1,0 +1,28 @@
+{% set general_stats_keys = ["Maximum Trace Length [#] (value)", "Overall Inclusive Samples  [#] (value)"] %}
+{% set STATS_NOTE_TITLE = "profile statistics" %}
+
+<div id="profile-stats" class="section">
+
+    {{ property_generator.display_title("Profile Statistics", "profile statistics") }}
+
+    <div class="comparison_container">
+        {% set general_stats_records_baseline = lhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
+        {% set general_stats_records_tgt = rhs_stats | selectattr('0', 'in', general_stats_keys) | list %}
+
+        {{ property_generator.general_comparison_container('baseline', STATS_NOTE_TITLE, general_stats_records_baseline) }}
+        {{ property_generator.general_comparison_container('target', STATS_NOTE_TITLE, general_stats_records_tgt) }}
+    </div>
+
+    <div class="comparison_container">
+        {% set other_records_baseline = lhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
+        {% set other_records_tgt = rhs_stats | rejectattr('0', 'in', general_stats_keys) | list %}
+
+        {% if other_records_baseline %}
+        {{ property_generator.general_comparison_container('baseline', STATS_NOTE_TITLE, other_records_baseline) }}
+        {% endif %}
+
+        {% if other_records_tgt %}
+        {{ property_generator.general_comparison_container('target', STATS_NOTE_TITLE, other_records_tgt) }}
+        {% endif %}
+    </div>
+</div>

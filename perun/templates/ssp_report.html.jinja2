@@ -1,0 +1,597 @@
+{% import 'ssp_table.html.jinja2' as property_generator %}
+{% import 'macros_profile_overview.html.jinja2' as profile_overview %}
+{% import 'ssp_general_sidebar_property.html.jinja2' as general_sidebar_property %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }}</title>
+
+        {% if not offline %}
+            <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
+            <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>
+            <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+            <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
+        {% else %}
+            <style>
+                {% include "dataTables.dataTables.min.css" %}
+            </style>
+        {% endif %}
+
+
+        <style>
+            {% include 'style/general_setup.css' %}
+            {% include 'style/layout.css' %}
+
+            {% include 'style/division_anchor.css' %}
+
+            {% include 'style/side_panel.css' %}
+            {% include 'style/notes_sidebar.css' %}
+            {% include 'style/general_sidebar.css' %}
+
+            {% include 'style/pins.css' %}
+            {% include 'style/tag.css' %}
+            {% include 'style/tooltip.css' %}
+
+            {% include 'style/traces_table.css' %}
+            {% include 'style/flamegraphs.css' %}
+        </style>
+</head>
+<body>
+
+    <div>
+        <h2 id="division_anchor__baseline" class="tag-baseline division_anchor division_anchor__baseline">
+            {{ lhs_tag }}
+        </h2>
+        <h2 id="division_anchor__target" class="tag-target division_anchor division_anchor__target">
+            {{ rhs_tag }}
+        </h2>
+    </div>
+
+    <div class="side-panel navigation-panel">
+        <a href="#general">
+            <span class="full_visible">
+                {% include 'assets/home.svg' %}
+            </span>
+            <span class="side-panel__description">General</span>
+        </a>
+        <a href="#profile-vulnerabilities">
+            <span class="full_visible">
+                {% include 'assets/vulnerabilities.svg' %}
+            </span>
+            <span class="side-panel__description">Vulnerabilities</span>
+        </a>
+        <a href="#profile-stats">
+            <span class="full_visible">
+                {% include 'assets/stats.svg' %}
+            </span>
+            <span class="side-panel__description">Profile Stats</span>
+        </a>
+        <a href="#profile-metadata">
+            <span class="full_visible">
+                {% include 'assets/metadata.svg' %}
+            </span>
+            <span class="side-panel__description">Profile Metadata</span>
+        </a>
+        <a href="#traces">
+            <span class="full_visible">
+                {% include 'assets/trace.svg' %}
+            </span>
+            <span class="side-panel__description">Traces Table</span>
+        </a>
+        <a href="#flame">
+            <span class="full_visible">
+                {% include 'assets/fire.svg' %}
+            </span>
+            <span class="side-panel__description">Flame Graphs</span>
+        </a>
+        <!--
+        <a href="#sankey">
+            <span class="material-icons">timeline</span>
+            <span class="side-panel__description">Sankey Graph</span>
+        </a> -->
+    </div>
+
+    <div class="general-sidebar" id="general-sidebar">
+        <span class="general-sidebar__icon">
+            {% include 'assets/info.svg' %}
+        </span>
+
+        <div class="general-sidebar-content">
+
+            {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
+
+            {%- set lhs_data = {} %}
+            {%- set rhs_data = {} %}
+
+            {%- for (key, value, title, nested_values) in lhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = lhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for (key, value, title, nested_values) in rhs_header %}
+                {%- for required in required_keys %}
+                    {%- if required in key %}
+                        {%- set _ = rhs_data.update({required: value}) %}
+                    {%- endif %}
+                {%- endfor %}
+            {%- endfor %}
+
+            {%- for key in required_keys %}
+                {{ general_sidebar_property.general_sidebar_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
+            {%- endfor %}
+        </div>
+    </div>
+
+    <div class="notes-sidebar" id="notes-sidebar">
+        <span class="general-sidebar__icon">
+            {% include 'assets/pin_g.svg' %}
+        </span>
+        <a> <p id="export-notes">Export with notes</p> </a>
+        <div class="notes-sidebar-content">
+            <div id="notes-list">
+                <!-- place for dynamically added notes -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GENERAL STATS -->
+    {% include 'ssp_sections/section_general_stats.html.jinja2' %}
+
+    <!-- VULNERABILITIES -->
+    {% include 'ssp_sections/section_vulnerabilities.html.jinja2' %}
+
+    <!-- PROFILE STATS -->
+    {% include 'ssp_sections/section_profile_stats.html.jinja2' %}
+
+    <!-- PROFILE METADATA -->
+    {% include 'ssp_sections/section_metadata.html.jinja2' %}
+
+    <!-- TABLE WITH TRACES -->
+    {% include 'ssp_sections/section_table_traces.html.jinja2' %}
+
+    <!-- FLAME GRAPHS -->
+    {% set flame_graphs_info = "Look for the topmost widest rectangle.
+                    Click on the node to explore the results in a form of Sankey Graph (below the table).
+                    Colours are picked randomly (but uniformly); they don't signal any scale.
+                    The bigger the rectangle the more often the UID was seen on the stack.
+                    The higher the flame the more nested calls were made in the context." %}
+
+    <div id="flame" class="section">
+
+        {{ property_generator.display_title_with_info("Flame Graphs", "flame graphs", flame_graphs_info ) }}
+
+        <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
+            <div class="flamegraph_search_box">
+                <span>Layout: </span>
+                <span id="flamegraph_visualization_switch" class="visualization_icon">
+                    <span class="svg_switch_container visible">
+                        {% include 'assets/grid_view.svg' %}
+                    </span>
+                    <span class="svg_switch_container hidden">
+                        {% include 'assets/row_view.svg' %}
+                    </span>
+                </span>
+            </div>
+
+            <div class="flamegraph_search_box">
+                <label for="flamegraph_search_all" class="flamegraph_search_input_label">Global Search:</label>
+                <input id="flamegraph_search_all" class="dt-input" />
+                <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Global Search</button>
+                <button id="flamegraph_zoom_reset_all" class="dt-paging-button">Reset Global Zoom</button>
+            </div>
+        </div>
+
+        {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
+
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+                <div class="left column column_non_scale column_extended">
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_baseline">
+                    {{ lhs_flamegraph }}
+                    </div>
+                </div>
+                <div class="right column column_non_scale column_extended">
+                    <div class='svg-container' id="flame_{{ loop.index0 }}_target">
+                    {{ rhs_flamegraph }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+                <div class="left column column_non_scale column_extended" style="margin-top: 1%">
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
+                    {{ lhs_diff_flamegraph }}
+                    </div>
+                </div>
+                <div class="right column column_non_scale column_extended" style="margin-top: 1%">
+                    <div class='svg-container' id="flame_diff_{{ loop.index0 }}_target">
+                    {{ rhs_diff_flamegraph }}
+                    </div>
+                </div>
+            </div>
+        {%- endfor %}
+    </div>
+
+    <!--
+    SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
+    {#% include 'ssp_sankey.html.jinja2' %#}
+    -->
+
+    <script>
+        const traces_table = document.getElementById("traces");
+        const anchorsBase = document.getElementById("division_anchor__baseline");
+        const anchorTgt = document.getElementById("division_anchor__target");
+
+        document.addEventListener("scroll", () => {
+           if (traces_table.offsetTop <= window.scrollY) {
+               anchorsBase.style.display = "none";
+               anchorTgt.style.display = "none";
+           }
+           else {
+               anchorsBase.style.display = "unset";
+               anchorTgt.style.display = "unset";
+           }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const notesList = document.getElementById("notes-list");
+
+            function attachInputListener(noteInput) {
+                noteInput.addEventListener("input", (event) => {
+                    const noteItemContent = event.target.closest(".note-item--content");
+                    if (noteItemContent) {
+                        noteItemContent.dataset.noteValue = event.target.value;
+                    }
+
+                    event.target.style.height = "auto";
+                    event.target.style.height = `${event.target.scrollHeight}px`;
+                });
+            }
+
+            function toggleNoteStatus(noteItem, statusButton) {
+                const isAttention = statusButton.classList.contains("attention");
+                if (isAttention) {
+                    statusButton.textContent = "Waived";
+                    statusButton.classList.remove("attention");
+                    statusButton.classList.add("approved");
+                    noteItem.classList.remove("note-item--attention");
+                    noteItem.classList.add("note-item--approved");
+                } else {
+                    statusButton.textContent = "Attention";
+                    statusButton.classList.remove("approved");
+                    statusButton.classList.add("attention");
+                    noteItem.classList.remove("note-item--approved");
+                    noteItem.classList.add("note-item--attention");
+                }
+            }
+
+            function deleteNoteForSection(noteItemToDelete, pinToDelete) {
+                noteItemToDelete.remove();
+                pinToDelete.classList.remove("pin-icon__pinned");
+            }
+
+            function addNoteForSection(pin, sectionId) {
+                const noteItem = document.createElement("div");
+                noteItem.classList.add("note-item", "note-item--attention");
+                noteItem.setAttribute("id", `${sectionId}-note-item`);
+
+                noteItem.innerHTML = `
+                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
+                    <div class="note-item--content">
+                        <textarea class="note-input" placeholder="Enter your note"></textarea>
+                        <span class="" style="cursor: pointer; margin: 0">{% include 'assets/bin.svg' %}</span>
+                        <button class="note-status-toggle attention">Attention</button>
+                    </div>`;
+
+                const noteInput = noteItem.querySelector(".note-input");
+                attachInputListener(noteInput);
+
+                noteItem.querySelector("span").onclick = () => {
+                    deleteNoteForSection(noteItem, pin)
+                }
+
+                const statusButton = noteItem.querySelector(".note-status-toggle");
+                statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
+
+                notesList.appendChild(noteItem);
+            }
+
+            document.querySelectorAll(".pin-icon").forEach(pin => {
+                pin.onclick = () => {
+                    if (!pin.classList.contains("pin-icon__pinned")) {
+                        addNoteForSection(pin, pin.dataset.section);
+                        pin.classList.add("pin-icon__pinned");
+                        pin.parentElement.setAttribute("id", pin.dataset.section.toString());
+                    }
+                    else {
+                        const noteItemToDelete = document.getElementById(pin.dataset.section + "-note-item");
+                        deleteNoteForSection(noteItemToDelete, pin)
+                    }
+                }
+            });
+
+            document.getElementById('export-notes').addEventListener('click', function () {
+                const currentHTML = document.documentElement.outerHTML;
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(currentHTML, 'text/html');
+
+                const notesList = doc.querySelector('#notes-list');
+                if (notesList) {
+                    const noteItems = notesList.children;
+                    Array.from(noteItems).forEach(noteItem => {
+                        const noteContentDiv = noteItem.querySelector('.note-item--content');
+                        if (noteContentDiv) {
+                            const noteValue = noteContentDiv.dataset.noteValue || "Empty note";
+                            const noteContent = document.createElement('p');
+                            noteContent.textContent = noteValue;
+                            noteContentDiv.replaceWith(noteContent);
+                        }
+                    });
+                }
+                const updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+
+                const blob = new Blob([updatedHTML], { type: 'text/html' });
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'updated_page_with_notes.html';
+                link.click();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".general-property").forEach((property) => {
+                const toggleArrow = property.querySelector(".toggle-arrow");
+                const generalValues = property.querySelector(".general-values");
+
+                generalValues.style.height = "auto";
+
+                toggleArrow.addEventListener("click", () => {
+                    if (generalValues.classList.contains("collapsed")) {
+                        generalValues.classList.remove("collapsed");
+                        generalValues.style.height = `${generalValues.scrollHeight}px`;
+                        toggleArrow.classList.remove("collapsed");
+                    } else {
+                        generalValues.style.height = `${generalValues.scrollHeight}px`;
+                        requestAnimationFrame(() => {
+                            generalValues.style.height = "0";
+                        });
+                        generalValues.classList.add("collapsed");
+                        toggleArrow.classList.add("collapsed");
+                    }
+                });
+
+                generalValues.addEventListener("transitionend", () => {
+                    if (!generalValues.classList.contains("collapsed")) {
+                        generalValues.style.height = "auto";
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const section_guide = document.createElement("div");
+            section_guide.classList.add("section_guide");
+            document.body.appendChild(section_guide);
+
+            document.addEventListener("mouseover", function (event) {
+                const target = event.target.closest(".info-icon__header");
+                if (target) {
+                    section_guide.innerHTML = target.getAttribute("data-tooltip")
+                        .trim()
+                        .split("\n")
+                        .map((line, index) => `[${index + 1}] ${line.trim()}`)
+                        .join("<br><br>");
+                    section_guide.classList.add("visible");
+                    section_guide.style.left = event.pageX + 10 + "px";
+                    section_guide.style.top = event.pageY + 10 + "px";
+                }
+            });
+
+            document.addEventListener("mousemove", function (event) {
+                if (section_guide.classList.contains("visible")) {
+                    section_guide.style.left = event.pageX + 10 + "px";
+                    section_guide.style.top = event.pageY + 10 + "px";
+                }
+            });
+
+            document.addEventListener("mouseout", function (event) {
+                if (!event.relatedTarget || !event.relatedTarget.closest(".info-icon__header")) {
+                    section_guide.classList.remove("visible");
+                }
+            });
+        });
+    </script>
+
+    <script>
+        {%- if offline %}
+        {% include 'jquery-3.6.0.min.js' %}
+        {% include 'plotly-2.30.0.min.js' %}
+        {% include 'dataTables.min.js' %}
+        {% include 'dataTables.select.min.js' %}
+        {%- endif %}
+        //<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+        const selection_icon = {'width': 512, 'height': 512, 'path': 'M256 0c-25.3 0-47.2 14.7-57.6 36c-7-2.6-14.5-4-22.4-4c-35.3 0-64 28.7-64 64V261.5l-2.7-2.7c-25-25-65.5-25-90.5 0s-25 65.5 0 90.5L106.5 437c48 48 113.1 75 181 75H296h8c1.5 0 3-.1 4.5-.4c91.7-6.2 165-79.4 171.1-171.1c.3-1.5 .4-3 .4-4.5V160c0-35.3-28.7-64-64-64c-5.5 0-10.9 .7-16 2V96c0-35.3-28.7-64-64-64c-7.9 0-15.4 1.4-22.4 4C303.2 14.7 281.3 0 256 0zM240 96.1c0 0 0-.1 0-.1V64c0-8.8 7.2-16 16-16s16 7.2 16 16V95.9c0 0 0 .1 0 .1V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96c0 0 0 0 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16v55.9c0 0 0 .1 0 .1v80c0 13.3 10.7 24 24 24s24-10.7 24-24V160.1c0 0 0-.1 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16V332.9c-.1 .6-.1 1.3-.2 1.9c-3.4 69.7-59.3 125.6-129 129c-.6 0-1.3 .1-1.9 .2H296h-8.5c-55.2 0-108.1-21.9-147.1-60.9L52.7 315.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L119 336.4c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V96c0-8.8 7.2-16 16-16c8.8 0 16 7.1 16 15.9V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96.1z'}
+        const plus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z'}
+        const minus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z'}
+        const rotate_icon = {'width': 512, 'height': 512, 'path': 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z'}
+        const maximize_icon = {'width': 512, 'height': 512, 'path': 'M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z'}
+        const minimize_icon = {'width': 512, 'height': 512, 'path': 'M456 224H312c-13.3 0-24-10.7-24-24V56c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l40 40L442.3 5.7C446 2 450.9 0 456 0s10 2 13.7 5.7l36.7 36.7C510 46 512 50.9 512 56s-2 10-5.7 13.7L433 143l40 40c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8zm0 64c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-40 40 73.4 73.4c3.6 3.6 5.7 8.5 5.7 13.7s-2 10-5.7 13.7l-36.7 36.7C466 510 461.1 512 456 512s-10-2-13.7-5.7L369 433l-40 40c-6.9 6.9-17.2 8.9-26.2 5.2s-14.8-12.5-14.8-22.2V312c0-13.3 10.7-24 24-24H456zm-256 0c13.3 0 24 10.7 24 24V456c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-40-40L69.7 506.3C66 510 61.1 512 56 512s-10-2-13.7-5.7L5.7 469.7C2 466 0 461.1 0 456s2-10 5.7-13.7L79 369 39 329c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8H200zM56 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l40-40L5.7 69.7C2 66 0 61.1 0 56s2-10 5.7-13.7L42.3 5.7C46 2 50.9 0 56 0s10 2 13.7 5.7L143 79l40-40c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2V200c0 13.3-10.7 24-24 24H56z'}
+
+        {% autoescape off %}
+        let callee_graph = {{ callee_graph }}
+        let caller_graph = {{ caller_graph }}
+        let nodes = {{ nodes }}
+        let stats = {{ stats }}
+        let stat_map = {{ stat_list }}
+        let unit_map = {{ units }}
+        let node_map = {{ node_map }}
+        {% endautoescape %}
+    </script>
+
+    {% include 'scripts/ssp_value_formatters.html.jinja2' %}
+    {% include 'scripts/ssp_selection_table.html.jinja2' %}
+
+    <script>
+        {%- if flamegraphs %}
+
+            // Search logic for both mouseover and search bar
+            searchBar = document.getElementById("flamegraph_search_all");
+
+            {% for index in range(0, flamegraphs|length) %}
+                if (searchBar) {
+                    searchBar.addEventListener('input', function () {
+                        let searchTerm = searchBar.value.trim();
+
+                        lhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_{{index}}_search();
+                        }
+
+                        rhs_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_{{index}}_search();
+                        }
+
+                        lhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            lhs_diff_{{index}}_search();
+                        }
+
+                        rhs_diff_{{index}}_reset_search();
+                        if (searchTerm !== "") {
+                            rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                            rhs_diff_{{index}}_search();
+                        }
+                    })
+                }
+
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                    document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
+                        node.addEventListener("mouseenter", function () {
+                            const textElement = node.querySelector("title");
+
+                            if (textElement && textElement.innerHTML) {
+                                let searchTerm = cleanTitle(textElement.innerHTML);
+                                searchTerm = "^" + searchTerm;
+
+                                window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_{{index}}_search`]();
+
+                                window[`rhs_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_{{index}}_search`]();
+
+                                window[`lhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`lhs_diff_{{index}}_search`]();
+
+                                window[`rhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
+                                window[`rhs_diff_{{index}}_search`]();
+                            }
+                        });
+
+                        node.addEventListener("mouseleave", function () {
+                            window[`lhs_{{index}}_reset_search`]();
+                            window[`rhs_{{index}}_reset_search`]();
+                            window[`lhs_diff_{{index}}_reset_search`]();
+                            window[`rhs_diff_{{index}}_reset_search`]();
+                        });
+                    });
+                });
+
+            {%- endfor%}
+
+            document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
+                {%- for index in range(0, flamegraphs|length) %}
+                    const resetSearchBase = document.getElementById("lhs_{{ index }}_search");
+                    const resetSearchTarget = document.getElementById("rhs_{{ index }}_search");
+                    const resetSearchDiffBase = document.getElementById("lhs_diff_{{ index }}_search");
+                    const resetSearchDiffTarget = document.getElementById("rhs_diff_{{ index }}_search");
+
+                    const resetElements = [
+                        resetSearchBase,
+                        resetSearchTarget,
+                        resetSearchDiffBase,
+                        resetSearchDiffTarget,
+                    ];
+
+                    searchBar.value = "";
+                    resetElements.forEach(el => {
+                        if (el && el.classList.contains("show")) {
+                            el.dispatchEvent(new Event("click", {bubbles: true}));
+                        }
+                    });
+                {%- endfor %}
+            });
+
+            document.getElementById("flamegraph_zoom_reset_all").addEventListener("click", function () {
+                {%- for index in range(0, flamegraphs|length) %}
+                    const resetZoomBase = document.getElementById("lhs_{{ index }}_unzoom");
+                    const resetZoomTarget = document.getElementById("rhs_{{ index }}_unzoom");
+                    const resetZoomDiffBase = document.getElementById("lhs_diff_{{ index }}_unzoom");
+                    const resetZoomDiffTarget = document.getElementById("rhs_diff_{{ index }}_unzoom");
+
+                    const resetElements = [
+                        resetZoomBase,
+                        resetZoomTarget,
+                        resetZoomDiffBase,
+                        resetZoomDiffTarget,
+                    ];
+
+                    resetElements.forEach(el => {
+                        if (el && !el.classList.contains("hide")) {
+                            el.dispatchEvent(new Event("click", {bubbles: true}));
+                        }
+                    });
+                {%- endfor %}
+            });
+
+            // Different types of flamegraph ordering switch
+            const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");
+            visualizationSwitch.addEventListener("click", function () {
+                const elements = document.querySelectorAll(".comparison_container_stacked");
+
+                elements.forEach(element => {
+                    const currentDirection = window.getComputedStyle(element).flexDirection;
+                    if (currentDirection === "row") {
+                        element.style.flexDirection = "column";
+                    } else {
+                        element.style.flexDirection = "row";
+                    }
+                });
+
+                visualizationSwitch.querySelectorAll(".svg_switch_container").forEach(svg => {
+                    svg.classList.toggle("hidden");
+                    svg.classList.toggle("visible");
+                });
+            });
+
+            function cleanTitle(title) {
+                // regex takes string, throws away everything after
+                // first '(' with a digit inside and escapes opening parenthesis with \ symbol
+                let index = title.search(/\(\d/);
+                if (index !== -1) {
+                    title = title.slice(0, index) + '\\(';
+                }
+                console.log(title);
+                return title.replace('[', '\\[');
+            }
+
+        {%- endif %}
+    </script>
+
+</body>
+</html>

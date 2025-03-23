@@ -1,0 +1,17 @@
+{% set METADATA_NOTE_TITLE = "profile metadata" %}
+
+<div id="profile-metadata" class="section">
+
+    {{ property_generator.display_title("Profile Metadata", "profile metadata") }}
+
+    {%  if lhs_metadata or rhs_metadata %}
+        <div class="comparison_container">
+            {{ property_generator.general_comparison_container('baseline', METADATA_NOTE_TITLE, lhs_metadata) }}
+            {{ property_generator.general_comparison_container('target', METADATA_NOTE_TITLE, rhs_metadata) }}
+        </div>
+    {% else %}
+        <div class="not-provided-box">
+            <h3>No metadata provided.</h3>
+        </div>
+    {% endif %}
+</div>

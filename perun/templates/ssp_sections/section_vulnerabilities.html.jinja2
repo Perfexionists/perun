@@ -1,0 +1,18 @@
+{% set lhs_vulnerabilities_items = lhs_vulnerabilities | map(attribute=3) | first | default([]) %}
+{% set rhs_vulnerabilities_items = rhs_vulnerabilities | map(attribute=3) | first | default([]) %}
+
+<div id="profile-vulnerabilities" class="section">
+
+    {{ property_generator.display_title("Vulnerabilities", "vulnerabilities") }}
+
+    {% if lhs_vulnerabilities or rhs_vulnerabilities %}
+        <div class="comparison_container">
+            {{ property_generator.nested_comparison_container('baseline', 'Profile Vulnerabilities', lhs_vulnerabilities_items) }}
+            {{ property_generator.nested_comparison_container('target', 'Profile Vulnerabilities', rhs_vulnerabilities_items) }}
+        </div>
+    {% else %}
+        <div class="not-provided-box">
+            <h3>No vulnerabilities provided.</h3>
+        </div>
+    {% endif %}
+</div>

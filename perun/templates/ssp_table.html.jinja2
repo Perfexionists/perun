@@ -1,0 +1,63 @@
+{% macro general_comparison_container(type, section_id, records) %}
+
+    {% if records %}
+        <div class="column {{ type }}">
+            {%- for (key, value, title, nested_values) in records %}
+                <div class="data-row">
+                    <p class="data-key">{{ key }}</p>
+                    <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
+                        {% include 'assets/pin_g_small.svg' %}
+                    </span>
+                    <p class="data-value">{{ value }}</p>
+                </div>
+            {%- endfor %}
+        </div>
+    {% else %}
+        <h3>No {{ section_id }} for {{ type }} provided for this section</h3>
+    {% endif %}
+
+{%- endmacro %}
+
+
+{% macro nested_comparison_container(type, section_id, records) %}
+
+    {% if records %}
+        <div class="column {{ type }}">
+            {%- for key, value in records.items() %}
+                <div class="data-row">
+                    <p class="data-key">{{ key }}</p>
+                    <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
+                        {% include 'assets/pin_g_small.svg' %}
+                    </span>
+                    <p class="data-value">{{ value }}</p>
+                </div>
+            {%- endfor %}
+        </div>
+    {% else %}
+        <h3>No {{ section_id }} }} for {{ type }} provided for this section</h3>
+    {% endif %}
+
+{%- endmacro %}
+
+
+{% macro display_title(title, section_name) %}
+    <div class="section_header">
+        <h1>{{ title }}</h1>
+        <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
+            {% include 'assets/pin_g.svg' %}
+        </span>
+    </div>
+{%- endmacro %}
+
+{% macro display_title_with_info(title, section_name, info_text) %}
+    <div class="section_header">
+            <span class="pin-icon pin-icon__header info-icon__header"
+                  data-tooltip="{{ info_text }}">
+                {% include 'assets/info.svg' %}
+            </span>
+        <h1>{{ title }}</h1>
+        <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
+            {% include 'assets/pin_g.svg' %}
+        </span>
+    </div>
+{%- endmacro %}

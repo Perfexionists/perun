@@ -1,0 +1,11 @@
+<div class="section" id="general">
+
+    {{ property_generator.display_title("Perun Performance Analysis", "general") }}
+    <p>Perun version: v{{ perun_version }}</p>
+    <p>Generated on: {{ timestamp }}</p>
+
+    <div class="comparison_container">
+        {{ property_generator.general_comparison_container('baseline', 'general', lhs_header) }}
+        {{ property_generator.general_comparison_container('target', 'general', rhs_header) }}
+    </div>
+</div>

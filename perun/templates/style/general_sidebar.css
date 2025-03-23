@@ -1,0 +1,103 @@
+.general-sidebar {
+    position: fixed;
+    left: 0;
+    top: 20%;
+    width: 50px;
+    height: 45px;
+    background-color: var(--color-primary-hover);
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+}
+
+.general-sidebar:hover {
+    width: 30%;
+    height: 500px;
+    overflow: scroll;
+}
+
+.general-sidebar__icon {
+    font-size: 24px;
+    fill: var(--color-light-white);
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.general-sidebar-content {
+    display: none;
+    color: var(--color-light-white);
+    padding: 10px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.general-sidebar:hover .general-sidebar-content {
+    display: flex;
+}
+
+.general-property {
+    margin-bottom: 30px;
+}
+
+.general-property h2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    margin: 0;
+    color: var(--color-almost-white);
+}
+
+.general-values {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    gap: 5px;
+    overflow: scroll;
+    transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+.general-values.collapsed {
+    opacity: 0;
+}
+
+.toggle-arrow {
+    font-size: 1em;
+    margin-left: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.toggle-arrow svg {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    top: 2px;
+}
+
+.toggle-arrow.collapsed {
+    transform: rotate(90deg);
+}
+
+.general-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid #666;
+    border-radius: 5px;
+    gap: 10px;
+}
+
+.general-value .value {
+    color: var(--color-light-white);
+    font-size: 0.9em;
+    text-align: right;
+    overflow: auto;
+}

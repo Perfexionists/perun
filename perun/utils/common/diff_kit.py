@@ -17,7 +17,7 @@ from perun.profile.factory import Profile
 from perun.profile import stats as pstats
 from perun.utils import log
 from perun.utils.common import common_kit
-from perun.utils.common.common_kit import ColorChoiceType
+from perun.utils.common.common_kit import ColorVariableType
 from perun.utils.structs.diff_structs import HeaderDisplayStyle
 
 
@@ -77,6 +77,23 @@ def get_candidate_keys(candidate_keys: Iterable[str]) -> list[str]:
     return sorted([candidate for candidate in candidate_keys if candidate in allowed_keys])
 
 
+def generate_vulnerabilities(profile: Profile) -> list[helpers.ProfileHeaderEntry]:
+    """Generates vulnerabilities from the given profile
+
+    :param profile: profile for which we are generating the specification
+    :return: vulnerabilities as an entry
+    """
+    machine_info = profile.get("machine", {})
+    return [
+        helpers.ProfileHeaderEntry(
+            "vulnerabilities",
+            "?" if "cpu_vulnerabilities" not in machine_info else "",
+            "CPU vulnerabilities summary.",
+            machine_info.get("cpu_vulnerabilities", {}),
+        )
+    ]
+
+
 def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]:
     """Generates profile specification from the given profile
 
@@ -118,12 +135,6 @@ def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]
             "boot info",
             machine_info.get("boot_info", "?"),
             "The contents of `/proc/cmdline` containing boot information about kernel",
-        ),
-        helpers.ProfileHeaderEntry(
-            "vulnerabilities",
-            "?" if "cpu_vulnerabilities" not in machine_info else "",
-            "CPU vulnerabilities summary.",
-            machine_info.get("cpu_vulnerabilities", {}),
         ),
         helpers.ProfileHeaderEntry(
             "host", machine_info["host"], "The hostname, where the results were measured."
@@ -282,7 +293,7 @@ def _generate_diff_of_values(
     rhs_value = "-" if rhs_value is None else str(rhs_value)
     if lhs_value != rhs_value or is_diff:
         diff = list(difflib.ndiff(str(lhs_value).split(), str(rhs_value).split()))
-        header_key = _emphasize(header_key, "red")
+        header_key = _emphasize(header_key, "primary")
         lhs_value = _diff_to_html(diff, "-")
         rhs_value = _diff_to_html(diff, "+")
         is_diff = True
@@ -318,16 +329,16 @@ def _diff_to_html(diff: list[str], start_tag: Literal["+", "-"]) -> str:
     :param diff: diff computed by difflib.ndiff
     :param start_tag: starting point of the tag
     """
-    tag_to_color: dict[str, ColorChoiceType] = {
-        "+": "green",
-        "-": "red",
+    tag_to_color: dict[str, ColorVariableType] = {
+        "+": "correct",
+        "-": "wrong",
     }
     result = []
     for chunk in diff:
         if chunk.startswith("  "):
             result.append(chunk[2:])
         if chunk.startswith(start_tag):
-            result.append(_emphasize(chunk[2:], tag_to_color.get(start_tag, "grey")))
+            result.append(_emphasize(chunk[2:], tag_to_color.get(start_tag, "primary")))
     return " ".join(result)
 
 
@@ -343,7 +354,7 @@ def _stat_description_to_tooltip(description: str, comparison: pstats.ProfileSta
     return f"{description} {comparison_str}"
 
 
-def _emphasize(value: str, color: ColorChoiceType) -> str:
+def _emphasize(value: str, color: ColorVariableType) -> str:
     """Emphasize a string with a HTML color.
 
     :param value: the string to emphasize
@@ -351,7 +362,7 @@ def _emphasize(value: str, color: ColorChoiceType) -> str:
 
     :return: the emphasized string
     """
-    return f'<span style="color: {color}; font-weight: bold">{value}</span>'
+    return f'<span style="color: var(--color-{color}); font-weight: bold">{value}</span>'
 
 
 def _format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
@@ -370,7 +381,7 @@ def _format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
     else:
         exit_codes = list(map(str, exit_code))
     # Color exit codes that are not zero
-    return ", ".join(code if code == "0" else _emphasize(code, "red") for code in exit_codes)
+    return ", ".join(code if code == "0" else _emphasize(code, "wrong") for code in exit_codes)
 
 
 def _color_stat_record_diff(
@@ -391,12 +402,12 @@ def _color_stat_record_diff(
     :return: colored LHS and RHS stat values
     """
     # Build a color map for different comparison results
-    color_map: dict[pstats.StatComparisonResult, tuple[ColorChoiceType, ColorChoiceType]] = {
-        pstats.StatComparisonResult.INVALID: ("red", "red"),
-        pstats.StatComparisonResult.UNEQUAL: ("red", "red"),
-        pstats.StatComparisonResult.EQUAL: ("black", "black"),
-        pstats.StatComparisonResult.BASELINE_BETTER: ("green", "red"),
-        pstats.StatComparisonResult.TARGET_BETTER: ("red", "green"),
+    color_map: dict[pstats.StatComparisonResult, tuple[ColorVariableType, ColorVariableType]] = {
+        pstats.StatComparisonResult.INVALID: ("wrong", "wrong"),
+        pstats.StatComparisonResult.UNEQUAL: ("wrong", "wrong"),
+        pstats.StatComparisonResult.EQUAL: ("primary", "primary"),
+        pstats.StatComparisonResult.BASELINE_BETTER: ("correct", "wrong"),
+        pstats.StatComparisonResult.TARGET_BETTER: ("wrong", "correct"),
     }
     # Compare and color the stat entry
     comparison_result = pstats.compare_stats(lhs_stat_agg, rhs_stat_agg, compare_key, comparison)

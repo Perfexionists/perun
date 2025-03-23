@@ -193,3 +193,6 @@ fabric.properties
 
 # Profiling
 prof/
+
+# MacOS metadata files
+**/.DS_Store

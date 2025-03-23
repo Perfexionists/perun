@@ -1,0 +1,18 @@
+.section_guide {
+    position: absolute;
+    background-color: var(--color-primary);
+    color: var(--color-light-white);
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 50%;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(0 0 0 / 20%);
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.section_guide.visible {
+    opacity: 1;
+}

@@ -1,0 +1,62 @@
+.pin-icon {
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: absolute;
+    left: 0;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.pin-icon__pinned {
+    visibility: visible !important;
+    opacity: 1 !important;
+    rotate: -30deg;
+}
+
+
+.pin-icon__pinned svg {
+    fill: var(--color-primary) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.column:hover .pin-icon {
+    visibility: visible;
+    opacity: 1;
+}
+
+.pin-icon__header {
+    position: unset;
+    left: unset;
+    scale: 1.1;
+    opacity: 1;
+    visibility: visible;
+}
+
+.pin-icon__header svg {
+    fill: var(--color-white-tinted);
+    transition: all 0.3s ease-out;
+}
+
+.pin-icon__header:hover svg {
+    fill: var(--color-bs-secondary);
+}
+
+.data-row svg {
+    fill: var(--color-white-tinted);
+    transition: all 0.3s ease-out;
+}
+
+.data-row:hover svg {
+    fill: var(--color-bs-secondary);
+}
+
+.info-icon__header svg {
+    fill: var(--color-info-transparent) !important;
+    transition: all 0.3s ease-out;
+}
+
+.info-icon__header:hover svg {
+    fill: var(--color-info) !important;
+}

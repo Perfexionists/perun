@@ -708,17 +708,22 @@ class SortOrder(Enum):
 
 
 class WebColorPalette:
-    """Colour palette for HTML/JS visualizations"""
+    """Colour palette for HTML/JS visualizations.
 
-    Baseline: str = "rgba(49, 48, 77, 0.4)"
-    Target: str = "rgba(255, 201, 74, 0.4)"
+    In case of using var(...) one should look
+    inside perun/templates/style/general_setup.css
+    where all variables are defined.
+    """
+
+    Baseline: str = "var(--color-baseline)"
+    Target: str = "var(--color-target)"
     Increase: str = "rgba(255, 0, 0, 0.7)"
     Decrease: str = "rgba(0, 255, 0, 0.7)"
-    Equal: str = "rgba(0, 0, 255, 0.7)"
+    Equal: str = "var(--color-common)"
     DarkTarget: str = "rgba(255, 201, 74, 1)"
     DarkBaseline: str = "rgba(49, 48, 77, 1)"
-    DarkIncrease: str = "#ea5545"
-    DarkDecrease: str = "#87bc45"
+    DarkIncrease: str = "var(--color-wrong)"
+    DarkDecrease: str = "var(--color-correct)"
     DarkEqual: str = "#27aeef"
     Highlight: str = "rgba(0, 0, 0, 0.7)"
     NoHighlight: str = "rgba(0, 0, 0, 0.2)"

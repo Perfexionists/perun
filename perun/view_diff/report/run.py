@@ -31,7 +31,7 @@ import perun
 from perun.logic import config
 from perun.profile import convert, stats as profile_stats
 from perun.profile.factory import Profile
-from perun.templates import filters, factory as templates
+from perun.templates import factory as templates
 from perun.utils import log, mapping
 from perun.utils.common import diff_kit, common_kit
 from perun.utils.structs.common_structs import WebColorPalette
@@ -748,23 +748,28 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
         diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
     )
+    lhs_vulnerabilities, rhs_vulnerabilities = diff_kit.generate_diff_of_headers(
+        diff_kit.generate_vulnerabilities(lhs_profile),
+        diff_kit.generate_vulnerabilities(rhs_profile),
+    )
     lhs_diff_stats, rhs_diff_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
     lhs_meta, rhs_meta = diff_kit.generate_diff_of_headers(
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
     )
 
-    env_filters = {"sanitize_variable_name": filters.sanitize_variable_name}
-    template = templates.get_template("diff_view_report.html.jinja2", filters=env_filters)
+    template = templates.get_template("ssp_report.html.jinja2")
     content = template.render(
-        title="Differences of profiles (with sankey)",
+        title="Perun report - differences of profiles",
         perun_version=perun.__version__,
-        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
+        lhs_vulnerabilities=lhs_vulnerabilities,
         lhs_stats=lhs_diff_stats,
         lhs_metadata=lhs_meta,
         rhs_tag="Target (tgt)",
         rhs_header=rhs_header,
+        rhs_vulnerabilities=rhs_vulnerabilities,
         rhs_stats=rhs_diff_stats,
         rhs_metadata=rhs_meta,
         palette=WebColorPalette,
