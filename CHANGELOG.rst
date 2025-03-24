@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.25.1 (2025-03-24)
+-------------------
+
+  - Fix an issue with sdist build not including 'add.svg' asset for showdiff report.
+
+
 0.25.0 (2025-03-23)
 -------------------
 

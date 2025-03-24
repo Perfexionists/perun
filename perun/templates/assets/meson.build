@@ -1,6 +1,7 @@
 perun_templates_assets_dir = perun_templates_dir / 'assets'
 
 perun_templates_assets_files = files(
+    'add.svg',
     'bin.svg',
     'fire.svg',
     'grid_view.svg',
