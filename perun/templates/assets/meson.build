@@ -10,8 +10,6 @@ perun_templates_assets_files = files(
     'metadata.svg',
     'note.svg',
     'note_small.svg',
-    'pin_g.svg',
-    'pin_g_small.svg',
     'row_view.svg',
     'stats.svg',
     'trace.svg',
