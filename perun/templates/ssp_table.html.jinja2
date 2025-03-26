@@ -6,7 +6,7 @@
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
                     <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
-                        {% include 'assets/pin_g_small.svg' %}
+                        {% include 'assets/note_small.svg' %}
                     </span>
                     <p class="data-value">{{ value }}</p>
                 </div>
@@ -27,7 +27,7 @@
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
                     <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
-                        {% include 'assets/pin_g_small.svg' %}
+                        {% include 'assets/note_small.svg' %}
                     </span>
                     <p class="data-value">{{ value }}</p>
                 </div>
@@ -44,7 +44,7 @@
     <div class="section_header">
         <h1>{{ title }}</h1>
         <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
-            {% include 'assets/pin_g.svg' %}
+            {% include 'assets/note.svg' %}
         </span>
     </div>
 {%- endmacro %}
@@ -57,7 +57,7 @@
             </span>
         <h1>{{ title }}</h1>
         <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
-            {% include 'assets/pin_g.svg' %}
+            {% include 'assets/note.svg' %}
         </span>
     </div>
 {%- endmacro %}
