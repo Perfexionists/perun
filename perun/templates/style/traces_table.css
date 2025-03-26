@@ -7,6 +7,10 @@
     box-shadow: 0 4px 8px rgba(0 0 0 / 10%);
 }
 
+#table-to-replace {
+    display: none;
+}
+
 .traces_table thead {
     background-color: var(--color-primary);
     color: var(--color-light-white);
