@@ -35,7 +35,7 @@
 }
 
 .pin-icon__header svg {
-    fill: var(--color-white-tinted);
+    fill: var(--color-dark-white);
     transition: all 0.3s ease-out;
 }
 
@@ -44,7 +44,7 @@
 }
 
 .data-row svg {
-    fill: var(--color-white-tinted);
+    fill: var(--color-dark-white);
     transition: all 0.3s ease-out;
 }
 
