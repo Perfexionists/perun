@@ -7,6 +7,10 @@
     box-shadow: 0 4px 8px rgba(0 0 0 / 10%);
 }
 
+#table-to-replace {
+    display: none;
+}
+
 .traces_table thead {
     background-color: var(--color-primary);
     color: var(--color-light-white);
@@ -113,5 +117,14 @@ div.dt-container {
     font-size: 14px !important;
     color: var(--color-light-gray) !important;
     padding: 6px 12px !important;
+}
+
+/* elimination of unused records in traces table */
+.nested {
+    text-align: left;
+}
+
+.nested tbody tr:nth-child(odd) {
+    display: none;
 }
 

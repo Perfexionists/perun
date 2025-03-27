@@ -20,6 +20,18 @@
     overflow: scroll;
 }
 
+/* highlights notes section when user adds note */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
+    50% { box-shadow: 0 0 20px 20px var(--color-target); }
+    100% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
+}
+
+.highlight-notes-sidebar {
+    animation: pulse-glow 1s ease-in-out infinite alternate;
+    border: 2px solid var(--color-primary);
+}
+
 .notes-sidebar-content {
     display: none;
     color: var(--color-light-white);

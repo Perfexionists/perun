@@ -58,6 +58,18 @@
             </span>
             <span class="side-panel__description">General</span>
         </a>
+        <a href="#flame">
+            <span class="full_visible">
+                {% include 'assets/fire.svg' %}
+            </span>
+            <span class="side-panel__description">Flame Graphs</span>
+        </a>
+        <a href="#traces">
+            <span class="full_visible">
+                {% include 'assets/trace.svg' %}
+            </span>
+            <span class="side-panel__description">Traces Table</span>
+        </a>
         <a href="#profile-vulnerabilities">
             <span class="full_visible">
                 {% include 'assets/vulnerabilities.svg' %}
@@ -75,18 +87,6 @@
                 {% include 'assets/metadata.svg' %}
             </span>
             <span class="side-panel__description">Profile Metadata</span>
-        </a>
-        <a href="#traces">
-            <span class="full_visible">
-                {% include 'assets/trace.svg' %}
-            </span>
-            <span class="side-panel__description">Traces Table</span>
-        </a>
-        <a href="#flame">
-            <span class="full_visible">
-                {% include 'assets/fire.svg' %}
-            </span>
-            <span class="side-panel__description">Flame Graphs</span>
         </a>
         <!--
         <a href="#sankey">
@@ -131,7 +131,7 @@
 
     <div class="notes-sidebar" id="notes-sidebar">
         <span class="general-sidebar__icon">
-            {% include 'assets/pin_g.svg' %}
+            {% include 'assets/note.svg' %}
         </span>
         <a> <p id="export-notes">Export with notes</p> </a>
         <div class="notes-sidebar-content">
@@ -143,18 +143,6 @@
 
     <!-- GENERAL STATS -->
     {% include 'ssp_sections/section_general_stats.html.jinja2' %}
-
-    <!-- VULNERABILITIES -->
-    {% include 'ssp_sections/section_vulnerabilities.html.jinja2' %}
-
-    <!-- PROFILE STATS -->
-    {% include 'ssp_sections/section_profile_stats.html.jinja2' %}
-
-    <!-- PROFILE METADATA -->
-    {% include 'ssp_sections/section_metadata.html.jinja2' %}
-
-    <!-- TABLE WITH TRACES -->
-    {% include 'ssp_sections/section_table_traces.html.jinja2' %}
 
     <!-- FLAME GRAPHS -->
     {% set flame_graphs_info = "Look for the topmost widest rectangle.
@@ -218,6 +206,18 @@
         {%- endfor %}
     </div>
 
+    <!-- TABLE WITH TRACES -->
+    {% include 'ssp_sections/section_table_traces.html.jinja2' %}
+
+    <!-- VULNERABILITIES -->
+    {% include 'ssp_sections/section_vulnerabilities.html.jinja2' %}
+
+    <!-- PROFILE STATS -->
+    {% include 'ssp_sections/section_profile_stats.html.jinja2' %}
+
+    <!-- PROFILE METADATA -->
+    {% include 'ssp_sections/section_metadata.html.jinja2' %}
+
     <!--
     SANKEY IS NOT INCLUDED BECAUSE IS NOT USED BY DEVELOPERS AND TAKES UP TOO MUCH SPACE
     {#% include 'ssp_sankey.html.jinja2' %#}
@@ -229,7 +229,9 @@
         const anchorTgt = document.getElementById("division_anchor__target");
 
         document.addEventListener("scroll", () => {
-           if (traces_table.offsetTop <= window.scrollY) {
+            const tracesTableBottomOffset = traces_table.offsetTop + traces_table.offsetHeight;
+
+           if (traces_table.offsetTop <= window.scrollY && tracesTableBottomOffset >= window.scrollY) {
                anchorsBase.style.display = "none";
                anchorTgt.style.display = "none";
            }
@@ -278,10 +280,18 @@
                 pinToDelete.classList.remove("pin-icon__pinned");
             }
 
+            function createGlowForNotesList() {
+                const notesSidebar = document.getElementById("notes-sidebar");
+                notesSidebar.classList.add("highlight-notes-sidebar");
+                setTimeout(() => {
+                    notesSidebar.classList.remove("highlight-notes-sidebar");
+                }, 5000);
+            }
+
             function addNoteForSection(pin, sectionId) {
                 const noteItem = document.createElement("div");
                 noteItem.classList.add("note-item", "note-item--attention");
-                noteItem.setAttribute("id", `${sectionId}-note-item`);
+                noteItem.setAttribute("id", `${sectionId} -note-item`);
 
                 noteItem.innerHTML = `
                     <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
@@ -302,6 +312,8 @@
                 statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
 
                 notesList.appendChild(noteItem);
+
+                createGlowForNotesList();
             }
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
@@ -311,23 +323,29 @@
                         pin.classList.add("pin-icon__pinned");
                         pin.parentElement.setAttribute("id", pin.dataset.section.toString());
                     }
-                    else {
-                        const noteItemToDelete = document.getElementById(pin.dataset.section + "-note-item");
+                    else if (!pin.classList.contains("pin-icon--embedded")) {
+                        const noteItemToDelete = document.getElementById(pin.dataset.section + " -note-item");
                         deleteNoteForSection(noteItemToDelete, pin)
+                    }
+                    else {
+                        createGlowForNotesList();
                     }
                 }
             });
 
             document.getElementById('export-notes').addEventListener('click', function () {
-                const currentHTML = document.documentElement.outerHTML;
+                let docHTML = document.documentElement.outerHTML;
 
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(currentHTML, 'text/html');
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(docHTML, 'text/html');
 
                 const notesList = doc.querySelector('#notes-list');
                 if (notesList) {
                     const noteItems = notesList.children;
                     Array.from(noteItems).forEach(noteItem => {
+                        const connectedPinId = noteItem.id.replace("-note-item", "-pin-item");
+                        const connectedPin = doc.getElementById(connectedPinId);
+                        connectedPin.classList.add("pin-icon--embedded");
                         const noteContentDiv = noteItem.querySelector('.note-item--content');
                         if (noteContentDiv) {
                             const noteValue = noteContentDiv.dataset.noteValue || "Empty note";
@@ -337,14 +355,25 @@
                         }
                     });
                 }
-                const updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
 
-                const blob = new Blob([updatedHTML], { type: 'text/html' });
+                let rawTable = doc.getElementById('table-to-replace');
+                let currentTable = doc.getElementById('table_wrapper');
 
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'updated_page_with_notes.html';
-                link.click();
+                if (rawTable && currentTable) {
+                    let newTable = rawTable.cloneNode(true);
+                    newTable.id = 'table';
+
+                    currentTable.replaceWith(newTable);
+
+                    let updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+
+                    let blob = new Blob([updatedHTML], { type: 'text/html' });
+
+                    let link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'report_with_notes.html';
+                    link.click();
+                }
             });
         });
 
