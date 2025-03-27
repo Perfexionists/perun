@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.25.2 (2025-03-27)
+-------------------
+
+  - Fix help tooltip in trace table and flamegraphs in showdiff report.
+  - Fix formatting of profile stats that use the count unit '#' to be more human-friendly.
+  - Fix table traces nesting when exporting report with notes.
+  - Changed the pin icon to a chat bubble icon.
+  - The report layout is now more condensed so that it is faster to navigate through it.
+  - Fix the trace details formatting inside the report table.
+  - Reorder the report sections for a better user experience and faster analysis.
+  - Embedded notes in an exported report now cannot be deleted.
+
+
 0.25.1 (2025-03-24)
 -------------------
 
