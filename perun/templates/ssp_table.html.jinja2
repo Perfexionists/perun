@@ -5,7 +5,9 @@
             {%- for (key, value, title, nested_values) in records %}
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
-                    <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
+                    <span id="{{ section_id }} > {{ type }} > {{ key | striptags }} -pin-item"
+                          class="pin-icon"
+                          data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
                         {% include 'assets/note_small.svg' %}
                     </span>
                     <p class="data-value">{{ value }}</p>
@@ -26,7 +28,9 @@
             {%- for key, value in records.items() %}
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
-                    <span class="pin-icon" data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
+                    <span id="{{ section_id }} > {{ type }} > {{ key | striptags }} -pin-item"
+                          class="pin-icon"
+                          data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
                         {% include 'assets/note_small.svg' %}
                     </span>
                     <p class="data-value">{{ value }}</p>
@@ -43,7 +47,9 @@
 {% macro display_title(title, section_name) %}
     <div class="section_header">
         <h1>{{ title }}</h1>
-        <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
+        <span id="{{ section_name }} -pin-item"
+              class="pin-icon pin-icon__header"
+              data-section="{{ section_name }}">
             {% include 'assets/note.svg' %}
         </span>
     </div>

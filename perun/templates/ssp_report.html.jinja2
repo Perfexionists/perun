@@ -229,7 +229,9 @@
         const anchorTgt = document.getElementById("division_anchor__target");
 
         document.addEventListener("scroll", () => {
-           if (traces_table.offsetTop <= window.scrollY) {
+            const tracesTableBottomOffset = traces_table.offsetTop + traces_table.offsetHeight;
+
+           if (traces_table.offsetTop <= window.scrollY && tracesTableBottomOffset >= window.scrollY) {
                anchorsBase.style.display = "none";
                anchorTgt.style.display = "none";
            }
@@ -278,10 +280,18 @@
                 pinToDelete.classList.remove("pin-icon__pinned");
             }
 
+            function createGlowForNotesList() {
+                const notesSidebar = document.getElementById("notes-sidebar");
+                notesSidebar.classList.add("highlight-notes-sidebar");
+                setTimeout(() => {
+                    notesSidebar.classList.remove("highlight-notes-sidebar");
+                }, 5000);
+            }
+
             function addNoteForSection(pin, sectionId) {
                 const noteItem = document.createElement("div");
                 noteItem.classList.add("note-item", "note-item--attention");
-                noteItem.setAttribute("id", `${sectionId}-note-item`);
+                noteItem.setAttribute("id", `${sectionId} -note-item`);
 
                 noteItem.innerHTML = `
                     <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
@@ -303,11 +313,7 @@
 
                 notesList.appendChild(noteItem);
 
-                const notesSidebar = document.getElementById("notes-sidebar");
-                notesSidebar.classList.add("highlight-notes-sidebar");
-                setTimeout(() => {
-                    notesSidebar.classList.remove("highlight-notes-sidebar");
-                }, 5000);
+                createGlowForNotesList();
             }
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
@@ -317,9 +323,12 @@
                         pin.classList.add("pin-icon__pinned");
                         pin.parentElement.setAttribute("id", pin.dataset.section.toString());
                     }
-                    else {
-                        const noteItemToDelete = document.getElementById(pin.dataset.section + "-note-item");
+                    else if (!pin.classList.contains("pin-icon--embedded")) {
+                        const noteItemToDelete = document.getElementById(pin.dataset.section + " -note-item");
                         deleteNoteForSection(noteItemToDelete, pin)
+                    }
+                    else {
+                        createGlowForNotesList();
                     }
                 }
             });
@@ -334,6 +343,9 @@
                 if (notesList) {
                     const noteItems = notesList.children;
                     Array.from(noteItems).forEach(noteItem => {
+                        const connectedPinId = noteItem.id.replace("-note-item", "-pin-item");
+                        const connectedPin = doc.getElementById(connectedPinId);
+                        connectedPin.classList.add("pin-icon--embedded");
                         const noteContentDiv = noteItem.querySelector('.note-item--content');
                         if (noteContentDiv) {
                             const noteValue = noteContentDiv.dataset.noteValue || "Empty note";
