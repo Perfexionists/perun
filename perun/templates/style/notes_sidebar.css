@@ -21,14 +21,14 @@
 }
 
 /* highlights notes section when user adds note */
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 20px 15px rgba(152, 131, 229, 0.8); }
-    50% { box-shadow: 0 0 20px 20px rgba(152, 131, 229, 1); }
-    100% { box-shadow: 0 0 20px 15px rgba(152, 131, 229, 0.8); }
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
+    50% { box-shadow: 0 0 20px 20px var(--color-target); }
+    100% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
 }
 
 .highlight-notes-sidebar {
-    animation: pulseGlow 1s ease-in-out infinite alternate;
+    animation: pulse-glow 1s ease-in-out infinite alternate;
     border: 2px solid var(--color-primary);
 }
 
