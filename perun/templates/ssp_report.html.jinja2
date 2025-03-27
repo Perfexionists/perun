@@ -302,6 +302,12 @@
                 statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
 
                 notesList.appendChild(noteItem);
+
+                const notesSidebar = document.getElementById("notes-sidebar");
+                notesSidebar.classList.add("highlight-notes-sidebar");
+                setTimeout(() => {
+                    notesSidebar.classList.remove("highlight-notes-sidebar");
+                }, 5000);
             }
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
