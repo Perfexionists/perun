@@ -26,8 +26,10 @@
     const absValue = Math.abs(value);
     let formatted;
 
-    if (absValue >= 1_000_000_000) {
-        formatted = (value / 1_000_000_000).toFixed(3) + " B";
+    if (absValue >= 1_000_000_000_000) {
+        formatted = (value / 1_000_000_000_000).toFixed(3) + " T";
+    } else if (absValue >= 1_000_000_000) {
+        formatted = (value / 1_000_000_000).toFixed(3) + " G";
     } else if (absValue >= 1_000_000) {
         formatted = (value / 1_000_000).toFixed(3) + " M";
     } else if (absValue >= 1_000) {

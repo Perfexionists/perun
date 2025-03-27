@@ -1,8 +1,8 @@
 {% import 'ssp_table.html.jinja2' as property_generator %}
 
-{% set traces_table_info = "Click on a row to explore the results in a form of Sankey Graph (below the table).
-            Click on [+] to open a detailed report about concrete calling contexts.
-            Filter the results through select form on the bottom of table (for selected columns)." %}
+{% set traces_table_info = "Click on a row to explore top N calling contexts (traces) of the selected function.
+            Click on (+) next to a trace row to open a detail about that concrete trace.
+            You may filter the table using the select form in the table header." %}
 
 <div id="traces" class="section">
 
