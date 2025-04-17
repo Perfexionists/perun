@@ -126,7 +126,8 @@ my $negate = 0;                 # switch differential hues
 my $titletext = "";             # centered heading
 my $titledefault = "Flame Graph";	# overwritten by --title
 my $titleinverted = "Icicle Graph";	#   "    "
-my $searchcolor = "rgb(230,0,230)";	# color for search highlighting
+my $searchcolor = "rgb(250,0,250)";	# color for search highlighting
+my $hovercolor = "rgb(195,0,195)";	# color for hover highlighting
 my $notestext = "";		# embedded notes in SVG
 my $subtitletext = "";		# second level title (optional)
 my $help = 0;
@@ -812,15 +813,18 @@ my $inc = <<INC;
 <![CDATA[
 	"use strict";
 	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	var matchedHoverTxt, hoverSearchTerm;
 	function init(evt) {
 		details = document.getElementById("details").firstChild;
 		searchbtn = document.getElementById("search");
 		ignorecaseBtn = document.getElementById("ignorecase");
 		unzoombtn = document.getElementById("unzoom");
 		matchedtxt = document.getElementById("matched");
+		matchedHoverTxt = document.getElementById("matchedhover");
 		svg = document.getElementsByTagName("svg")[0];
 		searching = 0;
 		currentSearchTerm = null;
+		hoverSearchTerm = null;
 	}
 
 	// event listeners
@@ -1047,6 +1051,32 @@ my $inc = <<INC;
 		for (var i = 0; i < el.length; i++) {
 			orig_load(el[i], "fill")
 		}
+		searching = 0;
+        currentSearchTerm = null;
+        searchbtn.classList.remove("show");
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.classList.add("hide");
+        matchedtxt.firstChild.nodeValue = ""
+	}
+
+	function reset_search_hover() {
+		var el = document.getElementById("frames").children;
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		for (var i = 0; i < el.length; i++) {
+		    var func = g_to_func(el[i]);
+			var rect = find_child(el[i], "rect");
+		    if (rect.attributes.fill.value == "$hovercolor") {
+		        if (func.match(re)) {
+		            rect.attributes.fill.value = "$searchcolor";
+		        } else {
+		            orig_load(rect, "fill");
+		        }
+		    }
+
+		}
+		hoverSearchTerm = null;
+		matchedHoverTxt.classList.add("hide");
+		matchedHoverTxt.firstChild.nodeValue = ""
 	}
 	function search_prompt() {
 		if (!searching) {
@@ -1057,19 +1087,36 @@ my $inc = <<INC;
 			if (term != null) search(term);
 		} else {
 			reset_search();
-			searching = 0;
-			currentSearchTerm = null;
-			searchbtn.classList.remove("show");
-			searchbtn.firstChild.nodeValue = "Search"
-			matchedtxt.classList.add("hide");
-			matchedtxt.firstChild.nodeValue = ""
 		}
 	}
 	function search(term) {
 		if (term) currentSearchTerm = term;
-
 		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
-		var el = document.getElementById("frames").children;
+
+        var res = find_frames(re, false);
+		if (!searching)
+			return;
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+        // display matched percent
+        var pct = calculate_matched_percent(res.matches, res.maxwidth);
+		matchedtxt.classList.remove("hide");
+		matchedtxt.firstChild.nodeValue = "Matched (search): " + pct + "%";
+	}
+	function search_hover(term) {
+	    if (term) hoverSearchTerm = term;
+
+	    var res = find_frames(term, true);
+
+	    // display matched percent
+        var pct = calculate_matched_percent(res.matches, res.maxwidth);
+		matchedHoverTxt.classList.remove("hide");
+		matchedHoverTxt.firstChild.nodeValue = "Matched (mouseover): " + pct + "%";
+	}
+	// The func_expr may be either a regex or a simple string
+    function find_frames(func_expr, is_hover) {
+        var el = document.getElementById("frames").children;
 		var matches = new Object();
 		var maxwidth = 0;
 		for (var i = 0; i < el.length; i++) {
@@ -1084,11 +1131,11 @@ my $inc = <<INC;
 			if (w > maxwidth)
 				maxwidth = w;
 
-			if (func.match(re)) {
+			if ((is_hover && func.startsWith(func_expr)) || (!is_hover && func.match(func_expr))) {
 				// highlight
 				var x = parseFloat(rect.attributes.x.value);
 				orig_save(rect, "fill");
-				rect.attributes.fill.value = "$searchcolor";
+				rect.attributes.fill.value = is_hover ? "$hovercolor" : "$searchcolor";
 
 				// remember matches
 				if (matches[x] == undefined) {
@@ -1099,16 +1146,15 @@ my $inc = <<INC;
 						matches[x] = w;
 					}
 				}
-				searching = 1;
+				if (!is_hover) {
+				    searching = 1;
+				}
 			}
 		}
-		if (!searching)
-			return;
-
-		searchbtn.classList.add("show");
-		searchbtn.firstChild.nodeValue = "Reset Search";
-
-		// calculate percent matched, excluding vertical overlap
+		return { maxwidth: maxwidth, matches: matches };
+    }
+    function calculate_matched_percent(matches, maxwidth) {
+        // calculate percent matched, excluding vertical overlap
 		var count = 0;
 		var lastx = -1;
 		var lastw = 0;
@@ -1136,11 +1182,10 @@ my $inc = <<INC;
 			}
 		}
 		// display matched percent
-		matchedtxt.classList.remove("hide");
 		var pct = 100 * count / maxwidth;
 		if (pct != 100) pct = pct.toFixed(1)
-		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
-	}
+		return pct;
+    }
 ]]>
 </script>
 INC
@@ -1152,7 +1197,8 @@ $im->stringTTF("details", $xpad, $imageheight - ($ypad2 / 2) + $offset, " ");
 $im->stringTTF("unzoom", $xpad, $fontsize * 2, "Reset Zoom", 'class="hide"');
 $im->stringTTF("search", $imagewidth - $xpad - 100, $fontsize * 2, "Search");
 $im->stringTTF("ignorecase", $imagewidth - $xpad - 16, $fontsize * 2, "ic");
-$im->stringTTF("matched", $imagewidth - $xpad - 100, $imageheight - ($ypad2 / 2) + $offset, " ");
+$im->stringTTF("matchedhover", $imagewidth - $xpad - 166, $imageheight - ($ypad2 / 2) + $offset, " ");
+$im->stringTTF("matched", $imagewidth - $xpad - 140, $imageheight - $offset - 4, " ");
 
 if ($palette) {
 	read_palette();

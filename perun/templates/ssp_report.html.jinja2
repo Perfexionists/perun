@@ -516,27 +516,19 @@
 
                             if (textElement && textElement.innerHTML) {
                                 let searchTerm = cleanTitle(textElement.innerHTML);
-                                searchTerm = "^" + searchTerm;
 
-                                window[`lhs_{{index}}_currentSearchTerm`] = searchTerm;
-                                window[`lhs_{{index}}_search`]();
-
-                                window[`rhs_{{index}}_currentSearchTerm`] = searchTerm;
-                                window[`rhs_{{index}}_search`]();
-
-                                window[`lhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
-                                window[`lhs_diff_{{index}}_search`]();
-
-                                window[`rhs_diff_{{index}}_currentSearchTerm`] = searchTerm;
-                                window[`rhs_diff_{{index}}_search`]();
+                                window[`lhs_{{index}}_search_hover`](searchTerm);
+                                window[`rhs_{{index}}_search_hover`](searchTerm);
+                                window[`lhs_diff_{{index}}_search_hover`](searchTerm);
+                                window[`rhs_diff_{{index}}_search_hover`](searchTerm);
                             }
                         });
 
                         node.addEventListener("mouseleave", function () {
-                            window[`lhs_{{index}}_reset_search`]();
-                            window[`rhs_{{index}}_reset_search`]();
-                            window[`lhs_diff_{{index}}_reset_search`]();
-                            window[`rhs_diff_{{index}}_reset_search`]();
+                            window[`lhs_{{index}}_reset_search_hover`]();
+                            window[`rhs_{{index}}_reset_search_hover`]();
+                            window[`lhs_diff_{{index}}_reset_search_hover`]();
+                            window[`rhs_diff_{{index}}_reset_search_hover`]();
                         });
                     });
                 });
@@ -609,14 +601,13 @@
             });
 
             function cleanTitle(title) {
-                // regex takes string, throws away everything after
-                // first '(' with a digit inside and escapes opening parenthesis with \ symbol
+                // strips the number of samples from the function names. Keeps the opening parenthesis symbol '('
+                // to ensure exact match.
                 let index = title.search(/\(\d/);
                 if (index !== -1) {
-                    title = title.slice(0, index) + '\\(';
+                    title = title.slice(0, index) + '(';
                 }
-                console.log(title);
-                return title.replace('[', '\\[');
+                return title;
             }
 
         {%- endif %}
