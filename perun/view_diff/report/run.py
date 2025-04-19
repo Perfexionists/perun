@@ -865,6 +865,12 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     help="Specifies the background colors for flamegraphs. This option is forwarded to the "
     "flamegraph.pl script.",
 )
+@click.option(
+    "--flamegraph-colors",
+    type=str,
+    help="Specifies the color theme for flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
 @click.pass_context
 def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     """Creates a composite interactive difference report of two profiles that combines multiple
