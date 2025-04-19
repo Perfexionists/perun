@@ -479,34 +479,40 @@
             searchBar = document.getElementById("flamegraph_search_all");
 
             {% for index in range(0, flamegraphs|length) %}
+                function searchCallback{{index}}() {
+                    let searchTerm = searchBar.value.trim();
+
+                    lhs_{{index}}_reset_search();
+                    if (searchTerm !== "") {
+                        lhs_{{index}}_currentSearchTerm = searchBar.value;
+                        lhs_{{index}}_search();
+                    }
+
+                    rhs_{{index}}_reset_search();
+                    if (searchTerm !== "") {
+                        rhs_{{index}}_currentSearchTerm = searchBar.value;
+                        rhs_{{index}}_search();
+                    }
+
+                    lhs_diff_{{index}}_reset_search();
+                    if (searchTerm !== "") {
+                        lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                        lhs_diff_{{index}}_search();
+                    }
+
+                    rhs_diff_{{index}}_reset_search();
+                    if (searchTerm !== "") {
+                        rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                        rhs_diff_{{index}}_search();
+                    }
+                }
                 if (searchBar) {
-                    searchBar.addEventListener('input', function () {
-                        let searchTerm = searchBar.value.trim();
-
-                        lhs_{{index}}_reset_search();
-                        if (searchTerm !== "") {
-                            lhs_{{index}}_currentSearchTerm = searchBar.value;
-                            lhs_{{index}}_search();
-                        }
-
-                        rhs_{{index}}_reset_search();
-                        if (searchTerm !== "") {
-                            rhs_{{index}}_currentSearchTerm = searchBar.value;
-                            rhs_{{index}}_search();
-                        }
-
-                        lhs_diff_{{index}}_reset_search();
-                        if (searchTerm !== "") {
-                            lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
-                            lhs_diff_{{index}}_search();
-                        }
-
-                        rhs_diff_{{index}}_reset_search();
-                        if (searchTerm !== "") {
-                            rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
-                            rhs_diff_{{index}}_search();
-                        }
-                    })
+                    searchBar.addEventListener('input', searchCallback{{index}});
+                    searchBar.addEventListener('keypress', function (e) {
+                        if (e.key === 'Enter') {
+                            searchCallback{{index}}();
+                            this.blur();
+                        }});
                 }
 
                 ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
