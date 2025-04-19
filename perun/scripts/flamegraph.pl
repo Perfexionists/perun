@@ -202,6 +202,7 @@ my $ypad1 = $fontsize * 3;      # pad top, include title
 my $ypad2 = $fontsize * 2 + 10; # pad bottom, include labels
 my $ypad3 = $fontsize * 2;      # pad top, include subtitle (optional)
 my $xpad = 10;                  # pad lefm and right
+my $xpad2 = $fontsize * $fontsize; # pad fontsize increase
 my $framepad = 1;		# vertical padding for frames
 my $depthmax = 0;
 my %Events;
@@ -1237,8 +1238,8 @@ $im->stringTTF("details", $xpad, $imageheight - ($ypad2 / 2) + $offset, " ");
 $im->stringTTF("unzoom", $xpad, $fontsize * 2, "Reset Zoom", 'class="hide"');
 $im->stringTTF("search", $imagewidth - $xpad - 100, $fontsize * 2, "Search");
 $im->stringTTF("ignorecase", $imagewidth - $xpad - 16, $fontsize * 2, "ic");
-$im->stringTTF("matchedhover", $imagewidth - $xpad - 276, $imageheight - ($ypad2 / 2) + $offset, " ");
-$im->stringTTF("matched", $imagewidth - $xpad - 250, $imageheight - $offset - 4, " ");
+$im->stringTTF("matchedhover", $imagewidth - $xpad2 - 131, $imageheight - ($ypad2 / 2) + $offset, " ");
+$im->stringTTF("matched", $imagewidth - $xpad2 - 105, $imageheight - $offset - 4, " ");
 
 if ($palette) {
 	read_palette();
