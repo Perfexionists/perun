@@ -212,6 +212,8 @@ def test_diff_report_invalid_forward_param(pcs_with_root):
             14,
             "--flamegraph-bgcolors",
             "invalid_color",
+            "--flamegraph-colors",
+            "chain",
         ],
     )
     assert result.exit_code == 0

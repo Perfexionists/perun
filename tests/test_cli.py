@@ -2656,6 +2656,8 @@ def test_svs():
             14,
             "--flamegraph-bgcolors",
             "blue",
+            "--flamegraph-colors",
+            "wakeup",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)

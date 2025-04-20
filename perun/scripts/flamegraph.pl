@@ -127,6 +127,7 @@ my $titletext = "";             # centered heading
 my $titledefault = "Flame Graph";	# overwritten by --title
 my $titleinverted = "Icicle Graph";	#   "    "
 my $searchcolor = "rgb(230,0,230)";	# color for search highlighting
+my $hovercolor = "rgb(0,230,230)";	# color for hover highlighting
 my $notestext = "";		# embedded notes in SVG
 my $subtitletext = "";		# second level title (optional)
 my $help = 0;
@@ -201,6 +202,7 @@ my $ypad1 = $fontsize * 3;      # pad top, include title
 my $ypad2 = $fontsize * 2 + 10; # pad bottom, include labels
 my $ypad3 = $fontsize * 2;      # pad top, include subtitle (optional)
 my $xpad = 10;                  # pad lefm and right
+my $xpad2 = $fontsize * $fontsize; # pad fontsize increase
 my $framepad = 1;		# vertical padding for frames
 my $depthmax = 0;
 my %Events;
@@ -637,6 +639,23 @@ sub flow {
         return $this;
 }
 
+sub format_with_suffix {
+    my $num = shift;
+    my @suffixes = ('', 'K', 'M', 'G', 'T', 'P', 'E');
+    my $i = 0;
+
+    while ($num >= 1000 && $i < @suffixes - 1) {
+        $num /= 1000;
+        $i++;
+    }
+
+    # Format to max 3 decimal places, removing trailing zeros
+    my $formatted = sprintf("%.3f", $num);
+    $formatted =~ s/\.?0+$//;  # Remove trailing zeros and optional decimal point
+
+    return $formatted . $suffixes[$i];
+}
+
 # parse input
 my @Data;
 my @SortedData;
@@ -812,15 +831,18 @@ my $inc = <<INC;
 <![CDATA[
 	"use strict";
 	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	var matchedHoverTxt, hoverSearchTerm;
 	function init(evt) {
 		details = document.getElementById("details").firstChild;
 		searchbtn = document.getElementById("search");
 		ignorecaseBtn = document.getElementById("ignorecase");
 		unzoombtn = document.getElementById("unzoom");
 		matchedtxt = document.getElementById("matched");
+		matchedHoverTxt = document.getElementById("matchedhover");
 		svg = document.getElementsByTagName("svg")[0];
 		searching = 0;
 		currentSearchTerm = null;
+		hoverSearchTerm = null;
 	}
 
 	// event listeners
@@ -918,6 +940,25 @@ my $inc = <<INC;
 		}
 		t.textContent = "";
 	}
+	function formatWithSuffix(num) {
+        const suffixes = ['', 'K', 'M', 'G', 'T', 'P', 'E'];
+        var i = 0;
+
+        while (num >= 1000 && i < suffixes.length - 1) {
+            num /= 1000;
+            i++;
+        }
+
+        // Format to max 3 decimal places, trimming trailing zeroes
+        var formatted = num.toFixed(3).replace(/\\.?0+\$/, '');
+
+        return formatted + suffixes[i];
+    }
+    function parseFormattedSuffix(str) {
+        const units = { '': 1, K: 1e3, M: 1e6, G: 1e9, T: 1e12, P: 1e15, E: 1e18 };
+        const suffixMatch = str.match(/\\(([\\d.]+)([KMGTPE]?) .*/);
+        return parseFloat(suffixMatch[1]) * (units[suffixMatch[2].toUpperCase()] || 1);
+    }
 
 	// zoom
 	function zoom_reset(e) {
@@ -1047,6 +1088,32 @@ my $inc = <<INC;
 		for (var i = 0; i < el.length; i++) {
 			orig_load(el[i], "fill")
 		}
+		searching = 0;
+        currentSearchTerm = null;
+        searchbtn.classList.remove("show");
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.classList.add("hide");
+        matchedtxt.firstChild.nodeValue = ""
+	}
+
+	function reset_search_hover() {
+		var el = document.getElementById("frames").children;
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		for (var i = 0; i < el.length; i++) {
+		    var func = g_to_func(el[i]);
+			var rect = find_child(el[i], "rect");
+		    if (rect.attributes.fill.value == "$hovercolor") {
+		        if (func.match(re)) {
+		            rect.attributes.fill.value = "$searchcolor";
+		        } else {
+		            orig_load(rect, "fill");
+		        }
+		    }
+
+		}
+		hoverSearchTerm = null;
+		matchedHoverTxt.classList.add("hide");
+		matchedHoverTxt.firstChild.nodeValue = ""
 	}
 	function search_prompt() {
 		if (!searching) {
@@ -1057,19 +1124,36 @@ my $inc = <<INC;
 			if (term != null) search(term);
 		} else {
 			reset_search();
-			searching = 0;
-			currentSearchTerm = null;
-			searchbtn.classList.remove("show");
-			searchbtn.firstChild.nodeValue = "Search"
-			matchedtxt.classList.add("hide");
-			matchedtxt.firstChild.nodeValue = ""
 		}
 	}
 	function search(term) {
 		if (term) currentSearchTerm = term;
-
 		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
-		var el = document.getElementById("frames").children;
+
+        var res = find_frames(re, false);
+		if (!searching)
+			return;
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+        // display matched percent
+        var matched = calculate_matched(res.matches, res.maxwidth);
+		matchedtxt.classList.remove("hide");
+		matchedtxt.firstChild.nodeValue = "Matched (search): " + matched.totalSamples + " samples, " + matched.pct + "%";
+	}
+	function search_hover(term) {
+	    if (term) hoverSearchTerm = term;
+
+	    var res = find_frames(term, true);
+
+	    // display matched percent
+        var matched = calculate_matched(res.matches, res.maxwidth);
+		matchedHoverTxt.classList.remove("hide");
+		matchedHoverTxt.firstChild.nodeValue = "Matched (mouseover): " + matched.totalSamples + " samples, " + matched.pct + "%";
+	}
+	// The func_expr may be either a regex or a simple string
+    function find_frames(func_expr, is_hover) {
+        var el = document.getElementById("frames").children;
 		var matches = new Object();
 		var maxwidth = 0;
 		for (var i = 0; i < el.length; i++) {
@@ -1084,32 +1168,33 @@ my $inc = <<INC;
 			if (w > maxwidth)
 				maxwidth = w;
 
-			if (func.match(re)) {
+			if ((is_hover && func.startsWith(func_expr)) || (!is_hover && func.match(func_expr))) {
 				// highlight
 				var x = parseFloat(rect.attributes.x.value);
 				orig_save(rect, "fill");
-				rect.attributes.fill.value = "$searchcolor";
+				rect.attributes.fill.value = is_hover ? "$hovercolor" : "$searchcolor";
 
 				// remember matches
+				const absSamples = parseFormattedSuffix(func);
 				if (matches[x] == undefined) {
-					matches[x] = w;
+				    matches[x] = [w, absSamples];
 				} else {
-					if (w > matches[x]) {
+					if (w > matches[x][0]) {
 						// overwrite with parent
-						matches[x] = w;
+						matches[x] = [w, absSamples];
 					}
 				}
-				searching = 1;
+				if (!is_hover) {
+				    searching = 1;
+				}
 			}
 		}
-		if (!searching)
-			return;
-
-		searchbtn.classList.add("show");
-		searchbtn.firstChild.nodeValue = "Reset Search";
-
-		// calculate percent matched, excluding vertical overlap
+		return { maxwidth: maxwidth, matches: matches };
+    }
+    function calculate_matched(matches, maxwidth) {
+        // calculate absolute and percent matched, excluding vertical overlap
 		var count = 0;
+		var totalSamples = 0;
 		var lastx = -1;
 		var lastw = 0;
 		var keys = Array();
@@ -1128,19 +1213,20 @@ my $inc = <<INC;
 		var fudge = 0.0001;	// JavaScript floating point
 		for (var k in keys) {
 			var x = parseFloat(keys[k]);
-			var w = matches[keys[k]];
+			var [w, samples] = matches[keys[k]];
 			if (x >= lastx + lastw - fudge) {
+				// compute absolute matched
+				totalSamples += samples;
 				count += w;
 				lastx = x;
 				lastw = w;
 			}
 		}
-		// display matched percent
-		matchedtxt.classList.remove("hide");
+		// compute matched percent
 		var pct = 100 * count / maxwidth;
 		if (pct != 100) pct = pct.toFixed(1)
-		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
-	}
+		return { pct: pct, totalSamples: formatWithSuffix(totalSamples) };
+    }
 ]]>
 </script>
 INC
@@ -1152,7 +1238,8 @@ $im->stringTTF("details", $xpad, $imageheight - ($ypad2 / 2) + $offset, " ");
 $im->stringTTF("unzoom", $xpad, $fontsize * 2, "Reset Zoom", 'class="hide"');
 $im->stringTTF("search", $imagewidth - $xpad - 100, $fontsize * 2, "Search");
 $im->stringTTF("ignorecase", $imagewidth - $xpad - 16, $fontsize * 2, "ic");
-$im->stringTTF("matched", $imagewidth - $xpad - 100, $imageheight - ($ypad2 / 2) + $offset, " ");
+$im->stringTTF("matchedhover", $imagewidth - $xpad2 - 131, $imageheight - ($ypad2 / 2) + $offset, " ");
+$im->stringTTF("matched", $imagewidth - $xpad2 - 105, $imageheight - $offset - 4, " ");
 
 if ($palette) {
 	read_palette();
@@ -1178,11 +1265,8 @@ while (my ($id, $node) = each %Node) {
 		$y2 = $ypad1 + ($depth + 1) * $frameheight - $framepad;
 	}
 
-	# Add commas per perlfaq5:
-	# https://perldoc.perl.org/perlfaq5#How-can-I-output-my-numbers-with-commas-added?
 	my $samples = sprintf "%.0f", ($etime - $stime) * $factor;
-	(my $samples_txt = $samples)
-		=~ s/(^[-+]?\d+?(?=(?>(?:\d{3})+)(?!\d))|\G\d{3}(?=\d))/$1,/g;
+	my $samples_txt = format_with_suffix($samples);
 
 	my $info;
 	if ($func eq "" and $depth == 0) {
