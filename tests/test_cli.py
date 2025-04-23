@@ -1400,7 +1400,7 @@ def test_collect_correct(pcs_with_root):
     runner = CliRunner()
     result = runner.invoke(
         collect_cli.collect,
-        ["-c echo", "-w hello", "-o", "prof.perf", "time", "--repeat=1", "--warmup=1"],
+        ["-c echo", "-w hello", "-pd", ".", "-pn", "prof.perf", "time", "--repeat=1", "--warmup=1"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof.perf" in os.listdir(".")
@@ -1427,7 +1427,9 @@ def test_collect_correct(pcs_with_root):
             "collect",
             "-c echo",
             "-w hello",
-            "-o",
+            "-pd",
+            ".",
+            "-pn",
             "prof3.perf",
             "time",
             "--repeat=1",
@@ -1448,7 +1450,9 @@ def test_collect_correct(pcs_with_root):
             "collect",
             "-c echo",
             "-w hello",
-            "-o",
+            "-pd",
+            ".",
+            "-pn",
             "prof2.perf",
             "time",
             "--repeat=1",
@@ -2628,12 +2632,14 @@ def test_svs():
         # Perf is unavailable on macOS
         return
 
-    result = runner.invoke(collect_cli.collect, ["-c echo", "-w hello", "-o", "prof.perf", "kperf"])
+    result = runner.invoke(
+        collect_cli.collect, ["-c echo", "-w hello", "-pd", ".", "-pn", "prof.perf", "kperf"]
+    )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof.perf" in os.listdir(".")
 
     result = runner.invoke(
-        collect_cli.collect, ["-c echo", "-w world", "-o", "prof2.perf", "kperf"]
+        collect_cli.collect, ["-c echo", "-w world", "-pd", ".", "-pn", "prof2.perf", "kperf"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof2.perf" in os.listdir(".")

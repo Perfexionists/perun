@@ -68,6 +68,8 @@ def test_import_stack(pcs_with_svs):
         cli.cli,
         [
             "import",
+            "-pn",
+            "custom_import_profile",
             "--import-dir",
             pool_path,
             "--machine-info",
@@ -78,32 +80,15 @@ def test_import_stack(pcs_with_svs):
         ],
     )
     assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
-
-    result = runner.invoke(
-        cli.cli,
-        [
-            "import",
-            "--save-to-index",
-            "-c",
-            "ls",
-            "-w",
-            "..",
-            "perf",
-            "stack",
-            os.path.join(pool_path, "import.stack"),
-            os.path.join(pool_path, "import.stack.gz"),
-        ],
-    )
-    assert result.exit_code == 0
-    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 2
+    profiles = os.listdir(os.path.join(".perun", "jobs"))
+    assert len(profiles) == 2 and "custom_import_profile.perf" in profiles
 
     result = runner.invoke(
         cli.cli,
         [
             "import",
             "-pn",
-            "custom_import_profile",
+            "custom_import_profile.perf",
             "-c",
             "ls",
             "-w",
@@ -132,7 +117,25 @@ def test_import_stack(pcs_with_svs):
     )
     assert result.exit_code == 0
     profiles = os.listdir(os.path.join(".perun", "jobs"))
-    assert len(profiles) == 3 and "custom_import_profile.perf" in profiles
+    assert len(profiles) == 3 and "custom_import_profile(1).perf" in profiles
+
+    result = runner.invoke(
+        cli.cli,
+        [
+            "import",
+            "--save-to-index",
+            "-c",
+            "ls",
+            "-w",
+            "..",
+            "perf",
+            "stack",
+            os.path.join(pool_path, "import.stack"),
+            os.path.join(pool_path, "import.stack.gz"),
+        ],
+    )
+    assert result.exit_code == 0
+    assert len(os.listdir(os.path.join(".perun", "jobs"))) == 3
 
 
 def test_import_error(pcs_with_svs):

@@ -78,7 +78,19 @@ from perun.utils.common import cli_kit
     "-s",
     is_flag=True,
     default=False,
-    help="Saves the imported profile to index.",
+    callback=cli_kit.set_config_option_from_flag(config.runtime, "profiles.register_after_run"),
+    help="Registers the imported profile in index instead of saving it in pending.",
+)
+@click.option(
+    "--profile-dir",
+    "-pd",
+    nargs=1,
+    type=click.Path(),
+    help=(
+        "Specifies the output directory in which the collected profile will be saved. "
+        "The default directory is '.perun/jobs'. "
+        "The directory will be created if it does not exist."
+    ),
 )
 @click.option(
     "--profile-name",
@@ -86,7 +98,9 @@ from perun.utils.common import cli_kit
     nargs=1,
     type=str,
     help=(
-        "Specifies the name of the resulting imported profile, which will be stored in .perun/jobs."
+        "Specifies the name of the collected profile, e.g., 'profile.perf', that will be stored in "
+        "the output directory. The default name is generated according to the "
+        ":ckey:`format.output_profile_template` configuration parameter."
     ),
 )
 @click.option(
@@ -106,6 +120,9 @@ def import_group(ctx: click.Context, **kwargs: Any) -> None:
     Absolute file paths ignore the import directory.
     """
     commands.try_init()
+    kwargs["profile_path"] = profile.ProfilePath(
+        kwargs.get("profile_name"), kwargs.get("profile_dir")
+    )
     ctx.obj = kwargs
 
 

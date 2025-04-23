@@ -7,30 +7,50 @@ import click
 # Perun Imports
 from perun.utils.structs import collect_structs
 from perun.utils.common import cli_kit
+from perun import profile
 from perun.logic import commands, config as perun_config
 
 
 @click.group()
 @click.option(
-    "--output-file",
-    "-o",
+    "--profile-dir",
+    "-pd",
     nargs=1,
-    required=False,
-    multiple=False,
-    type=click.Path(writable=True),
-    help="Specifies the full path to where the profile will be stored.",
+    type=click.Path(),
+    help=(
+        "Specifies the output directory in which the collected profile will be saved. "
+        "The default directory is '.perun/jobs'. "
+        "The directory will be created if it does not exist."
+    ),
 )
 @click.option(
     "--profile-name",
     "-pn",
     nargs=1,
-    required=False,
-    multiple=False,
     type=str,
     help=(
-        "Specifies the name of the profile, which will be collected, e.g. profile.perf. The profile will be stored in"
-        " .perun/jobs"
+        "Specifies the name of the collected profile, e.g., 'profile.perf', that will be stored in "
+        "the output directory. The default name is generated according to the "
+        ":ckey:`format.output_profile_template` configuration parameter."
     ),
+)
+@click.option(
+    "--profile-label",
+    "-pl",
+    nargs=1,
+    type=str,
+    default="",
+    help="An optional custom label to associate with the collected profile(s).",
+)
+@click.option(
+    "--save-to-index",
+    "-s",
+    is_flag=True,
+    default=False,
+    callback=cli_kit.set_config_option_from_flag(
+        perun_config.runtime, "profiles.register_after_run"
+    ),
+    help="Registers the imported profile in index instead of saving it in pending.",
 )
 @click.option(
     "--minor-version",
@@ -180,4 +200,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     ``perun run job --help``.
     """
     commands.try_init()
+    kwargs["profile_path"] = profile.ProfilePath(
+        kwargs.get("profile_name"), kwargs.get("profile_dir")
+    )
     ctx.obj = kwargs
