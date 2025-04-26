@@ -51,6 +51,9 @@
         </h2>
     </div>
 
+    <!-- NOTE POPUP TO EDIT AND DELETE NOTES-->
+    {% include 'ssp_note_popup.html.jinja2' %}
+
     <div class="side-panel navigation-panel">
         <a href="#general">
             <span class="full_visible">
@@ -246,18 +249,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const notesList = document.getElementById("notes-list");
 
-            function attachInputListener(noteInput) {
-                noteInput.addEventListener("input", (event) => {
-                    const noteItemContent = event.target.closest(".note-item--content");
-                    if (noteItemContent) {
-                        noteItemContent.dataset.noteValue = event.target.value;
-                    }
-
-                    event.target.style.height = "auto";
-                    event.target.style.height = `${event.target.scrollHeight}px`;
-                });
-            }
-
             function toggleNoteStatus(noteItem, statusButton) {
                 const isAttention = statusButton.classList.contains("attention");
                 if (isAttention) {
@@ -275,11 +266,6 @@
                 }
             }
 
-            function deleteNoteForSection(noteItemToDelete, pinToDelete) {
-                noteItemToDelete.remove();
-                pinToDelete.classList.remove("pin-icon__pinned");
-            }
-
             function createGlowForNotesList() {
                 const notesSidebar = document.getElementById("notes-sidebar");
                 notesSidebar.classList.add("highlight-notes-sidebar");
@@ -294,26 +280,16 @@
                 noteItem.setAttribute("id", `${sectionId} -note-item`);
 
                 noteItem.innerHTML = `
-                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
+                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a></b></p>
                     <div class="note-item--content">
-                        <textarea class="note-input" placeholder="Enter your note"></textarea>
-                        <span class="" style="cursor: pointer; margin: 0">{% include 'assets/bin.svg' %}</span>
+                        <p class="note-input"></p>
                         <button class="note-status-toggle attention">Attention</button>
                     </div>`;
-
-                const noteInput = noteItem.querySelector(".note-input");
-                attachInputListener(noteInput);
-
-                noteItem.querySelector("span").onclick = () => {
-                    deleteNoteForSection(noteItem, pin)
-                }
 
                 const statusButton = noteItem.querySelector(".note-status-toggle");
                 statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
 
                 notesList.appendChild(noteItem);
-
-                createGlowForNotesList();
             }
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
@@ -323,13 +299,8 @@
                         pin.classList.add("pin-icon__pinned");
                         pin.parentElement.setAttribute("id", pin.dataset.section.toString());
                     }
-                    else if (!pin.classList.contains("pin-icon--embedded")) {
-                        const noteItemToDelete = document.getElementById(pin.dataset.section + " -note-item");
-                        deleteNoteForSection(noteItemToDelete, pin)
-                    }
-                    else {
-                        createGlowForNotesList();
-                    }
+                    createGlowForNotesList();
+                    openNotePopupAndFill(pin.dataset.section)
                 }
             });
 
@@ -346,13 +317,6 @@
                         const connectedPinId = noteItem.id.replace("-note-item", "-pin-item");
                         const connectedPin = doc.getElementById(connectedPinId);
                         connectedPin.classList.add("pin-icon--embedded");
-                        const noteContentDiv = noteItem.querySelector('.note-item--content');
-                        if (noteContentDiv) {
-                            const noteValue = noteContentDiv.dataset.noteValue || "Empty note";
-                            const noteContent = document.createElement('p');
-                            noteContent.textContent = noteValue;
-                            noteContentDiv.replaceWith(noteContent);
-                        }
                     });
                 }
 

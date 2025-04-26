@@ -1,0 +1,177 @@
+
+<style>
+    #note-popup-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 9998;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .note-overlay {
+        position: fixed;
+        height: 100vh;
+        width: 100vw;
+        top: 0;
+        left: 0;
+        background-color: var(--color-primary-transparent);
+        z-index: 9998;
+        transition: all 0.5s ease-in-out;
+    }
+
+    .note-popup {
+        position: fixed;
+        top: 25vh;
+        height: 38vh;
+        width: 45vw;
+        z-index: 9999;
+        color: var(--color-almost-white);
+        background-color: var(--color-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: center;
+        padding: 50px;
+        border-radius: 10px;
+        gap: 10px;
+        transition: all 0.5s ease-in-out;
+    }
+
+    .note-popup-title-box {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #note-popup-close {
+        cursor: pointer;
+    }
+
+    #note-popup-content {
+        height: 50%;
+        width: 100%;
+    }
+
+    #note-popup-content-textarea {
+        height: 100%;
+        width: 100%;
+        border-radius: 12px;
+        background-color: var(--color-almost-white);
+        padding: 10px;
+    }
+
+    .note-popup-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+        align-items: end;
+        gap: 8px;
+    }
+
+    .note-popup-button {
+        margin: 0;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: var(--color-white-tinted);
+        color: var(--color-primary-hover);
+        border: none;
+    }
+
+    .note-popup-button.attention {
+        background-color: var(--color-wrong);
+        color: var(--color-light-white);
+    }
+
+    .note-popup-button.approved {
+        background-color: var(--color-correct);
+        color: var(--color-light-white);
+    }
+</style>
+
+<div id="note-popup-container" style="display: none">
+    <div class="note-overlay"></div>
+
+    <div class="note-popup" id="note-popup">
+        <div class="note-popup-title-box">
+            <h1 id="note-popup-title">Note title</h1>
+
+            <span id="note-popup-close" onclick="closeNotePopupAndClear()">
+                {% include 'assets/close.svg' %}
+            </span>
+        </div>
+
+        <div id="note-popup-content">
+            <label for="note-popup-content-textarea"></label>
+                <textarea id="note-popup-content-textarea" placeholder="Enter your note"></textarea>
+        </div>
+
+
+        <div class="note-popup-buttons note-popup-buttons-navigation">
+            <button class="note-popup-button" onclick="saveNotePopup()">Save</button>
+            <button class="note-popup-button" onclick="deleteNotePopup()">Delete</button>
+        </div>
+
+        <div class="note-popup-buttons note-popup-buttons-action">
+            <button class="note-popup-button attention">Attention</button>
+            <button class="note-popup-button approved">Approved</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const NOTE_SUFFIX = " -note-item";
+    const PIN_SUFFIX = " -pin-item";
+
+    const noteTitle = document.getElementById("note-popup-title");
+    const noteContent = document.getElementById("note-popup-content-textarea");
+    const popupContainer = document.getElementById("note-popup-container");
+    const popup = document.getElementById("note-popup");
+
+    function openNotePopupAndFill(id) {
+        const noteItem = document.getElementById(id + NOTE_SUFFIX);
+        popup.dataset.currentId = id;
+
+        const link = noteItem.querySelector(".note-link");
+        const content = noteItem.querySelector(".note-input");
+
+        noteTitle.textContent = link ? link.textContent : "UNKNOWN TITLE";
+        noteContent.value = content ? content.textContent : "unknown content";
+        popupContainer.style.display = "flex";
+    }
+
+    function closeNotePopupAndClear() {
+        noteTitle.textContent = "Note title";
+        noteContent.value = "Note content";
+
+        popupContainer.style.display = "none";
+    }
+
+    function saveNotePopup() {
+        const currentId = popup.dataset.currentId;
+        const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
+
+        const textarea = noteItem.querySelector(".note-input");
+
+        textarea.textContent = noteContent.value;
+    }
+
+    function deleteNotePopup() {
+        const currentId = popup.dataset.currentId;
+        const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
+        const pinItem = document.getElementById(currentId + PIN_SUFFIX);
+
+        noteItem.remove();
+        pinItem.classList.remove("pin-icon__pinned");
+
+        closeNotePopupAndClear();
+    }
+</script>
