@@ -141,7 +141,7 @@ def process_continuous_key(
 def set_config_option_from_flag(
     dst_config_getter: Callable[[], config.Config],
     config_option: str,
-    postprocess_function: Callable[[str], str] = lambda x: x,
+    postprocess_function: Callable[[str], str | list[str]] = lambda x: x,
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """Helper function for setting the config option from the CLI option handler
 
@@ -168,6 +168,29 @@ def set_config_option_from_flag(
         return value
 
     return option_handler
+
+
+def config_value_parse_and_validate(
+    value: str, allowed_values: list[str] | None
+) -> str | list[str]:
+    """Parse and validate config option value.
+
+    The provided string value can in fact be a scalar value or a collection of values delimited
+    by commas. In either case, all values are checked against the list of allowed values for the
+    given option.
+
+    :param value: the value(s) to parse and validate
+    :param allowed_values: list of allowed values for the option
+
+    :return: the parsed value(s)
+    """
+    parsed_values: list[str] = []
+    for val in value.split(","):
+        val = val.strip()
+        if allowed_values and val not in allowed_values:
+            raise click.BadParameter(f"'{val}' is not one of {allowed_values}")
+        parsed_values.append(val)
+    return parsed_values if len(parsed_values) > 1 else parsed_values[0]
 
 
 def yaml_param_callback(

@@ -1197,20 +1197,20 @@ def test_status_correct(pcs_single_prof):
     short_result = runner.invoke(cli.status, ["--short"])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
     asserts.predicate_from_cli(short_result, len(short_result.output.split("\n")) == 6)
-    assert config.lookup_key_recursively("format.sort_profiles_by") == "time"
+    assert config.lookup_key_recursively("format.sort_profiles_by") == ["time", "stem", "copy"]
 
     # Try that the sort order changed
     short_result = runner.invoke(
-        cli.status, ["--short", "--sort-by", "source", "--sort-order", "desc"]
+        cli.status, ["--short", "--sort-by", "source,label", "--sort-order", "desc"]
     )
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == "source"
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == ["source", "label"]
     assert pcs_single_prof.local_config().get("format.sort_profiles_order") == "desc"
 
     # The sort order is kept the same
     short_result = runner.invoke(cli.status, ["--short"])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == "source"
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == ["source", "label"]
 
 
 @pytest.mark.usefixtures("cleandir")

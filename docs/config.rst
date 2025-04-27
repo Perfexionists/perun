@@ -202,17 +202,21 @@ List of Supported Options
 
 .. confkey:: format.sort_profiles_by
 
-    ``[recursive]`` Specifies which key of the profile will be used for sorting the output of the
-    ``perun status`` commands. Can be one of the following attributes specified by the class
-    attribute ``ProfileInfo.valid_attributes``:
+    ``[recursive]`` Specifies which keys of the profile will be used for sorting the output of the
+    ``perun status`` commands. It is possible to sort the profiles by multiple keys with the usual
+    multi-key sort semantics by providing a list of the following attributes specified by the
+    class attribute ``ProfileInfo.valid_attributes``:
 
 .. currentmodule:: perun.profile.helpers
 .. autoattribute:: ProfileInfo.valid_attributes
 
 .. confkey:: format.sort_profiles_order
 
-    ``[recursive]`` Specifies the order which will be used for sorting the output of the
-    ``perun status`` commands. Can be either ``ascending`` or ``descending``.
+    ``[recursive]`` Specifies the orderings which will be used for sorting the output of the
+    ``perun status`` commands. Can be either a single value of ``asc`` or ``desc``, in which
+    case the selected ordering will be applied to all :ckey:`format.sort_profiles_by` keys, or
+    it may be a list of orderings, where each ordering will be applied to the corresponding sort
+    key. Keys without specified orderings will use default ordering.
 
 .. confunit:: execute
 

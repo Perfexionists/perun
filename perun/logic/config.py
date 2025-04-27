@@ -476,30 +476,40 @@ def gather_key_recursively(key: str) -> list[Any]:
     return gathered_values
 
 
-def safely_lookup_key_recursively(key: str, allowed_values: Iterable[T], default: T) -> T:
+def safely_lookup_key_recursively(
+    key: str, allowed_values: Iterable[T], default: list[T]
+) -> list[T]:
     """Safely recursively looks up the key in runtime, local and shared config.
 
-    By safely, we mean that if the function returns a value, that value will be one of the allowed
-    values. If no allowed values are provided, or the default value itself is not one of the allowed
-    values, an AssertionError is raised.
+    The value associated with the key may be a simple scalar value, or it may be a list of values.
+    In both cases, the function returns (possibly a single-item) collection of values.
+
+    By safely, we mean that if the function returns a collection of values, each value will be one
+    of the allowed values. If no allowed values are provided, or some of the default values are not
+    one of the allowed values, an AssertionError is raised.
 
     :param key: the looked up key
     :param allowed_values: a nonempty set of allowed values
-    :param default: a default value (must be one of allowed value) to use in case of any issues
+    :param default: default value(s) respecting the allowed values to use as a fallback
+
+    :return: a collection of values associated with the key, or the default collection
     """
-    # A set of allowed values must be provided and the default value must be one of the allowed
-    # values to ensure the resulting value is always valid.
-    assert allowed_values and default in allowed_values
+    # A set of allowed values must be provided and the default value(s) must be a subset of the
+    # allowed values to ensure the resulting values are always valid.
+    assert allowed_values and all(val in allowed_values for val in default)
     error_desc: str = ""
-    value = default
+    values = default
     try:
-        value = lookup_key_recursively(key)
-        if value not in allowed_values:
-            # If the stored key is invalid, we use the default value instead
-            error_desc = f"invalid value '{value}' of key '{key}' in config. "
-            value = default
+        values = lookup_key_recursively(key)
+        if not isinstance(values, list):
+            values = [values]
+        invalid_values = [val for val in values if val not in allowed_values]
+        if invalid_values:
+            # If the stored values are invalid, we use the default values instead
+            error_desc = f"invalid value(s) '{invalid_values}' of key '{key}' in config. "
+            values = default
     except exceptions.MissingConfigSectionException:
-        # If there is no value for the looked up key, we use the default value instead
+        # If there is no value for the looked up key, we use the default values instead
         error_desc = f"missing config value for key '{key}'. "
     if error_desc:
         perun_log.warn(
@@ -508,4 +518,4 @@ def safely_lookup_key_recursively(key: str, allowed_values: Iterable[T], default
             f"({', '.join(map(str, allowed_values))}). "
             f"Consult the documentation (Configuration and Logs) for more information."
         )
-    return value
+    return values

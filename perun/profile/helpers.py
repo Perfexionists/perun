@@ -50,7 +50,7 @@ ProfileHeaderTuple = tuple[str, Union[str, float], str, dict[str, Union[str, flo
 
 
 PROFILE_COUNTER: int = 0
-DEFAULT_SORT_KEY: str = "time"
+DEFAULT_SORT_KEYS: list[str] = ["time", "stem", "copy"]
 
 
 class ProfilePath:
@@ -570,18 +570,22 @@ def sort_profiles(profile_list: list["ProfileInfo"]) -> None:
 
     :param profile_list: list of ProfileInfo object
     """
-    sort_key = config.safely_lookup_key_recursively(
-        "format.sort_profiles_by", ProfileInfo.valid_attributes, DEFAULT_SORT_KEY
+    sort_keys = config.safely_lookup_key_recursively(
+        "format.sort_profiles_by", ProfileInfo.valid_attributes, DEFAULT_SORT_KEYS
     )
-    sort_order = config.safely_lookup_key_recursively(
-        "format.sort_profiles_order", SortOrder.supported(), SortOrder.default()
+    sort_orders = config.safely_lookup_key_recursively(
+        "format.sort_profiles_order", SortOrder.supported(), [SortOrder.default()]
     )
-    # TODO: allow multi-key sort.
-    # TODO: add sort-key "copy" and make it default (operator.attrgetter(*sort_key)) so that
-    #  copies of the profile name are sorted as one would expect.
-    profile_list.sort(
-        key=operator.attrgetter(sort_key), reverse=SortOrder(sort_order).as_sort_flag()
-    )
+    # Multiple back-to-back sorts on the same data set is fast in Python thanks to the used sorting
+    # algorithm: https://docs.python.org/3/howto/sorting.html#sort-stability-and-complex-sorts
+    # The lists of keys and orderings might be of unequal length: if there are more keys than
+    # orderings, pad it with the default ordering; otherwise ignore the additional orderings.
+    sort_steps = [
+        (key, sort_orders[idx] if len(sort_orders) > idx else SortOrder.default())
+        for idx, key in enumerate(sort_keys)
+    ]
+    for key, order in reversed(sort_steps):
+        profile_list.sort(key=operator.attrgetter(key), reverse=SortOrder(order).as_sort_flag())
 
 
 def merge_resources_of(
@@ -668,6 +672,8 @@ class ProfileInfo:
         "cmd",
         "workload",
         "label",
+        "stem",
+        "copy",
         "collector",
         "postprocessors",
         "checksum",
@@ -690,6 +696,7 @@ class ProfileInfo:
         :param is_raw_profile: true if the stored profile is raw, i.e. in json and not
             compressed
         """
+        p = ProfilePath.from_path(Path(path))
         self._is_raw_profile = is_raw_profile
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
@@ -698,6 +705,8 @@ class ProfileInfo:
         self.cmd = profile_info["header"]["cmd"]
         self.workload = profile_info["header"]["workload"]
         self.label = profile_info["header"].get("label", "")
+        self.stem = p.stem
+        self.copy = p.copy
         self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [
             postprocessor["name"] for postprocessor in profile_info["postprocessors"]
@@ -744,6 +753,8 @@ class ProfileInfo:
         "cmd",
         "workload",
         "label",
+        "stem",
+        "copy",
         "collector",
         "checksum",
         "source",

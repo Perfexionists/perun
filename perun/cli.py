@@ -42,9 +42,10 @@ the flexibility of Perun's usage.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Optional, Any, TYPE_CHECKING
+import functools
 import os
 import sys
+from typing import Optional, Any, TYPE_CHECKING
 
 # Third-Party Imports
 import click
@@ -562,10 +563,17 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     "-sb",
     "format__sort_profiles_by",
     nargs=1,
-    type=click.Choice(profiles.ProfileInfo.valid_attributes),
-    callback=cli_kit.set_config_option_from_flag(pcs.local_config, "format.sort_profiles_by", str),
+    type=str,
+    callback=cli_kit.set_config_option_from_flag(
+        pcs.local_config,
+        "format.sort_profiles_by",
+        functools.partial(
+            cli_kit.config_value_parse_and_validate,
+            allowed_values=profiles.ProfileInfo.valid_attributes,
+        ),
+    ),
     help=(
-        "Sets the sort key in the local configuration as 'format.sort_profiles_by' that will be "
+        "Sets the sort keys in the local configuration as 'format.sort_profiles_by' that will be "
         "used for sorting both pending and index profiles."
     ),
 )
@@ -574,13 +582,17 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     "-so",
     "format__sort_profiles_order",
     nargs=1,
-    type=click.Choice(SortOrder.supported()),
+    type=str,
     callback=cli_kit.set_config_option_from_flag(
-        pcs.local_config, "format.sort_profiles_order", str
+        pcs.local_config,
+        "format.sort_profiles_order",
+        functools.partial(
+            cli_kit.config_value_parse_and_validate, allowed_values=SortOrder.supported()
+        ),
     ),
     help=(
-        "Sets the sort order in the local configuration as 'format.sort_profiles_order' that will "
-        "be used for sorting both pending and index profiles."
+        "Sets the sort orderings in the local configuration as 'format.sort_profiles_order' that "
+        "will be used for sorting both pending and index profiles."
     ),
 )
 def status(**kwargs: Any) -> None:
