@@ -70,7 +70,6 @@
 
 .note-item p {
     margin: 4px 0;
-    font-size: 0.9em;
 }
 
 .note-item--content {
@@ -124,6 +123,7 @@
     text-decoration: none;
     color: var(--color-light-white);
     transition: all 0.3s ease-in-out;
+    font-size: 1.2rem;
 }
 
 .note-link:hover {

@@ -29,9 +29,6 @@
     --color-warning-transparent: rgba(255 193 7 / 30%);
     --color-bs-secondary-transparent: rgba(108 117 125 / 30%);
 
-    --color-correct-light-transparent: rgba(0, 255, 56, 0.3);
-    --color-wrong-light-transparent: rgba(255, 0, 0, 0.3);
-
     --dt-row-selected: 68, 68, 68 !important;
     --dt-row-selected-text: 234, 234, 234 !important;
 }
