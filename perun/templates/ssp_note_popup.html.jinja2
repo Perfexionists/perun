@@ -50,6 +50,9 @@
     }
 
     #note-popup-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
         cursor: pointer;
     }
 
@@ -62,7 +65,6 @@
         height: 100%;
         width: 100%;
         border-radius: 12px;
-        background-color: var(--color-almost-white);
         padding: 10px;
     }
 
@@ -75,6 +77,14 @@
         gap: 8px;
     }
 
+    #note-popup-buttons-navigation {
+        margin-top: 30px;
+    }
+
+    #note-popup-buttons-navigation .note-popup-button {
+        font-size: 1.2em;
+    }
+
     .note-popup-button {
         margin: 0;
         cursor: pointer;
@@ -83,7 +93,11 @@
         background-color: var(--color-white-tinted);
         color: var(--color-primary-hover);
         border: none;
+        transition: all 0.3s ease-in-out;
     }
+        .note-popup-button:hover {
+            scale: 1.1;
+        }
 
     .note-popup-button.attention {
         background-color: var(--color-wrong);
@@ -94,6 +108,18 @@
         background-color: var(--color-correct);
         color: var(--color-light-white);
     }
+
+    .note-popup-button.not-chosen {
+        background-color: var(--color-light-gray);
+        color: var(--color-light-white);
+    }
+
+    .note-popup-button.save {
+        background-color: var(--color-primary-hover);
+        color: var(--color-light-white);
+        border: 1px solid var(--color-light-white);
+        box-sizing: border-box;
+    }
 </style>
 
 <div id="note-popup-container" style="display: none">
@@ -102,28 +128,27 @@
     <div class="note-popup" id="note-popup">
         <div class="note-popup-title-box">
             <h1 id="note-popup-title">Note title</h1>
-
-            <span id="note-popup-close" onclick="closeNotePopupAndClear()">
-                {% include 'assets/close.svg' %}
-            </span>
         </div>
+
+        <span id="note-popup-close" onclick="closeNotePopupAndClear()">
+            {% include 'assets/close.svg' %}
+        </span>
 
         <div id="note-popup-content">
             <label for="note-popup-content-textarea"></label>
                 <textarea id="note-popup-content-textarea" placeholder="Enter your note"></textarea>
         </div>
 
-
-        <div class="note-popup-buttons note-popup-buttons-navigation">
-            <button class="note-popup-button" onclick="saveNotePopup()">Save</button>
-            <button class="note-popup-button" onclick="deleteNotePopup()">Delete</button>
+        <div id="note-popup-buttons-action" class="note-popup-buttons">
+            <button class="note-popup-button attention" onclick="switchStateToAttention()">Attention</button>
+            <button class="note-popup-button approved" onclick="switchStateToApproved()">Waived</button>
         </div>
 
-        <div class="note-popup-buttons note-popup-buttons-action">
-            <button class="note-popup-button attention">Attention</button>
-            <button class="note-popup-button approved">Approved</button>
-        </div>
 
+        <div id="note-popup-buttons-navigation" class="note-popup-buttons">
+            <button class="note-popup-button delete" onclick="deleteNotePopup()">Delete</button>
+            <button class="note-popup-button save" onclick="saveNotePopup()">Save</button>
+        </div>
     </div>
 </div>
 
@@ -136,6 +161,10 @@
     const popupContainer = document.getElementById("note-popup-container");
     const popup = document.getElementById("note-popup");
 
+    const actionButtons = document.getElementById("note-popup-buttons-action");
+    const attentionButton = actionButtons.querySelector(".attention");
+    const approvedButton = actionButtons.querySelector(".approved");
+
     function openNotePopupAndFill(id) {
         const noteItem = document.getElementById(id + NOTE_SUFFIX);
         popup.dataset.currentId = id;
@@ -145,6 +174,13 @@
 
         noteTitle.textContent = link ? link.textContent : "UNKNOWN TITLE";
         noteContent.value = content ? content.textContent : "unknown content";
+
+        if (noteItem.classList.contains("note-item--attention")) {
+            switchStateToAttention();
+        } else {
+            switchStateToApproved();
+        }
+
         popupContainer.style.display = "flex";
     }
 
@@ -160,8 +196,11 @@
         const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
 
         const textarea = noteItem.querySelector(".note-input");
-
         textarea.textContent = noteContent.value;
+
+        noteItem.classList.remove("note-item--attention");
+        noteItem.classList.remove("note-item--approved");
+        noteItem.classList.add("note-item--" + popup.dataset.currentState)
     }
 
     function deleteNotePopup() {
@@ -173,5 +212,17 @@
         pinItem.classList.remove("pin-icon__pinned");
 
         closeNotePopupAndClear();
+    }
+
+    function switchStateToAttention() {
+        approvedButton.classList.add("not-chosen");
+        attentionButton.classList.remove("not-chosen");
+        popup.dataset.currentState = "attention";
+    }
+
+    function switchStateToApproved() {
+        attentionButton.classList.add("not-chosen");
+        approvedButton.classList.remove("not-chosen");
+        popup.dataset.currentState = "approved";
     }
 </script>
