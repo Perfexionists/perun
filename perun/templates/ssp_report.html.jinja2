@@ -276,19 +276,8 @@
 
             document.getElementById('export-notes').addEventListener('click', function () {
                 let docHTML = document.documentElement.outerHTML;
-
                 let parser = new DOMParser();
                 let doc = parser.parseFromString(docHTML, 'text/html');
-
-                const notesList = doc.querySelector('#notes-list');
-                if (notesList) {
-                    const noteItems = notesList.children;
-                    Array.from(noteItems).forEach(noteItem => {
-                        const connectedPinId = noteItem.id.replace("-note-item", "-pin-item");
-                        const connectedPin = doc.getElementById(connectedPinId);
-                        connectedPin.classList.add("pin-icon--embedded");
-                    });
-                }
 
                 let rawTable = doc.getElementById('table-to-replace');
                 let currentTable = doc.getElementById('table_wrapper');
