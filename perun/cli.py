@@ -42,9 +42,9 @@ the flexibility of Perun's usage.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Optional, Any, TYPE_CHECKING
 import os
 import sys
+from typing import Optional, Any, TYPE_CHECKING
 
 # Third-Party Imports
 import click
@@ -63,11 +63,10 @@ from perun.utils.exceptions import (
     MissingConfigSectionException,
     ExternalEditorErrorException,
 )
-from perun.utils.structs.common_structs import Executable, SortOrder
+from perun.utils.structs.common_structs import Executable
 from perun.utils.structs.diff_structs import HeaderDisplayStyle
 from perun import fuzz as fuzz
 import perun.postprocess
-import perun.profile.helpers as profiles
 import perun.view
 import perun.view_diff
 import perun.deltadebugging.factory as delta
@@ -562,10 +561,14 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     "-sb",
     "format__sort_profiles_by",
     nargs=1,
-    type=click.Choice(profiles.ProfileInfo.valid_attributes),
-    callback=cli_kit.set_config_option_from_flag(pcs.local_config, "format.sort_profiles_by", str),
+    type=str,
+    callback=cli_kit.set_config_option_from_flag(
+        pcs.local_config,
+        "format.sort_profiles_by",
+        cli_kit.validate_profile_sort_by,
+    ),
     help=(
-        "Sets the sort key in the local configuration as 'format.sort_profiles_by' that will be "
+        "Sets the sort keys in the local configuration as 'format.sort_profiles_by' that will be "
         "used for sorting both pending and index profiles."
     ),
 )
@@ -574,13 +577,15 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     "-so",
     "format__sort_profiles_order",
     nargs=1,
-    type=click.Choice(SortOrder.supported()),
+    type=str,
     callback=cli_kit.set_config_option_from_flag(
-        pcs.local_config, "format.sort_profiles_order", str
+        pcs.local_config,
+        "format.sort_profiles_order",
+        cli_kit.validate_profile_sort_order,
     ),
     help=(
-        "Sets the sort order in the local configuration as 'format.sort_profiles_order' that will "
-        "be used for sorting both pending and index profiles."
+        "Sets the sort orderings in the local configuration as 'format.sort_profiles_order' that "
+        "will be used for sorting both pending and index profiles."
     ),
 )
 def status(**kwargs: Any) -> None:

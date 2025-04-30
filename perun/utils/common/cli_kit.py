@@ -9,7 +9,7 @@ from __future__ import annotations
 # Standard Imports
 from collections import defaultdict
 from importlib import metadata
-from typing import Optional, Callable, Any, TYPE_CHECKING
+from typing import Optional, Callable, Any
 import functools
 import json
 import os
@@ -36,9 +36,7 @@ from perun.utils.exceptions import (
     NotPerunRepositoryException,
 )
 from perun.utils.structs import collect_structs
-
-if TYPE_CHECKING:
-    from perun.utils.structs.common_structs import MinorVersion
+from perun.utils.structs.common_structs import MinorVersion, SortOrder
 
 
 def print_version(_: click.Context, __: click.Option, value: bool) -> None:
@@ -141,7 +139,7 @@ def process_continuous_key(
 def set_config_option_from_flag(
     dst_config_getter: Callable[[], config.Config],
     config_option: str,
-    postprocess_function: Callable[[str], str] = lambda x: x,
+    postprocess_function: Callable[[str], str | list[str]] = lambda x: x,
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """Helper function for setting the config option from the CLI option handler
 
@@ -168,6 +166,39 @@ def set_config_option_from_flag(
         return value
 
     return option_handler
+
+
+def config_value_parse_and_validate(
+    value: str, allowed_values: list[str] | None
+) -> str | list[str]:
+    """Parse and validate config option value.
+
+    The provided string value can in fact be a scalar value or a collection of values delimited
+    by commas. In either case, all values are checked against the list of allowed values for the
+    given option.
+
+    :param value: the value(s) to parse and validate
+    :param allowed_values: list of allowed values for the option
+
+    :return: the parsed value(s)
+    """
+    parsed_values: list[str] = []
+    for val in value.split(","):
+        val = val.strip()
+        if allowed_values and val not in allowed_values:
+            raise click.BadParameter(f"'{val}' is not one of {allowed_values}")
+        parsed_values.append(val)
+    return parsed_values if len(parsed_values) > 1 else parsed_values[0]
+
+
+# TODO: temporary solution to de-clutter CLI.
+#  Should be resolved by fixing issue #302 https://github.com/Perfexionists/perun/issues/302
+validate_profile_sort_by = functools.partial(
+    config_value_parse_and_validate, allowed_values=profile.ProfileInfo.valid_attributes
+)
+validate_profile_sort_order = functools.partial(
+    config_value_parse_and_validate, allowed_values=SortOrder.supported()
+)
 
 
 def yaml_param_callback(

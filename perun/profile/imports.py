@@ -19,7 +19,7 @@ from typing import Any
 # Perun Imports
 from perun import profile as profile
 from perun.collect.kperf import parser
-from perun.logic import commands, config, index, pcs
+from perun.logic import config, pcs
 from perun.utils import log, streams
 from perun.utils.common import script_kit, common_kit
 from perun.utils.external import commands as external_commands, environment
@@ -234,16 +234,13 @@ def import_perf_profile(
             "postprocessors": [],
         }
     )
-    save_imported_profile(
-        prof, kwargs.get("save_to_index", False), minor_version, kwargs.get("profile_name")
-    )
+    profile.save_profile(prof, kwargs.get("profile_path"), minor_version)
 
 
 def import_elk_profile(
     resources: list[dict[str, Any]],
     metadata: dict[str, profile.ProfileHeaderEntry],
     minor_version: MinorVersion,
-    save_to_index: bool = False,
     **kwargs: Any,
 ) -> None:
     """Constructs the profile for elk-stored data and saves them to jobs or index.
@@ -251,7 +248,6 @@ def import_elk_profile(
     :param resources: list of parsed resources.
     :param metadata: parts of the profiles that will be stored as metadata in the profile.
     :param minor_version: minor version corresponding to the imported profiles.
-    :param save_to_index: indication whether we should save the imported profiles to index.
     :param kwargs: rest of the parameters.
     """
     prof = profile.Profile(
@@ -278,41 +274,7 @@ def import_elk_profile(
             "postprocessors": [],
         }
     )
-    save_imported_profile(prof, save_to_index, minor_version, kwargs.get("profile_name"))
-
-
-def save_imported_profile(
-    prof: profile.Profile,
-    save_to_index: bool,
-    minor_version: MinorVersion,
-    profile_name: str | None = None,
-) -> None:
-    """Saves the imported profile either to index or to pending jobs.
-
-    :param prof: imported profile
-    :param minor_version: minor version corresponding to the imported profiles.
-    :param save_to_index: indication whether we should save the imported profiles to index.
-    :param profile_name: optional custom name of the saved profile
-    """
-    if not profile_name:
-        # No custom profile name provided, generate the name
-        profile_name = profile.generate_profile_name(prof)
-    elif not profile_name.endswith(".perf"):
-        # Make sure the profile name ends with the proper suffix
-        profile_name += ".perf"
-    profile_directory = pcs.get_job_directory()
-    full_profile_path = os.path.join(profile_directory, profile_name)
-
-    streams.store_json(prof.serialize(), full_profile_path)
-    log.minor_status(
-        "stored generated profile ",
-        status=f"{log.path_style(os.path.relpath(full_profile_path))}",
-    )
-    if save_to_index:
-        commands.add([full_profile_path], minor_version.checksum, keep_profile=False)
-    else:
-        # Else we register the profile in pending index
-        index.register_in_pending_index(full_profile_path, prof)
+    profile.save_profile(prof, kwargs.get("profile_path"), minor_version)
 
 
 def load_perf_file(filepath: Path) -> str:
