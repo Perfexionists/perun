@@ -1439,6 +1439,7 @@ def test_collect_correct(pcs_with_root):
         )
         asserts.predicate_from_cli(result, result.exit_code == 0)
 
+    # Test that overwriting option works correctly
     assert len(os.listdir(os.path.join(".perun", "logs"))) == 0
     result = runner.invoke(
         cli.cli,
@@ -1450,14 +1451,16 @@ def test_collect_correct(pcs_with_root):
             "-pd",
             ".",
             "-pn",
-            "prof3.perf",
+            "prof.perf",
+            "--overwrite-profiles",
             "time",
             "--repeat=1",
             "--warmup=1",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert "prof3.perf" in os.listdir(".")
+    files_new = os.listdir(".")
+    assert "prof(1).perf" not in files_new and "prof.perf" in files_new
     assert len(os.listdir(os.path.join(".perun", "logs"))) >= 1
 
     assert "log" not in os.listdir(".")
@@ -1474,13 +1477,14 @@ def test_collect_correct(pcs_with_root):
             ".",
             "-pn",
             "prof2.perf",
+            "--save-to-index",
             "time",
             "--repeat=1",
             "--warmup=1",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert "prof2.perf" in os.listdir(".")
+    assert "prof2.perf" not in os.listdir(".")
     assert "log" in os.listdir(".")
 
 

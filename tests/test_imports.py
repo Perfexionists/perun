@@ -119,6 +119,27 @@ def test_import_stack(pcs_with_svs):
     profiles = os.listdir(os.path.join(".perun", "jobs"))
     assert len(profiles) == 3 and "custom_import_profile(1).perf" in profiles
 
+    # Request that the existing profile is overwritten
+    result = runner.invoke(
+        cli.cli,
+        [
+            "import",
+            "-pn",
+            "custom_import_profile",
+            "--overwrite-profiles",
+            "--import-dir",
+            pool_path,
+            "--machine-info",
+            "machine_info.json",
+            "perf",
+            "stack",
+            "import.stack",
+        ],
+    )
+    assert result.exit_code == 0
+    profiles = os.listdir(os.path.join(".perun", "jobs"))
+    assert len(profiles) == 3 and "custom_import_profile.perf" in profiles
+
     result = runner.invoke(
         cli.cli,
         [
