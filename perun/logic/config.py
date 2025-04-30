@@ -213,7 +213,10 @@ format:
     shortlog: "%checksum:6% (%stats%) %desc% %changes%"
     output_profile_template: "%collector%-%cmd%-%workload%-%date%"
     output_show_template: "%collector%-%cmd%-%workload%-%date%"
-    sort_profiles_by: time
+    sort_profiles_by:
+    - time
+    - stem
+    - copy
     sort_profiles_order: asc
 
 degradation:

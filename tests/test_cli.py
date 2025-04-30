@@ -1213,6 +1213,26 @@ def test_status_correct(pcs_single_prof):
     assert pcs_single_prof.local_config().get("format.sort_profiles_by") == ["source", "label"]
 
 
+def test_status_incorrect(pcs_single_prof):
+    """Test running perun status in perun directory with incorrect CLI options.
+
+    Expecting errors to be detected and reported.
+    """
+    runner = CliRunner()
+    old_sort_by = pcs_single_prof.local_config().get("format.sort_profiles_by")
+    old_sort_order = pcs_single_prof.local_config().get("format.sort_profiles_order")
+
+    # Attempt to run the status with invalid sort-by first
+    short_result = runner.invoke(cli.status, ["--short", "--sort-by", "bogus"])
+    asserts.predicate_from_cli(short_result, short_result.exit_code == 2)
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == old_sort_by
+
+    # Now try invalid sort-order
+    short_result = runner.invoke(cli.status, ["--short", "--sort-order", "random"])
+    asserts.predicate_from_cli(short_result, short_result.exit_code == 2)
+    assert pcs_single_prof.local_config().get("format.sort_profiles_order") == old_sort_order
+
+
 @pytest.mark.usefixtures("cleandir")
 def test_init_correct():
     """Test running init from cli, without any problems

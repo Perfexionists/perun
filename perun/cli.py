@@ -42,7 +42,6 @@ the flexibility of Perun's usage.
 from __future__ import annotations
 
 # Standard Imports
-import functools
 import os
 import sys
 from typing import Optional, Any, TYPE_CHECKING
@@ -64,11 +63,10 @@ from perun.utils.exceptions import (
     MissingConfigSectionException,
     ExternalEditorErrorException,
 )
-from perun.utils.structs.common_structs import Executable, SortOrder
+from perun.utils.structs.common_structs import Executable
 from perun.utils.structs.diff_structs import HeaderDisplayStyle
 from perun import fuzz as fuzz
 import perun.postprocess
-import perun.profile.helpers as profiles
 import perun.view
 import perun.view_diff
 import perun.deltadebugging.factory as delta
@@ -567,10 +565,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     callback=cli_kit.set_config_option_from_flag(
         pcs.local_config,
         "format.sort_profiles_by",
-        functools.partial(
-            cli_kit.config_value_parse_and_validate,
-            allowed_values=profiles.ProfileInfo.valid_attributes,
-        ),
+        cli_kit.validate_profile_sort_by,
     ),
     help=(
         "Sets the sort keys in the local configuration as 'format.sort_profiles_by' that will be "
@@ -586,9 +581,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
     callback=cli_kit.set_config_option_from_flag(
         pcs.local_config,
         "format.sort_profiles_order",
-        functools.partial(
-            cli_kit.config_value_parse_and_validate, allowed_values=SortOrder.supported()
-        ),
+        cli_kit.validate_profile_sort_order,
     ),
     help=(
         "Sets the sort orderings in the local configuration as 'format.sort_profiles_order' that "
