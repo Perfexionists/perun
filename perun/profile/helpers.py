@@ -128,7 +128,8 @@ class ProfilePath:
         """Finalize the profile path such that it can be used to store a profile.
 
         This includes (1) generating a default profile name unless a user-defined name was
-        provided, and (2) deducing the correct copy number to avoid overwriting existing profiles.
+        provided, and (2) deducing the correct copy number to avoid overwriting existing profiles
+        unless the configuration permits overwriting.
 
         :param profile: the profile that will be stored under this path.
 
@@ -137,11 +138,15 @@ class ProfilePath:
         if not self.stem:
             # No custom profile name provided, generate the stem
             self.stem = generate_profile_name(profile)[: -len(".perf")]
-        # We must check for duplicate files first
-        for duplicate in self.directory.glob(f"{self.stem}*"):
-            p = ProfilePath.from_path(duplicate)
-            if p.stem == self.stem:
-                self.copy = max(self.copy, p.copy + 1)
+        # Does the user wish to overwrite existing profiles?
+        if not common_kit.strtobool(
+            str(config.lookup_key_recursively("profiles.overwrite", "false"))
+        ):
+            # We must check for duplicate files first
+            for duplicate in self.directory.glob(f"{self.stem}*"):
+                p = ProfilePath.from_path(duplicate)
+                if p.stem == self.stem:
+                    self.copy = max(self.copy, p.copy + 1)
         return self
 
 

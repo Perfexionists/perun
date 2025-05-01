@@ -53,6 +53,14 @@ from perun.logic import commands, config as perun_config
     help="Registers the imported profile in index instead of saving it in pending.",
 )
 @click.option(
+    "--overwrite-profiles",
+    is_flag=True,
+    default=False,
+    callback=cli_kit.set_config_option_from_flag(perun_config.runtime, "profiles.overwrite", str),
+    help="If a profile with the same name already exists it will be overwritten instead of"
+    "renaming this profile to contain a copy number suffix, e.g., custom_name(1).perf.",
+)
+@click.option(
     "--minor-version",
     "-m",
     "minor_version_list",

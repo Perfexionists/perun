@@ -82,6 +82,14 @@ from perun.utils.common import cli_kit
     help="Registers the imported profile in index instead of saving it in pending.",
 )
 @click.option(
+    "--overwrite-profiles",
+    is_flag=True,
+    default=False,
+    callback=cli_kit.set_config_option_from_flag(config.runtime, "profiles.overwrite"),
+    help="If a profile with the same name already exists it will be overwritten instead of"
+    "renaming this profile to contain a copy number suffix, e.g., custom_name(1).perf.",
+)
+@click.option(
     "--profile-dir",
     "-pd",
     nargs=1,
