@@ -131,6 +131,7 @@ def generate_flamegraphs(
     data_types: list[str],
     skip_diff: bool = False,
     minimize: bool = False,
+    squash_unknown: bool = True,
     **fg_forward_kwargs: Any,
 ) -> list[tuple[str, str, str, str, str]]:
     """Constructs a list of tuples of flamegraphs for list of data_types
@@ -140,6 +141,7 @@ def generate_flamegraphs(
     :param data_types: list of data types (resources)
     :param skip_diff: whether the flamegraph diff should be skipped or not
     :param minimize: whether the flamegraph should be minimized or not
+    :param squash_unknown: whether recursive [unknown] frames should be squashed into a single one
     :param fg_forward_kwargs: additional parameters forwarded to the flamegraph scripts
 
     :return: a collection of (data_type, lhs flamegraph, rhs flamegraph, lhs_rhs_diff_flamegraph,
@@ -150,10 +152,10 @@ def generate_flamegraphs(
         try:
             data_type = mapping.from_readable_key(dtype)
             lhs_flame = convert.to_flame_graph_format(
-                lhs_profile, profile_key=data_type, minimize=minimize
+                lhs_profile, profile_key=data_type, minimize=minimize, squash_unknown=squash_unknown
             )
             rhs_flame = convert.to_flame_graph_format(
-                rhs_profile, profile_key=data_type, minimize=minimize
+                rhs_profile, profile_key=data_type, minimize=minimize, squash_unknown=squash_unknown
             )
             fg_image_width = fg_forward_kwargs["width"]
             fg_minwidth = fg_forward_kwargs.get("minwidth", f"{FG_DEFAULT_MIN_WIDTH}")

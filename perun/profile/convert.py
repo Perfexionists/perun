@@ -107,7 +107,10 @@ def models_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
 
 
 def to_flame_graph_format(
-    profile: Profile, profile_key: str = "amount", minimize: bool = False
+    profile: Profile,
+    profile_key: str = "amount",
+    minimize: bool = False,
+    squash_unknown: bool = True,
 ) -> list[str]:
     """Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the
     format supported by perl script of Brendan Gregg.
@@ -135,6 +138,7 @@ def to_flame_graph_format(
     :param profile: the memory profile
     :param profile_key: key that is used to obtain the data
     :param minimize: minimizes the uids
+    :param squash_unknown: whether recursive [unknown] frames should be squashed into a single one
     :returns: list of lines, each representing one allocation call stack
     """
     stacks = []
@@ -143,15 +147,27 @@ def to_flame_graph_format(
             if "subtype" not in alloc.keys() or alloc["subtype"] != "free":
                 # Workaround for total time used in some collectors, so it is not outputted
                 if alloc["uid"] != "%TOTAL_TIME%" and profile_key in alloc:
-                    stack_str = to_uid(alloc["uid"]) + ";"
-                    for frame in alloc.get("trace", [])[::-1]:
+                    stack = alloc.get("trace", [])
+                    stack.append(alloc["uid"])
+                    stack_str = ""
+                    unknown_cnt = 0
+                    for frame in reversed(stack):
                         line = to_uid(frame, minimize)
-                        stack_str += line + ";"
-                    if stack_str and stack_str.endswith(";"):
-                        final = stack_str[:-1]
-                        final += " " + str(alloc[profile_key]) + "\n"
-                        stacks.append(final)
-
+                        if squash_unknown:
+                            # Fold unknown towers
+                            if line == "[unknown]":
+                                unknown_cnt += 1
+                                continue
+                            elif unknown_cnt > 0:
+                                stack_str += "[unknown[squashed]];"
+                                unknown_cnt = 0
+                        stack_str += f"{line};"
+                    # The unknown frame might have been the last one, in which case the frame was
+                    # not yet added to the string.
+                    if unknown_cnt > 0:
+                        stack_str += "[unknown[squashed]];"
+                    if stack_str:
+                        stacks.append(f"{stack_str[:-1]} {alloc[profile_key]}\n")
     return stacks
 
 

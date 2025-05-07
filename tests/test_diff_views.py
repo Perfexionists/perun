@@ -184,6 +184,25 @@ def test_diff_incremental_sankey_kperf(pcs_with_root):
     assert result.exit_code == 0
     assert "diff.html" in os.listdir(os.getcwd())
 
+    # Try icicle graphs with no squashing of [unknown] frames
+    result = runner.invoke(
+        cli.showdiff,
+        [
+            "--display-style",
+            "diff",
+            baseline_profilename,
+            target_profilename,
+            "report",
+            "--no-squash-unknown",
+            "--flamegraph-inverted",
+            "-o",
+            "diff_icicle.html",
+            "--minimize",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "diff_icicle.html" in os.listdir(os.getcwd())
+
 
 def test_diff_report_invalid_forward_param(pcs_with_root):
     runner = CliRunner()
