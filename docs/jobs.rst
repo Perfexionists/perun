@@ -188,7 +188,7 @@ by :ref:`postprocessors-regression-analysis` with specification ``{'method': 'fu
 
 Run the following to configure the job matrix of the current project::
 
-    perun config --edit
+    perun config edit
 
 This will open the local configuration in editor specified by :ckey:`general.editor` and lets you
 specify configuration for your application and set of collectors and postprocessors. Unless the

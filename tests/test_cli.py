@@ -1197,20 +1197,40 @@ def test_status_correct(pcs_single_prof):
     short_result = runner.invoke(cli.status, ["--short"])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
     asserts.predicate_from_cli(short_result, len(short_result.output.split("\n")) == 6)
-    assert config.lookup_key_recursively("format.sort_profiles_by") == "time"
+    assert config.lookup_key_recursively("format.sort_profiles_by") == ["time", "stem", "copy"]
 
     # Try that the sort order changed
     short_result = runner.invoke(
-        cli.status, ["--short", "--sort-by", "source", "--sort-order", "desc"]
+        cli.status, ["--short", "--sort-by", "source,label", "--sort-order", "desc"]
     )
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == "source"
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == ["source", "label"]
     assert pcs_single_prof.local_config().get("format.sort_profiles_order") == "desc"
 
     # The sort order is kept the same
     short_result = runner.invoke(cli.status, ["--short"])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == "source"
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == ["source", "label"]
+
+
+def test_status_incorrect(pcs_single_prof):
+    """Test running perun status in perun directory with incorrect CLI options.
+
+    Expecting errors to be detected and reported.
+    """
+    runner = CliRunner()
+    old_sort_by = pcs_single_prof.local_config().get("format.sort_profiles_by")
+    old_sort_order = pcs_single_prof.local_config().get("format.sort_profiles_order")
+
+    # Attempt to run the status with invalid sort-by first
+    short_result = runner.invoke(cli.status, ["--short", "--sort-by", "bogus"])
+    asserts.predicate_from_cli(short_result, short_result.exit_code == 2)
+    assert pcs_single_prof.local_config().get("format.sort_profiles_by") == old_sort_by
+
+    # Now try invalid sort-order
+    short_result = runner.invoke(cli.status, ["--short", "--sort-order", "random"])
+    asserts.predicate_from_cli(short_result, short_result.exit_code == 2)
+    assert pcs_single_prof.local_config().get("format.sort_profiles_order") == old_sort_order
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -1400,7 +1420,7 @@ def test_collect_correct(pcs_with_root):
     runner = CliRunner()
     result = runner.invoke(
         collect_cli.collect,
-        ["-c echo", "-w hello", "-o", "prof.perf", "time", "--repeat=1", "--warmup=1"],
+        ["-c echo", "-w hello", "-pd", ".", "-pn", "prof.perf", "time", "--repeat=1", "--warmup=1"],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof.perf" in os.listdir(".")
@@ -1419,6 +1439,7 @@ def test_collect_correct(pcs_with_root):
         )
         asserts.predicate_from_cli(result, result.exit_code == 0)
 
+    # Test that overwriting option works correctly
     assert len(os.listdir(os.path.join(".perun", "logs"))) == 0
     result = runner.invoke(
         cli.cli,
@@ -1427,15 +1448,19 @@ def test_collect_correct(pcs_with_root):
             "collect",
             "-c echo",
             "-w hello",
-            "-o",
-            "prof3.perf",
+            "-pd",
+            ".",
+            "-pn",
+            "prof.perf",
+            "--overwrite-profiles",
             "time",
             "--repeat=1",
             "--warmup=1",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert "prof3.perf" in os.listdir(".")
+    files_new = os.listdir(".")
+    assert "prof(1).perf" not in files_new and "prof.perf" in files_new
     assert len(os.listdir(os.path.join(".perun", "logs"))) >= 1
 
     assert "log" not in os.listdir(".")
@@ -1448,15 +1473,18 @@ def test_collect_correct(pcs_with_root):
             "collect",
             "-c echo",
             "-w hello",
-            "-o",
+            "-pd",
+            ".",
+            "-pn",
             "prof2.perf",
+            "--save-to-index",
             "time",
             "--repeat=1",
             "--warmup=1",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert "prof2.perf" in os.listdir(".")
+    assert "prof2.perf" not in os.listdir(".")
     assert "log" in os.listdir(".")
 
 
@@ -2628,12 +2656,14 @@ def test_svs():
         # Perf is unavailable on macOS
         return
 
-    result = runner.invoke(collect_cli.collect, ["-c echo", "-w hello", "-o", "prof.perf", "kperf"])
+    result = runner.invoke(
+        collect_cli.collect, ["-c echo", "-w hello", "-pd", ".", "-pn", "prof.perf", "kperf"]
+    )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof.perf" in os.listdir(".")
 
     result = runner.invoke(
-        collect_cli.collect, ["-c echo", "-w world", "-o", "prof2.perf", "kperf"]
+        collect_cli.collect, ["-c echo", "-w world", "-pd", ".", "-pn", "prof2.perf", "kperf"]
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof2.perf" in os.listdir(".")
@@ -2656,6 +2686,8 @@ def test_svs():
             14,
             "--flamegraph-bgcolors",
             "blue",
+            "--flamegraph-colors",
+            "wakeup",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)

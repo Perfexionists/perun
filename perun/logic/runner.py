@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, overload
-import os
+from typing import Any, Iterable, TYPE_CHECKING, cast, Callable, overload
 import signal
 import time
 import subprocess
@@ -14,8 +13,8 @@ import click
 
 # Perun Imports
 from perun.vcs import vcs_kit
-from perun.logic import commands, config, index, pcs
-from perun.utils import log, streams
+from perun.logic import pcs
+from perun.utils import log
 from perun.utils.common import common_kit
 from perun.utils.exceptions import SignalReceivedException
 from perun.utils.external import commands as external_commands
@@ -31,7 +30,7 @@ from perun.utils.structs.common_structs import (
     Unit,
 )
 from perun.workload.singleton_generator import SingletonGenerator
-import perun.profile.helpers as profile
+from perun import profile
 import perun.workload as workloads
 
 
@@ -367,8 +366,8 @@ def run_collector_from_cli_context(
     collector_params.update(ctx.obj["params"])
     run_params = {
         "collector_params": {collector_name: collector_params},
-        "profile_name": ctx.obj["profile_name"],
-        "output_file": ctx.obj["output_file"],
+        "profile_path": ctx.obj["profile_path"],
+        "profile_label": ctx.obj["profile_label"],
     }
     collect_status = run_single_job(
         cmd, workload, [collector_name], [], minor_versions, **run_params
@@ -413,41 +412,6 @@ def run_postprocessor(
     return cast(PostprocessStatus, postprocess_report.status), prof
 
 
-def store_generated_profile(
-    prof: Profile, job: Job, profile_name: Optional[str] = None, output_file: Optional[str] = None
-) -> None:
-    """Stores the generated profile in the pending jobs' directory.
-
-    :param prof: profile that we are storing in the repository
-    :param job: job with additional information about generated profiles
-    :param profile_name: user-defined name of the profile
-    :param profile_name: full path to the profile
-    """
-    full_profile = profile.finalize_profile_for_job(prof, job)
-    if output_file is None:
-        full_profile_name = profile_name or profile.generate_profile_name(full_profile)
-        profile_directory = pcs.get_job_directory()
-        full_profile_path = os.path.join(profile_directory, full_profile_name)
-    else:
-        full_profile_path = output_file
-    streams.store_json(full_profile.serialize(), full_profile_path)
-    external_commands.finalize_logs(os.path.split(full_profile_path)[1])
-    # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
-    log.minor_status(
-        "stored generated profile ", status=f"{log.path_style(os.path.relpath(full_profile_path))}"
-    )
-    if common_kit.strtobool(
-        str(config.lookup_key_recursively("profiles.register_after_run", "false"))
-    ):
-        # We either store the profile according to the origin, or we use the current head
-        dst = prof.get("origin", pcs.vcs().get_minor_head())
-        # FIXME: consider removing this
-        commands.add([full_profile_path], dst, keep_profile=False)
-    else:
-        # Else we register the profile in pending index
-        index.register_in_pending_index(full_profile_path, prof)
-
-
 def run_postprocessor_on_profile(
     prof: Profile,
     postprocessor_name: str,
@@ -473,7 +437,9 @@ def run_postprocessor_on_profile(
 
     p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
     if p_status == PostprocessStatus.OK and prof and not skip_store:
-        store_generated_profile(processed_profile, profile_job)
+        profile.save_profile(
+            profile.finalize_profile_for_job(prof, profile_job, prof.get("header", {}).get("label"))
+        )
     return p_status, processed_profile
 
 
@@ -664,7 +630,10 @@ def run_single_job(
     status = CollectStatus.OK
     finished_jobs = 0
     for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
-        store_generated_profile(prof, job, kwargs.get("profile_name"), kwargs.get("output_file"))
+        profile.save_profile(
+            profile.finalize_profile_for_job(prof, job, kwargs.get("profile_label")),
+            kwargs.get("profile_path"),
+        )
         finished_jobs += 1
     return status if finished_jobs > 0 else CollectStatus.ERROR
 
@@ -684,6 +653,6 @@ def run_matrix_job(
     status = CollectStatus.OK
     finished_jobs = 0
     for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
-        store_generated_profile(prof, job)
+        profile.save_profile(profile.finalize_profile_for_job(prof, job))
         finished_jobs += 1
     return status if finished_jobs > 0 else CollectStatus.ERROR

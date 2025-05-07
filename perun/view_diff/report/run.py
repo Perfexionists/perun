@@ -725,8 +725,6 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     else:
         Config().trace_is_inclusive = kwargs.get("trace_is_inclusive", False)
 
-    log.major_info("Generating Sankey Graph Difference")
-
     graph = Graph()
 
     process_traces(lhs_profile, "baseline", graph)
@@ -865,6 +863,12 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     "--flamegraph-bgcolors",
     type=str,
     help="Specifies the background colors for flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-colors",
+    type=str,
+    help="Specifies the color theme for flamegraphs. This option is forwarded to the "
     "flamegraph.pl script.",
 )
 @click.pass_context

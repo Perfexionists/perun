@@ -37,6 +37,8 @@ The actually set options are specified in the following table. When the option i
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
 | :ckey:`profiles.register_after_run`       | true                                   |               --              |     --     |
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
+| :ckey:`profiles.overwrite`                | false                                  | false                         |     --     |
++-------------------------------------------+----------------------------------------+-------------------------------+------------+
 | :ckey:`format.output_profile_template`    | %collector%-of-%cmd%-%workload%-%date% |               --              |     --     |
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
 
@@ -141,21 +143,27 @@ postprocessors:
 {% endif %}
 ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
 
-## The following option automatically registers newly collected profiles for current minor version
+## The following options automatically register newly collected profiles for current minor version
+## and make sure that profiles with identical names are not overwritten but instead extended with
+## a copy number suffix.
 {% if profiles is defined %}
 profiles:
   {% if profiles.register_after_run is defined %}
     register_after_run: {{ profiles.register_after_run }}
   {% endif %}
+  {% if profiles.overwrite is defined %}
+    overwrite: {{ profiles.overwrite }}
+  {% endif %}
 {% else %}
 ## Uncomment the following to enable this behaviour:
 # profiles:
 #   register_after_run: true
+#   overwrite: false
 {% endif %}
 
-## Be default, we sort the profiles by time in ascending order
+## Be default, we multisort the profiles by time > stem > copy in ascending order
 format:
-  sort_profiles_by: time
+  sort_profiles_by: [time, stem, copy]
   sort_profiles_order: asc
 {% if format is defined and format.output_profile_template is defined %}
 ## The following changes the automatically generated name of the profiles
@@ -264,8 +272,9 @@ class MasterConfiguration:
 
 
 class DeveloperConfiguration(MasterConfiguration):
-    """Configuration meant for advanced users (developers), which sets the basic degradation checks
-    and automatic execution of the ``make`` before each collection.
+    """Configuration meant for advanced users (developers), which sets the basic degradation
+    checks, automatic execution of the ``make`` before each collection and disables profiles
+    overwriting for identical profile names.
 
     The following configurations options will be additionally set:
 
@@ -280,11 +289,14 @@ class DeveloperConfiguration(MasterConfiguration):
     +-------------------------------------------+-------------------------------+
     | :ckey:`execute.pre_run`                   | make                          |
     +-------------------------------------------+-------------------------------+
+    | :ckey:`profiles.overwrite`                | false                         |
+    +-------------------------------------------+-------------------------------+
     """
 
     def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
+        self.profiles = {"overwrite": "false"}
         self.execute = {"pre_run": ["make"]}
         self.degradation = {
             "strategy": [{"method": "average_amount_threshold"}],
@@ -311,6 +323,8 @@ class UserConfiguration(DeveloperConfiguration):
     | :cunit:`collectors`                       | :ref:`collectors-time`                 |
     +-------------------------------------------+----------------------------------------+
     | :ckey:`profiles.register_after_run`       | true                                   |
+    +-------------------------------------------+----------------------------------------+
+    | :ckey:`profiles.overwrite`                | false                                  |
     +-------------------------------------------+----------------------------------------+
     | :ckey:`format.output_profile_template`    | %collector%-of-%cmd%-%workload%-%date% |
     +-------------------------------------------+----------------------------------------+
@@ -390,7 +404,7 @@ class UserConfiguration(DeveloperConfiguration):
         super().__init__()
         self.collectors = [{"name": "time", "params": {"warmup": 3, "repeat": 10}}]
         self.format = {"output_profile_template": "%collector%-of-%cmd%-%workload%-%date%"}
-        self.profiles = {"register_after_run": "true"}
+        self.profiles = {"register_after_run": "true", "overwrite": "false"}
 
         # Lookup executables and workloads
         executable_candidates = UserConfiguration._locate_executable_candidates()

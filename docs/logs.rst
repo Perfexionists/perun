@@ -81,12 +81,13 @@ The specification of the formatting string can contain the following special tag
     Original source of the profile. This corresponds to the name of the generated profile
     and the original path.
 
-By default the profiles are sorted in ascending order according to the timestamp. The sort order
-can be modified by setting either the :ckey:`format.sort_profiles_by` and
-:ckey:`format.sort_profiles_order` configuration options, or the :doc:`cli` options ``--sort-by``
-and ``--sort-order`` to a valid profile information attribute and a valid sort order. Setting the
-command line options ``--sort-by`` and ``--sort-order`` have higher priority than the keys set in
-the :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
+By default the profiles are sorted in ascending order according to the timestamp, profile name
+stem and copy number. The sort order can be modified by setting either the
+:ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order` configuration options, or
+the :doc:`cli` options ``--sort-by`` and ``--sort-order`` to a valid combination of profile
+information attributes and a valid sort orderings. Setting the command line options ``--sort-by``
+and ``--sort-order`` have higher priority than the keys set in the :ckey:`format.sort_profiles_by`
+and :ckey:`format.sort_profiles_order`.
 
 .. _logs-log:
 

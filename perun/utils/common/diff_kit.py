@@ -112,7 +112,7 @@ def generate_specification(profile: Profile) -> list[helpers.ProfileHeaderEntry]
         ),
         helpers.ProfileHeaderEntry(
             "profile label",
-            profile["header"].get("label", ""),
+            profile["header"].get("label", "-"),
             "A label associated with this profile, if any.",
         ),
         helpers.ProfileHeaderEntry(
@@ -317,6 +317,7 @@ def _generate_diff_of_stats_record(
         lhs_diff.value, rhs_diff.value = _color_stat_record_diff(
             lhs_diff.stat_agg,
             rhs_diff.stat_agg,
+            lhs_stat.unit,
             lhs_stat.aggregate_by,
             lhs_diff.stat_agg.infer_auto_comparison(lhs_stat.cmp),
         )
@@ -387,6 +388,7 @@ def _format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
 def _color_stat_record_diff(
     lhs_stat_agg: pstats.ProfileStatAggregation,
     rhs_stat_agg: pstats.ProfileStatAggregation,
+    stats_unit: str,
     compare_key: str,
     comparison: pstats.ProfileStatComparison,
 ) -> tuple[str, str]:
@@ -396,6 +398,7 @@ def _color_stat_record_diff(
 
     :param lhs_stat_agg: a baseline stat aggregation
     :param rhs_stat_agg: a target stat aggregation
+    :param stats_unit: the unit of the aggregated stat
     :param compare_key: the key by which to compare the stats
     :param comparison: the comparison type of the stat
 
@@ -415,23 +418,39 @@ def _color_stat_record_diff(
     if comparison_result == pstats.StatComparisonResult.INVALID:
         baseline_value, target_value = "invalid comparison", "invalid comparison"
     else:
-        baseline_value = _format_stat_value(lhs_stat_agg.as_table(compare_key)[0])
-        target_value = _format_stat_value(rhs_stat_agg.as_table(compare_key)[0])
+        baseline_value = _format_stat_value(lhs_stat_agg.as_table(compare_key)[0], stats_unit)
+        target_value = _format_stat_value(rhs_stat_agg.as_table(compare_key)[0], stats_unit)
     return _emphasize(baseline_value, baseline_color), _emphasize(target_value, target_color)
 
 
-def _format_stat_value(value: str | float | tuple[str, int]) -> str:
-    """Formats float stat values to have a fixed number of decimal digits.
+def _format_stat_value(value: str | float | tuple[str, int], stat_unit: str) -> str:
+    """Formats stats value to be nicely readable based on its unit and data type.
 
-    Non-float stat values are kept as is.
+    For string and tuple stats, as well as 'small' integers, no formatting is done.
+
+    For 'big' integers and floats that represent count (i.e., the stats unit is '#'), we format
+    the number such that it contains K, M, G, T or P suffix indicating the order of magnitude.
+
+    Furthermore, all float values are formatted to 3 decimal places.
 
     :param value: the value to format.
+    :param stat_unit: the unit of the value.
 
     :return: the formatted value.
     """
-    if isinstance(value, float):
-        return f"{value:.4f}"
-    return str(value)
+    if not isinstance(value, (int, float)) or (isinstance(value, int) and abs(value) < 1000):
+        # Value is a string or a tuple, or a 'small' integer that doesn't need any formatting
+        return str(value)
+
+    # Value is a numeric value higher than 1000 that needs some formatting to be nicely readable
+    unit = ""
+    if stat_unit == "#":
+        for unit in ["", " K", " M", " G", " T", " P"]:
+            if abs(value) > 1000.0:
+                value /= 1000.0
+            else:
+                break
+    return f"{value:.3f}{unit}"
 
 
 @dataclasses.dataclass

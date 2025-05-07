@@ -14,6 +14,7 @@ from .convert import (
 )
 
 from .helpers import (
+    save_profile as save_profile,
     generate_profile_name as generate_profile_name,
     load_list_for_minor_version as load_list_for_minor_version,
     get_nth_profile_of as get_nth_profile_of,
@@ -28,6 +29,7 @@ from .helpers import (
     merge_resources_of as merge_resources_of,
     get_default_independent_variable as get_default_independent_variable,
     get_default_dependent_variable as get_default_dependent_variable,
+    ProfilePath as ProfilePath,
     ProfileInfo as ProfileInfo,
     ProfileHeaderEntry as ProfileHeaderEntry,
 )

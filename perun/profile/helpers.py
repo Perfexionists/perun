@@ -17,10 +17,12 @@ handle the JSON objects in Python refer to `Python JSON library`_.
 from __future__ import annotations
 
 # Standard Imports
+import contextlib
 import dataclasses
 import json
 import operator
 import os
+from pathlib import Path
 import re
 import time
 from typing import Any, TYPE_CHECKING, Union
@@ -28,16 +30,16 @@ from typing import Any, TYPE_CHECKING, Union
 # Third-Party Imports
 
 # Perun Imports
-from perun.logic import config, index, pcs, store
+from perun.logic import commands, config, index, pcs, store
 from perun import profile as profiles
-from perun.utils import decorators, log as perun_log
+from perun.utils import log as perun_log, streams
 from perun.utils.common import common_kit
-from perun.utils.external import environment
+from perun.utils.external import environment, commands as external_commands
 from perun.utils.exceptions import (
     InvalidParameterException,
     TagOutOfRangeException,
 )
-from perun.utils.structs.common_structs import Unit, Executable, Job, SortOrder
+from perun.utils.structs.common_structs import Unit, Executable, Job, SortOrder, MinorVersion
 from perun.vcs import vcs_kit
 
 if TYPE_CHECKING:
@@ -48,12 +50,110 @@ ProfileHeaderTuple = tuple[str, Union[str, float], str, dict[str, Union[str, flo
 
 
 PROFILE_COUNTER: int = 0
-DEFAULT_SORT_KEY: str = "time"
+DEFAULT_SORT_KEYS: list[str] = ["time", "stem", "copy"]
+
+
+class ProfilePath:
+    """A helper class for storing and manipulating Perun profile paths.
+
+    The profile path is internally stored in parts: the stem (profile name without a suffix);
+    the directory (the Perun job directory by default); and the copy number in case some other
+    profile(s) with the same path already exist(s).
+
+    :ivar stem: the stem part of the profile path.
+    :ivar directory: the directory part of the profile path.
+    :ivar copy: the copy number part of the profile path.
+    """
+
+    __slots__ = "stem", "directory", "copy"
+
+    def __init__(
+        self, name: str | None = None, directory: str | Path | None = None, copy: int = 0
+    ) -> None:
+        """Initialize a new profile path.
+
+        :param name: the name part of the profile path. If not provided, the name will be
+               automatically generated when finalizing the path.
+        :param directory: the directory part of the profile path. Job directory by default.
+        :param copy: the copy number part of the profile path. The number will be automatically
+               deduced when finalizing the path even if it was provided.
+        """
+        # Remove the .perf suffix if it was provided with the name. Any other suffix is
+        # considered to be part of the name.
+        if name is not None and name.endswith(".perf"):
+            name = name[: -len(".perf")]
+        self.stem: str = "" if name is None else name
+        self.directory: Path = Path(directory if directory else pcs.get_job_directory()).resolve()
+        self.copy: int = copy
+
+    @classmethod
+    def from_path(cls, profile_path: Path) -> ProfilePath:
+        """Construct a profile path object from a path.
+
+        :param profile_path: the path that will be represented by the new object.
+
+        :return: the constructed profile path.
+        """
+        profile_path = profile_path.resolve()
+        directory, name, copy = profile_path.parent, profile_path.stem, 0
+        copy_counter_begin = name.rfind("(")
+        if name.endswith(")") and copy_counter_begin != -1:
+            with contextlib.suppress(ValueError):
+                # Attempt to parse the copy number and the profile stem. If the contents of the
+                # parentheses cannot be parsed as integer, we assume it's part of the name.
+                copy = int(name[copy_counter_begin + 1 : -1])
+                name = name[:copy_counter_begin]
+        return cls(name, directory, copy)
+
+    def name(self) -> str:
+        """Construct the name part of the profile path: <stem>(<copy number>).<suffix>
+
+        May be incomplete or incorrect unless the object was finalized.
+
+        :return: the constructed name part.
+        """
+        copy_str = "" if not self.copy else f"({self.copy})"
+        return f"{self.stem}{copy_str}.perf"
+
+    def path(self) -> Path:
+        """Construct the profile path: <directory>/<name>
+
+        May be incomplete or incorrect unless the object was finalized.
+
+        :return: the constructed profile path.
+        """
+        return Path(self.directory, self.name())
+
+    def finalize(self, profile: profiles.Profile) -> ProfilePath:
+        """Finalize the profile path such that it can be used to store a profile.
+
+        This includes (1) generating a default profile name unless a user-defined name was
+        provided, and (2) deducing the correct copy number to avoid overwriting existing profiles
+        unless the configuration permits overwriting.
+
+        :param profile: the profile that will be stored under this path.
+
+        :return: the finalized profile path object.
+        """
+        if not self.stem:
+            # No custom profile name provided, generate the stem
+            self.stem = generate_profile_name(profile)[: -len(".perf")]
+        # Does the user wish to overwrite existing profiles?
+        if not common_kit.strtobool(
+            str(config.lookup_key_recursively("profiles.overwrite", "false"))
+        ):
+            # We must check for duplicate files first
+            for duplicate in self.directory.glob(f"{self.stem}*"):
+                p = ProfilePath.from_path(duplicate)
+                if p.stem == self.stem:
+                    self.copy = max(self.copy, p.copy + 1)
+        return self
 
 
 def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
-    """Helper function for getting the key from the container. If it is not present in the container,
-    or it is empty string or empty object, the function should return the missing constant.
+    """Helper function for getting the key from the container. If it is not present in the
+    container, or it is empty string or empty object, the function should return the missing
+    constant.
 
     :param container: dictionary container
     :param key: string representation of the key
@@ -86,6 +186,44 @@ def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
         )
     else:
         return "_"
+
+
+def save_profile(
+    profile: profiles.Profile,
+    profile_path: ProfilePath | None = None,
+    minor_version: MinorVersion | None = None,
+) -> None:
+    """Stores a generated or imported profile on the provided path.
+
+    :param profile: the profile that we are storing.
+    :param profile_path: the target path where the profile will be stored.
+    :param minor_version: the minor version that the profile will be associated with if the
+           profile should be saved in index.
+    """
+    profile_path = ProfilePath() if profile_path is None else profile_path
+    profile_path.finalize(profile)
+    final_profile_path = str(profile_path.path())
+    streams.store_json(profile.serialize(), final_profile_path)
+    external_commands.finalize_logs(profile_path.name())
+
+    perun_log.minor_status(
+        "stored generated profile ",
+        status=f"{perun_log.path_style(str(profile_path.path().relative_to(Path.cwd())))}",
+    )
+    if common_kit.strtobool(
+        str(config.lookup_key_recursively("profiles.register_after_run", "false"))
+    ):
+        # Register the profile within a certain minor version
+        if minor_version is None:
+            # No minor version was provided
+            # We either store the profile according to the origin, or we use the current head
+            minor_version_checksum = profile.get("origin", pcs.vcs().get_minor_head())
+        else:
+            minor_version_checksum = minor_version.checksum
+        commands.add([final_profile_path], minor_version_checksum, keep_profile=False)
+    else:
+        # Else we register the profile in the pending index
+        index.register_in_pending_index(final_profile_path, profile)
 
 
 def generate_profile_name(profile: profiles.Profile) -> str:
@@ -281,9 +419,10 @@ def generate_units(collector: types.ModuleType) -> dict[str, str]:
     return collector.COLLECTOR_DEFAULT_UNITS
 
 
-def generate_header_for_profile(job: Job) -> dict[str, Any]:
+def generate_header_for_profile(job: Job, label: str | None = None) -> dict[str, Any]:
     """
     :param job: job with information about the computed profile
+    :param label: a custom user-defined label to associate with the profile
     :return: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     # At this point, the collector module should be valid
@@ -292,9 +431,10 @@ def generate_header_for_profile(job: Job) -> dict[str, Any]:
     return {
         "type": collector.COLLECTOR_TYPE,
         "cmd": job.executable.cmd,
-        "workload": job.executable.workload,
-        "units": generate_units(collector),
         "exitcode": config.runtime().safe_get("exitcode", "?"),
+        "workload": job.executable.workload,
+        "label": label if label is not None else "",
+        "units": generate_units(collector),
     }
 
 
@@ -318,14 +458,18 @@ def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:
     ]
 
 
-def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Profile:
-    """
+def finalize_profile_for_job(
+    profile: profiles.Profile, job: Job, label: str | None = None
+) -> profiles.Profile:
+    """Generates profile header and other metadata.
+
     :param profile: collected profile through some collector
     :param job: job with information about the computed profile
+    :param label: a custom user-defined label to associate with the profile
     :return: valid profile JSON file
     """
     profile.update({"origin": pcs.vcs().get_minor_head()})
-    profile.update({"header": generate_header_for_profile(job)})
+    profile.update({"header": generate_header_for_profile(job, label)})
     profile.update({"machine": environment.get_machine_specification()})
     profile.update({"collector_info": generate_collector_info(job)})
     profile.update({"postprocessors": generate_postprocessor_info(job)})
@@ -431,15 +575,22 @@ def sort_profiles(profile_list: list["ProfileInfo"]) -> None:
 
     :param profile_list: list of ProfileInfo object
     """
-    sort_key = config.safely_lookup_key_recursively(
-        "format.sort_profiles_by", ProfileInfo.valid_attributes, DEFAULT_SORT_KEY
+    sort_keys = config.safely_lookup_key_recursively(
+        "format.sort_profiles_by", ProfileInfo.valid_attributes, DEFAULT_SORT_KEYS
     )
-    sort_order = config.safely_lookup_key_recursively(
-        "format.sort_profiles_order", SortOrder.supported(), SortOrder.default()
+    sort_orders = config.safely_lookup_key_recursively(
+        "format.sort_profiles_order", SortOrder.supported(), [SortOrder.default()]
     )
-    profile_list.sort(
-        key=operator.attrgetter(sort_key), reverse=SortOrder(sort_order).as_sort_flag()
-    )
+    # Multiple back-to-back sorts on the same data set is fast in Python thanks to the used sorting
+    # algorithm: https://docs.python.org/3/howto/sorting.html#sort-stability-and-complex-sorts
+    # The lists of keys and orderings might be of unequal length: if there are more keys than
+    # orderings, pad it with the default ordering; otherwise ignore the additional orderings.
+    sort_steps = [
+        (key, sort_orders[idx] if len(sort_orders) > idx else SortOrder.default())
+        for idx, key in enumerate(sort_keys)
+    ]
+    for key, order in reversed(sort_steps):
+        profile_list.sort(key=operator.attrgetter(key), reverse=SortOrder(order).as_sort_flag())
 
 
 def merge_resources_of(
@@ -526,6 +677,8 @@ class ProfileInfo:
         "cmd",
         "workload",
         "label",
+        "stem",
+        "copy",
         "collector",
         "postprocessors",
         "checksum",
@@ -548,6 +701,7 @@ class ProfileInfo:
         :param is_raw_profile: true if the stored profile is raw, i.e. in json and not
             compressed
         """
+        p = ProfilePath.from_path(Path(path))
         self._is_raw_profile = is_raw_profile
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
@@ -556,6 +710,8 @@ class ProfileInfo:
         self.cmd = profile_info["header"]["cmd"]
         self.workload = profile_info["header"]["workload"]
         self.label = profile_info["header"].get("label", "")
+        self.stem = p.stem
+        self.copy = p.copy
         self.collector = profile_info["collector_info"]["name"]
         self.postprocessors = [
             postprocessor["name"] for postprocessor in profile_info["postprocessors"]
@@ -602,6 +758,8 @@ class ProfileInfo:
         "cmd",
         "workload",
         "label",
+        "stem",
+        "copy",
         "collector",
         "checksum",
         "source",
