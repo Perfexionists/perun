@@ -163,6 +163,7 @@
         <div id="note-popup-buttons-navigation" class="note-popup-buttons">
             <button class="note-popup-button delete" onclick="deleteNotePopup()">Delete</button>
             <button class="note-popup-button save" onclick="saveNotePopup()">Save</button>
+            <button class="note-popup-button save" onclick="saveNotePopupAndClose()">Save and close</button>
         </div>
     </div>
 </div>
@@ -182,7 +183,7 @@
     const approvedButton = actionButtons.querySelector(".approved");
 
     const navigationButtons = document.getElementById("note-popup-buttons-navigation");
-    const saveButton = navigationButtons.querySelector(".save");
+    const saveButtons = navigationButtons.querySelectorAll(".save");
 
     function openNotePopupAndFill(id) {
         const noteItem = document.getElementById(id + NOTE_SUFFIX);
@@ -200,7 +201,7 @@
             switchStateToApproved();
         }
 
-        saveButton.classList.remove("changed");
+        switchButtonsState(false);
         popupContainer.style.display = "flex";
     }
 
@@ -222,7 +223,12 @@
         noteItem.classList.remove("note-item--approved");
         noteItem.classList.add("note-item--" + popup.dataset.currentState);
 
-        saveButton.classList.remove("changed");
+        switchButtonsState(false);
+    }
+
+    function saveNotePopupAndClose() {
+        saveNotePopup();
+        closeNotePopupAndClear();
     }
 
     function deleteNotePopup() {
@@ -244,7 +250,7 @@
         noteContentContainer.classList.remove("approved");
         noteContentContainer.classList.add("attention");
 
-        saveButton.classList.add("changed");
+        switchButtonsState(true);
     }
 
     function switchStateToApproved() {
@@ -255,10 +261,19 @@
         noteContentContainer.classList.remove("attention");
         noteContentContainer.classList.add("approved");
 
-        saveButton.classList.add("changed");
+        switchButtonsState(true);
+    }
+
+    function switchButtonsState(toChanged) {
+        if (toChanged) {
+            saveButtons.forEach(btn => btn.classList.add("changed"))
+        }
+        else {
+            saveButtons.forEach(btn => btn.classList.remove("changed"))
+        }
     }
 
     noteContent.addEventListener('input', () => {
-        saveButton.classList.add("changed");
+        switchButtonsState(true);
     });
 </script>

@@ -124,6 +124,7 @@
     color: var(--color-light-white);
     transition: all 0.3s ease-in-out;
     font-size: 1.2rem;
+    cursor: pointer;
 }
 
 .note-link:hover {
@@ -137,4 +138,9 @@
     padding: 3px;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.note-shortcut-button {
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
 }
