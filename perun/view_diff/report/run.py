@@ -740,6 +740,7 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         Stats.all_stats(),
         skip_diff=False,
         minimize=Config().minimize,
+        squash_unknown=not kwargs.get("no_squash_unknown", False),
         **fg_forward_kwargs,
     )
     log.minor_success("Sankey graphs", "generated")
@@ -826,6 +827,13 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     is_flag=True,
     help="Minimizes the traces, folds the recursive calls, hides the generic types.",
 )
+# TODO: generalize such that (possibly some) recursive functions may be squashed as well.
+@click.option(
+    "--no-squash-unknown",
+    is_flag=True,
+    default=False,
+    help="Do not squash [unknown] frames in flamegraph into a single frame.",
+)
 @click.option(
     "--flamegraph-width",
     type=int,
@@ -869,6 +877,13 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
     "--flamegraph-colors",
     type=str,
     help="Specifies the color theme for flamegraphs. This option is forwarded to the "
+    "flamegraph.pl script.",
+)
+@click.option(
+    "--flamegraph-inverted",
+    is_flag=True,
+    default=False,
+    help="Draws icicle graphs instead of flame graphs. This option is forwarded to the "
     "flamegraph.pl script.",
 )
 @click.pass_context

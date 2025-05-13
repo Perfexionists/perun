@@ -145,7 +145,11 @@ def build_flamegraph_command(
     cmd.extend(f"--{flag}" for flag in flags)
     # Additional parameters
     for key, val in kwargs.items():
-        if val is not None:
+        if val is True:
+            # This kwarg is a flag
+            cmd.append(f"--{key}")
+        elif val:
+            # This kwarg is a parameter
             cmd.append(f"--{key}")
             cmd.append(f"'{val}'")
     # The 'total' parameter needs special handling: add a rootnode that scales the flamegraph
