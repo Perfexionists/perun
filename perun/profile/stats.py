@@ -97,6 +97,18 @@ class StatComparisonResult(enum.Enum):
     INVALID = 5
 
 
+class StatComparableType(enum.Enum):
+    """Specifies the type of the aggregated stats in terms of the stored values that are compared.
+
+    When aggregated stats belong to the same comparable-type, it is possible to compare them
+    despite them being different aggregation, e.g., SingleValue (with numeric value) and
+    StatisticalSummary.
+    """
+
+    STRING = 1
+    NUMERIC = 2
+
+
 @dataclasses.dataclass
 class ProfileStat:
     """An internal representation of a profile stat.
@@ -246,6 +258,12 @@ class ProfileStatAggregation(Protocol):
         :return: The representative value and a table representation of the aggregation.
         """
 
+    def get_comparable_type(self) -> StatComparableType:
+        """Provide the comparable-type of the aggregated stats.
+
+        :return: The comparable-type of the aggregated stats object.
+        """
+
 
 @dataclasses.dataclass
 class SingleValue(ProfileStatAggregation):
@@ -272,6 +290,11 @@ class SingleValue(ProfileStatAggregation):
     def as_table(self, _: str = "") -> tuple[str | float, dict[str, str | float]]:
         # There are no details of a single value to generate into a table
         return self.value, {}
+
+    def get_comparable_type(self) -> StatComparableType:
+        if isinstance(self.value, str):
+            return StatComparableType.STRING
+        return StatComparableType.NUMERIC
 
 
 @dataclasses.dataclass
@@ -341,6 +364,9 @@ class StatisticalSummary(ProfileStatAggregation):
 
     def as_table(self, key: str = _DEFAULT_KEY) -> tuple[float, dict[str, float]]:
         return self.get_value(key), dataclasses.asdict(self)
+
+    def get_comparable_type(self) -> StatComparableType:
+        return StatComparableType.NUMERIC
 
 
 @dataclasses.dataclass
@@ -423,6 +449,9 @@ class StringCollection(ProfileStatAggregation):
             return representative_val, {f"{idx}.": value for idx, value in enumerate(self.sequence)}
         return representative_val, self.counts
 
+    def get_comparable_type(self) -> StatComparableType:
+        return StatComparableType.STRING
+
 
 def aggregate_stats(stat: ProfileStat) -> ProfileStatAggregation:
     """A factory that constructs the proper aggregation object based on the stat value(s) type.
@@ -462,7 +491,7 @@ def compare_stats(
     value, other_value = stat.get_value(key), other_stat.get_value(key)
     # Handle auto comparison according to the aggregation type
     comparison = stat.infer_auto_comparison(comparison)
-    if type(stat) is not type(other_stat):
+    if stat.get_comparable_type() != other_stat.get_comparable_type():
         # Invalid comparison attempt
         perun_log.warn(
             f"Invalid comparison of {stat.__class__.__name__} and {other_stat.__class__.__name__}."
