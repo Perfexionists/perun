@@ -1,0 +1,279 @@
+
+<style>
+    #note-popup-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 9998;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .note-overlay {
+        position: fixed;
+        height: 100vh;
+        width: 100vw;
+        top: 0;
+        left: 0;
+        background-color: var(--color-primary-transparent);
+        z-index: 9998;
+        transition: all 0.5s ease-in-out;
+    }
+
+    .note-popup {
+        position: fixed;
+        top: 25vh;
+        min-height: 38vh;
+        width: 45vw;
+        z-index: 9999;
+        color: var(--color-almost-white);
+        background-color: var(--color-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: center;
+        padding: 50px;
+        border-radius: 10px;
+        gap: 10px;
+        transition: all 0.5s ease-in-out;
+    }
+
+    #note-popup-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        cursor: pointer;
+    }
+
+    #note-popup-content {
+        height: 10vh;
+        width: 100%;
+        border: 6px solid var(--color-light-gray);
+        padding: 6px;
+        border-radius: 22px;
+    }
+
+    #note-popup-content.attention {
+        border: 6px solid var(--color-wrong-transparent);
+    }
+
+    #note-popup-content.approved {
+        border: 6px solid var(--color-correct-transparent);
+    }
+
+    #note-popup-content-textarea {
+        height: 100%;
+        width: 100%;
+        border-radius: 12px;
+        padding: 10px;
+        resize: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        white-space: pre-wrap;
+    }
+
+        #note-popup-content-textarea:focus {
+            outline: none;
+        }
+
+    .note-popup-buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+        align-items: end;
+        gap: 6px;
+    }
+
+    #note-popup-buttons-navigation {
+        margin-top: 30px;
+        gap: 10px;
+    }
+
+    #note-popup-buttons-navigation .note-popup-button {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .note-popup-button {
+        margin: 0;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: var(--color-white-tinted);
+        color: var(--color-primary-hover);
+        border: none;
+        transition: all 0.3s ease-in-out;
+    }
+        .note-popup-button:hover {
+            scale: 1.1;
+        }
+
+    .note-popup-button.attention {
+        background-color: var(--color-wrong);
+        color: var(--color-light-white);
+    }
+
+    .note-popup-button.approved {
+        background-color: var(--color-correct);
+        color: var(--color-light-white);
+    }
+
+    .note-popup-button.not-chosen {
+        background-color: var(--color-light-gray);
+        color: var(--color-light-white);
+        scale: 0.9;
+    }
+
+    .note-popup-button.save {
+        background-color: var(--color-target);
+        color: var(--color-light-white);
+        box-sizing: border-box;
+    }
+
+    .note-popup-button.save.changed {
+        background-color: var(--color-common);
+    }
+</style>
+
+<div id="note-popup-container" style="display: none">
+    <div class="note-overlay"></div>
+
+    <div class="note-popup" id="note-popup">
+
+        <h1 id="note-popup-title">Note title</h1>
+
+        <span id="note-popup-close" onclick="closeNotePopupAndClear()">
+            {% include 'assets/close.svg' %}
+        </span>
+
+        <div id="note-popup-content">
+            <label for="note-popup-content-textarea"></label>
+                <textarea id="note-popup-content-textarea" placeholder="Enter your note"></textarea>
+        </div>
+
+        <div id="note-popup-buttons-action" class="note-popup-buttons">
+            <button class="note-popup-button attention" onclick="switchStateToAttention()">Attention</button>
+            <button class="note-popup-button approved" onclick="switchStateToApproved()">Waived</button>
+        </div>
+
+        <div id="note-popup-buttons-navigation" class="note-popup-buttons">
+            <button class="note-popup-button delete" onclick="deleteNotePopup()">Delete</button>
+            <button class="note-popup-button save" onclick="saveNotePopup()">Save</button>
+            <button class="note-popup-button save" onclick="saveNotePopupAndClose()">Save and close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const NOTE_SUFFIX = " -note-item";
+    const PIN_SUFFIX = " -pin-item";
+
+    const noteTitle = document.getElementById("note-popup-title");
+    const noteContentContainer = document.getElementById("note-popup-content");
+    const noteContent = document.getElementById("note-popup-content-textarea");
+    const popupContainer = document.getElementById("note-popup-container");
+    const popup = document.getElementById("note-popup");
+
+    const actionButtons = document.getElementById("note-popup-buttons-action");
+    const attentionButton = actionButtons.querySelector(".attention");
+    const approvedButton = actionButtons.querySelector(".approved");
+
+    const navigationButtons = document.getElementById("note-popup-buttons-navigation");
+    const saveButtons = navigationButtons.querySelectorAll(".save");
+
+    function openNotePopupAndFill(id) {
+        const noteItem = document.getElementById(id + NOTE_SUFFIX);
+        popup.dataset.currentId = id;
+
+        const link = noteItem.querySelector(".note-link");
+        const content = noteItem.querySelector(".note-input");
+
+        noteTitle.textContent = link ? link.textContent : "UNKNOWN TITLE";
+        noteContent.value = content ? content.textContent : "unknown content";
+
+        if (noteItem.classList.contains("note-item--attention")) {
+            switchStateToAttention();
+        } else {
+            switchStateToApproved();
+        }
+
+        switchButtonsState(false);
+        popupContainer.style.display = "flex";
+    }
+
+    function closeNotePopupAndClear() {
+        noteTitle.textContent = "Note title";
+        noteContent.value = "Note content";
+
+        popupContainer.style.display = "none";
+    }
+
+    function saveNotePopup() {
+        const currentId = popup.dataset.currentId;
+        const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
+
+        const textarea = noteItem.querySelector(".note-input");
+        textarea.textContent = noteContent.value;
+
+        noteItem.classList.remove("note-item--attention");
+        noteItem.classList.remove("note-item--approved");
+        noteItem.classList.add("note-item--" + popup.dataset.currentState);
+
+        switchButtonsState(false);
+    }
+
+    function saveNotePopupAndClose() {
+        saveNotePopup();
+        closeNotePopupAndClear();
+    }
+
+    function deleteNotePopup() {
+        const currentId = popup.dataset.currentId;
+        const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
+        const pinItem = document.getElementById(currentId + PIN_SUFFIX);
+
+        noteItem.remove();
+        pinItem.classList.remove("pin-icon__pinned");
+
+        closeNotePopupAndClear();
+    }
+
+    function switchStateToAttention() {
+        approvedButton.classList.add("not-chosen");
+        attentionButton.classList.remove("not-chosen");
+        popup.dataset.currentState = "attention";
+
+        noteContentContainer.classList.remove("approved");
+        noteContentContainer.classList.add("attention");
+
+        switchButtonsState(true);
+    }
+
+    function switchStateToApproved() {
+        attentionButton.classList.add("not-chosen");
+        approvedButton.classList.remove("not-chosen");
+        popup.dataset.currentState = "approved";
+
+        noteContentContainer.classList.remove("attention");
+        noteContentContainer.classList.add("approved");
+
+        switchButtonsState(true);
+    }
+
+    function switchButtonsState(toChanged) {
+        if (toChanged) {
+            saveButtons.forEach(btn => btn.classList.add("changed"))
+        }
+        else {
+            saveButtons.forEach(btn => btn.classList.remove("changed"))
+        }
+    }
+
+    noteContent.addEventListener('input', () => {
+        switchButtonsState(true);
+    });
+</script>

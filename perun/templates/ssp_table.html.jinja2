@@ -38,7 +38,7 @@
             {%- endfor %}
         </div>
     {% else %}
-        <h3>No {{ section_id }} }} for {{ type }} provided for this section</h3>
+        <h3>No {{ section_id }} for {{ type }} provided for this section</h3>
     {% endif %}
 
 {%- endmacro %}
@@ -57,12 +57,14 @@
 
 {% macro display_title_with_info(title, section_name, info_text) %}
     <div class="section_header">
-            <span class="pin-icon pin-icon__header info-icon__header"
-                  data-tooltip="{{ info_text }}">
-                {% include 'assets/info.svg' %}
-            </span>
+        <span class="pin-icon pin-icon__header info-icon__header"
+              data-tooltip="{{ info_text }}">
+            {% include 'assets/info.svg' %}
+        </span>
         <h1>{{ title }}</h1>
-        <span class="pin-icon pin-icon__header" data-section="{{ section_name }}">
+        <span id="{{ section_name }} -pin-item"
+              class="pin-icon pin-icon__header"
+              data-section="{{ section_name }}">
             {% include 'assets/note.svg' %}
         </span>
     </div>

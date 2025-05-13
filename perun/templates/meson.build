@@ -20,6 +20,7 @@ perun_templates_files = files(
     'postprocess.__init__.jinja2',
     'postprocess.run.jinja2',
     'ssp_general_sidebar_property.html.jinja2',
+    'ssp_note_popup.html.jinja2',
     'ssp_report.html.jinja2',
     'ssp_sankey.html.jinja2',
     'ssp_table.html.jinja2',

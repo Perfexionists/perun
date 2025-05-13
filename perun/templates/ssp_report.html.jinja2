@@ -51,6 +51,9 @@
         </h2>
     </div>
 
+    <!-- NOTE POPUP TO EDIT AND DELETE NOTES-->
+    {% include 'ssp_note_popup.html.jinja2' %}
+
     <div class="side-panel navigation-panel">
         <a href="#general">
             <span class="full_visible">
@@ -133,7 +136,7 @@
         <span class="general-sidebar__icon">
             {% include 'assets/note.svg' %}
         </span>
-        <a> <p id="export-notes">Export with notes</p> </a>
+        <a> <p class="tag-element tag-common note-shortcut-button" onclick="exportNotes()">Export with notes</p> </a>
         <div class="notes-sidebar-content">
             <div id="notes-list">
                 <!-- place for dynamically added notes -->
@@ -243,50 +246,33 @@
     </script>
 
     <script>
+        function exportNotes() {
+            let docHTML = document.documentElement.outerHTML;
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(docHTML, 'text/html');
+
+            let rawTable = doc.getElementById('table-to-replace');
+            let currentTable = doc.getElementById('table_wrapper');
+
+            if (rawTable && currentTable) {
+                let newTable = rawTable.cloneNode(true);
+                newTable.id = 'table';
+
+                currentTable.replaceWith(newTable);
+
+                let updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+
+                let blob = new Blob([updatedHTML], { type: 'text/html' });
+
+                let link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'report_with_notes.html';
+                link.click();
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const notesList = document.getElementById("notes-list");
-
-            function attachInputListener(noteInput) {
-                noteInput.addEventListener("input", (event) => {
-                    const noteItemContent = event.target.closest(".note-item--content");
-                    if (noteItemContent) {
-                        noteItemContent.dataset.noteValue = event.target.value;
-                    }
-
-                    event.target.style.height = "auto";
-                    event.target.style.height = `${event.target.scrollHeight}px`;
-                });
-            }
-
-            function toggleNoteStatus(noteItem, statusButton) {
-                const isAttention = statusButton.classList.contains("attention");
-                if (isAttention) {
-                    statusButton.textContent = "Waived";
-                    statusButton.classList.remove("attention");
-                    statusButton.classList.add("approved");
-                    noteItem.classList.remove("note-item--attention");
-                    noteItem.classList.add("note-item--approved");
-                } else {
-                    statusButton.textContent = "Attention";
-                    statusButton.classList.remove("approved");
-                    statusButton.classList.add("attention");
-                    noteItem.classList.remove("note-item--approved");
-                    noteItem.classList.add("note-item--attention");
-                }
-            }
-
-            function deleteNoteForSection(noteItemToDelete, pinToDelete) {
-                noteItemToDelete.remove();
-                pinToDelete.classList.remove("pin-icon__pinned");
-            }
-
-            function createGlowForNotesList() {
-                const notesSidebar = document.getElementById("notes-sidebar");
-                notesSidebar.classList.add("highlight-notes-sidebar");
-                setTimeout(() => {
-                    notesSidebar.classList.remove("highlight-notes-sidebar");
-                }, 5000);
-            }
 
             function addNoteForSection(pin, sectionId) {
                 const noteItem = document.createElement("div");
@@ -294,26 +280,18 @@
                 noteItem.setAttribute("id", `${sectionId} -note-item`);
 
                 noteItem.innerHTML = `
-                    <p><b><a href="#${sectionId}" class="note-link">${sectionId}:</a> </b></p>
+                <div style="display: flex; flex-direction: column">
+                    <b><a href="#${sectionId}" class="note-link">${sectionId}:</a></b>
                     <div class="note-item--content">
-                        <textarea class="note-input" placeholder="Enter your note"></textarea>
-                        <span class="" style="cursor: pointer; margin: 0">{% include 'assets/bin.svg' %}</span>
-                        <button class="note-status-toggle attention">Attention</button>
-                    </div>`;
-
-                const noteInput = noteItem.querySelector(".note-input");
-                attachInputListener(noteInput);
-
-                noteItem.querySelector("span").onclick = () => {
-                    deleteNoteForSection(noteItem, pin)
-                }
-
-                const statusButton = noteItem.querySelector(".note-status-toggle");
-                statusButton.addEventListener("click", () => toggleNoteStatus(noteItem, statusButton));
+                        <p class="note-input"></p>
+                    </div>
+                    <div style="display: flex; align-self: end; gap: 10px;">
+                        <a href="#${sectionId}"><button class="tag-element tag-baseline note-shortcut-button">goto note</button></a>
+                        <button class="tag-element tag-target note-shortcut-button" onclick="openNotePopupAndFill('${sectionId}')">open popup</button>
+                    </div>
+                </div>`;
 
                 notesList.appendChild(noteItem);
-
-                createGlowForNotesList();
             }
 
             document.querySelectorAll(".pin-icon").forEach(pin => {
@@ -323,56 +301,7 @@
                         pin.classList.add("pin-icon__pinned");
                         pin.parentElement.setAttribute("id", pin.dataset.section.toString());
                     }
-                    else if (!pin.classList.contains("pin-icon--embedded")) {
-                        const noteItemToDelete = document.getElementById(pin.dataset.section + " -note-item");
-                        deleteNoteForSection(noteItemToDelete, pin)
-                    }
-                    else {
-                        createGlowForNotesList();
-                    }
-                }
-            });
-
-            document.getElementById('export-notes').addEventListener('click', function () {
-                let docHTML = document.documentElement.outerHTML;
-
-                let parser = new DOMParser();
-                let doc = parser.parseFromString(docHTML, 'text/html');
-
-                const notesList = doc.querySelector('#notes-list');
-                if (notesList) {
-                    const noteItems = notesList.children;
-                    Array.from(noteItems).forEach(noteItem => {
-                        const connectedPinId = noteItem.id.replace("-note-item", "-pin-item");
-                        const connectedPin = doc.getElementById(connectedPinId);
-                        connectedPin.classList.add("pin-icon--embedded");
-                        const noteContentDiv = noteItem.querySelector('.note-item--content');
-                        if (noteContentDiv) {
-                            const noteValue = noteContentDiv.dataset.noteValue || "Empty note";
-                            const noteContent = document.createElement('p');
-                            noteContent.textContent = noteValue;
-                            noteContentDiv.replaceWith(noteContent);
-                        }
-                    });
-                }
-
-                let rawTable = doc.getElementById('table-to-replace');
-                let currentTable = doc.getElementById('table_wrapper');
-
-                if (rawTable && currentTable) {
-                    let newTable = rawTable.cloneNode(true);
-                    newTable.id = 'table';
-
-                    currentTable.replaceWith(newTable);
-
-                    let updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
-
-                    let blob = new Blob([updatedHTML], { type: 'text/html' });
-
-                    let link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'report_with_notes.html';
-                    link.click();
+                    openNotePopupAndFill(pin.dataset.section)
                 }
             });
         });

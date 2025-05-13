@@ -1,3 +1,5 @@
+{% set STATS_NOTE_TITLE = "general" %}
+
 <div class="section" id="general">
 
     {{ property_generator.display_title("Perun Performance Analysis", "general") }}
@@ -5,7 +7,7 @@
     <p>Generated on: {{ timestamp }}</p>
 
     <div class="comparison_container">
-        {{ property_generator.general_comparison_container('baseline', 'general', lhs_header) }}
-        {{ property_generator.general_comparison_container('target', 'general', rhs_header) }}
+        {{ property_generator.general_comparison_container('baseline', STATS_NOTE_TITLE, lhs_header) }}
+        {{ property_generator.general_comparison_container('target', STATS_NOTE_TITLE, rhs_header) }}
     </div>
 </div>
