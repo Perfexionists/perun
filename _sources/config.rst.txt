@@ -14,7 +14,7 @@ more details described in :ref:`jobs-matrix`) or information about wrapped repos
 
 In order to configure your local instance of Perun run the following::
 
-    perun config --edit
+    perun config edit
 
 This will open the nearest local configuration in text editor (by default in ``vim``) and lets you
 modify the options w.r.t. Yaml_ format.
@@ -202,17 +202,21 @@ List of Supported Options
 
 .. confkey:: format.sort_profiles_by
 
-    ``[recursive]`` Specifies which key of the profile will be used for sorting the output of the
-    ``perun status`` commands. Can be one of the following attributes specified by the class
-    attribute ``ProfileInfo.valid_attributes``:
+    ``[recursive]`` Specifies which keys of the profile will be used for sorting the output of the
+    ``perun status`` commands. It is possible to sort the profiles by multiple keys with the usual
+    multi-key sort semantics by providing a list of the following attributes specified by the
+    class attribute ``ProfileInfo.valid_attributes``:
 
 .. currentmodule:: perun.profile.helpers
 .. autoattribute:: ProfileInfo.valid_attributes
 
 .. confkey:: format.sort_profiles_order
 
-    ``[recursive]`` Specifies the order which will be used for sorting the output of the
-    ``perun status`` commands. Can be either ``ascending`` or ``descending``.
+    ``[recursive]`` Specifies the orderings which will be used for sorting the output of the
+    ``perun status`` commands. Can be either a single value of ``asc`` or ``desc``, in which
+    case the selected ordering will be applied to all :ckey:`format.sort_profiles_by` keys, or
+    it may be a list of orderings, where each ordering will be applied to the corresponding sort
+    key. Keys without specified orderings will use default ordering.
 
 .. confunit:: execute
 
@@ -270,6 +274,13 @@ List of Supported Options
    If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
    profile (e.g. by running ``perun run matrix``) is automatically registered in the appropriate
    minor version index.
+
+.. confkey:: profiles.overwrite
+
+   If the key is set to a true value (can be 1, true, True, yes, etc.), then a newly generated
+   profile will overwrite an existing profile with identical name, if such profile exists.
+   Otherwise (if set to a false value), the newly generated profile's name will be extended with
+   a copy suffix so that both profiles may be kept.
 
 .. confunit:: degradation
 
@@ -359,9 +370,9 @@ Predefined Configuration Templates
 Command Line Interface
 ----------------------
 
-We advise to manipulate with configurations using the ``perun config --edit`` command. In order to
-change the nearest local (resp. global) configuration run ``perun config --local --edit`` (resp.
-``perun config --shared --edit``).
+We advise to manipulate with configurations using the ``perun config edit`` command. In order to
+change the nearest local (resp. global) configuration run ``perun config --local edit`` (resp.
+``perun config --shared edit``).
 
 .. click:: perun.cli_groups.config_cli:config
    :prog: perun config

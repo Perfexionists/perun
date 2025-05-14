@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command Line Interface &#8212; Perun 0.25.2 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.25.3 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=4b5d0a62"></script>
+    <script src="_static/documentation_options.js?v=ef258e7b"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -663,23 +663,13 @@ using the pending or index tags will consider this order.</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-status-sb">
 <span id="cmdoption-perun-status-sort-by"></span><span class="sig-name descname"><span class="pre">-sb</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--sort-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;format__sort_profiles_by&gt;</span></span><a class="headerlink" href="#cmdoption-perun-status-sb" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the sort key in the local configuration as ‘format.sort_profiles_by’ that will be used for sorting both pending and index profiles.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>realpath | type | time | cmd | workload | label | collector | checksum | source</p>
-</dd>
-</dl>
+<dd><p>Sets the sort keys in the local configuration as ‘format.sort_profiles_by’ that will be used for sorting both pending and index profiles.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-status-so">
 <span id="cmdoption-perun-status-sort-order"></span><span class="sig-name descname"><span class="pre">-so</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--sort-order</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;format__sort_profiles_order&gt;</span></span><a class="headerlink" href="#cmdoption-perun-status-so" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the sort order in the local configuration as ‘format.sort_profiles_order’ that will be used for sorting both pending and index profiles.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>asc | desc</p>
-</dd>
-</dl>
+<dd><p>Sets the sort orderings in the local configuration as ‘format.sort_profiles_order’ that will be used for sorting both pending and index profiles.</p>
 </dd></dl>
 
 </section>
@@ -1253,15 +1243,33 @@ more complex configuration consult either <code class="docutils literal notransl
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-collect-o">
-<span id="cmdoption-perun-collect-output-file"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_file&gt;</span></span><a class="headerlink" href="#cmdoption-perun-collect-o" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the full path to where the profile will be stored.</p>
+<dt class="sig sig-object std" id="cmdoption-perun-collect-pd">
+<span id="cmdoption-perun-collect-profile-dir"></span><span class="sig-name descname"><span class="pre">-pd</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--profile-dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;profile_dir&gt;</span></span><a class="headerlink" href="#cmdoption-perun-collect-pd" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the output directory in which the collected profile will be saved. The default directory is ‘.perun/jobs’. The directory will be created if it does not exist.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-collect-pn">
 <span id="cmdoption-perun-collect-profile-name"></span><span class="sig-name descname"><span class="pre">-pn</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--profile-name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;profile_name&gt;</span></span><a class="headerlink" href="#cmdoption-perun-collect-pn" title="Link to this definition">¶</a></dt>
-<dd><p>Specifies the name of the profile, which will be collected, e.g. profile.perf. The profile will be stored in .perun/jobs</p>
+<dd><p>Specifies the name of the collected profile, e.g., ‘profile.perf’, that will be stored in the output directory. The default name is generated according to the <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a> configuration parameter.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-collect-pl">
+<span id="cmdoption-perun-collect-profile-label"></span><span class="sig-name descname"><span class="pre">-pl</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--profile-label</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;profile_label&gt;</span></span><a class="headerlink" href="#cmdoption-perun-collect-pl" title="Link to this definition">¶</a></dt>
+<dd><p>An optional custom label to associate with the collected profile(s).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-collect-s">
+<span id="cmdoption-perun-collect-save-to-index"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--save-to-index</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-collect-s" title="Link to this definition">¶</a></dt>
+<dd><p>Registers the imported profile in index instead of saving it in pending.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-collect-overwrite-profiles">
+<span class="sig-name descname"><span class="pre">--overwrite-profiles</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-collect-overwrite-profiles" title="Link to this definition">¶</a></dt>
+<dd><p>If a profile with the same name already exists it will be overwritten instead ofrenaming this profile to contain a copy number suffix, e.g., custom_name(1).perf.</p>
 </dd></dl>
 
 <dl class="std option">

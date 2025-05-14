@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Perun 0.25.2 documentation</title>
+    <title>Index &#8212; Perun 0.25.3 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=4b5d0a62"></script>
+    <script src="_static/documentation_options.js?v=ef258e7b"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="#" />
@@ -836,8 +836,6 @@
     --output-file
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-o">perun-collect command line option</a>
-</li>
         <li><a href="views.html#cmdoption-perun-show-tableof-of">perun-show-tableof command line option</a>
 </li>
       </ul></li>
@@ -857,6 +855,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-trace-o">perun-collect-trace command line option</a>, <a href="collectors.html#cmdoption-perun-collect-trace-o">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --overwrite-profiles
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-overwrite-profiles">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -909,6 +914,20 @@
         <li><a href="cli.html#cmdoption-perun-fuzz-pp">perun-fuzz command line option</a>, <a href="fuzzing.html#cmdoption-perun-fuzz-pp">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-run-job-pp">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-pp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --profile-dir
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-pd">perun-collect command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --profile-label
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-pl">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -983,6 +1002,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-s">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-s">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --save-to-index
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-s">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -1183,6 +1209,8 @@
         <li><a href="cli.html#cmdoption-perun-collect-cg">perun-collect command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     --vcs-flag
 
@@ -1190,8 +1218,6 @@
         <li><a href="cli.html#cmdoption-perun-init-vcs-flag">perun-init command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     --vcs-param
 
@@ -1761,8 +1787,6 @@
     -o
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-o">perun-collect command line option</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-collect-trace-o">perun-collect-trace command line option</a>, <a href="collectors.html#cmdoption-perun-collect-trace-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-fuzz-o">perun-fuzz command line option</a>, <a href="fuzzing.html#cmdoption-perun-fuzz-o">[1]</a>
@@ -1846,6 +1870,13 @@
 </li>
       </ul></li>
       <li>
+    -pd
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-pd">perun-collect command line option</a>
+</li>
+      </ul></li>
+      <li>
     -per
 
       <ul>
@@ -1854,6 +1885,13 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving_average-per">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving_average-per">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-per">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-per">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -pl
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-pl">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -1909,6 +1947,8 @@
     -s
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-s">perun-collect command line option</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-collect-bounds-s">perun-collect-bounds command line option</a>, <a href="collectors.html#cmdoption-perun-collect-bounds-s">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-memory-s">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-s">[1]</a>
@@ -2337,6 +2377,8 @@
         <li><a href="config.html#confkey-general.paging">general.paging</a>
 </li>
         <li><a href="config.html#confkey-generators.workload">generators.workload</a>
+</li>
+        <li><a href="config.html#confkey-profiles.overwrite">profiles.overwrite</a>
 </li>
         <li><a href="config.html#confkey-profiles.register_after_run">profiles.register_after_run</a>
 </li>
@@ -2887,13 +2929,19 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-optimization-reset-cache">--optimization-reset-cache</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-o">--output-file</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-collect-ot">--output-filename-template</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-overwrite-profiles">--overwrite-profiles</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-p">--params</a>
 </li>
+        <li><a href="cli.html#cmdoption-perun-collect-pd">--profile-dir</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-pl">--profile-label</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-collect-pn">--profile-name</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-s">--save-to-index</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-cg">--use-cg-type</a>
 </li>
@@ -2909,8 +2957,6 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-m">-m</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-o">-o</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-collect-oa">-oa</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-off">-off</a>
@@ -2923,7 +2969,13 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-p">-p</a>
 </li>
+        <li><a href="cli.html#cmdoption-perun-collect-pd">-pd</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-pl">-pl</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-collect-pn">-pn</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-s">-s</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-w">-w</a>
 </li>
@@ -3413,6 +3465,8 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving_average-smm-ww">-ww</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving_average-smm-ww">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-regression_analysis command line option
 
@@ -3438,8 +3492,6 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression_analysis-s">-s</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression_analysis-s">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-regressogram command line option
 
@@ -4204,6 +4256,13 @@
 
       <ul>
         <li><a href="config.html#confunit-profiles">configuration unit</a>
+</li>
+      </ul></li>
+      <li>
+    profiles.overwrite
+
+      <ul>
+        <li><a href="config.html#confkey-profiles.overwrite">configuration key</a>
 </li>
       </ul></li>
       <li>

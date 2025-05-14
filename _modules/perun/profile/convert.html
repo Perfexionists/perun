@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>perun.profile.convert &#8212; Perun 0.25.2 documentation</title>
+    <title>perun.profile.convert &#8212; Perun 0.25.3 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
-    <script src="../../../_static/documentation_options.js?v=4b5d0a62"></script>
+    <script src="../../../_static/documentation_options.js?v=ef258e7b"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -144,7 +144,10 @@
 <div class="viewcode-block" id="to_flame_graph_format">
 <a class="viewcode-back" href="../../../profile.html#perun.profile.convert.to_flame_graph_format">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_flame_graph_format</span><span class="p">(</span>
-    <span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span> <span class="n">profile_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;amount&quot;</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span>
+    <span class="n">profile_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;amount&quot;</span><span class="p">,</span>
+    <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">squash_unknown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the</span>
 <span class="sd">    format supported by perl script of Brendan Gregg.</span>
@@ -172,6 +175,7 @@
 <span class="sd">    :param profile: the memory profile</span>
 <span class="sd">    :param profile_key: key that is used to obtain the data</span>
 <span class="sd">    :param minimize: minimizes the uids</span>
+<span class="sd">    :param squash_unknown: whether recursive [unknown] frames should be squashed into a single one</span>
 <span class="sd">    :returns: list of lines, each representing one allocation call stack</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stacks</span> <span class="o">=</span> <span class="p">[]</span>
@@ -180,15 +184,27 @@
             <span class="k">if</span> <span class="s2">&quot;subtype&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alloc</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;subtype&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;free&quot;</span><span class="p">:</span>
                 <span class="c1"># Workaround for total time used in some collectors, so it is not outputted</span>
                 <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;%TOTAL_TIME%&quot;</span> <span class="ow">and</span> <span class="n">profile_key</span> <span class="ow">in</span> <span class="n">alloc</span><span class="p">:</span>
-                    <span class="n">stack_str</span> <span class="o">=</span> <span class="n">to_uid</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
-                    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">alloc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span> <span class="p">[])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">stack</span> <span class="o">=</span> <span class="n">alloc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span><span class="p">])</span>
+                    <span class="n">stack_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">unknown_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
                         <span class="n">line</span> <span class="o">=</span> <span class="n">to_uid</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">minimize</span><span class="p">)</span>
-                        <span class="n">stack_str</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
-                    <span class="k">if</span> <span class="n">stack_str</span> <span class="ow">and</span> <span class="n">stack_str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">):</span>
-                        <span class="n">final</span> <span class="o">=</span> <span class="n">stack_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="n">final</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="n">profile_key</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                        <span class="n">stacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
-
+                        <span class="k">if</span> <span class="n">squash_unknown</span><span class="p">:</span>
+                            <span class="c1"># Fold unknown towers</span>
+                            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;[unknown]&quot;</span><span class="p">:</span>
+                                <span class="n">unknown_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="k">continue</span>
+                            <span class="k">elif</span> <span class="n">unknown_cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="n">stack_str</span> <span class="o">+=</span> <span class="s2">&quot;[unknown[squashed]];&quot;</span>
+                                <span class="n">unknown_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="n">stack_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">;&quot;</span>
+                    <span class="c1"># The unknown frame might have been the last one, in which case the frame was</span>
+                    <span class="c1"># not yet added to the string.</span>
+                    <span class="k">if</span> <span class="n">unknown_cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">stack_str</span> <span class="o">+=</span> <span class="s2">&quot;[unknown[squashed]];&quot;</span>
+                    <span class="k">if</span> <span class="n">stack_str</span><span class="p">:</span>
+                        <span class="n">stacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stack_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">alloc</span><span class="p">[</span><span class="n">profile_key</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">stacks</span></div>
 
 

@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Configuration files &#8212; Perun 0.25.2 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.25.3 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=4b5d0a62"></script>
+    <script src="_static/documentation_options.js?v=ef258e7b"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -41,7 +41,7 @@ option is found in the nearest configuration. Refer to <a class="reference inter
 of options, such as formatting strings for status and log outputs, specification of job matrix (in
 more details described in <a class="reference internal" href="jobs.html#jobs-matrix"><span class="std std-ref">Job Matrix Format</span></a>) or information about wrapped repository.</p>
 <p>In order to configure your local instance of Perun run the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="o">--</span><span class="n">edit</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="n">edit</span>
 </pre></div>
 </div>
 <p>This will open the nearest local configuration in text editor (by default in <code class="docutils literal notranslate"><span class="pre">vim</span></code>) and lets you
@@ -244,21 +244,25 @@ one batch run of profile generation (e.g. when <code class="docutils literal not
 <dl class="std confkey">
 <dt class="sig sig-object std" id="confkey-format.sort_profiles_by">
 <span class="sig-name descname"><span class="pre">format.sort_profiles_by</span></span><a class="headerlink" href="#confkey-format.sort_profiles_by" title="Link to this definition">¶</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies which key of the profile will be used for sorting the output of the
-<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be one of the following attributes specified by the class
-attribute <code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code>:</p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies which keys of the profile will be used for sorting the output of the
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. It is possible to sort the profiles by multiple keys with the usual
+multi-key sort semantics by providing a list of the following attributes specified by the
+class attribute <code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code>:</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
-<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'stem',</span> <span class="pre">'copy',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="std confkey">
 <dt class="sig sig-object std" id="confkey-format.sort_profiles_order">
 <span class="sig-name descname"><span class="pre">format.sort_profiles_order</span></span><a class="headerlink" href="#confkey-format.sort_profiles_order" title="Link to this definition">¶</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the order which will be used for sorting the output of the
-<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be either <code class="docutils literal notranslate"><span class="pre">ascending</span></code> or <code class="docutils literal notranslate"><span class="pre">descending</span></code>.</p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">[recursive]</span></code> Specifies the orderings which will be used for sorting the output of the
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">status</span></code> commands. Can be either a single value of <code class="docutils literal notranslate"><span class="pre">asc</span></code> or <code class="docutils literal notranslate"><span class="pre">desc</span></code>, in which
+case the selected ordering will be applied to all <a class="reference internal" href="#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.sort_profiles_by</span></code></a> keys, or
+it may be a list of orderings, where each ordering will be applied to the corresponding sort
+key. Keys without specified orderings will use default ordering.</p>
 </dd></dl>
 
 <dl class="std confunit">
@@ -331,6 +335,15 @@ profiles</p>
 <dd><p>If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
 profile (e.g. by running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>) is automatically registered in the appropriate
 minor version index.</p>
+</dd></dl>
+
+<dl class="std confkey">
+<dt class="sig sig-object std" id="confkey-profiles.overwrite">
+<span class="sig-name descname"><span class="pre">profiles.overwrite</span></span><a class="headerlink" href="#confkey-profiles.overwrite" title="Link to this definition">¶</a></dt>
+<dd><p>If the key is set to a true value (can be 1, true, True, yes, etc.), then a newly generated
+profile will overwrite an existing profile with identical name, if such profile exists.
+Otherwise (if set to a false value), the newly generated profile’s name will be extended with
+a copy suffix so that both profiles may be kept.</p>
 </dd></dl>
 
 <dl class="std confunit">
@@ -482,7 +495,12 @@ empty.</p>
 <td><p>–</p></td>
 <td><p>–</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#confkey-profiles.overwrite"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">profiles.overwrite</span></code></a></p></td>
+<td><p>false</p></td>
+<td><p>false</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.output_profile_template</span></code></a></p></td>
 <td><p>%collector%-of-%cmd%-%workload%-%date%</p></td>
 <td><p>–</p></td>
 <td><p>–</p></td>
@@ -500,9 +518,9 @@ for details on <code class="docutils literal notranslate"><span class="pre">peru
 </section>
 <section id="command-line-interface">
 <span id="config-cli"></span><h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h2>
-<p>We advise to manipulate with configurations using the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--edit</span></code> command. In order to
-change the nearest local (resp. global) configuration run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--local</span> <span class="pre">--edit</span></code> (resp.
-<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--shared</span> <span class="pre">--edit</span></code>).</p>
+<p>We advise to manipulate with configurations using the <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">edit</span></code> command. In order to
+change the nearest local (resp. global) configuration run <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--local</span> <span class="pre">edit</span></code> (resp.
+<code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--shared</span> <span class="pre">edit</span></code>).</p>
 <section id="perun-config">
 <h3>perun config<a class="headerlink" href="#perun-config" title="Link to this heading">¶</a></h3>
 <p>Manages the stored local and shared configuration.</p>

@@ -267,7 +267,7 @@ You can register your new collector as follows:
     7. At this point you can start using your collector either using ``perun collect`` or using the
        following to set the job matrix and run the batch collection of profiles::
 
-        perun config --edit
+        perun config edit
         perun run matrix
 
     8. If you think your collector could help others, please, consider making `Pull Request`_.
