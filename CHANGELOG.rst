@@ -1,6 +1,39 @@
 Changelog
 =========
 
+0.25.3 (2025-05-14)
+-------------------
+
+  - Flame Graph:
+    - Search and mouseover highlighting are now separate and no longer influence each other.
+    - Large sample counts are now formatted the same way as in the Traces table.
+    - The 'matched' label is now split into two: search and mouseover.
+    - Both 'matched' labels now also show the absolute number of samples.
+    - The [unknown] frames are now by-default squashed into a single frame to avoid tall [unknown] towers.
+  - Report stats:
+    - Comparison of different stats aggregations (e.g., SingleValue, StatisticalSummary) with the same type of value
+    (e.g., string or numeric) is now permitted.
+  - Report notes:
+    - Notes are now edited using a popup window that supports editing, saving, or deleting notes.
+    - Notes may now be specified as requiring Attention or being Waived.
+    - The save button changes colors based on the (un)saved changes.
+  - Profiles:
+    - Profiles are no longer overwritten by default if an existing profile with identical name exists; instead, the
+    profile name is suffixed with a copy number, e.g., custom_profile(N).perf.
+    - Profiles may now be sorted w.r.t. multiple keys and orderings.
+  - CLI changes:
+    - The report CLI now supports a new `--flamegraph-colors` option that is forwarded to the flamegraph script.
+    - The report CLI now supports a `--flamegraph-inverted` flag, which creates icicle graphs instead of flame graphs.
+    - The report CLI now supports a `--no-squash-unknown` flag that disables squashing of [unknown] frames.
+    - The collect and import CLI now define identical options `--profile-name` and `--profile-dir` that determine
+    the name and target directory for storage of the profile.
+  - Configuration changes:
+    - Keys `format.sort_profiles_by` and `format.sort_profiles_order` now support collection of values.
+    - A new `profiles.overwrite` key sets the preference for (not) overwriting profiles with conflicting names.
+    - New values `stem` and `copy` are now recognized by `format.sort_profiles_by` to match the new naming scheme of profiles.
+    - By default, the `format.sort_profiles_by` is now set to a multikey [`time`, `stem`, `copy`] that results in
+    a more natural ordering of profiles.
+
 0.25.2 (2025-03-27)
 -------------------
 
