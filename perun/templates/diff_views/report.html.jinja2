@@ -42,11 +42,18 @@
         {% include 'style/traces_table.css' %}
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
+
+        {%- if chatbot %}
+            {% include 'style/chatbot.css' %}
+        {%- endif %}
     </style>
 </head>
 <body>
 
     <!----------------------- COMPONENTS ----------------------->
+    <!-- CHATBOT -->
+    {% include 'diff_components/chatbot.html.jinja2' %}
+
     <!-- BASELINE-TARGET TOP ANCHOR -->
     {% include 'diff_components/division_anchor.html.jinja2' %}
 
@@ -105,6 +112,7 @@
     {% include 'scripts/flame_graph_js.html.jinja2' %}
     {% include 'scripts/traces_table_js.html.jinja2' %}
     {#% include 'scripts/sankey_graph_js.html.jinja2' %#}
+    {% include 'scripts/chatbot.html.jinja2' %}
 
 </body>
 </html>

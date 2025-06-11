@@ -1,0 +1,13 @@
+{%- if chatbot %}
+    <button id="chat-button">💬</button>
+
+    <div id="chat-window" style="display: none">
+      <div id="chat-header">Chat with LLMV</div>
+      <div id="chat-messages"></div>
+      <div id="chat-input">
+        <input type="text" id="message-input" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    <div id="chat-footer">API URL: {{ chatbot }}</div>
+    </div>
+{%- endif %}
