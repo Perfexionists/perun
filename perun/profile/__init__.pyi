@@ -32,6 +32,7 @@ from .helpers import (
     ProfilePath as ProfilePath,
     ProfileInfo as ProfileInfo,
     ProfileHeaderEntry as ProfileHeaderEntry,
+    ProfileHeaderTuple as ProfileHeaderTuple,
 )
 
 from .imports import (

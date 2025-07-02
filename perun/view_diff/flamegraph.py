@@ -1,9 +1,13 @@
-"""Flamegraph difference of the profile"""
+"""A module for generating flame graph difference grids of profiles.
+
+Uses a customized flamegraph.pl script from B. Gregg to generate individual flame graph svgs.
+(https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl)
+"""
 
 from __future__ import annotations
 
 # Standard Imports
-from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import pathlib
 from subprocess import CalledProcessError
@@ -11,24 +15,36 @@ from typing import Any
 import re
 
 # Third-Party Imports
-import click
 
 # Perun Imports
 import perun
+from perun import profile as profile
+from perun.logic import config
 from perun.templates import factory as templates
 from perun.utils import log, mapping
-from perun.utils.common import common_kit, diff_kit
-from perun.profile import convert, stats as profile_stats
-from perun.profile.factory import Profile
+from perun.utils.common import diff_kit
+from perun.utils.structs.common_structs import WebColorPalette
+from perun.utils.structs.diff_structs import FG_DEFAULT_MIN_WIDTH
 from perun.view.flamegraph import flamegraph as flamegraph_factory
-from perun.view_diff.short import run as table_run
 
-
-# Default values of some flamegraph.pl arguments that our code needs as well
-FG_DEFAULT_IMAGE_WIDTH: int = 800
-FG_DEFAULT_MIN_WIDTH: float = 0.1
 
 TAGS_TO_INDEX: list[str] = []
+
+
+@dataclass
+class FlameGraphStats:
+    """A helper dataclass for storing flamegraph-related stats.
+
+    :ivar dtype: the datatype identifier
+    :ivar max_trace: the longest found trace
+    :ivar max_filtered_trace: the longest found trace after filtering is applied
+    :ivar total_resource: the total consumed dtype resource
+    """
+
+    dtype: str
+    max_trace: int = 0
+    max_filtered_trace: int = 0
+    total_resource: int = 0
 
 
 def escape_content(tag: str, content: str) -> str:
@@ -115,25 +131,15 @@ def escape_content(tag: str, content: str) -> str:
     return content
 
 
-def get_uids(profile: Profile) -> set[str]:
-    """For given profile return set of uids
-
-    :param profile: profile
-    :return: set of unique uids in profile
-    """
-    df = convert.resources_to_pandas_dataframe(profile)
-    return set(df["uid"].unique())
-
-
 def generate_flamegraphs(
-    lhs_profile: Profile,
-    rhs_profile: Profile,
+    lhs_profile: profile.Profile,
+    rhs_profile: profile.Profile,
     data_types: list[str],
     skip_diff: bool = False,
     minimize: bool = False,
     squash_unknown: bool = True,
     **fg_forward_kwargs: Any,
-) -> list[tuple[str, str, str, str, str]]:
+) -> tuple[list[tuple[str, str, str, str, str]], list[FlameGraphStats], list[FlameGraphStats]]:
     """Constructs a list of tuples of flamegraphs for list of data_types
 
     :param lhs_profile: baseline profile
@@ -148,25 +154,33 @@ def generate_flamegraphs(
              rhs_lhs_diff_flamegraph) tuples
     """
     flamegraphs = []
-    for i, dtype in log.progress(enumerate(data_types), description="Generating Flamegraphs"):
+    lhs_stats, rhs_stats = [], []
+    for i, dtype in log.progress(enumerate(data_types), description="Generating Flame Graphs"):
         try:
             data_type = mapping.from_readable_key(dtype)
-            lhs_flame = convert.to_flame_graph_format(
+            lhs_flame = profile.to_flame_graph_format(
                 lhs_profile, profile_key=data_type, minimize=minimize, squash_unknown=squash_unknown
             )
-            rhs_flame = convert.to_flame_graph_format(
+            rhs_flame = profile.to_flame_graph_format(
                 rhs_profile, profile_key=data_type, minimize=minimize, squash_unknown=squash_unknown
             )
             fg_image_width = fg_forward_kwargs["width"]
             fg_minwidth = fg_forward_kwargs.get("minwidth", f"{FG_DEFAULT_MIN_WIDTH}")
-            _, lhs_max_trace, lhs_max_res = flamegraph_factory.compute_max_traces(
+            lhs_max_trace, lhs_max_filt_trace, lhs_max_res = flamegraph_factory.compute_max_traces(
                 lhs_flame, fg_image_width, fg_minwidth
             )
-            _, rhs_max_trace, rhs_max_res = flamegraph_factory.compute_max_traces(
+            rhs_max_trace, rhs_max_filt_trace, rhs_max_res = flamegraph_factory.compute_max_traces(
                 rhs_flame, fg_image_width, fg_minwidth
             )
-            fg_forward_kwargs["maxtrace"] = max(lhs_max_trace, rhs_max_trace)
+            fg_forward_kwargs["maxtrace"] = max(lhs_max_filt_trace, rhs_max_filt_trace)
             fg_forward_kwargs["total"] = max(lhs_max_res, rhs_max_res)
+
+            lhs_stats.append(
+                FlameGraphStats(data_type, lhs_max_trace, lhs_max_filt_trace, lhs_max_res)
+            )
+            rhs_stats.append(
+                FlameGraphStats(data_type, rhs_max_trace, rhs_max_filt_trace, rhs_max_res)
+            )
 
             with (
                 flamegraph_factory.fg_optional_tempfile(lhs_flame) as lhs_file,
@@ -222,56 +236,56 @@ def generate_flamegraphs(
                 f"could not generate flamegraphs: {exc}\n"
                 f"Error message: {exc.stderr.decode('utf-8')}"
             )
-    return flamegraphs
+    return flamegraphs, lhs_stats, rhs_stats
 
 
-def process_maxima(
-    maxima_per_resources: dict[str, float], stats: list[profile_stats.ProfileStat], profile: Profile
-) -> int:
-    """Processes maxima for each profile
+def process_flamegraph_stats(fg_stats: list[FlameGraphStats]) -> list[profile.ProfileStat]:
+    profile_stats: list[profile.ProfileStat] = []
+    max_trace, max_filtered_trace = 0, 0
 
-    :param maxima_per_resources: dictionary that maps resources to their maxima
-    :param stats: list of profile stats to extend
-    :param profile: input profile
-
-    :return: the length of the maximum trace
-    """
-    is_inclusive = profile.get("collector_info", {}).get("name") == "kperf"
-    counts: dict[str, float] = defaultdict(float)
-    max_trace = 0
-    for _, resource in log.progress(
-        profile.all_resources(), description="Processing Resource Maxima"
-    ):
-        max_trace = max(max_trace, len(resource["trace"]) + 1)
-        if is_inclusive:
-            for key in resource:
-                amount = common_kit.try_convert(resource[key], [float])
-                if amount is None or key in ("time", "command", "uid"):
-                    continue
-                counts[key] += amount
-    for key in counts.keys():
-        maxima_per_resources[key] = max(maxima_per_resources[key], counts[key])
-        stats.append(
-            profile_stats.ProfileStat(
-                f"Overall {key}",
-                profile_stats.ProfileStatComparison.LOWER,
-                description=f"The overall value of the {key} for the root value",
-                value=[int(counts[key])],
+    for stat in fg_stats:
+        # TODO: This is a bit of a hack since the readable_key already contains the unit
+        name, unit = mapping.get_readable_key(stat.dtype).split("[", maxsplit=1)
+        name.rstrip()
+        unit = unit.rsplit("]", maxsplit=1)[0]
+        profile_stats.append(
+            profile.ProfileStat(
+                f"Total {name}",
+                profile.ProfileStatComparison.LOWER,
+                unit,
+                description=f"The total value of the {stat.dtype}",
+                value=[stat.total_resource],
             )
         )
-    stats.append(
-        profile_stats.ProfileStat(
-            "Maximum Trace Length",
-            profile_stats.ProfileStatComparison.LOWER,
-            description="Maximum length of the trace in the profile",
+        max_trace = max(max_trace, stat.max_trace)
+        max_filtered_trace = max(max_filtered_trace, stat.max_filtered_trace)
+
+    profile_stats.append(
+        profile.ProfileStat(
+            "Longest Profile Trace",
+            profile.ProfileStatComparison.LOWER,
+            "#",
+            description="The longest trace recorded in the profile",
             value=[max_trace],
         )
     )
-    return max_trace
+    profile_stats.append(
+        profile.ProfileStat(
+            "Longest Flame Graph Trace",
+            profile.ProfileStatComparison.LOWER,
+            "#",
+            description=(
+                "The longest trace in the Flame Graph, which might be shorter than the longest "
+                "trace in the profile due to filtering."
+            ),
+            value=[max_filtered_trace],
+        )
+    )
+    return profile_stats
 
 
 def generate_flamegraph_difference(
-    lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any
+    lhs_profile: profile.Profile, rhs_profile: profile.Profile, **kwargs: Any
 ) -> None:
     """Generates differences of two profiles as two side-by-side flamegraphs
 
@@ -279,67 +293,54 @@ def generate_flamegraph_difference(
     :param rhs_profile: target profile
     :param kwargs: additional arguments
     """
-    maxima_per_resource: dict[str, float] = defaultdict(float)
-    lhs_stats: list[profile_stats.ProfileStat] = []
-    rhs_stats: list[profile_stats.ProfileStat] = []
-    lhs_types = list(lhs_profile.all_resource_fields())
-    rhs_types = list(rhs_profile.all_resource_fields())
-    data_types = diff_kit.get_candidate_keys(set(lhs_types).union(set(rhs_types)))
-    data_type = list(data_types)[0]
-    process_maxima(maxima_per_resource, lhs_stats, lhs_profile)
-    process_maxima(maxima_per_resource, rhs_stats, rhs_profile)
-    lhs_stats += list(lhs_profile.all_stats())
-    rhs_stats += list(rhs_profile.all_stats())
-    lhs_final_stats, rhs_final_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
+    fg_forward_kwargs = {
+        arg.replace("flamegraph_", ""): val
+        for arg, val in kwargs.items()
+        if arg.startswith("flamegraph_")
+    }
 
-    log.major_info("Generating Flamegraph Difference")
-    flamegraphs = generate_flamegraphs(lhs_profile, rhs_profile, data_types, width=kwargs["width"])
-    lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
-        diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
+    lhs_stats: list[profile.ProfileStat] = list(lhs_profile.all_stats())
+    rhs_stats: list[profile.ProfileStat] = list(rhs_profile.all_stats())
+    data_types = [
+        mapping.get_readable_key(key)
+        for key in diff_kit.get_candidate_keys(
+            set(lhs_profile.all_resource_fields()).union(set(rhs_profile.all_resource_fields()))
+        )
+    ]
+
+    log.major_info("Generating Flamegraph Grid")
+    flamegraphs, lhs_fg_stats, rhs_fg_stats = generate_flamegraphs(
+        lhs_profile,
+        rhs_profile,
+        data_types,
+        skip_diff=False,
+        minimize=kwargs.get("minimize", False),
+        squash_unknown=not kwargs.get("no_squash_unknown", False),
+        **fg_forward_kwargs,
     )
-    lhs_meta, rhs_meta = diff_kit.generate_diff_of_headers(
-        lhs_profile.all_metadata(), rhs_profile.all_metadata()
+    lhs_diff_stats, rhs_diff_stats = diff_kit.generate_diff_of_stats(lhs_stats, rhs_stats)
+    lhs_fg_diff_stats, rhs_fg_diff_stats = diff_kit.generate_diff_of_stats(
+        process_flamegraph_stats(lhs_fg_stats), process_flamegraph_stats(rhs_fg_stats)
     )
 
     template = templates.get_template("diff_view_flamegraph.html.jinja2")
     content = template.render(
-        flamegraphs=flamegraphs,
+        title="Perun Flame Graphs",
         perun_version=perun.__version__,
-        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + " UTC",
-        lhs_header=lhs_header,
+        timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
-        lhs_top=table_run.get_top_n_records(lhs_profile, top_n=10, aggregated_key=data_type),
-        lhs_stats=lhs_final_stats,
-        lhs_metadata=lhs_meta,
-        lhs_uids=get_uids(lhs_profile),
-        rhs_header=rhs_header,
+        lhs_fg_stats=lhs_fg_diff_stats,
+        lhs_user_stats=lhs_diff_stats,
         rhs_tag="Target (tgt)",
-        rhs_top=table_run.get_top_n_records(rhs_profile, top_n=10, aggregated_key=data_type),
-        rhs_stats=rhs_final_stats,
-        rhs_metadata=rhs_meta,
-        rhs_uids=get_uids(rhs_profile),
-        title="Differences of profiles (with flamegraphs)",
-        data_types=data_types,
+        rhs_user_stats=rhs_diff_stats,
+        rhs_fg_stats=rhs_fg_diff_stats,
+        flamegraphs=flamegraphs,
+        palette=WebColorPalette,
+        offline=config.lookup_key_recursively("showdiff.offline", False),
+        notes_enabled=False,
     )
-    log.minor_success("Difference report", "generated")
+    log.minor_success("Flame Graph grid template", "rendered")
     output_file = diff_kit.save_diff_view(
         kwargs.get("output_file"), content, "flamegraph", lhs_profile, rhs_profile
     )
     log.minor_status("Output saved", log.path_style(output_file))
-
-
-@click.command()
-@click.pass_context
-@click.option(
-    "--width",
-    "-w",
-    type=click.INT,
-    default=FG_DEFAULT_IMAGE_WIDTH,
-    help=f"Sets the width of the flamegraph (default={FG_DEFAULT_IMAGE_WIDTH}px).",
-)
-@click.option("--output-file", "-o", help="Sets the output file (default=automatically generated).")
-def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
-    """ """
-    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    profile_list = ctx.parent.params["profile_list"]
-    generate_flamegraph_difference(profile_list[0], profile_list[1], **kwargs)

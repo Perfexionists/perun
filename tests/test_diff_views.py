@@ -3,33 +3,33 @@
 from __future__ import annotations
 
 # Standard Imports
-import os
+from pathlib import Path
 
 # Third-Party Imports
 from click.testing import CliRunner
 
 # Perun Imports
-from perun import cli
+from perun.cli_groups.showdiff_cli import showdiff_group as showdiff
 from perun.testing import utils as test_utils
 
 
 def test_diff_tables(pcs_with_root):
-    """Test creating flame graph out of the memory profile
+    """Test the creation of CLI diff tables out of perf profiles.
 
-    Expecting no errors, and created flame.svg graph
+    Expecting no errors.
     """
     runner = CliRunner()
     baseline_profilename = test_utils.load_profilename("diff_profiles", "kperf-baseline.perf")
     target_profilename = test_utils.load_profilename("diff_profiles", "kperf-target.perf")
 
     # Next try to create it using the click
-    result = runner.invoke(cli.showdiff, [baseline_profilename, target_profilename, "short"])
+    result = runner.invoke(showdiff, [baseline_profilename, target_profilename, "short"])
     assert result.exit_code == 0
     assert "Top-9 Record" in result.output
     assert "Top-10 Record" not in result.output
 
     result = runner.invoke(
-        cli.showdiff,
+        showdiff,
         [
             baseline_profilename,
             target_profilename,
@@ -47,10 +47,10 @@ def test_diff_tables(pcs_with_root):
     assert "Top-7 Record" not in result.output
 
 
-def test_diff_flamegraphs(pcs_with_root):
-    """Test creating flame graph out of the memory profile
+def test_diff_flamegraphs_basic(pcs_with_root):
+    """Test the creation of basic flame graph and icicle graph out of kperf profiles.
 
-    Expecting no errors, and created flame.svg graph
+    Expecting no errors, and a successful generation of flame graph and icicle graph.
     """
     runner = CliRunner()
     baseline_profilename = test_utils.load_profilename(
@@ -60,151 +60,33 @@ def test_diff_flamegraphs(pcs_with_root):
         "diff_profiles", "kperf-target-stats-metadata.perf"
     )
 
-    # Next try to create it using the click
-    result = runner.invoke(
-        cli.showdiff, [baseline_profilename, target_profilename, "flamegraph", "-o", "diff"]
-    )
+    # Create a basic flame graph with no customization
+    result = runner.invoke(showdiff, [baseline_profilename, target_profilename, "flamegraph"])
     assert result.exit_code == 0
+    assert len(list(Path.cwd().glob("flamegraph-diff-of-kperf*.html"))) == 1
 
-    assert "diff.html" in os.listdir(os.getcwd())
-
-    # Try no output-file specified
-    prev = len([a for a in os.listdir(os.getcwd()) if a.endswith(".html")])
-    result = runner.invoke(cli.showdiff, [baseline_profilename, target_profilename, "flamegraph"])
-    assert len([a for a in os.listdir(os.getcwd()) if a.endswith(".html")]) == (prev + 1)
-    assert result.exit_code == 0
-
-
-def test_diff_datatables(pcs_with_root):
-    """Test creating flame graph out of the memory profile
-
-    Expecting no errors, and created flame.svg graph
-    """
-    runner = CliRunner()
-    baseline_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-baseline-stats-metadata.perf"
-    )
-    target_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-target-stats-metadata.perf"
-    )
-
-    # Next try to create it using the click
+    # Generate icicle graphs with no squashing of [unknown] frames
     result = runner.invoke(
-        cli.showdiff, [baseline_profilename, target_profilename, "datatables", "-o", "diff.html"]
-    )
-    assert result.exit_code == 0
-
-    assert "diff.html" in os.listdir(os.getcwd())
-
-    baseline_profilename = test_utils.load_profilename("diff_profiles", "ktrace-baseline.perf")
-    target_profilename = test_utils.load_profilename("diff_profiles", "ktrace-target.perf")
-
-    # Next try to create it using the click
-    result = runner.invoke(
-        cli.showdiff,
-        [baseline_profilename, target_profilename, "datatables", "-o", "diff-ktrace.html"],
-    )
-    assert result.exit_code == 0
-
-    assert "diff-ktrace.html" in os.listdir(os.getcwd())
-
-
-def test_diff_sankey(pcs_with_root):
-    """Test creating sankey diff graph out of the two profile"""
-    runner = CliRunner()
-    baseline_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-baseline-stats-metadata.perf"
-    )
-    target_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-target-stats-metadata.perf"
-    )
-
-    # Next try to create it using the click
-    result = runner.invoke(
-        cli.showdiff,
+        showdiff,
         [
             baseline_profilename,
             target_profilename,
-            "sankey",
-            "-f",
-            "10",
-            "-m",
-            "-c" "amount",
+            "flamegraph",
             "-o",
-            "diff.html",
-        ],
-    )
-    assert result.exit_code == 0
-
-    assert "diff.html" in os.listdir(os.getcwd())
-
-    baseline_profilename = test_utils.load_profilename("diff_profiles", "ktrace-baseline.perf")
-    target_profilename = test_utils.load_profilename("diff_profiles", "ktrace-target.perf")
-    result = runner.invoke(
-        cli.showdiff,
-        [
-            baseline_profilename,
-            target_profilename,
-            "sankey",
-            "-m",
-            "-c" "Total Exclusive T [ms]",
-            "-o",
-            "diff-ktrace.html",
-        ],
-    )
-
-    assert result.exit_code == 0
-    assert "diff-ktrace.html" in os.listdir(os.getcwd())
-
-
-def test_diff_incremental_sankey_kperf(pcs_with_root):
-    """Test creating sankey diff graph out of the two profile"""
-    runner = CliRunner()
-    baseline_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-baseline-stats-metadata.perf"
-    )
-    target_profilename = test_utils.load_profilename(
-        "diff_profiles", "kperf-target-stats-metadata.perf"
-    )
-
-    # Next try to create it using the click
-    result = runner.invoke(
-        cli.showdiff,
-        [
-            "--display-style",
-            "diff",
-            baseline_profilename,
-            target_profilename,
-            "report",
-            "-o",
-            "diff.html",
-            "--minimize",
-        ],
-    )
-    assert result.exit_code == 0
-    assert "diff.html" in os.listdir(os.getcwd())
-
-    # Try icicle graphs with no squashing of [unknown] frames
-    result = runner.invoke(
-        cli.showdiff,
-        [
-            "--display-style",
-            "diff",
-            baseline_profilename,
-            target_profilename,
-            "report",
-            "--no-squash-unknown",
+            "icicle_graph.html",
             "--flamegraph-inverted",
-            "-o",
-            "diff_icicle.html",
-            "--minimize",
+            "--no-squash-unknown",
         ],
     )
     assert result.exit_code == 0
-    assert "diff_icicle.html" in os.listdir(os.getcwd())
+    assert Path.cwd() / "icicle_graph.html" in Path.cwd().iterdir()
 
 
-def test_diff_report_invalid_forward_param(pcs_with_root):
+def test_diff_flamegraphs_custom(pcs_with_root):
+    """Test the creation of configured flame graph out of kperf profiles.
+
+    Expecting no errors, and a successfully generated custom flame graph.
+    """
     runner = CliRunner()
     baseline_profilename = test_utils.load_profilename(
         "diff_profiles", "kperf-baseline-stats-metadata.perf"
@@ -213,48 +95,98 @@ def test_diff_report_invalid_forward_param(pcs_with_root):
         "diff_profiles", "kperf-target-stats-metadata.perf"
     )
 
+    # Manually configure the generated flame graph
     result = runner.invoke(
-        cli.showdiff,
+        showdiff,
         [
             baseline_profilename,
             target_profilename,
-            "report",
+            "flamegraph",
             "-o",
-            "diff_warn",
+            "flamegraph_custom",
+            "--minimize",
             "--flamegraph-width",
             1000,
             "--flamegraph-height",
             15,
             "--flamegraph-minwidth",
-            0.1,
+            0.05,
+            "--flamegraph-fonttype",
+            "Arial",
             "--flamegraph-fontsize",
             14,
             "--flamegraph-bgcolors",
-            "invalid_color",
+            "mem",
             "--flamegraph-colors",
             "chain",
         ],
     )
     assert result.exit_code == 0
-    assert 'Unrecognized bgcolor option "invalid_color"' in result.output
-    assert "diff_warn.html" in os.listdir(os.getcwd())
+    assert Path.cwd() / "flamegraph_custom.html" in Path.cwd().iterdir()
 
 
-def test_diff_incremental_sankey_ktrace(pcs_with_root):
-    """Test creating sankey diff graph out of the two profile"""
+def test_diff_flamegraph_invalid_param(pcs_with_root):
+    """Test the creation of flame graph with invalid parameter value out of kperf profiles.
+
+    Expecting a warning message and a generated flame graph.
+    """
     runner = CliRunner()
-    baseline_profilename = test_utils.load_profilename("diff_profiles", "ktrace-baseline.perf")
-    target_profilename = test_utils.load_profilename("diff_profiles", "ktrace-target.perf")
+    baseline_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-baseline-stats-metadata.perf"
+    )
+    target_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-target-stats-metadata.perf"
+    )
+
+    # Supply an 'invalid_color' as a parameter.
     result = runner.invoke(
-        cli.showdiff,
+        showdiff,
         [
+            baseline_profilename,
+            target_profilename,
+            "flamegraph",
+            # Test that the name is extended with the .html suffix
+            "-o",
+            "flamegraph_warn",
+            "--flamegraph-bgcolors",
+            "invalid_color",
+        ],
+    )
+    assert result.exit_code == 0
+    assert 'Unrecognized bgcolor option "invalid_color"' in result.output
+    assert Path.cwd() / "flamegraph_warn.html" in Path.cwd().iterdir()
+
+
+def test_diff_report(pcs_with_root):
+    """Test the creation of a comprehensive diff report out of kperf profiles.
+
+    Expecting no errors, and a successfully generated diff report.
+    """
+    runner = CliRunner()
+    baseline_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-baseline-stats-metadata.perf"
+    )
+    target_profilename = test_utils.load_profilename(
+        "diff_profiles", "kperf-target-stats-metadata.perf"
+    )
+
+    # Generate a diff report with some basic configuration
+    result = runner.invoke(
+        showdiff,
+        [
+            "--display-style",
+            "diff",
             baseline_profilename,
             target_profilename,
             "report",
             "-o",
-            "diff-ktrace.html",
+            "diff_report.html",
+            "--filter-by-relative",
+            0.05,
+            "--top-n",
+            5,
+            "--minimize",
         ],
     )
-
     assert result.exit_code == 0
-    assert "diff-ktrace.html" in os.listdir(os.getcwd())
+    assert Path.cwd() / "diff_report.html" in Path.cwd().iterdir()

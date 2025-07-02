@@ -31,7 +31,6 @@ from perun.utils.exceptions import (
 )
 from perun.utils.structs.common_structs import Unit, OrderedEnum, HandledSignals
 from perun.utils.external import environment, commands as external_commands, processes, executable
-from perun.view_diff.datatables.run import TraceInfo
 
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
@@ -376,7 +375,7 @@ def test_logger(capsys):
 
 
 def test_filetypes(monkeypatch):
-    def patched_guess(_: str):
+    def patched_guess(_: str) -> None:
         raise AttributeError("error")
 
     monkeypatch.setattr("mimetypes.guess_type", patched_guess)
@@ -533,13 +532,3 @@ def test_machine_info(monkeypatch):
 
     spec = environment.get_machine_specification()
     assert spec != {}
-
-
-def test_helper_structures():
-    classifier = traces_kit.TraceClassifier(
-        strategy=traces_kit.ClassificationStrategy("identity"),
-        threshold=0.5,
-    )
-    ti = TraceInfo("a,b", "a,b", classifier.classify_trace(["a", "b"]))
-    with pytest.raises(TypeError):
-        _ = ti < "hi"

@@ -2,12 +2,12 @@
 
 <div id="profile-metadata" class="section">
 
-    {{ property_generator.display_title("Profile Metadata", "profile metadata") }}
+    {{ property_generator.display_title("Profile Metadata", "profile metadata", notes_enabled=notes_enabled) }}
 
     {%  if lhs_metadata or rhs_metadata %}
         <div class="comparison_container">
-            {{ property_generator.general_comparison_container('baseline', METADATA_NOTE_TITLE, lhs_metadata) }}
-            {{ property_generator.general_comparison_container('target', METADATA_NOTE_TITLE, rhs_metadata) }}
+            {{ property_generator.general_comparison_container('baseline', METADATA_NOTE_TITLE, lhs_metadata, notes_enabled) }}
+            {{ property_generator.general_comparison_container('target', METADATA_NOTE_TITLE, rhs_metadata, notes_enabled) }}
         </div>
     {% else %}
         <div class="not-provided-box">

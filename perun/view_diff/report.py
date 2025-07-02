@@ -1,15 +1,10 @@
-"""Sankey difference of the profiles
+"""A comprehensive difference report of baseline-target profiles.
 
-The difference is in form of:
+The report includes general overview of the environment (kernel, boot info, machine specs, ...),
+a flame graph grid, aggregate table of the most expensive traces, etc.
 
-cmd       | cmd
-workload  | workload
-collector | kernel
-
-| ---|          |======|
-     |-----|====
-|---|          |------|
-
+The report also supports embedding user-defined annotations within the report sections or concrete
+values.
 """
 
 from __future__ import annotations
@@ -21,62 +16,20 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from operator import itemgetter
 import sys
-from typing import Any, Literal, Type, Callable
+from typing import Any, Literal
 
 # Third-Party Imports
-import click
 
 # Perun Imports
 import perun
+from perun import profile as profile
 from perun.logic import config
-from perun.profile import convert, stats as profile_stats
-from perun.profile.factory import Profile
 from perun.templates import factory as templates
 from perun.utils import log, mapping
 from perun.utils.common import diff_kit, common_kit
 from perun.utils.structs.common_structs import WebColorPalette
-from perun.view_diff.flamegraph import run as flamegraph_run
-
-
-def singleton_class(cls: Type[Any]) -> Callable[[], Config]:
-    """Helper class for creating singleton objects"""
-    instances = {}
-
-    def getinstance() -> Config:
-        """Singleton instance"""
-        if cls not in instances:
-            instances[cls] = cls()
-        return instances[cls]
-
-    return getinstance
-
-
-@singleton_class
-class Config:
-    """Singleton config for generation of sankey graphs
-
-    :ivar trace_is_inclusive: whether then the amounts are distributed among the whole traces
-    """
-
-    DefaultTopN: int = 10
-    DefaultRelativeThreshold: float = 0.01
-    DefaultHeightCoefficient: int = 50
-
-    def __init__(self) -> None:
-        """Initializes the config
-
-        By default, we consider that the traces are not inclusive
-        """
-        self.trace_is_inclusive: bool = False
-        self.top_n_traces: int = self.DefaultTopN
-        self.relative_threshold = self.DefaultRelativeThreshold
-        self.max_seen_trace: int = 0
-        self.max_per_resource: dict[str, float] = defaultdict(float)
-        self.minimize: bool = False
-        self.profile_stats: dict[str, list[profile_stats.ProfileStat]] = {
-            "baseline": [],
-            "target": [],
-        }
+from perun.utils.structs.diff_structs import Config
+from perun.view_diff import flamegraph
 
 
 @dataclass
@@ -485,21 +438,21 @@ def process_edge(
 
 
 def process_traces(
-    profile: Profile, profile_type: Literal["baseline", "target"], graph: Graph
+    prof: profile.Profile, profile_type: Literal["baseline", "target"], graph: Graph
 ) -> None:
     """Processes all traces in the profile
 
     Iterates through all traces and creates edges for each pair of source and target.
 
-    :param profile: input profile
+    :param prof: input profile
     :param profile_type: type of the profile
     :param graph: sankey graph
     """
     max_trace = 0
     max_samples: dict[str, float] = defaultdict(float)
-    for _, resource in log.progress(profile.all_resources(), description="Processing Traces"):
-        full_trace = [convert.to_uid(t, Config().minimize) for t in resource.get("trace", {})]
-        full_trace.append(convert.to_uid(resource["uid"], Config().minimize))
+    for _, resource in log.progress(prof.all_resources(), description="Processing Traces"):
+        full_trace = [profile.to_uid(t, Config().minimize) for t in resource.get("trace", {})]
+        full_trace.append(profile.to_uid(resource["uid"], Config().minimize))
         trace_len = len(full_trace)
         max_trace = max(max_trace, trace_len)
         # Process edge stats
@@ -533,18 +486,18 @@ def process_traces(
         name.rstrip()
         unit = unit.rsplit("]", maxsplit=1)[0]
         Config().profile_stats[profile_type].append(
-            profile_stats.ProfileStat(
+            profile.ProfileStat(
                 f"Overall {name}",
-                profile_stats.ProfileStatComparison.LOWER,
+                profile.ProfileStatComparison.LOWER,
                 unit,
                 description=f"The overall value of the {name} for the root value",
                 value=[int(max_samples[key])],
             )
         )
     Config().profile_stats[profile_type].append(
-        profile_stats.ProfileStat(
+        profile.ProfileStat(
             "Maximum Trace Length",
-            profile_stats.ProfileStatComparison.LOWER,
+            profile.ProfileStatComparison.LOWER,
             "#",
             description="Maximum length of the trace in the profile",
             value=[max_trace],
@@ -701,7 +654,9 @@ def extract_stats_from_trace(
     return uid_trace_stats
 
 
-def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -> None:
+def generate_report(
+    lhs_profile: profile.Profile, rhs_profile: profile.Profile, **kwargs: Any
+) -> None:
     """Generates differences of two profiles as sankey diagram
 
     :param lhs_profile: baseline profile
@@ -729,12 +684,12 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
 
     process_traces(lhs_profile, "baseline", graph)
     process_traces(rhs_profile, "target", graph)
-    lhs_stats = Config().profile_stats["baseline"] + list(lhs_profile.all_stats())
-    rhs_stats = Config().profile_stats["target"] + list(rhs_profile.all_stats())
+    lhs_stats = list(lhs_profile.all_stats())
+    rhs_stats = list(rhs_profile.all_stats())
 
     trace_stats = generate_trace_stats(graph)
     selection_table = generate_selection(graph, trace_stats)
-    flamegraphs = flamegraph_run.generate_flamegraphs(
+    flamegraphs, lhs_fg_stats, rhs_fg_stats = flamegraph.generate_flamegraphs(
         lhs_profile,
         rhs_profile,
         Stats.all_stats(),
@@ -743,7 +698,11 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         squash_unknown=not kwargs.get("no_squash_unknown", False),
         **fg_forward_kwargs,
     )
-    log.minor_success("Sankey graphs", "generated")
+    lhs_fg_diff_stats, rhs_fg_diff_stats = diff_kit.generate_diff_of_stats(
+        flamegraph.process_flamegraph_stats(lhs_fg_stats),
+        flamegraph.process_flamegraph_stats(rhs_fg_stats),
+    )
+
     lhs_header, rhs_header = diff_kit.generate_diff_of_headers(
         diff_kit.generate_specification(lhs_profile), diff_kit.generate_specification(rhs_profile)
     )
@@ -758,18 +717,20 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
 
     template = templates.get_template("ssp_report.html.jinja2")
     content = template.render(
-        title="Perun report - differences of profiles",
+        title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,
         timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_vulnerabilities=lhs_vulnerabilities,
-        lhs_stats=lhs_diff_stats,
+        lhs_user_stats=lhs_diff_stats,
+        lhs_fg_stats=lhs_fg_diff_stats,
         lhs_metadata=lhs_meta,
         rhs_tag="Target (tgt)",
         rhs_header=rhs_header,
         rhs_vulnerabilities=rhs_vulnerabilities,
-        rhs_stats=rhs_diff_stats,
+        rhs_user_stats=rhs_diff_stats,
+        rhs_fg_stats=rhs_fg_diff_stats,
         rhs_metadata=rhs_meta,
         palette=WebColorPalette,
         callee_graph=graph.to_jinja_string("callees"),
@@ -794,103 +755,10 @@ def generate_report(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -
         offline=config.lookup_key_recursively("showdiff.offline", False),
         height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
         container_height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
+        notes_enabled=True,
     )
     log.minor_success("HTML template", "rendered")
     output_file = diff_kit.save_diff_view(
         kwargs.get("output_file"), content, "report", lhs_profile, rhs_profile
     )
     log.minor_status("Output saved", log.path_style(output_file))
-
-
-@click.command()
-@click.option("--output-file", "-o", help="Sets the output file (default=automatically generated).")
-@click.option(
-    "--filter-by-relative",
-    "-fr",
-    nargs=1,
-    type=click.FLOAT,
-    default=Config().DefaultRelativeThreshold,
-    help="Filters records based on the relative increase wrt the target. It filters values that "
-    f"are lesser or equal than [FLOAT] (default={Config().DefaultRelativeThreshold}).",
-)
-@click.option(
-    "--top-n",
-    "-tn",
-    nargs=1,
-    type=click.INT,
-    default=Config().DefaultTopN,
-    help=f"Filters how many top traces will be recorded per uid (default={Config().DefaultTopN}). ",
-)
-@click.option(
-    "--minimize",
-    "-m",
-    is_flag=True,
-    help="Minimizes the traces, folds the recursive calls, hides the generic types.",
-)
-# TODO: generalize such that (possibly some) recursive functions may be squashed as well.
-@click.option(
-    "--no-squash-unknown",
-    is_flag=True,
-    default=False,
-    help="Do not squash [unknown] frames in flamegraph into a single frame.",
-)
-@click.option(
-    "--flamegraph-width",
-    type=int,
-    default=flamegraph_run.FG_DEFAULT_IMAGE_WIDTH,
-    help="Specifies the width of the flamegraph images in pixels. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-height",
-    type=int,
-    help="Specifies the height of each flamegraph frame in pixels. This option is forwarded to "
-    "the flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-minwidth",
-    type=str,
-    default=flamegraph_run.FG_DEFAULT_MIN_WIDTH,
-    help="Filter out fast functions in flamegraphs. May be specified either in pixels (integer or "
-    "float value) or as a percentage of time if suffixed with '%'. This option is forwarded "
-    "to the flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-fonttype",
-    type=str,
-    help="Specifies the font type to use in flamegraphs. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-fontsize",
-    type=int,
-    help="Specifies the font size of text in flamegraphs. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-bgcolors",
-    type=str,
-    help="Specifies the background colors for flamegraphs. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-colors",
-    type=str,
-    help="Specifies the color theme for flamegraphs. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.option(
-    "--flamegraph-inverted",
-    is_flag=True,
-    default=False,
-    help="Draws icicle graphs instead of flame graphs. This option is forwarded to the "
-    "flamegraph.pl script.",
-)
-@click.pass_context
-def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
-    """Creates a composite interactive difference report of two profiles that combines multiple
-    visualizations and data tables.
-    """
-    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    profile_list = ctx.parent.params["profile_list"]
-    generate_report(profile_list[0], profile_list[1], **kwargs)

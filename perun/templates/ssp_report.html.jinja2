@@ -1,5 +1,4 @@
 {% import 'ssp_table.html.jinja2' as property_generator %}
-{% import 'macros_profile_overview.html.jinja2' as profile_overview %}
 {% import 'ssp_general_sidebar_property.html.jinja2' as general_sidebar_property %}
 
 <!DOCTYPE html>
@@ -156,7 +155,7 @@
 
     <div id="flame" class="section">
 
-        {{ property_generator.display_title_with_info("Flame Graphs", "flame graphs", flame_graphs_info ) }}
+        {{ property_generator.display_title("Flame Graphs", "flame graphs", flame_graphs_info ) }}
 
         <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
             <div class="flamegraph_search_box">

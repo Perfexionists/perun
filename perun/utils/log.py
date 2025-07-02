@@ -1259,10 +1259,10 @@ class Logger(TextIO):
         """Flushes the original stream"""
         self.original.flush()
 
-    def close(self) -> None:  # type: ignore
+    def close(self) -> None:
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def fileno(self) -> int:  # type: ignore
+    def fileno(self) -> int:
         return self.original.fileno()
 
     def isatty(self) -> bool:
@@ -1304,7 +1304,7 @@ class Logger(TextIO):
     def __iter__(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __exit__(  # type: ignore
+    def __exit__(
         self,
         __t: Type[BaseException] | None,
         __value: BaseException | None,
