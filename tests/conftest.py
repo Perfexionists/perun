@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Iterable, Callable, Optional
+from typing import Iterable, Callable, Optional, TYPE_CHECKING
 import glob
 import os
 import shutil
@@ -20,7 +20,11 @@ from perun.logic import commands, pcs, store
 from perun.utils import decorators, log, metrics, streams
 from perun.utils.common import common_kit
 import perun.testing.utils as test_utils
-import perun.view_diff.report.run as report
+from perun.view_diff import report
+
+
+if TYPE_CHECKING:
+    from perun import profile
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -181,7 +185,7 @@ def memory_profiles():
 
 def load_all_profiles_in(
     directory: str, prof_filter: Optional[Callable[[str], bool]] = None
-) -> Iterable[tuple[str, "Profile"]]:
+) -> Iterable[tuple[str, profile.Profile]]:
     """Generates stream of loaded (i.e. dictionaries) profiles in the specified directory.
 
     :param directory: the name (not path!) of the profile directory

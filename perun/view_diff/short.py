@@ -20,14 +20,13 @@ from typing import Any
 import itertools
 
 # Third-Party Imports
-import click
 import pandas
 import tabulate
 
 # Perun Imports
+from perun import profile as profile
 from perun.utils import log
-from perun.profile import convert
-from perun.profile.factory import Profile
+
 
 PRECISION: int = 2
 
@@ -69,7 +68,7 @@ def generate_trace_list(trace: str, uid: str) -> list[str]:
     return data
 
 
-def print_header(lhs_profile: Profile, rhs_profile: Profile) -> None:
+def print_header(lhs_profile: profile.Profile, rhs_profile: profile.Profile) -> None:
     """Prints the header of the profile
 
     :param lhs_profile: left (baseline) profile for which we are printing some header
@@ -87,16 +86,16 @@ def print_header(lhs_profile: Profile, rhs_profile: Profile) -> None:
 
 
 def get_top_n_records(
-    profile: Profile, aggregated_key: str = "amount", **kwargs: Any
+    prof: profile.Profile, aggregated_key: str = "amount", **kwargs: Any
 ) -> list[TableRecord]:
     """Retrieves top N records in the profile
 
-    :param profile: profile for which we are analysing top N records
+    :param prof: profile for which we are analysing top N records
     :param kwargs: other parameters
     :param aggregated_key: key for aggregation of the top table
     :return: list of top N records
     """
-    df = convert.resources_to_pandas_dataframe(profile)
+    df = profile.resources_to_pandas_dataframe(prof)
 
     if filters := kwargs.get("filters"):
         df = filter_df(df, filters)
@@ -155,7 +154,9 @@ def filter_df(df: pandas.DataFrame, filters: list[tuple[str, Any]]) -> pandas.Da
     return df[mask]  # type: ignore
 
 
-def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) -> None:
+def compare_profiles(
+    lhs_profile: profile.Profile, rhs_profile: profile.Profile, **kwargs: Any
+) -> None:
     """Compares the profiles and prints table for top N ranks
 
     :param lhs_profile: baseline profile
@@ -182,29 +183,3 @@ def compare_profiles(lhs_profile: Profile, rhs_profile: Profile, **kwargs: Any) 
         print(tabulate.tabulate(data, headers=[str(i + 1)] + columns))
         log.newline()
         print_traces(top_lhs, top_rhs)
-
-
-@click.command()
-@click.option(
-    "-n", "--top-n", type=click.INT, help="Prints top [INT] records (default=10).", default=10
-)
-@click.option(
-    "-f",
-    "--filter",
-    "filters",
-    nargs=2,
-    multiple=True,
-    help="Filters the result to concrete column and concrete value.",
-)
-@click.option(
-    "-g",
-    "--group-by",
-    default="origin",
-    type=click.STRING,
-    help="Names the each profile by its particular option (default=origin).",
-)
-@click.pass_context
-def short(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
-    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    profile_list = ctx.parent.params["profile_list"]
-    compare_profiles(profile_list[0], profile_list[1], **kwargs)

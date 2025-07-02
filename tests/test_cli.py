@@ -2667,29 +2667,3 @@ def test_svs():
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert "prof2.perf" in os.listdir(".")
-
-    result = runner.invoke(
-        cli.showdiff,
-        [
-            "prof.perf",
-            "prof2.perf",
-            "report",
-            "-o",
-            "diff",
-            "--flamegraph-width",
-            1000,
-            "--flamegraph-height",
-            15,
-            "--flamegraph-minwidth",
-            0.1,
-            "--flamegraph-fontsize",
-            14,
-            "--flamegraph-bgcolors",
-            "blue",
-            "--flamegraph-colors",
-            "wakeup",
-        ],
-    )
-    asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "WARNING" not in result.output)
-    assert "diff.html" in os.listdir(".")

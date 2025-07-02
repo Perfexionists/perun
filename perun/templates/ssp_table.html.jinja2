@@ -1,15 +1,11 @@
-{% macro general_comparison_container(type, section_id, records) %}
+{% macro general_comparison_container(type, section_id, records, notes_enabled=true) %}
 
     {% if records %}
         <div class="column {{ type }}">
             {%- for (key, value, title, nested_values) in records %}
                 <div class="data-row">
-                    <p class="data-key">{{ key }}</p>
-                    <span id="{{ section_id }} > {{ type }} > {{ key | striptags }} -pin-item"
-                          class="pin-icon"
-                          data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
-                        {% include 'assets/note_small.svg' %}
-                    </span>
+                    <p class="data-key" title="{{ title }}">{{ key }}</p>
+                    {{ notes_pin('%s > %s > %s' | format(section_id, type, key | striptags), "pin-icon", notes_enabled) }}
                     <p class="data-value">{{ value }}</p>
                 </div>
             {%- endfor %}
@@ -21,18 +17,14 @@
 {%- endmacro %}
 
 
-{% macro nested_comparison_container(type, section_id, records) %}
+{% macro nested_comparison_container(type, section_id, records, notes_enabled=true) %}
 
     {% if records %}
         <div class="column {{ type }}">
             {%- for key, value in records.items() %}
                 <div class="data-row">
                     <p class="data-key">{{ key }}</p>
-                    <span id="{{ section_id }} > {{ type }} > {{ key | striptags }} -pin-item"
-                          class="pin-icon"
-                          data-section="{{ section_id }} > {{ type }} > {{ key | striptags }}">
-                        {% include 'assets/note_small.svg' %}
-                    </span>
+                    {{ notes_pin('%s > %s > %s' | format(section_id, type, key | striptags), "pin-icon", notes_enabled) }}
                     <p class="data-value">{{ value }}</p>
                 </div>
             {%- endfor %}
@@ -43,29 +35,25 @@
 
 {%- endmacro %}
 
-
-{% macro display_title(title, section_name) %}
+{% macro display_title(title, section_name, info_text='', notes_enabled=true) %}
     <div class="section_header">
-        <h1>{{ title }}</h1>
-        <span id="{{ section_name }} -pin-item"
-              class="pin-icon pin-icon__header"
-              data-section="{{ section_name }}">
-            {% include 'assets/note.svg' %}
-        </span>
-    </div>
-{%- endmacro %}
-
-{% macro display_title_with_info(title, section_name, info_text) %}
-    <div class="section_header">
+        {% if info_text %}
         <span class="pin-icon pin-icon__header info-icon__header"
               data-tooltip="{{ info_text }}">
             {% include 'assets/info.svg' %}
         </span>
+        {% endif %}
         <h1>{{ title }}</h1>
-        <span id="{{ section_name }} -pin-item"
-              class="pin-icon pin-icon__header"
-              data-section="{{ section_name }}">
-            {% include 'assets/note.svg' %}
-        </span>
+        {{ notes_pin(section_name, "pin-icon pin-icon__header", notes_enabled) }}
     </div>
+{%- endmacro %}
+
+{% macro notes_pin(section_id, pin_class, notes_enabled) %}
+    {% if notes_enabled %}
+    <span id="{{ section_id }} -pin-item"
+          class="{{ pin_class }}"
+          data-section="{{ section_id }}">
+        {% include 'assets/note.svg' %}
+    </span>
+    {% endif %}
 {%- endmacro %}

@@ -50,7 +50,15 @@ from typing import Optional, Any, TYPE_CHECKING
 import click
 
 # Perun Imports
-from perun.cli_groups import check_cli, collect_cli, config_cli, run_cli, utils_cli, import_cli
+from perun.cli_groups import (
+    check_cli,
+    collect_cli,
+    config_cli,
+    import_cli,
+    run_cli,
+    showdiff_cli,
+    utils_cli,
+)
 import perun.collect
 from perun.logic import commands, pcs, config as perun_config
 from perun.utils import exceptions, log as perun_log
@@ -64,7 +72,6 @@ from perun.utils.exceptions import (
     ExternalEditorErrorException,
 )
 from perun.utils.structs.common_structs import Executable
-from perun.utils.structs.diff_structs import HeaderDisplayStyle
 from perun import fuzz as fuzz
 import perun.postprocess
 import perun.view
@@ -692,87 +699,6 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
 
 @cli.group()
 @click.argument(
-    "profile_list",
-    required=True,
-    nargs=2,
-    metavar="<profile>",
-    callback=cli_kit.lookup_list_of_profiles_callback,
-)
-@click.option(
-    "--minor",
-    "-m",
-    nargs=1,
-    default=None,
-    is_eager=True,
-    callback=cli_kit.lookup_minor_version_callback,
-    help="Finds the profiles in the index of minor version [HASH]",
-)
-@click.option(
-    "--aggregate-by",
-    "-a",
-    default="median",
-    type=click.Choice(["sum", "min", "max", "avg", "mean", "med", "median"]),
-    callback=cli_kit.set_config_option_from_flag(perun_config.runtime, "profile.aggregation"),
-    help="Aggregates the resources in profiles by given statistical function (default=median).",
-)
-@click.option(
-    "--offline",
-    "-o",
-    callback=cli_kit.set_config_option_from_flag(perun_config.runtime, "showdiff.offline"),
-    is_flag=True,
-    default=False,
-    help="Creates self-contained outputs usable in offline environments (default=False).",
-)
-@click.option(
-    "--display-style",
-    "-d",
-    type=click.Choice(HeaderDisplayStyle.supported()),
-    default=HeaderDisplayStyle.default(),
-    callback=cli_kit.set_config_option_from_flag(perun_config.runtime, "showdiff.display_style"),
-    help="Selects the display style of profile header. The 'full' option displays all provided "
-    "headers, while the 'diff' option shows only headers with different values "
-    f"(default={HeaderDisplayStyle.default()}).",
-)
-@click.pass_context
-def showdiff(ctx: click.Context, **kwargs: Any) -> None:
-    """Interprets the difference of selected two profiles.
-
-    Looks up the given profiles and interprets it using the selected
-    visualization technique. Some of the techniques outputs either to
-    terminal (using ``ncurses``) or generates HTML files, which can be
-    browsable in the web browser (using ``bokeh`` library). Refer to concrete
-    techniques for concrete options and limitations.
-
-    The shown profiles will be looked up in the following steps:
-
-        1. If [PROFILE] is in form ``i@i`` (i.e, an `index tag`), then `ith`
-           record registered in the minor version <hash> index will be shown.
-
-        2. If [PROFILE] is in form ``i@p`` (i.e., an `pending tag`), then
-           `ith` profile stored in ``.perun/jobs`` will be shown.
-
-        3. [PROFILE] is looked-up within the minor version <hash> index for a
-           match. In case the <profile> is registered there, it will be shown.
-
-        4. [PROFILE] is looked-up within the ``.perun/jobs`` directory. In case
-           there is a match, the found profile will be shown.
-
-        5. Otherwise, the directory is walked for any match. Each found match
-           is asked for confirmation by user.
-
-    Tags consider the sorted order as specified by the options
-    :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
-
-    Example 1. The following command will show the difference first two profiles
-    registered at index of ``HEAD~1`` commit::
-
-        perun showdiff -m HEAD~1 0@i 1@i report
-    """
-    pass
-
-
-@cli.group()
-@click.argument(
     "profile",
     required=True,
     metavar="<profile>",
@@ -1172,7 +1098,6 @@ def init_unit_commands(lazy_init: bool = True) -> None:
     like e.g. show has different forms (raw, graphs, etc.).
     """
     for unit, cli_cmd, cli_arg in [
-        (perun.view_diff, showdiff, "showdiff"),
         (perun.view, show, "show"),
         (perun.postprocess, postprocessby, "postprocessby"),
         (perun.collect, collect_cli.collect, "collect"),
@@ -1188,9 +1113,10 @@ init_unit_commands()
 cli.add_command(check_cli.check_group)
 cli.add_command(collect_cli.collect)
 cli.add_command(config_cli.config)
-cli.add_command(run_cli.run)
-cli.add_command(utils_cli.utils_group)
 cli.add_command(import_cli.import_group)
+cli.add_command(run_cli.run)
+cli.add_command(showdiff_cli.showdiff_group)
+cli.add_command(utils_cli.utils_group)
 
 
 def launch_cli_in_dev_mode() -> None:

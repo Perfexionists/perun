@@ -4,12 +4,12 @@
 
 <div id="profile-vulnerabilities" class="section">
 
-    {{ property_generator.display_title("Vulnerabilities", "vulnerabilities") }}
+    {{ property_generator.display_title("Vulnerabilities", "vulnerabilities", notes_enabled=notes_enabled) }}
 
     {% if lhs_vulnerabilities or rhs_vulnerabilities %}
         <div class="comparison_container">
-            {{ property_generator.nested_comparison_container('baseline', STATS_NOTE_TITLE, lhs_vulnerabilities_items) }}
-            {{ property_generator.nested_comparison_container('target', STATS_NOTE_TITLE, rhs_vulnerabilities_items) }}
+            {{ property_generator.nested_comparison_container('baseline', STATS_NOTE_TITLE, lhs_vulnerabilities_items, notes_enabled) }}
+            {{ property_generator.nested_comparison_container('target', STATS_NOTE_TITLE, rhs_vulnerabilities_items, notes_enabled) }}
         </div>
     {% else %}
         <div class="not-provided-box">
