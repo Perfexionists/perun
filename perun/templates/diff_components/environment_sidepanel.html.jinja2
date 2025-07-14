@@ -1,0 +1,35 @@
+{% import 'macros/environment_sidepanel_property.html.jinja2' as m_sidebar %}
+
+<div class="environment-sidepanel" id="environment-sidepanel">
+    <span class="environment-sidepanel__icon">
+        {% include 'assets/info.svg' %}
+    </span>
+
+    <div class="environment-sidepanel-content">
+
+        {%- set required_keys = ["kernel", "boot info", "host", "cpu (total)", "memory (total)"] %}
+
+        {%- set lhs_data = {} %}
+        {%- set rhs_data = {} %}
+
+        {%- for (key, value, title, nested_values) in lhs_header %}
+            {%- for required in required_keys %}
+                {%- if required in key %}
+                    {%- set _ = lhs_data.update({required: value}) %}
+                {%- endif %}
+            {%- endfor %}
+        {%- endfor %}
+
+        {%- for (key, value, title, nested_values) in rhs_header %}
+            {%- for required in required_keys %}
+                {%- if required in key %}
+                    {%- set _ = rhs_data.update({required: value}) %}
+                {%- endif %}
+            {%- endfor %}
+        {%- endfor %}
+
+        {%- for key in required_keys %}
+            {{ m_sidebar.env_sidepanel_difference_property(key, lhs_data.get(key, None), rhs_data.get(key, None)) }}
+        {%- endfor %}
+    </div>
+</div>

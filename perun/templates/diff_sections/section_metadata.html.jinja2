@@ -1,0 +1,20 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+
+{% set METADATA_NOTE_TITLE = "profile metadata" %}
+
+<div id="profile-metadata" class="section">
+
+    {{ m_title.display_title("Profile Metadata", "profile metadata", notes_enabled=notes_enabled) }}
+
+    {%  if lhs_metadata or rhs_metadata %}
+        <div class="comparison_container">
+            {{ m_tables.general_comparison_container('baseline', METADATA_NOTE_TITLE, lhs_metadata, notes_enabled) }}
+            {{ m_tables.general_comparison_container('target', METADATA_NOTE_TITLE, rhs_metadata, notes_enabled) }}
+        </div>
+    {% else %}
+        <div class="not-provided-box">
+            <h3>No metadata provided.</h3>
+        </div>
+    {% endif %}
+</div>

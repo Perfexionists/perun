@@ -1,4 +1,4 @@
-.general-sidebar {
+.environment-sidepanel {
     position: fixed;
     left: 0;
     top: 20%;
@@ -13,20 +13,20 @@
     z-index: 1000;
 }
 
-.general-sidebar:hover {
+.environment-sidepanel:hover {
     width: 30%;
     height: 500px;
     overflow: scroll;
 }
 
-.general-sidebar__icon svg {
+.environment-sidepanel__icon svg {
     font-size: 24px;
     fill: var(--color-light-white);
     margin: 10px 0;
     cursor: pointer;
 }
 
-.general-sidebar-content {
+.environment-sidepanel-content {
     display: none;
     color: var(--color-light-white);
     padding: 10px;
@@ -34,15 +34,15 @@
     flex-direction: column;
 }
 
-.general-sidebar:hover .general-sidebar-content {
+.environment-sidepanel:hover .environment-sidepanel-content {
     display: flex;
 }
 
-.general-property {
+.environment-property {
     margin-bottom: 30px;
 }
 
-.general-property h2 {
+.environment-property h2 {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -52,7 +52,7 @@
     color: var(--color-almost-white);
 }
 
-.general-values {
+.environment-values {
     display: flex;
     flex-direction: column;
     margin-top: 5px;
@@ -61,7 +61,7 @@
     transition: height 0.3s ease, opacity 0.3s ease;
 }
 
-.general-values.collapsed {
+.environment-values.collapsed {
     opacity: 0;
 }
 
@@ -85,7 +85,7 @@
     transform: rotate(90deg);
 }
 
-.general-value {
+.environment-value {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -95,7 +95,7 @@
     gap: 10px;
 }
 
-.general-value .value {
+.environment-value .value {
     color: var(--color-light-white);
     font-size: 0.9em;
     text-align: right;

@@ -1,0 +1,63 @@
+{% macro get_radio_handler(handler_name, radio_id) %}
+    function {{ handler_name }}() {
+        var selectedValue = document.querySelector('input[name="{{ radio_id }}"]:checked').value;
+        return selectedValue;
+    }
+{%- endmacro %}
+
+{% macro chip_list(chip_list_name, header) %}
+    <table style="width: 98%; margin: 0 1%;">
+        <tr>
+            <td class="key" style="width: 8%;">{{ header }}:</td>
+            <td style="width: 90%;">
+                <div id="{{ chip_list_name }}">
+                <!-- MORE TAGS WILL BE ADDED HERE -->
+                </div>
+            </td>
+        </tr>
+    </table>
+{% endmacro %}
+
+{% macro checkboxes(checkbox_list, checkbox_id, header) %}
+        <tr id="{{ checkbox_id }}">
+            <td class="key">{{ header }}:</td>
+            {% for checkbox in checkbox_list %}
+            <td class="check_option">
+            <label id="label_{{ checkbox[0] }}">
+                <input type="checkbox" name="{{ checkbox[0] }}", value="{{ checkbox[0] }}" checked>{{ checkbox[1] }}
+            </label>
+            </td>
+            {%- endfor %}
+        </tr>
+{% endmacro %}
+
+{% macro radios(radio_list, radio_id, choice_id, header) %}
+        <tr {{ radio_id }}>
+            <td class="key">{{ header }}:</td>
+            {% for radio in radio_list %}
+                <td>
+                <label>
+                    <input type="radio" name="{{ choice_id }}" value="{{ radio[0] }}" {% if loop.index0 == 0 %}checked{% endif %}>
+                    {{ radio[1] }}
+                </label>
+                </td>
+            {%- endfor %}
+        </tr>
+{%- endmacro %}
+
+{% macro range_picker() %}
+<div class="range_container">
+    <div class="sliders_control">
+        <input id="fromSlider" type="range" value="10" min="0" max="100"/>
+        <input id="toSlider" type="range" value="40" min="0" max="100"/>
+    </div>
+    <div class="form_control">
+        <div class="form_control_container">
+            Min: <label id="fromInput"/>
+        </div>
+        <div class="form_control_container">
+            Max: <label id="toInput"/>
+        </div>
+    </div>
+</div>
+{%- endmacro %}

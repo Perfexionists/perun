@@ -1,0 +1,24 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+
+{% set STATS_NOTE_TITLE = "profile statistics" %}
+
+<div id="profile-stats" class="section">
+
+    {{ m_title.display_title("Profile Statistics", "profile statistics", notes_enabled=notes_enabled) }}
+
+    <div class="comparison_container">
+        {{ m_tables.general_comparison_container('baseline', STATS_NOTE_TITLE, lhs_fg_stats, notes_enabled) }}
+        {{ m_tables.general_comparison_container('target', STATS_NOTE_TITLE, rhs_fg_stats, notes_enabled) }}
+    </div>
+
+    <div class="comparison_container">
+        {% if lhs_user_stats %}
+        {{ m_tables.general_comparison_container('baseline', STATS_NOTE_TITLE, lhs_user_stats, notes_enabled) }}
+        {% endif %}
+
+        {% if rhs_user_stats %}
+        {{ m_tables.general_comparison_container('target', STATS_NOTE_TITLE, rhs_user_stats, notes_enabled) }}
+        {% endif %}
+    </div>
+</div>

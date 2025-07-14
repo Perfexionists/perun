@@ -1,15 +1,18 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+
 {% set lhs_vulnerabilities_items = lhs_vulnerabilities | map(attribute=3) | first | default([]) %}
 {% set rhs_vulnerabilities_items = rhs_vulnerabilities | map(attribute=3) | first | default([]) %}
 {% set STATS_NOTE_TITLE = "profile vulnerabilities" %}
 
 <div id="profile-vulnerabilities" class="section">
 
-    {{ property_generator.display_title("Vulnerabilities", "vulnerabilities", notes_enabled=notes_enabled) }}
+    {{ m_title.display_title("Vulnerabilities", "vulnerabilities", notes_enabled=notes_enabled) }}
 
     {% if lhs_vulnerabilities or rhs_vulnerabilities %}
         <div class="comparison_container">
-            {{ property_generator.nested_comparison_container('baseline', STATS_NOTE_TITLE, lhs_vulnerabilities_items, notes_enabled) }}
-            {{ property_generator.nested_comparison_container('target', STATS_NOTE_TITLE, rhs_vulnerabilities_items, notes_enabled) }}
+            {{ m_tables.nested_comparison_container('baseline', STATS_NOTE_TITLE, lhs_vulnerabilities_items, notes_enabled) }}
+            {{ m_tables.nested_comparison_container('target', STATS_NOTE_TITLE, rhs_vulnerabilities_items, notes_enabled) }}
         </div>
     {% else %}
         <div class="not-provided-box">

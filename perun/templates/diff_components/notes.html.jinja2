@@ -1,0 +1,40 @@
+<div class="notes-sidepanel" id="notes-sidepanel">
+    <span class="environment-sidepanel__icon">
+        {% include 'assets/note.svg' %}
+    </span>
+    <a> <p class="tag-element tag-common note-shortcut-button" onclick="exportNotes()">Export with notes</p> </a>
+    <div class="notes-sidepanel-content">
+        <div id="notes-list">
+            <!-- place for dynamically added notes -->
+        </div>
+    </div>
+</div>
+
+<div id="note-popup-container" style="display: none">
+    <div class="note-overlay"></div>
+
+    <div class="note-popup" id="note-popup">
+
+        <h1 id="note-popup-title">Note title</h1>
+
+        <span id="note-popup-close" onclick="closeNotePopupAndClear()">
+            {% include 'assets/close.svg' %}
+        </span>
+
+        <div id="note-popup-content">
+            <label for="note-popup-content-textarea"></label>
+                <textarea id="note-popup-content-textarea" placeholder="Enter your note"></textarea>
+        </div>
+
+        <div id="note-popup-buttons-action" class="note-popup-buttons">
+            <button class="note-popup-button attention" onclick="switchStateToAttention()">Attention</button>
+            <button class="note-popup-button approved" onclick="switchStateToApproved()">Waived</button>
+        </div>
+
+        <div id="note-popup-buttons-navigation" class="note-popup-buttons">
+            <button class="note-popup-button delete" onclick="deleteNotePopup()">Delete</button>
+            <button class="note-popup-button save" onclick="saveNotePopup()">Save</button>
+            <button class="note-popup-button save" onclick="saveNotePopupAndClose()">Save and close</button>
+        </div>
+    </div>
+</div>

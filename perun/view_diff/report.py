@@ -715,7 +715,7 @@ def generate_report(
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
     )
 
-    template = templates.get_template("ssp_report.html.jinja2")
+    template = templates.get_template("diff_views/report.html.jinja2")
     content = template.render(
         title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,

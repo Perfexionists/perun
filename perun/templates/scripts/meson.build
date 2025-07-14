@@ -1,8 +1,14 @@
 perun_templates_script_dir = perun_templates_dir / 'scripts'
 
 perun_templates_script_files = files(
-    'ssp_selection_table.html.jinja2',
-    'ssp_value_formatters.html.jinja2',
+    'division_anchor.js',
+    'environment_sidepanel.js',
+    'flame_graph_js.html.jinja2',
+    'notes.js',
+    'sankey_graph_js.html.jinja2',
+    'tooltip.js',
+    'traces_table_js.html.jinja2',
+    'value_formatters_js.html.jinja2',
 )
 
 py3.install_sources(

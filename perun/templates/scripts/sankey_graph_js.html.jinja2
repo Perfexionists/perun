@@ -1,52 +1,17 @@
-<div id="sankey" class="section">
-    <div class="section_header">
-        <span class="material-icons pin-icon pin-icon__header info-icon__header"
-              data-tooltip="Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
-            Wide red edges are (generally) bad; wide green edges are (generally) good.">
-            info
-        </span>
-        <h1>Sankey Graph</h1>
-        <span class="material-icons pin-icon pin-icon__header" data-section="Sankey Graph">push_pin</span>
-    </div>
-
-    <div id="sankey_tools" style="display: none">
-        <table>
-            <tbody>
-                <tr>
-                    <td class="key" style="width: 20%;">Threshold:</td>
-                    <td colspan="6">{{ widgets.range_picker() }}</td>
-                </tr>
-                {{ widgets.checkboxes([('baseline', 'Baseline'), ('target', 'Target'), ('incr', 'Incr (vs base)'), ('both', 'Equal'), ('decr', 'Decr (vs base)')], 'show_edges', 'Show') }}
-                {%- if stat_list|length > 1 %}
-                <tr>
-                    <td class="key" style="width: 20%;">Metric:</td>
-                    <td colspan="6">
-                        <select class="dt-input" id="metricSelection">
-                            {%- for metric in stat_list %}
-                                <option value="{{ loop.index0 }}">{{ metric }}</option>
-                            {%- endfor %}
-                        </select>
-                    </td>
-                </tr>
-            {%- endif %}
-            </tbody>
-        </table>
-    </div>
-
-    <div id="sankey_container" style="height: {{container_height}}px;">
-        <div id="sankey_graph" style="height: 100%;"><!-- DO NOT CHANGE: SANKEY GRAPH IS RENDERED HERE--></div>
-    </div>
-</div>
-
 <script>
-    // GRAPH DATA:
+    //<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+    const selection_icon = {'width': 512, 'height': 512, 'path': 'M256 0c-25.3 0-47.2 14.7-57.6 36c-7-2.6-14.5-4-22.4-4c-35.3 0-64 28.7-64 64V261.5l-2.7-2.7c-25-25-65.5-25-90.5 0s-25 65.5 0 90.5L106.5 437c48 48 113.1 75 181 75H296h8c1.5 0 3-.1 4.5-.4c91.7-6.2 165-79.4 171.1-171.1c.3-1.5 .4-3 .4-4.5V160c0-35.3-28.7-64-64-64c-5.5 0-10.9 .7-16 2V96c0-35.3-28.7-64-64-64c-7.9 0-15.4 1.4-22.4 4C303.2 14.7 281.3 0 256 0zM240 96.1c0 0 0-.1 0-.1V64c0-8.8 7.2-16 16-16s16 7.2 16 16V95.9c0 0 0 .1 0 .1V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96c0 0 0 0 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16v55.9c0 0 0 .1 0 .1v80c0 13.3 10.7 24 24 24s24-10.7 24-24V160.1c0 0 0-.1 0-.1c0-8.8 7.2-16 16-16s16 7.2 16 16V332.9c-.1 .6-.1 1.3-.2 1.9c-3.4 69.7-59.3 125.6-129 129c-.6 0-1.3 .1-1.9 .2H296h-8.5c-55.2 0-108.1-21.9-147.1-60.9L52.7 315.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0L119 336.4c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V96c0-8.8 7.2-16 16-16c8.8 0 16 7.1 16 15.9V232c0 13.3 10.7 24 24 24s24-10.7 24-24V96.1z'}
+    const plus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z'}
+    const minus_icon = {'width': 512, 'height': 512, 'path': 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z'}
+    const rotate_icon = {'width': 512, 'height': 512, 'path': 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z'}
+    const maximize_icon = {'width': 512, 'height': 512, 'path': 'M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z'}
+    const minimize_icon = {'width': 512, 'height': 512, 'path': 'M456 224H312c-13.3 0-24-10.7-24-24V56c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l40 40L442.3 5.7C446 2 450.9 0 456 0s10 2 13.7 5.7l36.7 36.7C510 46 512 50.9 512 56s-2 10-5.7 13.7L433 143l40 40c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8zm0 64c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-40 40 73.4 73.4c3.6 3.6 5.7 8.5 5.7 13.7s-2 10-5.7 13.7l-36.7 36.7C466 510 461.1 512 456 512s-10-2-13.7-5.7L369 433l-40 40c-6.9 6.9-17.2 8.9-26.2 5.2s-14.8-12.5-14.8-22.2V312c0-13.3 10.7-24 24-24H456zm-256 0c13.3 0 24 10.7 24 24V456c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-40-40L69.7 506.3C66 510 61.1 512 56 512s-10-2-13.7-5.7L5.7 469.7C2 466 0 461.1 0 456s2-10 5.7-13.7L79 369 39 329c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8H200zM56 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l40-40L5.7 69.7C2 66 0 61.1 0 56s2-10 5.7-13.7L42.3 5.7C46 2 50.9 0 56 0s10 2 13.7 5.7L143 79l40-40c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2V200c0 13.3-10.7 24-24 24H56z'}
+
+    // GRAPH DATA, NODES, STAT_MAP AND UNIT_MAP ARE DECLARED IN REPORT
     {% autoescape off %}
     let callee_graph = {{ callee_graph }}
     let caller_graph = {{ caller_graph }}
-    let nodes = {{ nodes }}
     let stats = {{ stats }}
-    let stat_map = {{ stat_list }}
-    let unit_map = {{ units }}
     let node_map = {{ node_map }}
     {% endautoescape %}
 
@@ -149,6 +114,105 @@
         sel_uid_text = "",
         curr_tab = "",
         plot = document.getElementById('sankey_graph');
+
+    function isChecked(checkbox_name) {
+        var checkbox = document.querySelector('input[name="' + checkbox_name + '"]');
+        if (checkbox) {
+            return checkbox.checked;
+        }
+        return false;
+    }
+
+    function addTag(chip_list_name, tag_name) {
+        var tagList = document.getElementById(chip_list_name);
+
+        var newTag = document.createElement('div');
+        newTag.className = 'tag';
+        newTag.textContent = tag_name;
+
+        var closeButton = document.createElement('span');
+        closeButton.closeName = 'close-button';
+        closeButton.textContent = '⊗';
+
+        closeButton.onclick = function() {
+            tagList.removeChild(newTag);
+        }
+
+        newTag.appendChild(closeButton);
+        tagList.appendChild(newTag);
+    }
+
+    function findNearestStep(value, steps) {
+        return steps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+    }
+
+    function controlFromSlider(fromSlider, toSlider, fromInput) {
+      const [from, to] = getParsed(fromSlider, toSlider);
+      fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+      if (from > to) {
+        fromSlider.value = to;
+        setInput(fromInput, to);
+      } else {
+        setInput(fromInput, from);
+        fromSlider.value = from;
+        fromInput.value = from;
+      }
+    }
+
+    function controlToSlider(fromSlider, toSlider, toInput) {
+      const [from, to] = getParsed(fromSlider, toSlider);
+      fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+      setToggleAccessible(toSlider);
+      if (from <= to) {
+        toSlider.value = to;
+        setInput(toInput, to);
+      } else {
+        toSlider.value = from;
+        setInput(toInput, from);
+      }
+    }
+
+    function getParsed(currentFrom, currentTo) {
+      var from = parseInt(currentFrom.value, 10);
+      var to = parseInt(currentTo.value, 10);
+      from = findNearestStep(from, steps);
+      to = findNearestStep(to, steps);
+      return [from, to];
+    }
+
+    function fillSlider(from, to, sliderColor, rangeColor, controlSlider) {
+        const [fromValue, toValue] = getParsed(from, to);
+        const rangeDistance = to.max - to.min;
+        const fromPosition = fromValue - to.min;
+        const toPosition = toValue - to.min;
+        controlSlider.style.background = `linear-gradient(
+          to right,
+          ${sliderColor} 0%,
+          ${sliderColor} ${(fromPosition)/(rangeDistance)*100}%,
+          ${rangeColor} ${((fromPosition)/(rangeDistance))*100}%,
+          ${rangeColor} ${(toPosition)/(rangeDistance)*100}%,
+          ${sliderColor} ${(toPosition)/(rangeDistance)*100}%,
+          ${sliderColor} 100%)`;
+    }
+
+    function setToggleAccessible(currentTarget) {
+      const toSlider = document.querySelector('#toSlider');
+      if (Number(currentTarget.value) <= 0 ) {
+        toSlider.style.zIndex = 2;
+      } else {
+        toSlider.style.zIndex = 0;
+      }
+    }
+
+    const fromSlider = document.querySelector('#fromSlider');
+    const toSlider = document.querySelector('#toSlider');
+    const fromInput = document.querySelector('#fromInput');
+    const toInput = document.querySelector('#toInput');
+    fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+    setToggleAccessible(toSlider);
+
+    fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput);
+    toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput);
 
     function update_cursors() {
         document.querySelectorAll('.sankey-node text').forEach(node => {

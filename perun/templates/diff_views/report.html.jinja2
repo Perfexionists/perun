@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <!-- JS AND CSS LIBRARIES -->
+    {% if not offline %}
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
+        <!-- <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>-->
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
+    {% else %}
+        <style>
+            {% include "libs/dataTables.dataTables.min.css" %}
+        </style>
+        <script>
+            {% include 'libs/jquery-3.6.0.min.js' %}
+            {#% include 'libs/plotly-2.30.0.min.js' %#}
+            {% include 'libs/dataTables.min.js' %}
+            {% include 'libs/dataTables.select.min.js' %}
+        </script>
+    {% endif %}
+
+    <!-- CSS STYLES -->
+    <style>
+        {% include 'style/general_setup.css' %}
+        {% include 'style/layout.css' %}
+
+        {% include 'style/division_anchor.css' %}
+
+        {% include 'style/navigation_sidepanel.css' %}
+        {% include 'style/notes.css' %}
+        {% include 'style/environment_sidepanel.css' %}
+
+        {% include 'style/pins.css' %}
+        {% include 'style/tag.css' %}
+        {% include 'style/tooltip.css' %}
+
+        {% include 'style/traces_table.css' %}
+        {% include 'style/flame_graphs.css' %}
+        {#% include 'style/sankey_graph.css' %#}
+    </style>
+</head>
+<body>
+
+    <!----------------------- COMPONENTS ----------------------->
+    <!-- BASELINE-TARGET TOP ANCHOR -->
+    {% include 'diff_components/division_anchor.html.jinja2' %}
+
+    <!-- NAVIGATION SIDE-PANEL -->
+    {% include 'diff_components/navigation_sidepanel.html.jinja2' %}
+
+    <!-- ENVIRONMENT SIDE-PANEL -->
+    {% include 'diff_components/environment_sidepanel.html.jinja2' %}
+
+    <!-- NOTES SIDE-PANEL AND POPUP WINDOW -->
+    {% include 'diff_components/notes.html.jinja2' %}
+
+    <!----------------------- SECTIONS ----------------------->
+    <!-- PAGE TITLE -->
+    {% include 'diff_sections/section_page_title.html.jinja2' %}
+
+    <!-- ENVIRONMENT -->
+    {% include 'diff_sections/section_environment.html.jinja2' %}
+
+    <!-- FLAME GRAPHS -->
+    {% include 'diff_sections/section_flame_graphs.html.jinja2' %}
+
+    <!-- TABLE WITH TRACES -->
+    {% include 'diff_sections/section_traces_table.html.jinja2' %}
+
+    <!-- SANKEY GRAPH -->
+    {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}
+
+    <!-- VULNERABILITIES -->
+    {% include 'diff_sections/section_vulnerabilities.html.jinja2' %}
+
+    <!-- PROFILE STATS -->
+    {% include 'diff_sections/section_profile_stats.html.jinja2' %}
+
+    <!-- PROFILE METADATA -->
+    {% include 'diff_sections/section_metadata.html.jinja2' %}
+
+    <!-- TRACES TABLE DATA -->
+    <script>
+        {% autoescape off %}
+        let nodes = {{ nodes }}
+        let stat_map = {{ stat_list }}
+        let unit_map = {{ units }}
+        {% endautoescape %}
+    </script>
+
+    <!-- JS -->
+    <script>
+        {% include 'scripts/division_anchor.js' %}
+        {% include 'scripts/environment_sidepanel.js' %}
+        {% include 'scripts/notes.js' %}
+        {% include 'scripts/tooltip.js' %}
+    </script>
+
+    {% include 'scripts/value_formatters_js.html.jinja2' %}
+    {% include 'scripts/flame_graph_js.html.jinja2' %}
+    {% include 'scripts/traces_table_js.html.jinja2' %}
+    {#% include 'scripts/sankey_graph_js.html.jinja2' %#}
+
+</body>
+</html>

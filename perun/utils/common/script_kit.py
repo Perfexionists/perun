@@ -52,7 +52,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
         :param template_name: name of the template set
         :return: true if the function starts with template_type
         """
-        return template_name.startswith(template_type)
+        return template_name.startswith(str(Path("units") / template_type))
 
     log.major_info("Creating Unit from Template")
     # Lookup the perun working dir according to the current file
@@ -72,6 +72,7 @@ def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) 
     # Initialize the jinja2 environment and load all templates for template_type set
     env = templates.get_environment(autoescape=True)
     list_of_templates = env.list_templates(filter_func=template_name_filter)
+    print(list_of_templates)
 
     # Specify the target dir (for packages we create a new directory)
     if "__init__" in "".join(list_of_templates):

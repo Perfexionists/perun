@@ -1,0 +1,62 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+
+{% set flame_graphs_info = "Look for the topmost widest rectangle.
+                    Clicking on a node will zoom the flamegraph for easier exploration.
+                    Colours are picked randomly (but uniformly); they don't signal any scale.
+                    The bigger the rectangle the more often the UID was seen on the stack.
+                    The higher the flame the more nested calls were made in the context." %}
+
+<div id="flame" class="section">
+
+    {{ m_title.display_title("Flame Graphs", "flame graphs", flame_graphs_info, notes_enabled=notes_enabled) }}
+
+    <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
+        <div class="flamegraph_search_box">
+            <span>Layout: </span>
+            <span id="flamegraph_visualization_switch" class="visualization_icon">
+                <span class="svg_switch_container visible">
+                    {% include 'assets/grid_view.svg' %}
+                </span>
+                <span class="svg_switch_container hidden">
+                    {% include 'assets/row_view.svg' %}
+                </span>
+            </span>
+        </div>
+
+        <div class="flamegraph_search_box">
+            <label for="flamegraph_search_all" class="flamegraph_search_input_label">Global Search:</label>
+            <input id="flamegraph_search_all" class="dt-input" />
+            <button id="flamegraph_search_reset_all" class="dt-paging-button">Reset Global Search</button>
+            <button id="flamegraph_zoom_reset_all" class="dt-paging-button">Reset Global Zoom</button>
+        </div>
+    </div>
+
+    {%- for (metric, lhs_flamegraph, rhs_flamegraph, lhs_diff_flamegraph, rhs_diff_flamegraph) in flamegraphs %}
+
+        <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+            <div class="left column column_non_scale column_extended">
+                <div class='svg-container' id="flame_{{ loop.index0 }}_baseline">
+                {{ lhs_flamegraph }}
+                </div>
+            </div>
+            <div class="right column column_non_scale column_extended">
+                <div class='svg-container' id="flame_{{ loop.index0 }}_target">
+                {{ rhs_flamegraph }}
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+            <div class="left column column_non_scale column_extended" style="margin-top: 1%">
+                <div class='svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
+                {{ lhs_diff_flamegraph }}
+                </div>
+            </div>
+            <div class="right column column_non_scale column_extended" style="margin-top: 1%">
+                <div class='svg-container' id="flame_diff_{{ loop.index0 }}_target">
+                {{ rhs_diff_flamegraph }}
+                </div>
+            </div>
+        </div>
+    {%- endfor %}
+</div>

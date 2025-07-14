@@ -1,0 +1,9 @@
+{% macro notes_pin(section_id, pin_class, notes_enabled) %}
+    {% if notes_enabled %}
+    <span id="{{ section_id }} -pin-item"
+          class="{{ pin_class }}"
+          data-section="{{ section_id }}">
+        {% include 'assets/note.svg' %}
+    </span>
+    {% endif %}
+{%- endmacro %}

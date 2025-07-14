@@ -16,3 +16,45 @@
 .section_guide.visible {
     opacity: 1;
 }
+
+.tooltip-text {
+    visibility: hidden;
+    position: absolute;
+    z-index: 2;
+    width: 200px;
+    font-size: 12px;
+    background-color: #ccc;
+    border-radius: 10px;
+    padding: 5px 10px;
+}
+
+.tooltip-text::before {
+    content: "";
+    position: absolute;
+    transform: rotate(45deg);
+    background-color: #ccc;
+    padding: 5px;
+    z-index: 1;
+}
+
+.hover-text:hover .tooltip-text {
+    visibility: visible;
+}
+
+.tright {
+    top: -8px;
+    left: 120%;
+}
+
+.tright::before {
+    top: 35%;
+    left: -2%;
+}
+
+.hover-text {
+    position: relative;
+    display: inline-block;
+    margin: 4px;
+    padding-left: 2px;
+    text-align: center;
+}

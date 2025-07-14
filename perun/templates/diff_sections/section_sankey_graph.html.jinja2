@@ -1,0 +1,38 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/section_sankey.html.jinja2' as m_sankey %}
+
+{% set sankey_info = "Use the tools at the top-right corner of the graph to expand/fold the callers/callees.
+            Wide red edges are (generally) bad; wide green edges are (generally) good." %}
+
+<div id="sankey" class="section">
+
+    {{ m_title.display_title("Sankey Graph", "sankey graph", flame_graphs_info ) }}
+
+    <div id="sankey_tools" style="display: none">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="key" style="width: 20%;">Threshold:</td>
+                    <td colspan="6">{{ m_sankey.range_picker() }}</td>
+                </tr>
+                {{ m_sankey.checkboxes([('baseline', 'Baseline'), ('target', 'Target'), ('incr', 'Incr (vs base)'), ('both', 'Equal'), ('decr', 'Decr (vs base)')], 'show_edges', 'Show') }}
+                {%- if stat_list|length > 1 %}
+                <tr>
+                    <td class="key" style="width: 20%;">Metric:</td>
+                    <td colspan="6">
+                        <select class="dt-input" id="metricSelection">
+                            {%- for metric in stat_list %}
+                                <option value="{{ loop.index0 }}">{{ metric }}</option>
+                            {%- endfor %}
+                        </select>
+                    </td>
+                </tr>
+            {%- endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="sankey_container" style="height: {{container_height}}px;">
+        <div id="sankey_graph" style="height: 100%;"><!-- DO NOT CHANGE: SANKEY GRAPH IS RENDERED HERE--></div>
+    </div>
+</div>

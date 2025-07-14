@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }}</title>
+
+        <!-- JS LIBRARIES -->
+        {% if not offline %}
+            <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        {% else %}
+            <script>
+                {% include 'libs/jquery-3.6.0.min.js' %}
+            </script>
+        {% endif %}
+
+        <!-- CSS STYLES -->
+        <style>
+            {% include 'style/general_setup.css' %}
+            {% include 'style/layout.css' %}
+
+            {% include 'style/pins.css' %}
+            {% include 'style/tooltip.css' %}
+
+            {% include 'style/flame_graphs.css' %}
+            {% include 'style/traces_table.css' %}
+
+            /* Make the flame graph report more dense since there are fewer sections. */
+            .section {
+                margin-bottom: 30px;
+            }
+        </style>
+</head>
+<body>
+    <!-- PAGE TITLE -->
+    {% include 'diff_sections/section_page_title.html.jinja2' %}
+
+    <!-- FLAME GRAPHS -->
+    {% include 'diff_sections/section_flame_graphs.html.jinja2' %}
+
+    <!-- PROFILE STATS -->
+    {% include 'diff_sections/section_profile_stats.html.jinja2' %}
+
+    <!-- JS -->
+    <script>
+        {% include 'scripts/tooltip.js' %}
+    </script>
+
+    {% include 'scripts/value_formatters_js.html.jinja2' %}
+    {% include 'scripts/flame_graph_js.html.jinja2' %}
+
+</body>
+</html>
