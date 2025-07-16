@@ -29,8 +29,7 @@ def get_template(
     :return: loaded template from perun/templates directory
     """
     # Note: we keep the autoescape=false, since we kindof believe we are not trying to fuck us up
-    path = Path(__file__).parent
-    env = Environment(loader=FileSystemLoader(path))
+    env = Environment(loader=FileSystemLoader(Path(__file__).parent))
     for filter_name, filter_func in (filters or {}).items():
         env.filters[filter_name] = filter_func
     return env.get_template(template_name)
@@ -41,5 +40,4 @@ def get_environment(**kwargs: Any) -> Environment:
 
     :return: jinja environment
     """
-    path = Path(__file__).parent
-    return Environment(loader=FileSystemLoader(path), **kwargs)
+    return Environment(loader=FileSystemLoader(Path(__file__).parent), **kwargs)

@@ -1,9 +1,6 @@
-{% import 'macros_html_widgets.html.jinja2' as widgets %}
+{%- macro tooltip(tooltip_text) %}<div class="hover-text">[?]<!-- Tooltip text --><span class="tooltip-text tright">{{ tooltip_text }}</span></div>{%- endmacro %}
 
 <script>
-    {{ widgets.checkbox_handler() }}
-    {{ widgets.range_handlers() }}
-
     function ensureNumber(val) {
         if (typeof val !== "number") {
             val = Number(val);
@@ -23,24 +20,23 @@
     }
 
     function formatNumber(value) {
-    const absValue = Math.abs(value);
-    let formatted;
+        const absValue = Math.abs(value);
+        let formatted;
 
-    if (absValue >= 1_000_000_000_000) {
-        formatted = (value / 1_000_000_000_000).toFixed(3) + " T";
-    } else if (absValue >= 1_000_000_000) {
-        formatted = (value / 1_000_000_000).toFixed(3) + " G";
-    } else if (absValue >= 1_000_000) {
-        formatted = (value / 1_000_000).toFixed(3) + " M";
-    } else if (absValue >= 1_000) {
-        formatted = (value / 1_000).toFixed(3) + " K";
-    } else {
-        formatted = value;
+        if (absValue >= 1_000_000_000_000) {
+            formatted = (value / 1_000_000_000_000).toFixed(3) + " T";
+        } else if (absValue >= 1_000_000_000) {
+            formatted = (value / 1_000_000_000).toFixed(3) + " G";
+        } else if (absValue >= 1_000_000) {
+            formatted = (value / 1_000_000).toFixed(3) + " M";
+        } else if (absValue >= 1_000) {
+            formatted = (value / 1_000).toFixed(3) + " K";
+        } else {
+            formatted = value;
+        }
+
+        return formatted.toLocaleString().replace(/,/g, " ");
     }
-
-    return formatted.toLocaleString().replace(/,/g, " ");
-}
-
 
     function format_relative(value) {
         value = ensureNumber(value);
@@ -71,6 +67,24 @@
             ms /= div;
         }
         return `${size.toFixed(2)} days`;
+    }
+
+    function formatSize(size, baseUnit = "") {
+        if (typeof size !== "number") {
+            size = Number(size);
+        }
+        let space = baseUnit !== "" ? " " : "";
+        let units = ["", "k", "M", "G", "T"];
+        for (let unit of units) {
+            if (Math.abs(size) < 1000.0) {
+                if (unit === "") {
+                    return `${size.toFixed(2)}${space}${baseUnit}`;
+                }
+                return `${size.toFixed(2)}${space}${unit}${baseUnit}`;
+            }
+            size /= 1000.0;
+        }
+        return `${size.toFixed(2)} P${baseUnit}`;
     }
 
     function format(value, unit) {
@@ -108,7 +122,7 @@
             result += 'equal';
         }
         result += '">' + format_value(prefix_sum) + ' (' + (prefix_rate * 100).toFixed(2) + '%)</span>';
-        result += '{{ widgets.tooltip("Prefix cost: the sum up to the current uid") }}'
+        result += '{{ tooltip("Prefix cost: the sum up to the current uid") }}'
         return result;
     }
 
@@ -122,7 +136,7 @@
         let bottleneck_rate = (stat === 0) ? 0 : min / stat;
         result += getColor(bottleneck_rate * 100);
         result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
-        result += '{{ widgets.tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
+        result += '{{ tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
         return result;
     };
 

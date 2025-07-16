@@ -1,0 +1,14 @@
+{% import 'macros/pin.html.jinja2' as m_pin %}
+
+{% macro display_title(title, section_name, info_text='', notes_enabled=true) %}
+    <div class="section_header">
+        {% if info_text %}
+        <span class="pin-icon pin-icon__header info-icon__header"
+              data-tooltip="{{ info_text }}">
+            {% include 'assets/info.svg' %}
+        </span>
+        {% endif %}
+        <h1>{{ title }}</h1>
+        {{ m_pin.notes_pin(section_name, "pin-icon pin-icon__header", notes_enabled) }}
+    </div>
+{%- endmacro %}

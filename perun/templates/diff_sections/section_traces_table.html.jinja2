@@ -1,4 +1,4 @@
-{% import 'ssp_table.html.jinja2' as property_generator %}
+{% import 'macros/section_title.html.jinja2' as m_title %}
 
 {% set traces_table_info = "Click on a row to explore top N calling contexts (traces) of the selected function.
             Click on (+) next to a trace row to open a detail about that concrete trace.
@@ -6,7 +6,7 @@
 
 <div id="traces" class="section">
 
-    {{ property_generator.display_title("Traces Table", "traces table", traces_table_info, notes_enabled) }}
+    {{ m_title.display_title("Traces Table", "traces table", traces_table_info, notes_enabled) }}
 
     <table id="table" class="traces_table" style="width: 100%;">
         <thead>

@@ -323,7 +323,7 @@ def generate_flamegraph_difference(
         process_flamegraph_stats(lhs_fg_stats), process_flamegraph_stats(rhs_fg_stats)
     )
 
-    template = templates.get_template("diff_view_flamegraph.html.jinja2")
+    template = templates.get_template("diff_views/flamegraph.html.jinja2")
     content = template.render(
         title="Perun Flame Graphs",
         perun_version=perun.__version__,

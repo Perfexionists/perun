@@ -1,0 +1,13 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+
+{% set STATS_NOTE_TITLE = "environment" %}
+
+<div class="section" id="environment">
+    {{ m_title.display_title("Environment", "environment", notes_enabled=notes_enabled) }}
+
+    <div class="comparison_container">
+        {{ m_tables.general_comparison_container('baseline', STATS_NOTE_TITLE, lhs_header, notes_enabled) }}
+        {{ m_tables.general_comparison_container('target', STATS_NOTE_TITLE, rhs_header, notes_enabled) }}
+    </div>
+</div>

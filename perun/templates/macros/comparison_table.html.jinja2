@@ -1,0 +1,34 @@
+{% import 'macros/pin.html.jinja2' as m_pin %}
+
+{% macro general_comparison_container(type, section_id, records, notes_enabled=true) %}
+    {% if records %}
+        <div class="column {{ type }}">
+            {%- for (key, value, title, nested_values) in records %}
+                <div class="data-row">
+                    <p class="data-key" title="{{ title }}">{{ key }}</p>
+                    {{ m_pin.notes_pin('%s > %s > %s' | format(section_id, type, key | striptags), "pin-icon", notes_enabled) }}
+                    <p class="data-value">{{ value }}</p>
+                </div>
+            {%- endfor %}
+        </div>
+    {% else %}
+        <h3>No {{ section_id }} for {{ type }} provided for this section</h3>
+    {% endif %}
+{%- endmacro %}
+
+
+{% macro nested_comparison_container(type, section_id, records, notes_enabled=true) %}
+    {% if records %}
+        <div class="column {{ type }}">
+            {%- for key, value in records.items() %}
+                <div class="data-row">
+                    <p class="data-key">{{ key }}</p>
+                    {{ m_pin.notes_pin('%s > %s > %s' | format(section_id, type, key | striptags), "pin-icon", notes_enabled) }}
+                    <p class="data-value">{{ value }}</p>
+                </div>
+            {%- endfor %}
+        </div>
+    {% else %}
+        <h3>No {{ section_id }} for {{ type }} provided for this section</h3>
+    {% endif %}
+{%- endmacro %}

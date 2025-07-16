@@ -1,0 +1,145 @@
+<script>
+    {% if flamegraphs %}
+
+        // Search logic for both mouseover and search bar
+        searchBar = document.getElementById("flamegraph_search_all");
+
+        {% for index in range(0, flamegraphs|length) %}
+            function searchCallback{{index}}() {
+                let searchTerm = searchBar.value.trim();
+
+                lhs_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    lhs_{{index}}_currentSearchTerm = searchBar.value;
+                    lhs_{{index}}_search();
+                }
+
+                rhs_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    rhs_{{index}}_currentSearchTerm = searchBar.value;
+                    rhs_{{index}}_search();
+                }
+
+                lhs_diff_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    lhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                    lhs_diff_{{index}}_search();
+                }
+
+                rhs_diff_{{index}}_reset_search();
+                if (searchTerm !== "") {
+                    rhs_diff_{{index}}_currentSearchTerm = searchBar.value;
+                    rhs_diff_{{index}}_search();
+                }
+            }
+            if (searchBar) {
+                searchBar.addEventListener('input', searchCallback{{index}});
+                searchBar.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        searchCallback{{index}}();
+                        this.blur();
+                    }});
+            }
+
+            ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
+                    node.addEventListener("mouseenter", function () {
+                        const textElement = node.querySelector("title");
+
+                        if (textElement && textElement.innerHTML) {
+                            let searchTerm = cleanTitle(textElement.innerHTML);
+
+                            window[`lhs_{{index}}_search_hover`](searchTerm);
+                            window[`rhs_{{index}}_search_hover`](searchTerm);
+                            window[`lhs_diff_{{index}}_search_hover`](searchTerm);
+                            window[`rhs_diff_{{index}}_search_hover`](searchTerm);
+                        }
+                    });
+
+                    node.addEventListener("mouseleave", function () {
+                        window[`lhs_{{index}}_reset_search_hover`]();
+                        window[`rhs_{{index}}_reset_search_hover`]();
+                        window[`lhs_diff_{{index}}_reset_search_hover`]();
+                        window[`rhs_diff_{{index}}_reset_search_hover`]();
+                    });
+                });
+            });
+
+        {% endfor%}
+
+        document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
+            {%- for index in range(0, flamegraphs|length) %}
+                const resetSearchBase = document.getElementById("lhs_{{ index }}_search");
+                const resetSearchTarget = document.getElementById("rhs_{{ index }}_search");
+                const resetSearchDiffBase = document.getElementById("lhs_diff_{{ index }}_search");
+                const resetSearchDiffTarget = document.getElementById("rhs_diff_{{ index }}_search");
+
+                const resetElements = [
+                    resetSearchBase,
+                    resetSearchTarget,
+                    resetSearchDiffBase,
+                    resetSearchDiffTarget,
+                ];
+
+                searchBar.value = "";
+                resetElements.forEach(el => {
+                    if (el && el.classList.contains("show")) {
+                        el.dispatchEvent(new Event("click", {bubbles: true}));
+                    }
+                });
+            {% endfor %}
+        });
+
+        document.getElementById("flamegraph_zoom_reset_all").addEventListener("click", function () {
+            {% for index in range(0, flamegraphs|length) %}
+                const resetZoomBase = document.getElementById("lhs_{{ index }}_unzoom");
+                const resetZoomTarget = document.getElementById("rhs_{{ index }}_unzoom");
+                const resetZoomDiffBase = document.getElementById("lhs_diff_{{ index }}_unzoom");
+                const resetZoomDiffTarget = document.getElementById("rhs_diff_{{ index }}_unzoom");
+
+                const resetElements = [
+                    resetZoomBase,
+                    resetZoomTarget,
+                    resetZoomDiffBase,
+                    resetZoomDiffTarget,
+                ];
+
+                resetElements.forEach(el => {
+                    if (el && !el.classList.contains("hide")) {
+                        el.dispatchEvent(new Event("click", {bubbles: true}));
+                    }
+                });
+            {% endfor %}
+        });
+
+        // Different types of flamegraph ordering switch
+        const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");
+        visualizationSwitch.addEventListener("click", function () {
+            const elements = document.querySelectorAll(".comparison_container_stacked");
+
+            elements.forEach(element => {
+                const currentDirection = window.getComputedStyle(element).flexDirection;
+                if (currentDirection === "row") {
+                    element.style.flexDirection = "column";
+                } else {
+                    element.style.flexDirection = "row";
+                }
+            });
+
+            visualizationSwitch.querySelectorAll(".svg_switch_container").forEach(svg => {
+                svg.classList.toggle("hidden");
+                svg.classList.toggle("visible");
+            });
+        });
+
+        function cleanTitle(title) {
+            // strips the number of samples from the function names. Keeps the opening parenthesis symbol '('
+            // to ensure exact match.
+            let index = title.search(/\(\d/);
+            if (index !== -1) {
+                title = title.slice(0, index) + '(';
+            }
+            return title;
+        }
+    {% endif %}
+</script>
