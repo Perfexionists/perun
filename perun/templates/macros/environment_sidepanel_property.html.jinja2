@@ -1,6 +1,6 @@
 {% macro env_sidepanel_difference_property(name, record_baseline, record_target) %}
     {% if record_baseline and record_target and record_baseline == record_target %}
-        <div class="general-property">
+        <div class="environment-property">
             <h2>
                 {{ name }}
                 <svg xmlns="http://www.w3.org/2000/svg" class="toggle-arrow" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
@@ -15,7 +15,7 @@
             </div>
         </div>
     {% elif record_baseline or record_target %}
-        <div class="general-property">
+        <div class="environment-property">
             <h2>
                 {{ name }}
                 <svg xmlns="http://www.w3.org/2000/svg" class="toggle-arrow" height="24" width="24" viewBox="0 0 24 24" fill="currentColor">
