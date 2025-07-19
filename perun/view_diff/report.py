@@ -720,6 +720,7 @@ def generate_report(
         title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,
         timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
+        chatbot=kwargs["chatbot_url"],
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_vulnerabilities=lhs_vulnerabilities,

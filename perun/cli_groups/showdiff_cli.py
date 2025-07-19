@@ -252,6 +252,13 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     is_flag=True,
     help="Minimizes the traces, folds the recursive calls, hides the generic types.",
 )
+@click.option(
+    "--chatbot-url",
+    "-c",
+    type=str,
+    metavar="<API URL>",
+    help="Enables chatbot support for a report using the specified API URL.",
+)
 @common_flamegraph_options
 @click.pass_context
 def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:

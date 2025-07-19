@@ -1,0 +1,207 @@
+{% if chatbot %}
+<script>
+    const BACKEND_API_URL = "{{ chatbot }}";
+
+    // Load available models from backend
+    async function loadModels() {
+      try {
+        const res = await fetch(`${BACKEND_API_URL}/available_models`);
+        const models = await res.json();
+        const select = document.getElementById("model-select");
+
+        select.innerHTML = ""; // clear previous options
+         models.forEach(key => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = key;
+          select.appendChild(option);
+        });
+
+        const storedModel = localStorage.getItem("selectedModel");
+        if (storedModel && models.includes(storedModel)) {
+          select.value = storedModel; // Set the selected option
+        }
+
+      } catch (err) {
+        console.error("Failed to load models:", err);
+      }
+    }
+
+    loadModels();
+
+    // Modal for model selection
+    document.querySelector("#modelSelectModal .btn-primary").addEventListener("click", () => {
+      const selectedModel = document.getElementById("model-select").value;
+      console.log("Selected model:", selectedModel);
+
+      // Optionally save this to localStorage or send to backend
+      localStorage.setItem("selectedModel", selectedModel);
+      $('#modelSelectModal').modal('hide');
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const stored = localStorage.getItem("selectedModel");
+      if (stored) {
+        selectedModel = stored;
+      }
+    });
+
+
+    //Logic for focusing the assistant's context
+    let currentFocusEl = null;
+    let visibleElements = new Set();
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          visibleElements.add(entry.target);
+        } else {
+          visibleElements.delete(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    // Observe every large visible block
+    document.querySelectorAll("div, section, pre").forEach(el => {
+      observer.observe(el);
+    });
+
+    // Track user hover or click
+    document.addEventListener("mouseover", (e) => {
+      if (e.target.closest("[id^='chat-']"))
+        return;
+
+      const el = e.target.closest("div, section, pre");
+
+      if (el && visibleElements.has(el))
+        currentFocusEl = el;
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("[id^='chat-']"))
+        return;
+
+      const el = e.target.closest("div, section, pre");
+
+      if (el && visibleElements.has(el))
+        currentFocusEl = el;
+    });
+
+    function getContextText() {
+      return currentFocusEl?.innerText?.trim().slice(0, 3000) || "";
+    }
+
+
+    const chatButton = document.getElementById("chat-button");
+    const chatWindow = document.getElementById("chat-window");
+    const chatMessages = document.getElementById("chat-messages");
+    const messageInput = document.getElementById("message-input");
+    const chatHeader = document.getElementById("chat-header");
+
+    chatButton.onclick = () => {
+      chatWindow.style.display = (chatWindow.style.display === "none" || chatWindow.style.display === "") ? "flex" : "none";
+    };
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      appendMessage("You", message);
+      messageInput.value = "";
+
+      try {
+        const context = getContextText();
+
+       const stored = localStorage.getItem("selectedModel");
+        if (stored) {
+            selectedModel = stored;
+        }
+
+        // Fetch model's response from backend
+        const res = await fetch(`${BACKEND_API_URL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: message,
+            context: context,
+            model: selectedModel
+          })
+        });
+
+        const data = await res.json();
+        const reply = data.reply || data.error || "No reply.";
+        appendMessage("Bot", reply);
+      } catch (err) {
+        appendMessage("Bot", "Error: " + err.message);
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const div = document.createElement("div");
+      const senderName = document.createElement("span");
+      senderName.style.fontWeight = "bold";
+      senderName.textContent = `${sender}: `
+      const senderText = document.createElement("span");
+      senderText.textContent = `${text}`;
+
+      div.appendChild(senderName);
+      div.appendChild(senderText);
+      chatMessages.appendChild(div);
+      if (sender === "Bot")
+      {
+        chatMessages.appendChild(document.createElement("br"))
+      }
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+
+    // Chat window drag
+    // Source: https://www.w3schools.com/howto/howto_js_draggable.asp
+    dragElement(chatWindow, chatHeader);
+
+    function dragElement(elem, header) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      header.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // set the element's new position:
+        elem.style.top = (elem.offsetTop - pos2) + "px";
+        elem.style.left = (elem.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+</script>
+{% endif %}
