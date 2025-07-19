@@ -1,6 +1,7 @@
 {% import 'macros/section_title.html.jinja2' as m_title %}
 
-{% set traces_table_info = "Click on a row to explore top N calling contexts (traces) of the selected function.
+{% set traces_table_info = "Mouseover a column header to display a tooltip explaining the column.
+            Click on a row to explore top N calling contexts (traces) of the selected function.
             Click on (+) next to a trace row to open a detail about that concrete trace.
             You may filter the table using the select form in the table header." %}
 
@@ -8,19 +9,25 @@
 
     {{ m_title.display_title("Traces Table", "traces table", traces_table_info, notes_enabled) }}
 
-    <table id="table" class="traces_table" style="width: 100%;">
+    <table id="table" class="traces_table display" style="width: 100%;">
         <thead>
             <tr>
                 <th></th>
                 <th>Unit</th>
                 <th>Change</th>
                 <th>Metric</th>
-                <th>Absolute Δ</th>
-                <th>Relative Δ</th>
+                <th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>
+                <th title="The amount of resources consumed by the Unit in the target profile.">Target</th>
+                <th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>
+                <th title="The absolute difference of Target - Baseline.">Absolute Δ</th>
+                <th title="The relative difference of Target - Baseline.">Relative Δ [%]</th>
             </tr>
         </thead>
         <tfoot>
             <tr>
+                <th></th>
+                <th></th>
+                <th></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -41,12 +48,18 @@
             <th>Unit</th>
             <th>Change</th>
             <th>Metric</th>
-            <th>Absolute Δ</th>
-            <th>Relative Δ</th>
+            <th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>
+            <th title="The amount of resources consumed by the Unit in the target profile.">Target</th>
+            <th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>
+            <th title="The absolute difference of Target - Baseline.">Absolute Δ</th>
+            <th title="The relative difference of Target - Baseline.">Relative Δ [%]</th>
         </tr>
     </thead>
     <tfoot>
         <tr>
+            <th></th>
+            <th></th>
+            <th></th>
             <th></th>
             <th></th>
             <th></th>
