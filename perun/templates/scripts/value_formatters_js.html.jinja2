@@ -8,15 +8,19 @@
         return val;
     }
 
-    function format_value(val) {
+    function format_value(val, show_positive_sign=false) {
         let result = "<span";
         val = ensureNumber(val);
+        let sign = "";
         if (val > 0) {
             result += ' style="font-weight: bold; color: {{ palette.DarkIncrease }}';
+            if (show_positive_sign) {
+                sign = "+"
+            }
         } else if (val < 0) {
             result += ' style="font-weight: bold; color: {{ palette.DarkDecrease }}';
         }
-        return result + '">' + formatNumber(val) + "</span>";
+        return result + '">' + sign + formatNumber(val) + "</span>";
     }
 
     function formatNumber(value) {
@@ -40,19 +44,18 @@
 
     function format_relative(value) {
         value = ensureNumber(value);
-        if (Math.abs(value) >= 0 && Math.abs(value) <= 1) {
-            value = value * 100
-        }
         let fixedValue = Number(value).toFixed(2)
         let result = '<span style="font-weight: bold; ';
+        let sign = "";
         if (value > 0 && value <= 100) {
             result += 'color: {{ palette.DarkIncrease }}"';
+            sign = "+"
         } else if (value >= -100 && value < 0) {
             result += 'color: {{ palette.DarkDecrease }}"';
         } else {
             result += 'color: {{ palette.DarkEqual}}"';
         }
-        return result + '">' + fixedValue + "%</span>";
+        return result + '">' + sign + fixedValue + "%</span>";
     }
 
     function formatMs(ms) {
@@ -108,7 +111,7 @@
             result += '<span class="decrease">' + format(base, stat_unit) + ' ↘ ' + format(tgt, stat_unit) + '</span>';
         }
         return result;
-    };
+    }
 
     function format_path_prex(path_stats, index, path_cost) {
         let result = '<span class="';
@@ -138,12 +141,12 @@
         result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
         result += '{{ tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
         return result;
-    };
+    }
 
     function format_sub_row(d, uid) {
         let result = '<table style="width: 100%; border: none;" class="nested">';
         let stat_type = stat_map[d[2]].toLowerCase(), stat_unit = unit_map[stat_map.indexOf(d[2])];
-        let parts = d[5].split('#');
+        let parts = d[8].split('#');
         let traces = parts[0].split(';'), base = parts[1].split(';').map(Number), tgt = parts[2].split(';').map(Number);
         let min_base = Math.min(...base), min_tgt = Math.min(...tgt);
         let sum_base = base.reduce((acc, v) => acc + v, 0), sum_tgt = tgt.reduce((acc, v) => acc + v, 0);
@@ -173,22 +176,35 @@
         });
         result += '</table>';
         return result
-    };
+    }
 
     function format_row(d) {
         let result = '<table id="metrics' + d.index + '" class="display" style="width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th>Metric</th><th>Absolute</th><th>Relative</th></tr></thead><tbody>";
+        result += "<thead><tr><th>Metric</th>"
+        result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
+        result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
+        result += '<th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>';
+        result += '<th title="The absolute difference of Target - Baseline.">Absolute Δ</th>';
+        result += '<th title="The relative difference of Target - Baseline.">Relative Δ [%]</th></tr></thead><tbody>';
         d.stats.forEach((value, index) => {
             result += "<tr>";
             result += '<td style="white-space: pre-wrap">' + value[0] + "</td>";
             result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
             result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[5] + "</td>";
             result += "</tr>";
         });
         result += '</tbody></table>';
         result += '<h4 style="text-align: center; width: 100%; border-bottom: 1px solid #ddd;">Top ' + d.traces.length + ' Traces</h4>';
         result += '<table id="traces' + d.index + '" class="display" style="margin-top: -30px; width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th></th><th>Trace</th><th>Metric</th><th>Abs</th><th>Rel</th></tr></thead><tbody>";
+        result += "<thead><tr><th></th><th>Trace</th><th>Metric</th>"
+        result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
+        result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
+        result += '<th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>';
+        result += '<th title="The absolute difference of Target - Baseline.">Absolute Δ</th>';
+        result += '<th title="The relative difference of Target - Baseline.">Relative Δ [%]</th></tr></thead><tbody>';
         d.traces.forEach((value, index) => {
             result += "<tr>";
             result += '<td style="white-space: pre-wrap"></td>';
@@ -198,6 +214,9 @@
             result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
             result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
             result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[5] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[6] + "</td>";
+            result += '<td style="white-space: pre-wrap">' + value[7] + "</td>";
             result += "</tr>";
         });
         result += '</tbody></table>';
