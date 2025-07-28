@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.25.4 (2025-07-28)
+-------------------
+
+  - Fixed issue with some template libraries missing in the distribution.
+
 0.25.4 (2025-07-23)
 -------------------
 
