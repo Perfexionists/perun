@@ -39,6 +39,7 @@
         {% include 'style/tag.css' %}
         {% include 'style/tooltip.css' %}
 
+        {% include 'style/summary.css' %}
         {% include 'style/traces_table.css' %}
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
@@ -61,256 +62,10 @@
 
     <!----------------------- SECTIONS ----------------------->
     <!-- PAGE TITLE -->
-    {% include 'diff_sections/section_page_title.html.jinja2' %}
+    {#% include 'diff_sections/section_page_title.html.jinja2' %#}
 
-    <!-- SUMMARY VIEW  - here starts experimental part which is to be deleted afterwards-->
-    <style>
-        .slider-container {
-            position: relative;
-            width: 100%;
-            max-width: 700px;
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .segments-wrapper {
-            display: flex;
-            width: 100%;
-            height: 40px;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            z-index: 1;
-            gap: 5px;
-        }
-
-        .segment {
-            flex-grow: 1; /* each segment has equal width */
-            height: 100%;
-            border-radius: 5px;
-        }
-
-        /* color gradient */
-        .segment:nth-child(1) { background-color: #ef4444; } /* Red */
-        .segment:nth-child(2) { background-color: #f97316; } /* Orange */
-        .segment:nth-child(3) { background-color: #f59e0b; } /* Amber */
-        .segment:nth-child(4) { background-color: #fbbf24; } /* Yellow */
-        .segment:nth-child(5) { background-color: #facc15; } /* Light Yellow */
-        .segment:nth-child(6) { background-color: #c0eb34; } /* Lighter Lime Green */
-        .segment:nth-child(7) { background-color: #9cd62f; } /* Mid Lime Green */
-        .segment:nth-child(8) { background-color: #6fc22a; } /* True Green */
-        .segment:nth-child(9) { background-color: #3aa825; } /* Darker Green */
-        .segment:nth-child(10) { background-color: #1a7f1a; } /* Deep Green */
-
-        .arrow-indicator {
-            position: absolute;
-            left: 0;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 20px solid black;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-
-        .rating-display {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 640px) {
-            .slider-container {
-                padding: 15px;
-                margin-bottom: 30px;
-            }
-
-            .segments-wrapper {
-                height: 30px;
-                gap: 3px;
-            }
-
-            .arrow-indicator {
-                border-left: 10px solid transparent;
-                border-right: 10px solid transparent;
-                border-top: 15px solid black;
-                top: -20px; /* Adjusted for mobile: 15px arrow height + 5px gap */
-            }
-
-            .rating-display {
-                font-size: 1rem;
-            }
-        }
-    </style>
-
-    <div class="section" id="summary">
-
-        <div class="comparison_container">
-            <div class="column" style="display: flex; align-items: center; justify-content: center;">
-                <div class="slider-container" id="slider-container">
-                    <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Performance Rating - <span style="color: #ef4444; font-size: 1.2em;">Degradation (+30%)</span></h2>
-                    <div class="rating-display" id="ratingDisplay">100G → 130G</div>
-
-                    <div class="segments-wrapper" id="segmentsWrapper">
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                        <div class="segment"></div>
-                    </div>
-                    <div class="arrow-indicator" id="arrowIndicator"></div>
-                </div>
-            </div>
-
-            <div class="column">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 disappeared calls</h2>
-                <div class="data-row">
-                    <div class="data-key">search_binary_handler</div>
-                    <div style="font-weight: bold" class="data-value">-3.132G <span style="color: #3aa825; margin-left: 8px;">-100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">perf_event_exec</div>
-                    <div style="font-weight: bold" class="data-value">-204.375K <span style="color: #3aa825; margin-left: 8px;">-100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">perf_ctx_unlock</div>
-                    <div style="font-weight: bold" class="data-value">-50.123M <span style="color: #3aa825; margin-left: 8px;">-100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">perf_event_addr_filters_exec</div>
-                    <div style="font-weight: bold" class="data-value">-189.485K <span style="color: #3aa825; margin-left: 8px;">-100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">mnt_want_write</div>
-                    <div style="font-weight: bold" class="data-value">-1.787M <span style="color: #3aa825; margin-left: 8px;">-100%</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="comparison_container">
-            <div class="column">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 common calls</h2>
-                <div class="data-row">
-                    <div class="data-key">__x64_sys_exit_group</div>
-                    <div style="font-weight: bold" class="data-value">8.182G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">do_group_exit</div>
-                    <div style="font-weight: bold" class="data-value">8.181G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">do_exit</div>
-                    <div style="font-weight: bold" class="data-value">8.172G <span style="color: #ef4444; margin-left: 8px;"> +84.49%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">x64_sys_call</div>
-                    <div style="font-weight: bold" class="data-value">7.887G <span style="color: #ef4444; margin-left: 8px;"> +80.70%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">exit_mm</div>
-                    <div style="font-weight: bold" class="data-value">7.764G <span style="color: #ef4444; margin-left: 8px;"> +84.93%</span></div>
-                </div>
-            </div>
-
-            <div class="column">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 appeared calls</h2>
-                <div class="data-row">
-                    <div class="data-key">zap_present_ptes.constprop.0</div>
-                    <div style="font-weight: bold" class="data-value">2.377G <span style="color: #ef4444; margin-left: 8px;"> +100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">__alloc_frozen_pages_noprof</div>
-                    <div style="font-weight: bold" class="data-value">730.417M <span style="color: #ef4444; margin-left: 8px;"> +100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">alloc_pages_mpol</div>
-                    <div style="font-weight: bold" class="data-value">682.113M <span style="color: #ef4444; margin-left: 8px;"> +100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">free_frozen_page_commit</div>
-                    <div style="font-weight: bold" class="data-value">108.589M <span style="color: #ef4444; margin-left: 8px;"> +100%</span></div>
-                </div>
-                <div class="data-row">
-                    <div class="data-key">free_frozen_pages</div>
-                    <div style="font-weight: bold" class="data-value">41.203M <span style="color: #ef4444; margin-left: 8px;"> +100%</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const sliderContainer = document.getElementById('slider-container');
-        const segmentsWrapper = document.getElementById('segmentsWrapper');
-        const arrowIndicator = document.getElementById('arrowIndicator');
-        const ratingDisplay = document.getElementById('ratingDisplay');
-        const numSegments = segmentsWrapper.children.length;
-
-        let sliderRect;
-
-        function updateRating(arrowLeft) {
-            const gapSize = parseFloat(getComputedStyle(segmentsWrapper).gap);
-            const totalGapWidth = gapSize * (numSegments - 1);
-            const effectiveSegmentWidth = (sliderRect.width - totalGapWidth) / numSegments;
-
-            let currentSegmentIndex = 0;
-            let accumulatedWidth = 0;
-            for (let i = 0; i < numSegments; i++) {
-                const segmentAndGapWidth = effectiveSegmentWidth + (i < numSegments - 1 ? gapSize : 0);
-                if (arrowLeft >= accumulatedWidth && arrowLeft < accumulatedWidth + segmentAndGapWidth) {
-                    currentSegmentIndex = i;
-                    break;
-                }
-                accumulatedWidth += segmentAndGapWidth;
-            }
-
-            currentSegmentIndex = Math.max(0, Math.min(numSegments - 1, currentSegmentIndex));
-            ratingDisplay.textContent = `100G → 130G`;
-        }
-
-        function initializeSliderRect() {
-            sliderRect = segmentsWrapper.getBoundingClientRect();
-            const gapSize = parseFloat(getComputedStyle(segmentsWrapper).gap);
-            const totalGapWidth = gapSize * (numSegments - 1);
-            const effectiveSegmentWidth = (sliderRect.width - totalGapWidth) / numSegments;
-
-            const desiredTileIndex = 4; // 5th tile ---- here is entered the position
-            let initialArrowLeft = (desiredTileIndex * effectiveSegmentWidth) + (desiredTileIndex * gapSize) + (effectiveSegmentWidth / 2);
-
-            initialArrowLeft = Math.max(0, Math.min(initialArrowLeft, sliderRect.width));
-
-            //const fromTopDist = sliderContainer.offsetTop;
-            //arrowIndicator.style.top = `${fromTopDist}px`;
-
-            const wrapperRect = segmentsWrapper.getBoundingClientRect();
-            const containerRect = sliderContainer.getBoundingClientRect();
-
-            // Calculate vertical position: 10px above the top of segments-wrapper, relative to slider container
-            const topOffset = wrapperRect.top - containerRect.top - 10;
-
-            arrowIndicator.style.top = `${topOffset}px`;
-            arrowIndicator.style.left = `${initialArrowLeft}px`;
-
-            updateRating(initialArrowLeft);
-        }
-
-        window.addEventListener('load', initializeSliderRect);
-        window.addEventListener('resize', initializeSliderRect);
-    </script>
-
-    <!-- here ends the experimental part -->
+    <!-- SUMMARY VIEW -->
+    {% include 'diff_sections/section_summary.html.jinja2' %}
 
     <!-- ENVIRONMENT -->
     {% include 'diff_sections/section_environment.html.jinja2' %}
@@ -333,6 +88,9 @@
     <!-- PROFILE METADATA -->
     {% include 'diff_sections/section_metadata.html.jinja2' %}
 
+    <!-- FOOTER -->
+    {% include 'diff_sections/section_page_footer.html.jinja2' %}
+
     <!-- TRACES TABLE DATA -->
     <script>
         {% autoescape off %}
@@ -348,6 +106,7 @@
         {% include 'scripts/environment_sidepanel.js' %}
         {% include 'scripts/notes.js' %}
         {% include 'scripts/tooltip.js' %}
+        {% include 'scripts/summary.js' %}
     </script>
 
     {% include 'scripts/value_formatters_js.html.jinja2' %}

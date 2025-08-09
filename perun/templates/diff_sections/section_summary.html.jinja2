@@ -1,0 +1,142 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+
+{% set STATS_NOTE_TITLE = "summary" %}
+
+<div class="section" id="summary">
+        {{ m_title.display_title("Perun Performance Report", "general", notes_enabled=notes_enabled) }}
+
+    <div class="comparison_container">
+        <div class="slider-container" id="slider-container-1">
+            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Total samples - <span style="color: #fbbf24; font-size: 1.2em;">Slight Gain (+18%)</span></h2>
+            <div class="rating-display" id="ratingDisplay-1">100G → 130G</div>
+
+            <div class="segments-wrapper" id="segmentsWrapper-1">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+            </div>
+            <div class="arrow-indicator" id="arrowIndicator-1"></div>
+        </div>
+
+        <div class="slider-container" id="slider-container-2">
+            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Bogo ops per second - <span style="color: #3aa825; font-size: 1.2em;">Significant Gain (+88%)</span></h2>
+            <div class="rating-display" id="ratingDisplay-2">1166.947 → 2193.86</div>
+
+            <div class="segments-wrapper" id="segmentsWrapper-2">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+            </div>
+            <div class="arrow-indicator" id="arrowIndicator-2"></div>
+        </div>
+
+
+        <div class="slider-container" id="slider-container-3">
+            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Longest Profile Trace - <span style="color: #c0eb34; font-size: 1.2em;">Slight Drop (-1%)</span></h2>
+            <div class="rating-display" id="ratingDisplay-3">32 → 31</div>
+
+            <div class="segments-wrapper" id="segmentsWrapper-3">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+            </div>
+            <div class="arrow-indicator" id="arrowIndicator-3"></div>
+        </div>
+    </div>
+
+    <div class="comparison_container">
+        <div class="column">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 Baseline-Only Functions</h2>
+            <div class="data-row">
+                <div class="data-key">search_binary_handler</div>
+                <div style="font-weight: bold" class="data-value">-3.132G</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">perf_event_exec</div>
+                <div style="font-weight: bold" class="data-value">-204.375K</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">perf_ctx_unlock</div>
+                <div style="font-weight: bold" class="data-value">-50.123M</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">perf_event_addr_filters_exec</div>
+                <div style="font-weight: bold" class="data-value">-189.485K</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">mnt_want_write</div>
+                <div style="font-weight: bold" class="data-value">-1.787M</div>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 Common Functions</h2>
+            <div class="data-row">
+                <div class="data-key">__x64_sys_exit_group</div>
+                <div style="font-weight: bold" class="data-value">8.182G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">do_group_exit</div>
+                <div style="font-weight: bold" class="data-value">8.181G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">do_exit</div>
+                <div style="font-weight: bold" class="data-value">8.172G <span style="color: #ef4444; margin-left: 8px;"> +84.49%</span></div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">x64_sys_call</div>
+                <div style="font-weight: bold" class="data-value">7.887G <span style="color: #ef4444; margin-left: 8px;"> +80.70%</span></div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">exit_mm</div>
+                <div style="font-weight: bold" class="data-value">7.764G <span style="color: #ef4444; margin-left: 8px;"> +84.93%</span></div>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Top 5 Target-Only Functions</h2>
+            <div class="data-row">
+                <div class="data-key">zap_present_ptes.constprop.0</div>
+                <div style="font-weight: bold" class="data-value">2.377G</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">__alloc_frozen_pages_noprof</div>
+                <div style="font-weight: bold" class="data-value">730.417M</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">alloc_pages_mpol</div>
+                <div style="font-weight: bold" class="data-value">682.113M</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">free_frozen_page_commit</div>
+                <div style="font-weight: bold" class="data-value">108.589M</div>
+            </div>
+            <div class="data-row">
+                <div class="data-key">free_frozen_pages</div>
+                <div style="font-weight: bold" class="data-value">41.203M</div>
+            </div>
+        </div>
+    </div>
+</div>

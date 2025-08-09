@@ -1,0 +1,84 @@
+.slider-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.segments-wrapper {
+    display: flex;
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    gap: 5px;
+}
+
+.segment {
+    flex-grow: 1; /* each segment has equal width */
+    height: 100%;
+    border-radius: 5px;
+}
+
+/* color gradient */
+.segment:nth-child(1) { background-color: #ef4444; } /* Red */
+.segment:nth-child(2) { background-color: #f97316; } /* Orange */
+.segment:nth-child(3) { background-color: #f59e0b; } /* Amber */
+.segment:nth-child(4) { background-color: #fbbf24; } /* Yellow */
+.segment:nth-child(5) { background-color: #facc15; } /* Light Yellow */
+.segment:nth-child(6) { background-color: #c0eb34; } /* Lighter Lime Green */
+.segment:nth-child(7) { background-color: #9cd62f; } /* Mid Lime Green */
+.segment:nth-child(8) { background-color: #6fc22a; } /* True Green */
+.segment:nth-child(9) { background-color: #3aa825; } /* Darker Green */
+.segment:nth-child(10) { background-color: #1a7f1a; } /* Deep Green */
+
+.arrow-indicator {
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 20px solid black;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.rating-display {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+    .slider-container {
+        padding: 15px;
+        margin-bottom: 30px;
+    }
+
+    .segments-wrapper {
+        height: 30px;
+        gap: 3px;
+    }
+
+    .arrow-indicator {
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 15px solid black;
+        top: -20px; /* Adjusted for mobile: 15px arrow height + 5px gap */
+    }
+
+    .rating-display {
+        font-size: 1rem;
+    }
+}
