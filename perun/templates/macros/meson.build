@@ -6,6 +6,7 @@ perun_templates_macros_files = files(
     'pin.html.jinja2',
     'section_sankey.html.jinja2',
     'section_title.html.jinja2',
+    'titles.html.jinja2'
 )
 
 py3.install_sources(
