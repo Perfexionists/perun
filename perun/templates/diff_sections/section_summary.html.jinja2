@@ -11,12 +11,14 @@
         {% set metric_names = [
             'Total Inclusive Samples  [#] (value)',
             'bogo-ops-per-second-real-time [op/s] (value)',
-            'Longest Profile Trace [#] (value)'
+            'Longest Profile Trace [#] (value)',
+            'Longest Flame Graph Trace [#] (value)'
             ]
         %}
+        {% set number_of_summary_metrics = 2 %}
 
         {% set ns = namespace(count=1) %}
-        {% for metric in metric_names[:2] %}
+        {% for metric in metric_names[:number_of_summary_metrics] %}
 
             {% set l_fg_sample = (lhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
             {% set r_fg_sample = (rhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
