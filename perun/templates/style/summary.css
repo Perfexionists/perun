@@ -24,7 +24,7 @@
 }
 
 .segment {
-    flex-grow: 1; /* each segment has equal width */
+    flex-grow: 1;
     height: 100%;
     border-radius: 5px;
 }
@@ -75,7 +75,7 @@
         border-left: 10px solid transparent;
         border-right: 10px solid transparent;
         border-top: 15px solid black;
-        top: -20px; /* Adjusted for mobile: 15px arrow height + 5px gap */
+        top: -20px;
     }
 
     .rating-display {

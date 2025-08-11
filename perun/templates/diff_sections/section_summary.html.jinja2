@@ -1,68 +1,41 @@
 {% import 'macros/comparison_table.html.jinja2' as m_tables %}
 {% import 'macros/titles.html.jinja2' as titles %}
+{% import 'macros/rating_slider.html.jinja2' as summary_tools %}
 
 {% set STATS_NOTE_TITLE = "summary" %}
 
 <div class="section" id="summary">
 
     <div class="comparison_container">
-        <div class="slider-container" id="slider-container-1">
-            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Total samples - <span style="color: #fbbf24; font-size: 1.2em;">Slight Gain (+18%)</span></h2>
-            <div class="rating-display" id="ratingDisplay-1">100G → 130G</div>
 
-            <div class="segments-wrapper" id="segmentsWrapper-1">
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-            </div>
-            <div class="arrow-indicator" id="arrowIndicator-1"></div>
-        </div>
+        {% set metric_names = [
+            'Total Inclusive Samples  [#] (value)',
+            'bogo-ops-per-second-real-time [op/s] (value)',
+            'Longest Profile Trace [#] (value)'
+            ]
+        %}
 
-        <div class="slider-container" id="slider-container-2">
-            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Bogo ops per second - <span style="color: #3aa825; font-size: 1.2em;">Significant Gain (+88%)</span></h2>
-            <div class="rating-display" id="ratingDisplay-2">1166.947 → 2193.86</div>
+        {% set ns = namespace(count=1) %}
+        {% for metric in metric_names[:2] %}
 
-            <div class="segments-wrapper" id="segmentsWrapper-2">
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-            </div>
-            <div class="arrow-indicator" id="arrowIndicator-2"></div>
-        </div>
+            {% set l_fg_sample = (lhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% set r_fg_sample = (rhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
 
+            {% set l_user_sample = (lhs_user_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% set r_user_sample = (rhs_user_stats | selectattr(0, 'in', metric) | list | first) %}
 
-        <div class="slider-container" id="slider-container-3">
-            <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">Longest Profile Trace - <span style="color: #c0eb34; font-size: 1.2em;">Slight Drop (-1%)</span></h2>
-            <div class="rating-display" id="ratingDisplay-3">32 → 31</div>
+            {% if l_fg_sample and r_fg_sample %}
+                {{ summary_tools.rating_slider(ns.count, metric, l_fg_sample, r_fg_sample) }}
+                {% set ns.count = ns.count + 1 %}
+            {% endif %}
 
-            <div class="segments-wrapper" id="segmentsWrapper-3">
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-                <div class="segment"></div>
-            </div>
-            <div class="arrow-indicator" id="arrowIndicator-3"></div>
-        </div>
+            {% if l_user_sample and r_user_sample %}
+                {{ summary_tools.rating_slider(ns.count, metric, l_user_sample, r_user_sample) }}
+                {% set ns.count = ns.count + 1 %}
+            {% endif %}
+
+        {% endfor %}
+
     </div>
 
     <div class="comparison_container">
