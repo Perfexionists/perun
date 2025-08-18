@@ -43,6 +43,8 @@
         {% include 'style/traces_table.css' %}
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
+
+        {% include 'style/footer.css' %}
     </style>
 </head>
 <body>
@@ -88,7 +90,7 @@
     <!-- PROFILE METADATA -->
     {% include 'diff_sections/section_metadata.html.jinja2' %}
 
-    <!-- FOOTER -->
+    <!----------------------- FOOTER ----------------------->
     {% include 'diff_sections/section_page_footer.html.jinja2' %}
 
     <!-- TRACES TABLE DATA -->

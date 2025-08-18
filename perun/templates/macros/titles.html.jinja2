@@ -12,7 +12,7 @@
     {{ m_title.display_title("Perun Performance Report", "general", notes_enabled=notes_enabled) }}
 {% endmacro %}
 
-{% macro shortened_footer() %}
+{% macro shortened_footer(perun_version, timestamp) %}
     <div class="section" id="footer" style="margin-bottom: 0">
         <p>Perun version: v{{ perun_version }}</p>
         <p>Generated on: {{ timestamp }}</p>

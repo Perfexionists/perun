@@ -1,3 +1,5 @@
 {% import 'macros/titles.html.jinja2' as titles %}
 
-{{ titles.shortened_footer() }}
+<div class="page_footer">
+    {{ titles.shortened_footer(perun_version, timestamp) }}
+</div>
