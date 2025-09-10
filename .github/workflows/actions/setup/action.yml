@@ -27,7 +27,8 @@ runs:
       shell: sh
       run: |
         brew update
-        brew install gnu-time gcc git libunwind-headers libmagic coreutils
+        brew install gnu-time gcc@14 git libunwind-headers libmagic coreutils
+        sudo ln -sf "$(brew --prefix)/bin/gcc-14" /usr/local/bin/gcc
 
     - name: Initialize Git
       shell: sh
