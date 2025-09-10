@@ -308,6 +308,7 @@ def test_fuzzing_hangs(pcs_with_root, monkeypatch):
 
 
 @pytest.mark.usefixtures("cleandir")
+@pytest.mark.skipif(sys.platform == "darwin", reason="Import perf record is unsupported on macOS")
 def test_fuzzing_degradation(pcs_with_root, monkeypatch):
     """Runs basic tests for fuzzing CLI"""
     runner = CliRunner()
