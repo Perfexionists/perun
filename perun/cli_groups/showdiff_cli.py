@@ -252,6 +252,12 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     is_flag=True,
     help="Minimizes the traces, folds the recursive calls, hides the generic types.",
 )
+@click.option(
+    "--link",
+    nargs=2,
+    multiple=True,
+    help="Attaches given link (URL address) and its display title to the links section in the report.",
+)
 @common_flamegraph_options
 @click.pass_context
 def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:

@@ -39,9 +39,12 @@
         {% include 'style/tag.css' %}
         {% include 'style/tooltip.css' %}
 
+        {% include 'style/summary.css' %}
         {% include 'style/traces_table.css' %}
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
+
+        {% include 'style/footer.css' %}
     </style>
 </head>
 <body>
@@ -62,6 +65,9 @@
     <!----------------------- SECTIONS ----------------------->
     <!-- PAGE TITLE -->
     {% include 'diff_sections/section_page_title.html.jinja2' %}
+
+    <!-- SUMMARY VIEW -->
+    {% include 'diff_sections/section_summary.html.jinja2' %}
 
     <!-- ENVIRONMENT -->
     {% include 'diff_sections/section_environment.html.jinja2' %}
@@ -84,6 +90,9 @@
     <!-- PROFILE METADATA -->
     {% include 'diff_sections/section_metadata.html.jinja2' %}
 
+    <!----------------------- FOOTER ----------------------->
+    {% include 'diff_sections/section_page_footer.html.jinja2' %}
+
     <!-- TRACES TABLE DATA -->
     <script>
         {% autoescape off %}
@@ -96,9 +105,11 @@
     <!-- JS -->
     <script>
         {% include 'scripts/division_anchor.js' %}
+        {% include 'scripts/navigation_sidepanel.js' %}
         {% include 'scripts/environment_sidepanel.js' %}
         {% include 'scripts/notes.js' %}
         {% include 'scripts/tooltip.js' %}
+        {% include 'scripts/summary.js' %}
     </script>
 
     {% include 'scripts/value_formatters_js.html.jinja2' %}
