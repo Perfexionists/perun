@@ -42,9 +42,6 @@
     </div>
 
     <div class="comparison_container">
-
-        <p style="display: none">{{ traces_test }}</p>
-
         {{ traces_selection.select_top_x_traces1(5, 'Baseline-Only', traces_test) }}
 
         {{ traces_selection.select_top_x_traces2(5, 'Common', traces_test) }}

@@ -756,7 +756,7 @@ def generate_report(
         height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
         container_height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
         notes_enabled=True,
-        traces_test=trace_stats,
+        links=list(kwargs.get("link", [])),
     )
     log.minor_success("HTML template", "rendered")
     output_file = diff_kit.save_diff_view(
