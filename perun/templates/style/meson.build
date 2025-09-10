@@ -1,6 +1,7 @@
 perun_templates_style_dir = perun_templates_dir / 'style'
 
 perun_templates_style_files = files(
+    'chatbot.css',
     'division_anchor.css',
     'environment_sidepanel.css',
     'flame_graphs.css',

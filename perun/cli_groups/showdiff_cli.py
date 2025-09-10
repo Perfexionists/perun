@@ -258,6 +258,13 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     multiple=True,
     help="Attaches given link (URL address) and its display title to the links section in the report.",
 )
+@click.option(
+    "--chatbot-url",
+    "-c",
+    type=str,
+    metavar="<API URL>",
+    help="Enables chatbot support for a report using the specified API URL.",
+)
 @common_flamegraph_options
 @click.pass_context
 def report(ctx: click.Context, *_: Any, **kwargs: Any) -> None:

@@ -1,6 +1,6 @@
 <script>
     // Selection table
-    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","abs": "{{ val.abs_amount }}","rel": "{{ val.rel_amount }}" },{%- endfor %}]};
+    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","baseline_abs": "{{ val.baseline_abs }}","target_abs": "{{ val.target_abs }}","total_rel_delta": "{{ val.total_rel_delta }}","abs_delta": "{{ val.abs_delta }}","rel_delta": "{{ val.rel_delta }}" },{%- endfor %}]};
     let selection_table = $("#table").DataTable({
         data: table.data,
         columns: [
@@ -19,7 +19,7 @@
                     if (type ==='display') {
                         if (data === "not in baseline") {
                             return '<span style="font-weight: bold; color: {{ palette.Target }}">' + data + "</span>";
-                        } else if (data == "not in target") {
+                        } else if (data === "not in target") {
                             return '<span style="font-weight: bold; color: {{ palette.Baseline }}">' + data + "</span>";
                         } else {
                             return '<span style="font-weight: bold; color: {{ palette.Equal }}">' + data + "</span>";
@@ -32,17 +32,27 @@
                 data: "type",
                 render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
             }, {
-                data: "abs",
+                data: "baseline_abs",
                 className: "dt-body-right",
                 render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
-            },
-            {
-                data: "rel",
+            }, {
+                data: "target_abs",
+                className: "dt-body-right",
+                render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+            }, {
+                data: "total_rel_delta",
+                render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+            }, {
+                data: "abs_delta",
+                className: "dt-body-right",
+                render: function(data, type) {return (type === 'display') ? format_value(data, true) : data;}
+            }, {
+                data: "rel_delta",
                 render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
             },
             { data: "index", visible: false},
         ],
-        order: [[4, "desc"]],
+        order: [[6, "desc"]],
         iDisplayLength: 10,
         select: true,
         scrollY: "550px",
@@ -99,11 +109,17 @@
         } else {
             let d = row.data();
             row.child(format_row(d)).show();
-            new DataTable("#metrics" + d.index, {paging: false, info: false, searching: false, order: [[1, 'desc']], columns: [
+            new DataTable("#metrics" + d.index, {paging: false, info: false, searching: false, order: [[3, 'desc']], columns: [
                     {
                         render: function(data, type) {return (type === 'display') ? stat_id_to_name(data) : data;}
                     }, {
                         render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data, true) : data;}
                     }, {
                         render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
                     }
@@ -122,6 +138,12 @@
                     }, {
                         render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
                     }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
+                    }, {
+                        render: function(data, type) {return (type === 'display') ? format_value(data, true) : data;}
+                    }, {
                         render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
                     }, {visible: false},
                 ],
@@ -131,7 +153,7 @@
                 paging: false,
                 info: false,
                 searching: false,
-                order: [[3, "desc"]]
+                order: [[5, "desc"]]
             });
             trace_table.on('click', 'td.inner-details-control', function(el) {
                 var sub_tr = $(this).closest('tr');
@@ -151,19 +173,4 @@
             tr.addClass('shown');
         }
     });
-
-    selection_table.on('select', function(e, dt, type, indexes) {
-        if (type === 'row') {
-            let data = selection_table.rows(indexes).data();
-            if (data.length > 0) {
-                var div = document.getElementById('sankey_tools');
-                if (div.style.display === "none")
-                    div.style.display = "block";
-                sel_uid = data[0].index;
-                sel_uid_text = data[0].uid;
-                layout.title = sel_uid_text;
-                initializeGraph();
-            }
-        }
-    })
 </script>

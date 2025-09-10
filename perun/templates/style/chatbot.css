@@ -1,0 +1,97 @@
+.enlighter-default{
+  margin-bottom: 0;
+}
+
+/* Custom CSS for the static button */
+.static-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+#chat-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+#chat-window {
+  position: fixed;
+  bottom: 90px;
+  left: 20px;
+  width: 500px;
+  height: 400px;
+  border: 1px solid #ccc;
+  border-radius: 10px 10px 0;
+  box-shadow: 0 0 10px rgba(0 0 0 / 10%);
+  display: none;
+  flex-direction: column;
+  resize: both;
+  overflow: auto;
+  background: white;
+  z-index: 9999;
+}
+
+#chat-header {
+  background: #4CAF50;
+  color: white;
+  padding: 10px;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  cursor: move;
+}
+
+#chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  height: 200px;
+}
+
+#chat-input {
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+#chat-input input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+}
+
+#chat-input button {
+  border: none;
+  background: var(--color-correct);
+  color: white;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+#chat-footer {
+  border-top: 1px solid #ccc;
+  color: gray;
+  font-size: 9pt;
+  padding: 2px 10px;
+}
+
+#settings-button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+#settings-menu {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background: #fafafa;
+}
