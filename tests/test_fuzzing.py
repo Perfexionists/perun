@@ -23,6 +23,7 @@ import perun.fuzz.evaluate.by_perun as perun_fuzz
 
 
 @pytest.mark.usefixtures("cleandir")
+@pytest.mark.skipif(sys.platform == "darwin", reason="Import perf record is unsupported on macOS")
 def test_fuzzing_coverage(capsys):
     """Runs basic tests for fuzzing CLI"""
     examples = os.path.join(os.path.dirname(__file__), "sources", "fuzz_examples")
@@ -234,6 +235,7 @@ def test_fuzzing_sigabort(pcs_with_root):
 
 
 @pytest.mark.usefixtures("cleandir")
+@pytest.mark.skipif(sys.platform == "darwin", reason="Import perf record is unsupported on macOS")
 def test_fuzzing_hangs(pcs_with_root, monkeypatch):
     """Runs basic tests for fuzzing CLI"""
     runner = CliRunner()
