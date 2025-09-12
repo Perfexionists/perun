@@ -1,7 +1,3 @@
-{% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/titles.html.jinja2' as titles %}
 
-<div class="section" id="general">
-    {{ m_title.display_title("Perun Performance Report", "general", notes_enabled=notes_enabled) }}
-    <p>Perun version: v{{ perun_version }}</p>
-    <p>Generated on: {{ timestamp }}</p>
-</div>
+{{ titles.shortened_page_title() }}

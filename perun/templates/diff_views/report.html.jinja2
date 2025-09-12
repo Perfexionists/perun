@@ -54,6 +54,8 @@
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
 
+        {% include 'style/footer.css' %}
+        
         {% if chatbot %}
             {% include 'style/chatbot.css' %}
         {% endif %}
@@ -78,8 +80,6 @@
     {% include 'diff_components/notes.html.jinja2' %}
 
     <!----------------------- SECTIONS ----------------------->
-    <!-- PAGE TITLE -->
-    {% include 'diff_sections/section_page_title.html.jinja2' %}
 
     <!-- ENVIRONMENT -->
     {% include 'diff_sections/section_environment.html.jinja2' %}
@@ -102,6 +102,9 @@
     <!-- PROFILE METADATA -->
     {% include 'diff_sections/section_metadata.html.jinja2' %}
 
+    <!----------------------- FOOTER ----------------------->
+    {% include 'diff_sections/section_page_footer.html.jinja2' %}
+
     <!-- TRACES TABLE DATA -->
     <script>
         {% autoescape off %}
@@ -114,6 +117,7 @@
     <!-- JS -->
     <script>
         {% include 'scripts/division_anchor.js' %}
+        {% include 'scripts/navigation_sidepanel.js' %}
         {% include 'scripts/environment_sidepanel.js' %}
         {% include 'scripts/notes.js' %}
         {% include 'scripts/tooltip.js' %}

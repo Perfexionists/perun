@@ -1,0 +1,21 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+
+{% macro full_page_title(notes_enabled=true) %}
+    <div class="section" id="general" style="margin-bottom: 0">
+        {{ m_title.display_title("Perun Performance Report", "general", notes_enabled=notes_enabled) }}
+        <p>Perun version: v{{ perun_version }}</p>
+        <p>Generated on: {{ timestamp }}</p>
+    </div>
+{% endmacro %}
+
+{% macro shortened_page_title(notes_enabled=true) %}
+    {{ m_title.display_title("Perun Performance Report", "general", notes_enabled=notes_enabled) }}
+{% endmacro %}
+
+{% macro shortened_footer(perun_version, timestamp) %}
+    <div class="section" id="footer" style="margin-bottom: 0">
+        <p>Perun version: v{{ perun_version }}</p>
+        <p>Generated on: {{ timestamp }}</p>
+        <a style="color: white;" href="https://github.com/Perfexionists/perun" target="_blank">Perun repository</a>
+    </div>
+{% endmacro %}

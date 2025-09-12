@@ -253,6 +253,12 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     help="Minimizes the traces, folds the recursive calls, hides the generic types.",
 )
 @click.option(
+    "--link",
+    nargs=2,
+    multiple=True,
+    help="Attaches given link (URL address) and its display title to the links section in the report.",
+)
+@click.option(
     "--chatbot-url",
     "-c",
     type=str,

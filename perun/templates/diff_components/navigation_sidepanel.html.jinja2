@@ -1,38 +1,35 @@
-<div class="side-panel navigation-panel">
-    <a href="#general">
-        <span class="full_visible">
-            {% include 'assets/home.svg' %}
+<div id="navigation-side-panel" class="side-panel navigation-panel">
+
+    {% set navigation_contents = [
+        ("environment", "environment", "Environment"),
+        ("flame", "fire", "Flame Graphs"),
+        ("traces", "trace", "Traces Table"),
+        ("profile-vulnerabilities", "vulnerabilities", "Vulnerabilities"),
+        ("profile-stats", "stats", "Profile Stats"),
+        ("profile-metadata", "metadata", "Profile Metadata")
+    ] %}
+
+    {% for href_id, svg_name, display_title in navigation_contents %}
+        <a href="#{{ href_id }}">
+        <span class="full_visible fully_centered">
+            {% include 'assets/' ~ svg_name ~ '.svg' %}
         </span>
-        <span class="side-panel__description">Environment</span>
+        <span class="side-panel__description">{{ display_title }}</span>
     </a>
-    <a href="#flame">
-        <span class="full_visible">
-            {% include 'assets/fire.svg' %}
+    {% endfor %}
+
+    <a id="navigation-panel__submenu--trigger">
+        <span class="full_visible fully_centered">
+            {% include 'assets/link.svg' %}
         </span>
-        <span class="side-panel__description">Flame Graphs</span>
+        <span class="side-panel__description">Links</span>
     </a>
-    <a href="#traces">
-        <span class="full_visible">
-            {% include 'assets/trace.svg' %}
-        </span>
-        <span class="side-panel__description">Traces Table</span>
-    </a>
-    <a href="#profile-vulnerabilities">
-        <span class="full_visible">
-            {% include 'assets/vulnerabilities.svg' %}
-        </span>
-        <span class="side-panel__description">Vulnerabilities</span>
-    </a>
-    <a href="#profile-stats">
-        <span class="full_visible">
-            {% include 'assets/stats.svg' %}
-        </span>
-        <span class="side-panel__description">Profile Stats</span>
-    </a>
-    <a href="#profile-metadata">
-        <span class="full_visible">
-            {% include 'assets/metadata.svg' %}
-        </span>
-        <span class="side-panel__description">Profile Metadata</span>
-    </a>
+</div>
+
+<div id="navigation-panel__submenu--links" class="navigation-panel__submenu">
+    <a href="https://github.com/Perfexionists/perun" target="_blank">Perun repository</a>
+    <a href="https://github.com/brendangregg/FlameGraph" target="_blank">Flame Graphs</a>
+    {% for link, link_title in links %}
+        <a href="{{ link }}" target="_blank">{{ link_title }}</a>
+    {% endfor %}
 </div>

@@ -99,3 +99,9 @@ label {
     opacity: 1 !important;
     visibility: visible !important;
 }
+
+.fully_centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
