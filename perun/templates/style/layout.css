@@ -11,6 +11,7 @@
 }
 
 .section_header {
+    color: var(--color-primary-text);
     display: flex;
     flex-direction: row;
     gap: 10px;
@@ -83,7 +84,7 @@
 }
 
 .data-key {
-    color: #666;
+    color: var(--color-primary-hover);
     font-style: italic;
     text-decoration: underline;
     text-align: left;
@@ -93,4 +94,5 @@
 .data-value {
     text-align: right;
     overflow: auto;
+    color: var(--color-primary-text);
 }

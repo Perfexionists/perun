@@ -1,5 +1,10 @@
 .page_footer {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-secondary-text);
     width: 100%;
+}
+
+.page_footer a {
+    color: var(--color-secondary-text);
+    font-weight: bold;
 }

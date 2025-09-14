@@ -45,6 +45,10 @@
     background-color: var(--color-primary-hover);
 }
 
+.side-panel a span svg {
+    fill: var(--color-light-white);
+}
+
 .side-panel .material-icons {
     font-size: 24px;
     color: var(--color-light-white);

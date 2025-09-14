@@ -8,6 +8,7 @@ perun_templates_script_files = files(
     'navigation_sidepanel.js',
     'notes.js',
     'sankey_graph_js.html.jinja2',
+    'themes_sidepanel.js',
     'tooltip.js',
     'traces_table_js.html.jinja2',
     'value_formatters_js.html.jinja2',
