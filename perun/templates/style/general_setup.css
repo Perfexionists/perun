@@ -36,6 +36,12 @@
 
     --dt-row-selected: 68, 68, 68 !important;
     --dt-row-selected-text: 234, 234, 234 !important;
+
+    --color-bg-not-changing: rgba(68 68 68);
+    --color-white-not-changing: rgba(234 234 234);
+    --color-gray-not-changing: rgba(68 68 68);
+
+    --color-sidepanel-bg: rgba(68 68 68);
 }
 
 
@@ -71,6 +77,8 @@ body.light-theme {
 
     --color-baseline-bg-tint: #f9f9f9;
     --color-target-bg-tint: #f0f4ff;
+
+    --color-sidepanel-bg: rgba(68 68 68);
 }
 
 body.dark-theme {
@@ -85,6 +93,9 @@ body.dark-theme {
 
     --color-baseline-bg-tint: rgb(14, 57, 60);
     --color-target-bg-tint: #1f2533;
+
+    --color-sidepanel-bg: rgba(115 115 115);
+
 }
 
 h1 {

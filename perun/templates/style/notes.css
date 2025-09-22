@@ -4,7 +4,7 @@
     bottom: 10%;
     width: 50px;
     height: 45px;
-    background-color: var(--color-primary-hover);
+    background-color: var(--color-sidepanel-bg);
     border-radius: 8px 0 0 8px;
     transition: all 0.3s ease-in-out;
     overflow: hidden;
@@ -174,8 +174,8 @@
     min-height: 38vh;
     width: 45vw;
     z-index: 9999;
-    color: var(--color-almost-white);
-    background-color: var(--color-primary);
+    color: var(--color-white-not-changing);
+    background-color: var(--color-bg-not-changing);
     display: flex;
     flex-direction: column;
     align-items: start;
@@ -248,7 +248,7 @@
     padding: 5px 10px;
     border-radius: 5px;
     background-color: var(--color-white-tinted);
-    color: var(--color-primary-hover);
+    color: var(--color-gray-not-changing);
     border: none;
     transition: all 0.3s ease-in-out;
 }
