@@ -41,6 +41,9 @@
     --color-white-not-changing: rgba(234 234 234);
     --color-gray-not-changing: rgba(68 68 68);
 
+    --color-almost-black-not-changing: rgba(28 28 28);
+    --color-bg-dt-table: rgba(215 215 215);
+
     --color-sidepanel-bg: rgba(68 68 68);
 }
 
@@ -79,6 +82,10 @@ body.light-theme {
     --color-target-bg-tint: #f0f4ff;
 
     --color-sidepanel-bg: rgba(68 68 68);
+    --color-bg-dt-table: rgba(215 215 215);
+
+    --color-wrong: rgba(220 53 69);
+    --color-correct: rgba(40 167 69);
 }
 
 body.dark-theme {
@@ -94,8 +101,11 @@ body.dark-theme {
     --color-baseline-bg-tint: rgb(14, 57, 60);
     --color-target-bg-tint: #1f2533;
 
-    --color-sidepanel-bg: rgba(115 115 115);
+    --color-sidepanel-bg: rgba(96 96 96);
+    --color-bg-dt-table: rgb(80, 80, 80);
 
+    --color-wrong: rgb(255, 137, 148);
+    --color-correct: rgb(97, 255, 136);
 }
 
 h1 {

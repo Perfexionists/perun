@@ -1,17 +1,9 @@
 .notes-sidepanel {
-    position: fixed;
     right: 0;
-    bottom: 10%;
-    width: 50px;
     height: 45px;
-    background-color: var(--color-sidepanel-bg);
+    bottom: 10%;
     border-radius: 8px 0 0 8px;
-    transition: all 0.3s ease-in-out;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 1000;
+    cursor: unset !important;
 }
 
 .notes-sidepanel:hover {
@@ -20,16 +12,12 @@
     overflow: scroll;
 }
 
-/* highlights notes section when user adds note */
-@keyframes pulse-glow {
-    0% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
-    50% { box-shadow: 0 0 20px 20px var(--color-target); }
-    100% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
+.notes-sidepanel a {
+    color: var(--color-white-not-changing);
 }
 
-.highlight-notes-sidepanel {
-    animation: pulse-glow 1s ease-in-out infinite alternate;
-    border: 2px solid var(--color-primary);
+.notes-sidepanel a:hover {
+    background-color: unset !important;
 }
 
 .notes-sidepanel-content {
@@ -49,7 +37,7 @@
 
 .notes-sidepanel .notes-sidepanel-content {
     display: none;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     padding: 10px;
     width: 100%;
 }
@@ -66,6 +54,11 @@
     padding: 5px;
     background-color: #666;
     border-radius: 5px;
+}
+
+.note-item a {
+    width: unset; !important;
+    padding: unset; !important;
 }
 
 .note-item p {

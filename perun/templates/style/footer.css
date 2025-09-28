@@ -1,10 +1,10 @@
 .page_footer {
-    background-color: var(--color-primary);
-    color: var(--color-secondary-text);
+    background-color: var(--color-almost-black-not-changing);
+    color: var(--color-white-not-changing);
     width: 100%;
 }
 
 .page_footer a {
-    color: var(--color-secondary-text);
+    color: var(--color-white-not-changing);
     font-weight: bold;
 }
