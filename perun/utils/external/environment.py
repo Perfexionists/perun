@@ -134,7 +134,7 @@ def get_machine_specification() -> dict[str, Any]:
     system = platform.uname()
     try:
         cpu_freq = psutil.cpu_freq().current
-    except RuntimeError:
+    except (RuntimeError, AttributeError):
         # There are issues with CPU freq on some Apple Silicon VMs
         # https://github.com/giampaolo/psutil/pull/2222#issuecomment-2000755602
         cpu_freq = 0.0
