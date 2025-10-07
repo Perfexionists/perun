@@ -1,0 +1,40 @@
+<script>
+    const flamegraphBackgrounds = {
+            light:  { start: "#eeeeee", end: "#eeeeb0" },
+            dark:   { start: "#8f8f8f", end: "#7a7a4f" },
+    };
+
+    document.querySelectorAll('.side-panel__themes--single_card').forEach(card => {
+        card.addEventListener('click', () => {
+            const theme = card.getAttribute('data-theme');
+            document.body.classList.remove('light-theme', 'dark-theme', 'colorblind-theme');
+            document.body.classList.add(`${theme}-theme`);
+            localStorage.setItem('theme', theme);
+
+            applyThemeForFlamegraph(theme);
+        });
+    });
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(`${savedTheme}-theme`);
+    applyThemeForFlamegraph(savedTheme);
+
+    {% if flamegraphs %}
+
+        function applyThemeForFlamegraph(theme) {
+            {% for index in range(0, flamegraphs|length) %}
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                    const gradient = document.getElementById(`${type}_{{ index }}_background`);
+                    if (gradient) {
+                        const stops = gradient.querySelectorAll("stop");
+                        if (stops.length >= 2) {
+                            stops[0].setAttribute("stop-color", flamegraphBackgrounds[theme].start);
+                            stops[1].setAttribute("stop-color", flamegraphBackgrounds[theme].end);
+                        }
+                    }
+              });
+            {% endfor %}
+        }
+
+    {% endif %}
+</script>

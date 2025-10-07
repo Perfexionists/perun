@@ -14,6 +14,7 @@
 
 .notes-sidepanel a {
     color: var(--color-white-not-changing);
+    width: unset !important;
 }
 
 .notes-sidepanel a:hover {

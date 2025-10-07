@@ -46,7 +46,7 @@
     padding: 8px 12px;
     border-radius: 4px;
     text-decoration: none;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     transition: all 0.2s;
 }
 
@@ -90,6 +90,10 @@
 
 .navigation-panel a {
     padding: 8px 12px 8px 4px;
+}
+
+.navigation-panel a:hover {
+    background-color: unset !important;
 }
 
 .navigation-panel__submenu {
