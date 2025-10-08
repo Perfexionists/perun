@@ -3,7 +3,7 @@
     top: 5px;
     padding: 5px;
     border-radius: 4px;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     z-index: 99999;
     box-shadow: 2px 2px 5px rgba(0 0 0 / 20%);
 }

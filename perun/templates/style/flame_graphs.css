@@ -8,7 +8,7 @@
     gap: 10px;
     font-weight: bold;
     color: var(--color-primary);
-    background-color: var(--color-almost-white);
+    background-color: var(--color-secondary-hover);
 }
 
 .flamegraph_search_input_label {

@@ -60,7 +60,7 @@
 
 .side-panel .material-icons {
     font-size: 24px;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     transition: opacity 0.3s ease;
 }
 
@@ -123,7 +123,7 @@
 .navigation-panel__submenu a {
     display: block;
     padding: 8px 12px;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s;

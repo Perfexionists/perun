@@ -4,7 +4,7 @@
     background: var(--color-bg-dt-table);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0 0 0 / 10%);
+    box-shadow: 0 4px 8px var(--color-primary-transparent);
 }
 
 #table-to-replace {
@@ -31,7 +31,7 @@
 }
 
 .traces_table tbody tr.hidden:hover {
-    background-color: var(--color-light-white);
+    background-color: var(--color-secondary);
 }
 
 .traces_table tbody tr td h4 {
@@ -114,7 +114,7 @@ td.details-control span svg {
 
 .dt-paging-button.current {
     background: var(--color-target) !important;
-    color: var(--color-light-white) !important;
+    color: var(--color-secondary) !important;
     border: none !important;
 }
 

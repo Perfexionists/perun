@@ -27,7 +27,7 @@
 
 .side-panel__themes--single_card {
     color: var(--color-primary-text);
-    background: var(--color-light-white);
+    background: var(--color-secondary);
     border: 1px solid var(--color-white-tinted);
     border-radius: 10px;
     padding: 12px 16px;
@@ -37,7 +37,7 @@
 }
 
 .side-panel__themes--single_card:hover {
-    background: var(--color-almost-white);
+    background: var(--color-secondary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px var(--color-primary-transparent);
 }
