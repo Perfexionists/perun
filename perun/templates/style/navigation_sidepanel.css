@@ -4,17 +4,26 @@
 
 .side-panel {
     position: fixed;
-    right: 0;
     width: 50px;
     padding: 10px;
-    background-color: var(--color-primary);
-    border-radius: 8px 0 0 8px;
-    transition: width 0.3s ease;
+    background-color: var(--color-sidepanel-bg);
+    transition: all 0.3s ease-in-out;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     z-index: 1000;
+    cursor: pointer;
+}
+
+.side-panel span {
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+.side-panel span svg {
+    font-size: 24px;
+    fill: var(--color-white-not-changing);
     cursor: pointer;
 }
 
@@ -37,7 +46,7 @@
     padding: 8px 12px;
     border-radius: 4px;
     text-decoration: none;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     transition: all 0.2s;
 }
 
@@ -45,15 +54,13 @@
     background-color: var(--color-primary-hover);
 }
 
+.side-panel a span svg {
+    fill: var(--color-white-not-changing);
+}
+
 .side-panel .material-icons {
     font-size: 24px;
     color: var(--color-light-white);
-    transition: opacity 0.3s ease;
-}
-
-.side-panel span {
-    white-space: nowrap;
-    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -70,9 +77,23 @@
 }
 
 .navigation-panel {
+    right: 0;
+    border-radius: 8px 0 0 8px;
     top: 30%;
     transform: translateY(-50%);
     gap: 10px;
+}
+
+.navigation-panel span {
+    opacity: 0;
+}
+
+.navigation-panel a {
+    padding: 8px 12px 8px 4px;
+}
+
+.navigation-panel a:hover {
+    background-color: unset !important;
 }
 
 .navigation-panel__submenu {

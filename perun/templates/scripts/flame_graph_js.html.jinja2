@@ -1,6 +1,8 @@
 <script>
     {% if flamegraphs %}
 
+        const LEFT_FLAMEGRAPH = "lhs";
+
         // Search logic for both mouseover and search bar
         searchBar = document.getElementById("flamegraph_search_all");
 
@@ -67,50 +69,38 @@
 
         {% endfor%}
 
-        document.getElementById("flamegraph_search_reset_all").addEventListener("click", function () {
-            {%- for index in range(0, flamegraphs|length) %}
-                const resetSearchBase = document.getElementById("lhs_{{ index }}_search");
-                const resetSearchTarget = document.getElementById("rhs_{{ index }}_search");
-                const resetSearchDiffBase = document.getElementById("lhs_diff_{{ index }}_search");
-                const resetSearchDiffTarget = document.getElementById("rhs_diff_{{ index }}_search");
-
-                const resetElements = [
-                    resetSearchBase,
-                    resetSearchTarget,
-                    resetSearchDiffBase,
-                    resetSearchDiffTarget,
-                ];
-
-                searchBar.value = "";
-                resetElements.forEach(el => {
-                    if (el && el.classList.contains("show")) {
-                        el.dispatchEvent(new Event("click", {bubbles: true}));
-                    }
-                });
-            {% endfor %}
-        });
-
-        document.getElementById("flamegraph_zoom_reset_all").addEventListener("click", function () {
+        function resetFlamegraphAll(type) {
             {% for index in range(0, flamegraphs|length) %}
-                const resetZoomBase = document.getElementById("lhs_{{ index }}_unzoom");
-                const resetZoomTarget = document.getElementById("rhs_{{ index }}_unzoom");
-                const resetZoomDiffBase = document.getElementById("lhs_diff_{{ index }}_unzoom");
-                const resetZoomDiffTarget = document.getElementById("rhs_diff_{{ index }}_unzoom");
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(variation => {
+                    const id_clickable = `${variation}_{{ index }}_${type}`;
+                    const element = document.getElementById(id_clickable);
+                    if (!element) return;
 
-                const resetElements = [
-                    resetZoomBase,
-                    resetZoomTarget,
-                    resetZoomDiffBase,
-                    resetZoomDiffTarget,
-                ];
-
-                resetElements.forEach(el => {
-                    if (el && !el.classList.contains("hide")) {
-                        el.dispatchEvent(new Event("click", {bubbles: true}));
+                    if (type === "search") {
+                        searchBar.value = "";
+                        if (element.classList.contains("show")) {
+                            element.dispatchEvent(new Event("click", { bubbles: true }));
+                        }
+                    } else if (type === "unzoom") {
+                        if (!element.classList.contains("hide")) {
+                            element.dispatchEvent(new Event("click", { bubbles: true }));
+                        }
                     }
                 });
             {% endfor %}
-        });
+        }
+
+        const resetSearchBtn = document.getElementById("flamegraph_search_reset_all");
+        if (resetSearchBtn) {
+            resetSearchBtn.addEventListener("click", () => resetFlamegraphAll("search"));
+        }
+
+        const resetZoomBtn = document.getElementById("flamegraph_zoom_reset_all");
+        if (resetZoomBtn) {
+            resetZoomBtn.addEventListener("click", () => resetFlamegraphAll("unzoom"));
+        }
+
+
 
         // Different types of flamegraph ordering switch
         const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");

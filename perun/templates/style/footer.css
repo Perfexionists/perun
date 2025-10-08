@@ -1,5 +1,10 @@
 .page_footer {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: var(--color-almost-black-not-changing);
+    color: var(--color-white-not-changing);
     width: 100%;
+}
+
+.page_footer a {
+    color: var(--color-white-not-changing);
+    font-weight: bold;
 }

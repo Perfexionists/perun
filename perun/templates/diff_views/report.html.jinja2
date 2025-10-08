@@ -45,6 +45,7 @@
         {% include 'style/navigation_sidepanel.css' %}
         {% include 'style/notes.css' %}
         {% include 'style/environment_sidepanel.css' %}
+        {% include 'style/themes_sidepanel.css' %}
 
         {% include 'style/pins.css' %}
         {% include 'style/tag.css' %}
@@ -71,13 +72,16 @@
     {% include 'diff_components/division_anchor.html.jinja2' %}
 
     <!-- NAVIGATION SIDE-PANEL -->
-    {% include 'diff_components/navigation_sidepanel.html.jinja2' %}
+    {% include 'diff_components/side_panels/navigation_sidepanel.html.jinja2' %}
 
     <!-- ENVIRONMENT SIDE-PANEL -->
-    {% include 'diff_components/environment_sidepanel.html.jinja2' %}
+    {% include 'diff_components/side_panels/environment_sidepanel.html.jinja2' %}
 
     <!-- NOTES SIDE-PANEL AND POPUP WINDOW -->
-    {% include 'diff_components/notes.html.jinja2' %}
+    {% include 'diff_components/side_panels/notes.html.jinja2' %}
+
+   <!-- COLOR THEMES & PALETTE -->
+    {% include 'diff_components/side_panels/themes_sidepanel.html.jinja2' %}
 
     <!----------------------- SECTIONS ----------------------->
 
@@ -124,6 +128,7 @@
     </script>
 
     {% include 'scripts/value_formatters_js.html.jinja2' %}
+    {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
     {% include 'scripts/traces_table_js.html.jinja2' %}
     {% include 'scripts/chatbot.html.jinja2' %}
