@@ -93,7 +93,8 @@
 }
 
 .navigation-panel a:hover {
-    background-color: unset !important;
+    background-color: var(--color-secondary) !important;
+    color: var(--color-primary) !important;
 }
 
 .navigation-panel__submenu {
