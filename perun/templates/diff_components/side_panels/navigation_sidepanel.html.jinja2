@@ -11,11 +11,11 @@
 
     {% for href_id, svg_name, display_title in navigation_contents %}
         <a href="#{{ href_id }}">
-        <span class="full_visible fully_centered">
-            {% include 'assets/' ~ svg_name ~ '.svg' %}
-        </span>
-        <span class="side-panel__description">{{ display_title }}</span>
-    </a>
+            <span class="full_visible fully_centered">
+                {% include 'assets/' ~ svg_name ~ '.svg' %}
+            </span>
+            <span class="side-panel__description">{{ display_title }}</span>
+        </a>
     {% endfor %}
 
     <a id="navigation-panel__submenu--trigger">

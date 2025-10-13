@@ -1,16 +1,8 @@
 .environment-sidepanel {
-    position: fixed;
     left: 0;
-    top: 20%;
-    width: 50px;
     height: 45px;
-    background-color: var(--color-primary-hover);
+    top: 20%;
     border-radius: 0 8px 8px 0;
-    transition: all 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 1000;
 }
 
 .environment-sidepanel:hover {
@@ -19,16 +11,9 @@
     overflow: scroll;
 }
 
-.environment-sidepanel__icon svg {
-    font-size: 24px;
-    fill: var(--color-light-white);
-    margin: 10px 0;
-    cursor: pointer;
-}
-
 .environment-sidepanel-content {
     display: none;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     padding: 10px;
     width: 100%;
     flex-direction: column;
@@ -49,7 +34,7 @@
     justify-content: center;
     font-size: 1em;
     margin: 0;
-    color: var(--color-almost-white);
+    color: var(--color-white-not-changing);
 }
 
 .environment-values {
@@ -96,7 +81,7 @@
 }
 
 .environment-value .value {
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     font-size: 0.9em;
     text-align: right;
     overflow: auto;

@@ -1,10 +1,10 @@
 .traces_table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--color-white-tinted);
+    background: var(--color-bg-dt-table);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0 0 0 / 10%);
+    box-shadow: 0 4px 8px var(--color-primary-transparent);
 }
 
 #table-to-replace {
@@ -12,8 +12,8 @@
 }
 
 .traces_table thead {
-    background-color: var(--color-primary);
-    color: var(--color-light-white);
+    background-color: var(--color-bg-not-changing);
+    color: var(--color-white-not-changing);
 }
 
 .traces_table th {
@@ -27,11 +27,11 @@
 .traces_table tbody tr {
     transition: background 0.2s ease-in-out;
     height: 45px;
+    color: var(--color-primary-text);
 }
 
 .traces_table tbody tr.hidden:hover {
-    background-color: var(--color-light-white);
-    color: var(--color-primary);
+    background-color: var(--color-secondary);
 }
 
 .traces_table tbody tr td h4 {
@@ -41,6 +41,10 @@
 
 div.dt-container {
     width: 93% !important;
+}
+
+td.details-control span svg {
+    fill: var(--color-primary-text);
 }
 
 /* cells */
@@ -71,6 +75,18 @@ div.dt-container {
     background: white !important;
 }
 
+.dt-search {
+    color: var(--color-primary-text) !important;
+}
+
+.dt-length label {
+    color: var(--color-primary-text) !important;
+}
+
+.dt-info {
+    color: var(--color-primary-text) !important;
+}
+
 /* pagination */
 .dt-paging {
     display: flex !important;
@@ -84,7 +100,7 @@ div.dt-container {
     padding: 6px 12px !important;
     font-size: 14px !important;
     font-weight: bold !important;
-    color: var(--color-primary) !important;
+    color: var(--color-gray-not-changing) !important;
     background: var(--color-white-tinted) !important;
     border-radius: 6px !important;
     cursor: pointer !important;
@@ -98,7 +114,7 @@ div.dt-container {
 
 .dt-paging-button.current {
     background: var(--color-target) !important;
-    color: var(--color-light-white) !important;
+    color: var(--color-secondary) !important;
     border: none !important;
 }
 
@@ -119,7 +135,6 @@ div.dt-container {
     padding: 6px 12px !important;
 }
 
-/* elimination of unused records in traces table */
 .nested {
     text-align: left;
 }

@@ -8,7 +8,7 @@
     gap: 10px;
     font-weight: bold;
     color: var(--color-primary);
-    background-color: var(--color-almost-white);
+    background-color: var(--color-secondary-hover);
 }
 
 .flamegraph_search_input_label {
@@ -19,6 +19,10 @@
 
 #flamegraph_visualization_switch {
     cursor: pointer;
+}
+
+#flamegraph_visualization_switch span svg {
+    fill: var(--color-primary-text);
 }
 
 .svg_switch_container {

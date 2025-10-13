@@ -1,0 +1,43 @@
+.side-panel__themes {
+    top: 10px;
+    right: 0;
+    height: 45px;
+    border-radius: 8px 0 0 8px;
+    cursor: unset !important;
+}
+
+.side-panel__themes:hover {
+    width: 200px;
+    height: 200px;
+    overflow: scroll;
+}
+
+.side-panel__themes span svg {
+    font-size: 24px;
+    fill: var(--color-white-not-changing);
+    cursor: pointer;
+}
+
+.side-panel__themes--cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px;
+}
+
+.side-panel__themes--single_card {
+    color: var(--color-primary-text);
+    background: var(--color-secondary);
+    border: 1px solid var(--color-white-tinted);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.side-panel__themes--single_card:hover {
+    background: var(--color-secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px var(--color-primary-transparent);
+}
