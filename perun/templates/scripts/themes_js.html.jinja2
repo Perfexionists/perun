@@ -4,20 +4,51 @@
             dark:   { start: "#8f8f8f", end: "#7a7a4f" },
     };
 
-    document.querySelectorAll('.side-panel__themes--single_card').forEach(card => {
-        card.addEventListener('click', () => {
-            const theme = card.getAttribute('data-theme');
-            document.body.classList.remove('light-theme', 'dark-theme', 'colorblind-theme');
-            document.body.classList.add(`${theme}-theme`);
-            localStorage.setItem('theme', theme);
+    const LIGHT = 'light';
+    const DARK = 'dark';
+    const MONOCHROMATIC = 'monochromatic';
+    const themes = [LIGHT, DARK, MONOCHROMATIC];
 
+    const themesSidepanel = document.getElementById('themes_sidepanel');
+    const themeIcons = themesSidepanel ? themesSidepanel.querySelectorAll('span') : [];
+
+    function applyTheme(theme) {
+        document.body.classList.remove(`${LIGHT}-theme`, `${DARK}-theme`, `${MONOCHROMATIC}-theme`);
+        document.body.classList.add(`${theme}-theme`);
+        localStorage.setItem('theme', theme);
+        themesSidepanel.setAttribute('data-theme', theme);
+        updateIcons(theme);
+
+        {% if flamegraphs %}
             applyThemeForFlamegraph(theme);
-        });
-    });
+        {% endif %}
+    }
 
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.body.classList.add(`${savedTheme}-theme`);
-    applyThemeForFlamegraph(savedTheme);
+    function nextTheme(currentTheme) {
+        const currentIndex = themes.indexOf(currentTheme);
+        return themes[(currentIndex + 1) % themes.length];
+    }
+
+    function updateIcons(currentTheme) {
+        if (!themeIcons.length) return;
+        const next = nextTheme(currentTheme);
+        const index = themes.indexOf(next);
+
+        themeIcons.forEach((icon, i) => {
+            icon.style.display = i === index ? 'inline' : 'none';
+        });
+    }
+
+    if (themesSidepanel) {
+        themesSidepanel.addEventListener('click', () => {
+            const currentTheme = themesSidepanel.getAttribute('data-theme') || LIGHT;
+            const newTheme = nextTheme(currentTheme);
+            applyTheme(newTheme);
+        });
+    }
+
+    const savedTheme = localStorage.getItem('theme') || LIGHT;
+    applyTheme(savedTheme);
 
     {% if flamegraphs %}
 
