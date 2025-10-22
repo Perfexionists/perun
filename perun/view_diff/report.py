@@ -15,6 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from operator import itemgetter
+from pathlib import Path
 import sys
 from typing import Any, Literal
 
@@ -25,7 +26,7 @@ import perun
 from perun import profile as profile
 from perun.logic import config
 from perun.templates import factory as templates
-from perun.utils import log, mapping
+from perun.utils import log, mapping, streams
 from perun.utils.common import diff_kit, common_kit
 from perun.utils.structs.common_structs import WebColorPalette
 from perun.utils.structs.diff_structs import Config
@@ -726,6 +727,24 @@ def extract_stats_from_trace(
     return uid_trace_stats
 
 
+def compose_chatbot_contexts(sources: tuple[str, ...]) -> str:
+    """Compose the additional chatbot prompt context from possibly multiple sources.
+
+    :param sources: sources of the prompt context; may be either strings or a file paths.
+    :return: the resulting prompt context string.
+    """
+    context_str: str = ""
+    for source in sources:
+        if source.endswith(".prompt"):
+            # The context is stored in a file, attempt to open and read it.
+            with streams.safely_open_and_log(Path(source), "r", fatal_fail=False) as handle:
+                if handle is not None:
+                    context_str += f"\n{handle.read()}"
+        else:
+            context_str += f"\n{source}"
+    return context_str + "\n"
+
+
 def generate_report(
     lhs_profile: profile.Profile, rhs_profile: profile.Profile, **kwargs: Any
 ) -> None:
@@ -787,12 +806,21 @@ def generate_report(
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
     )
 
+    # Process user-defined chatbot prompt context, if provided.
+    prompt_ctx = ""
+    if kwargs["chatbot_url"] is not None:
+        prompt_ctx_sources: tuple[str, ...] | None = kwargs.get("chatbot_prompt_context", None)
+        if prompt_ctx_sources is not None:
+            log.minor_info("Processing chatbot prompt context")
+            prompt_ctx = compose_chatbot_contexts(prompt_ctx_sources)
+
     template = templates.get_template("diff_views/report.html.jinja2")
     content = template.render(
         title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,
         timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
         chatbot=kwargs["chatbot_url"],
+        chatbot_prompt_context=prompt_ctx,
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_vulnerabilities=lhs_vulnerabilities,
