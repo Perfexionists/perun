@@ -13,7 +13,7 @@
   position: fixed;
   bottom: 20px;
   left: 20px;
-  background: #4CAF50;
+  background: var(--color-sidepanel-bg);
   color: white;
   border: none;
   border-radius: 50%;
@@ -30,24 +30,28 @@
   left: 20px;
   width: 500px;
   height: 400px;
-  border: 1px solid #ccc;
+  border: 2px solid var(--color-bg-dt-table);
   border-radius: 10px 10px 0;
-  box-shadow: 0 0 10px rgba(0 0 0 / 10%);
+  box-shadow: 0 0 10px var(--color-primary-transparent);
   display: none;
   flex-direction: column;
   resize: both;
-  overflow: auto;
-  background: white;
+  overflow: hidden;
+  background: var(--color-secondary);
   z-index: 9999;
 }
 
 #chat-header {
-  background: #4CAF50;
-  color: white;
+  background: var(--color-almost-black-not-changing);
+  color: var(--color-white-not-changing);
   padding: 10px;
   border-radius: 10px 10px 0 0;
   font-weight: bold;
   cursor: move;
+}
+
+#chat-header button {
+  background-color: var(--color-gray-not-changing);
 }
 
 #chat-messages {
@@ -57,9 +61,17 @@
   height: 200px;
 }
 
+#chat-messages span {
+  color: var(--color-primary-text);
+}
+
 #chat-input {
   display: flex;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid var(--color-bg-dt-table);
+}
+
+#message-input:focus {
+  outline: none;
 }
 
 #chat-input input {
@@ -71,13 +83,13 @@
 #chat-input button {
   border: none;
   background: var(--color-correct);
-  color: white;
+  color: var(--color-secondary-text);
   padding: 10px 15px;
   cursor: pointer;
 }
 
 #chat-footer {
-  border-top: 1px solid #ccc;
+  border-top: 2px solid var(--color-bg-dt-table);
   color: gray;
   font-size: 9pt;
   padding: 2px 10px;
@@ -92,6 +104,6 @@
 
 #settings-menu {
   padding: 10px;
-  border-top: 1px solid #ccc;
-  background: #fafafa;
+  border-top: 2px solid var(--color-bg-dt-table);
+  background: var(--color-secondary);
 }

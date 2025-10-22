@@ -2,6 +2,7 @@
     const flamegraphBackgrounds = {
             light:  { start: "#eeeeee", end: "#eeeeb0" },
             dark:   { start: "#8f8f8f", end: "#7a7a4f" },
+            monochromatic: { start: "#d9d9d9", end: "#b0b0b0" },
     };
 
     const LIGHT = 'light';
@@ -31,8 +32,7 @@
 
     function updateIcons(currentTheme) {
         if (!themeIcons.length) return;
-        const next = nextTheme(currentTheme);
-        const index = themes.indexOf(next);
+        const index = themes.indexOf(currentTheme);
 
         themeIcons.forEach((icon, i) => {
             icon.style.display = i === index ? 'inline' : 'none';
@@ -44,6 +44,7 @@
             const currentTheme = themesSidepanel.getAttribute('data-theme') || LIGHT;
             const newTheme = nextTheme(currentTheme);
             applyTheme(newTheme);
+            updateIcons(newTheme);
         });
     }
 
