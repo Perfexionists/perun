@@ -179,7 +179,7 @@ def from_binary(ctx: click.Context, import_entries: list[str], **kwargs: Any) ->
 
     where the CSV file is in the format
 
-      #Profile,Exit_code[,stat-header1]+
+      Profile,Exit_code[,stat-header1]+
       profile_path[,<exit code>[,<stat value>]+]
       ...
 
@@ -206,7 +206,7 @@ def from_text(ctx: click.Context, import_entries: list[str], **kwargs: Any) -> N
 
     where the CSV file is in the format
 
-      #Profile,Exit_code[,stat-header1]+
+      Profile,Exit_code[,stat-header1]+
       profile_path[,<exit code>[,<stat value>]+]
       ...
 
@@ -234,7 +234,7 @@ def from_stacks(ctx: click.Context, import_entries: list[str], **kwargs: Any) ->
 
     where the CSV file is in the format
 
-      #Profile,Exit_code[,stat-header1]+
+      Profile,Exit_code[,stat-header1]+
       profile_path[,<exit code>[,<stat value>]+]
       ...
 

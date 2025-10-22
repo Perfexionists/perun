@@ -21,6 +21,7 @@ from __future__ import annotations
 from collections import Counter
 import dataclasses
 import enum
+import math
 import statistics
 from typing import Any, Protocol, Iterable, ClassVar, Union, cast
 
@@ -344,18 +345,27 @@ class StatisticalSummary(ProfileStatAggregation):
         """
         # We assume there aren't too many values so that multiple passes of the list don't matter
         # too much. If this becomes a bottleneck, we can use pandas describe() instead.
-        values = list(values)
-        quantiles = statistics.quantiles(values, n=20, method="inclusive")
-        return cls(
-            float(min(values)),
-            quantiles[2],  # p10
-            quantiles[5],  # p25
-            quantiles[10],  # p50
-            quantiles[15],  # p75
-            quantiles[18],  # p90
-            float(max(values)),
-            statistics.mean(values),
-        )
+        values = list(val for val in values if not math.isnan(val))
+        try:
+            quantiles = statistics.quantiles(values, n=20, method="inclusive")
+            return cls(
+                float(min(values)),
+                quantiles[2],  # p10
+                quantiles[5],  # p25
+                quantiles[10],  # p50
+                quantiles[15],  # p75
+                quantiles[18],  # p90
+                float(max(values)),
+                statistics.mean(values),
+            )
+        except statistics.StatisticsError:
+            if values:
+                # There is not enough points to generate the statistics, use the single value.
+                value = values[0]
+            else:
+                # There are no valid data points, use nan.
+                value = math.nan
+            return cls(value, value, value, value, value, value, value, value)
 
     def infer_auto_comparison(self, comparison: ProfileStatComparison) -> ProfileStatComparison:
         if comparison != ProfileStatComparison.AUTO:
