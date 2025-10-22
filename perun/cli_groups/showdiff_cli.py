@@ -254,9 +254,11 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
 )
 @click.option(
     "--link",
+    "-l",
     nargs=2,
+    metavar="<URL, NAME>",
     multiple=True,
-    help="Attaches given link (URL address) and its display title to the links section in the report.",
+    help="Attaches the URL address and its display name to the links section in the report.",
 )
 @click.option(
     "--chatbot-url",
@@ -264,6 +266,15 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     type=str,
     metavar="<API URL>",
     help="Enables chatbot support for a report using the specified API URL.",
+)
+@click.option(
+    "--chatbot-prompt-context",
+    "-p",
+    type=str,
+    multiple=True,
+    help="Adds an additional context to the chatbot conversation on top of the default initial "
+    "context. Multiple contexts may be specified, each either as a string or a file with the "
+    "'.prompt' suffix.",
 )
 @common_flamegraph_options
 @click.pass_context
