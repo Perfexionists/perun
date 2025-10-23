@@ -18,7 +18,7 @@ perun_templates_assets_files = files(
     'note_small.svg',
     'row_view.svg',
     'stats.svg',
-    'stylus.svg'
+    'stylus.svg',
     'trace.svg',
     'vulnerabilities.svg',
 )
