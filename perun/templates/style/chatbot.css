@@ -95,3 +95,108 @@
   border-top: 1px solid #ccc;
   background: #fafafa;
 }
+
+.context-highlight {
+  position: relative;
+  box-shadow: 0 0 8px 2px rgba(100 149 237 / 50%); /* subtle blue glow */
+  transition: box-shadow 0.3s ease;
+}
+
+.context-eye-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  color: cornflowerblue;
+  background: white;
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 0 4px rgba(0 0 0 / 20%);
+  display: none; /* initially hidden */
+  z-index: 9999;
+}
+
+.fill-eye-icon {
+  fill: none !important;
+}
+
+.context-highlight {
+  box-shadow: 0 0 0 2px #cce5ff;
+  transition: box-shadow 0.2s ease;
+}
+
+.context-selected {
+  box-shadow: 0 0 0 2px #339af0;
+  background-color: var(--color-secondary-hover);
+}
+
+.context-eye-icon {
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.context-eye-icon:active {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+}
+
+.eye-clicked {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+/* Chat message container */
+.chat-message {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0 0 0 / 20%);
+  max-width: 90%;
+  position: relative;
+  word-wrap: break-word;
+  background-color: #f5f5f5; /* Light bubble */
+  color: #1a1a1a; /* Dark text */
+}
+
+/* Bot message styling */
+.chat-message.bot {
+  background-color: #e6f0ff; /* Pale blue for bot */
+  align-self: flex-start;
+}
+
+/* User message styling */
+.chat-message.user {
+  background-color: #e9fbe9; /* Pale green for user */
+  align-self: flex-end;
+}
+
+/* Sender label above or inside the bubble */
+.chat-sender {
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+/* Bot label color */
+.chat-sender.bot {
+  background-color: #007aff;
+  color: white;
+}
+
+/* User label color */
+.chat-sender.user {
+  background-color: #34c759;
+  color: white;
+}
+
+/* Text content of the message */
+.chat-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
