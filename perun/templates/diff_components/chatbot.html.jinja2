@@ -38,4 +38,16 @@
         </div>
       </div>
     </div>
+
+    <div class="llm-prompt-context" style="display: none;">
+        Pilot prompt: You are a helpful assistant in a chat window in a html report.
+        Your response will be directly injected into that chat window, so keep
+        your messages reasonably short.
+
+        We will provide a context to you, something the user clicked on to focus
+        your attention, those messages will be formatted like this "Context:
+        {context}", use the latest context to your advantage to improve your
+        response.
+        {{ chatbot_prompt_context }}
+    </div>
 {%- endif %}

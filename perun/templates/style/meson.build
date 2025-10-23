@@ -6,6 +6,7 @@ perun_templates_style_files = files(
     'division_anchor.css',
     'environment_sidepanel.css',
     'flame_graphs.css',
+    'footer.css',
     'general_setup.css',
     'layout.css',
     'navigation_sidepanel.css',

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 # Standard Imports
 from collections import defaultdict
-import csv
 from dataclasses import asdict, dataclass
 import gzip
 import json
@@ -12,9 +11,10 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any
+from typing import Any, Sequence
 
 # Third-Party Imports
+import polars as pl
 
 # Perun Imports
 from perun import profile as profile
@@ -36,7 +36,7 @@ class _PerfProfileSpec:
     """
 
     path: Path
-    exit_code: int = 0
+    exit_code: int = -1
 
 
 @vcs_kit.lookup_minor_version
@@ -465,7 +465,7 @@ def _parse_perf_import_entries(
 
     where the CSV file is in the format
 
-      #Profile,Exit_code[,stat-header1]+
+      Profile,Exit_code[,stat-header1]+
       profile_path[,<exit code>[,<stat value>]+]
       ...
 
@@ -515,23 +515,30 @@ def _parse_perf_import_csv(
     :param stats: profile stats that will be merged with the CSV stats.
     """
     csv_path = _massage_import_path(csv_file, import_dir)
-    with streams.safely_open_and_log(csv_path, "r", fatal_fail=True) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=",")
+    with streams.safely_open_and_log(csv_path, "r", fatal_fail=True) as csvfile_handle:
         try:
-            header: list[str] = next(csv_reader)
-        except StopIteration:
+            import_csv = pl.read_csv(csvfile_handle, comment_prefix="#")
+        except pl.exceptions.NoDataError:
             # Empty CSV file, skip
             log.warn(f"Empty import file {csv_path}. Skipping.")
             return
+        except pl.exceptions.ComputeError as e:
+            # The CSV file contains spurious columns, or is otherwise weirdly formatted.
+            # We log the issue so the user is aware of it, and we retry parsing it less strictly.
+            log.warn(
+                f"Encountered error when processing {csv_path}: {str(e).splitlines()[0]}."
+                " Attempting recovery."
+            )
+            import_csv = pl.read_csv(csvfile_handle, comment_prefix="#", truncate_ragged_lines=True)
         # Parse the stats headers
         csv_stats: list[profile.ProfileStat] = [
             profile.ProfileStat.from_string(*stat_definition.split("|"))
-            for stat_definition in header[2:]
+            for stat_definition in import_csv.columns[2:]
         ]
         # Parse the remaining rows that represent profile specifications and filter invalid ones
         profiles.extend(
             record
-            for row in csv_reader
+            for row in import_csv.iter_rows()
             if (record := _parse_perf_entry(row, import_dir, csv_stats)) is not None
         )
         # Merge CSV stats with the other stats
@@ -541,7 +548,7 @@ def _parse_perf_import_csv(
 
 
 def _parse_perf_entry(
-    entry: list[str], import_dir: Path, stats: list[profile.ProfileStat]
+    entry: Sequence[str | float], import_dir: Path, stats: list[profile.ProfileStat]
 ) -> _PerfProfileSpec | None:
     """Parse a single perf profile import entry.
 
@@ -551,25 +558,31 @@ def _parse_perf_entry(
 
     :return: the parsed profile, or None if the import entry is invalid.
     """
-    if len(entry) == 0 or not entry[0]:
-        # Empty profile specification, warn
+    # Attempt to parse the profile specification.
+    if len(entry) == 0 or entry[0] is None or str(entry[0]).strip() == "":
+        # Empty profile specification, warn and skip.
         log.warn("Empty import profile specification. Skipping.")
         return None
-    # Parse the profile specification
-    profile_info = _PerfProfileSpec(
-        _massage_import_path(entry[0], import_dir),
-        int(entry[1].strip()) if len(entry) >= 2 else _PerfProfileSpec.exit_code,
-    )
-    # Parse the stat values and add them to respective stats
-    for stat_value, stat_obj in zip(map(_massage_stat_value, entry[2:]), stats):
-        stat_obj.value.append(stat_value)
-    if len(entry[2:]) > len(stats):
-        log.warn(
-            f"Imported profile {profile_info.path} specifies more stats values than stats headers."
-            " Ignoring additional stats."
-        )
-    if profile_info.exit_code != 0:
+    profile_path = _massage_import_path(str(entry[0]), import_dir)
+    # Attempt to parse the exit code, if provided.
+    exit_code = _PerfProfileSpec.exit_code
+    try:
+        exit_code = int(entry[1])
+    except (IndexError, TypeError):
+        # No exit code was provided. Either there is no value, or the value is None.
+        log.warn(f"No exit code provided, using the default code {exit_code}.")
+    except ValueError:
+        # An exit code was provided, but it is an invalid value that cannot be represented as int.
+        log.warn(f"Invalid exit code '{entry[1]}' provided, using the default code {exit_code}.")
+    if exit_code != 0:
         log.warn("Importing a profile with non-zero exit code.")
+    profile_info = _PerfProfileSpec(profile_path, exit_code)
+
+    # Parse the stat values and add them to respective stats
+    for stat_value, stat_obj in zip(entry[2:], stats):
+        # Filter out missing values; supported values are floats and strings.
+        if stat_value:
+            stat_obj.value.append(common_kit.try_convert(stat_value, (float, str)))
     return profile_info
 
 
@@ -589,20 +602,6 @@ def _merge_stats(new_stat: profile.ProfileStat, into_stats: list[profile.Profile
             return
     # There is no stat to merge with, extend the current collection of stats
     into_stats.append(new_stat)
-
-
-def _massage_stat_value(stat_value: str) -> str | float:
-    """Massages a stat value read from a string to check whether it is numerical or not.
-
-    :param stat_value: the stat value to massage.
-
-    :return: a massaged stat value.
-    """
-    stat_value = stat_value.strip()
-    try:
-        return float(stat_value)
-    except ValueError:
-        return stat_value
 
 
 def _massage_import_path(path_str: str, import_dir: Path) -> Path:

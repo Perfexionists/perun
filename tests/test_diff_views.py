@@ -170,6 +170,8 @@ def test_diff_report(pcs_with_root):
         "diff_profiles", "kperf-target-stats-metadata.perf"
     )
 
+    chatbot_prompt_file = Path(__file__).parent / "sources" / "showdiff" / "chatbot_ctx.prompt"
+
     # Generate a diff report with some basic configuration
     result = runner.invoke(
         showdiff,
@@ -186,6 +188,15 @@ def test_diff_report(pcs_with_root):
             "--top-n",
             5,
             "--minimize",
+            "--link",
+            "https://perfexionists.github.io/perun/",
+            "Perun documentation",
+            "--chatbot-url",
+            "https://invalid-chatbot.com",
+            "-p",
+            "If a performance difference is smaller than 5% we consider it a statistical fluke.",
+            "-p",
+            chatbot_prompt_file,
         ],
     )
     assert result.exit_code == 0
