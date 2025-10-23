@@ -107,3 +107,29 @@
   border-top: 2px solid var(--color-bg-dt-table);
   background: var(--color-secondary);
 }
+
+#modelSelectModalContent {
+  color: var(--color-primary-text);
+  background-color: var(--color-secondary);
+}
+
+#modelSelectModalContent .btn-primary {
+  background-color: var(--color-sidepanel-bg);
+  border: 2px solid var(--color-bg-dt-table);
+}
+
+#modelSelectModalContent .btn-primary:hover {
+  background-color: var(--color-gray-not-changing);
+}
+
+.modal-dialog {
+  margin-top: 4%;
+}
+
+#model-select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--color-bg-dt-table) !important;
+  background-color: var(--color-white-tinted);
+}
+
