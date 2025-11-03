@@ -1,14 +1,16 @@
 <script>
     const flamegraphBackgrounds = {
-            light:  { start: "#eeeeee", end: "#eeeeb0" },
-            dark:   { start: "#8f8f8f", end: "#7a7a4f" },
-            monochromatic: { start: "#d9d9d9", end: "#b0b0b0" },
+        light:  { start: "#eeeeee", end: "#eeeeb0" },
+        dark:   { start: "#8f8f8f", end: "#7a7a4f" },
+        monochromatic: { start: "#d9d9d9", end: "#b0b0b0" },
     };
 
     const LIGHT = 'light';
     const DARK = 'dark';
     const MONOCHROMATIC = 'monochromatic';
     const themes = [LIGHT, DARK, MONOCHROMATIC];
+
+    const originalFills = new WeakMap();
 
     const themesSidepanel = document.getElementById('themes_sidepanel');
     const themeIcons = themesSidepanel ? themesSidepanel.querySelectorAll('span') : [];
@@ -53,6 +55,18 @@
 
     {% if flamegraphs %}
 
+        function rgbToMonoChromatic(rgbString) {
+            const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+            if (!match) return rgbString;
+            const [_, r, g, b] = match.map(Number);
+            let gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+            const minGray = 100;
+            const maxGray = 220;
+            // this is done to get not as dark rectangles so that title is clear
+            gray = Math.round(minGray + (gray / 255) * (maxGray - minGray));
+            return `rgb(${gray}, ${gray}, ${gray})`;
+        }
+
         function applyThemeForFlamegraph(theme) {
             {% for index in range(0, flamegraphs|length) %}
                 ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
@@ -64,7 +78,27 @@
                             stops[1].setAttribute("stop-color", flamegraphBackgrounds[theme].end);
                         }
                     }
-              });
+
+                    const flamegraph_frames = document.getElementById(`${type}_{{ index }}_frames`);
+                    if (!flamegraph_frames) return;
+
+                    const rects = flamegraph_frames.querySelectorAll("rect");
+                    rects.forEach(rect => {
+                        const fill = rect.getAttribute("fill");
+                        if (!fill || fill.startsWith("url(")) return;
+
+                        if (!originalFills.has(rect)) {
+                            originalFills.set(rect, fill);
+                        }
+
+                        if (theme === MONOCHROMATIC) {
+                            rect.setAttribute("fill", rgbToMonoChromatic(fill));
+                        } else {
+                            const original = originalFills.get(rect);
+                            if (original) rect.setAttribute("fill", original);
+                        }
+                    });
+                });
             {% endfor %}
         }
 
