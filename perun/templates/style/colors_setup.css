@@ -99,7 +99,7 @@ body.mono-theme {
     --color-primary: rgba(45 45 45);
     --color-primary-hover: rgba(65 65 65);
     --color-primary-transparent: rgba(45 45 45 / 30%);
-    --color-bs-secondary: rgba(120, 120, 120);
+    --color-bs-secondary: rgba(120 120 120);
 
     --color-secondary: rgba(245 245 245);
     --color-secondary-hover: rgba(225 225 225);
