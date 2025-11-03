@@ -96,43 +96,43 @@ body.dark-theme {
 
 body.mono-theme {
     /* PRIMARY SURFACE COLORS */
-    --color-primary: rgba(45, 45, 45);
-    --color-primary-hover: rgba(65, 65, 65);
+    --color-primary: rgba(45 45 45);
+    --color-primary-hover: rgba(65 65 65);
     --color-primary-transparent: rgba(45 45 45 / 30%);
     --color-bs-secondary: rgba(120, 120, 120);
 
-    --color-secondary: rgba(245, 245, 245);
-    --color-secondary-hover: rgba(225, 225, 225);
+    --color-secondary: rgba(245 245 245);
+    --color-secondary-hover: rgba(225 225 225);
 
-    --color-white-tinted: rgba(210, 210, 210);
-    --color-dark-white: rgba(180, 180, 180);
-    --color-light-gray: rgba(140, 140, 140);
+    --color-white-tinted: rgba(210 210 210);
+    --color-dark-white: rgba(180 180 180);
+    --color-light-gray: rgba(140 140 140);
 
     /* PROFILE DISTINCTION */
-    --color-baseline: rgba(110, 110, 110);
-    --color-target: rgba(140, 140, 140);
-    --color-common: rgba(170, 170, 170);
+    --color-baseline: rgba(110 110 110);
+    --color-target: rgba(140 140 140);
+    --color-common: rgba(170 170 170);
 
     --color-baseline-transparent: rgba(110 110 110 / 30%);
     --color-target-transparent: rgba(140 140 140 / 30%);
     --color-common-transparent: rgba(170 170 170 / 30%);
 
-    --color-baseline-bg-tint: rgba(245, 245, 245);
-    --color-target-bg-tint: rgba(235, 235, 235);
+    --color-baseline-bg-tint: rgba(245 245 245);
+    --color-target-bg-tint: rgba(235 235 235);
 
     /* SIDEPANEL + BACKGROUND */
-    --color-sidepanel-bg: rgba(60, 60, 60);
-    --color-bg-dt-table: rgba(210, 210, 210);
+    --color-sidepanel-bg: rgba(60 60 60);
+    --color-bg-dt-table: rgba(210 210 210);
 
     /* TEXT COLORS */
-    --color-primary-text: rgba(45, 45, 45);
-    --color-secondary-text: rgba(220, 220, 220);
+    --color-primary-text: rgba(45 45 45);
+    --color-secondary-text: rgba(220 220 220);
 
     /* BOOTSTRAP STATUS COLORS – neutralized */
-    --color-correct: rgba(120, 120, 120);
-    --color-wrong: rgba(160, 160, 160);
-    --color-info: rgba(100, 100, 100);
-    --color-warning: rgba(140, 140, 140);
+    --color-correct: rgba(120 120 120);
+    --color-wrong: rgba(160 160 160);
+    --color-info: rgba(100 100 100);
+    --color-warning: rgba(140 140 140);
 
     --color-correct-transparent: rgba(120 120 120 / 30%);
     --color-wrong-transparent: rgba(160 160 160 / 30%);
@@ -141,8 +141,8 @@ body.mono-theme {
     --color-bs-secondary-transparent: rgba(120 120 120 / 30%);
 
     /* TRACE TABLE COLORS */
-    --dt-row-selected: 60, 60, 60 !important;
-    --dt-row-selected-text: 235, 235, 235 !important;
+    --dt-row-selected: 60 60 60 !important;
+    --dt-row-selected-text: 235 235 235 !important;
 
     /* CONSTANT COLORS */
     --color-bg-not-changing: rgba(68 68 68);
