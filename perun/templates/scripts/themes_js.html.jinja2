@@ -2,13 +2,18 @@
     const flamegraphBackgrounds = {
         light:  { start: "#eeeeee", end: "#eeeeb0" },
         dark:   { start: "#8f8f8f", end: "#7a7a4f" },
-        monochromatic: { start: "#d9d9d9", end: "#b0b0b0" },
+        mono: { start: "#d9d9d9", end: "#b0b0b0" },
     };
 
     const LIGHT = 'light';
     const DARK = 'dark';
-    const MONOCHROMATIC = 'monochromatic';
+    const MONOCHROMATIC = 'mono';
     const themes = [LIGHT, DARK, MONOCHROMATIC];
+
+    let default_theme_js = LIGHT;
+    {% if default_theme %}
+        default_theme_js = "{{ default_theme }}";
+    {% endif %}
 
     const originalFills = new WeakMap();
 
@@ -43,19 +48,20 @@
 
     if (themesSidepanel) {
         themesSidepanel.addEventListener('click', () => {
-            const currentTheme = themesSidepanel.getAttribute('data-theme') || LIGHT;
+            const currentTheme = themesSidepanel.getAttribute('data-theme') || default_theme_js;
             const newTheme = nextTheme(currentTheme);
             applyTheme(newTheme);
             updateIcons(newTheme);
         });
     }
 
-    const savedTheme = localStorage.getItem('theme') || LIGHT;
+    const savedTheme = localStorage.getItem('theme') || default_theme_js;
     applyTheme(savedTheme);
 
     {% if flamegraphs %}
 
         function rgbToMonoChromatic(rgbString) {
+            // converting color to monochromatic using luminosity method
             const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
             if (!match) return rgbString;
             const [_, r, g, b] = match.map(Number);

@@ -94,7 +94,7 @@ body.dark-theme {
     --color-correct: rgba(97 255 136);
 }
 
-body.monochromatic-theme {
+body.mono-theme {
     /* PRIMARY SURFACE COLORS */
     --color-primary: rgba(45, 45, 45);
     --color-primary-hover: rgba(65, 65, 65);
