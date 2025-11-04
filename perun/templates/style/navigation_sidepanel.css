@@ -94,7 +94,7 @@
 
 .navigation-panel a:hover {
     background-color: var(--color-secondary) !important;
-    color: var(--color-primary) !important;
+    color: var(--color-primary-text) !important;
 }
 
 .navigation-panel__submenu {
@@ -102,7 +102,7 @@
     right: calc(50px + 10px);
     top: 50%;
     transform: translateY(-50%);
-    background-color: var(--color-primary);
+    background-color: var(--color-sidepanel-bg);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0 0 0 / 25% );
     padding: 10px;
@@ -124,7 +124,7 @@
 .navigation-panel__submenu a {
     display: block;
     padding: 8px 12px;
-    color: var(--color-secondary);
+    color: var(--color-secondary-text);
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s;
@@ -132,4 +132,12 @@
 
 .navigation-panel__submenu a:hover {
     background-color: var(--color-primary-hover);
+}
+
+#navigation-panel__submenu--trigger span {
+    color: var(--color-white-not-changing);
+}
+
+#navigation-panel__submenu--trigger span:hover {
+    color: var(--color-primary-text);
 }

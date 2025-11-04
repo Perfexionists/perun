@@ -268,6 +268,12 @@ def flamegraph(ctx: click.Context, *_: Any, **kwargs: Any) -> None:
     help="Enables chatbot support for a report using the specified API URL.",
 )
 @click.option(
+    "--default-theme",
+    "-th",
+    type=click.Choice(["light", "dark", "mono"], case_sensitive=False),
+    help="Determines which theme will be set as the default theme.",
+)
+@click.option(
     "--chatbot-prompt-context",
     "-p",
     type=str,

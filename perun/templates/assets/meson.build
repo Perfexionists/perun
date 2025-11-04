@@ -12,10 +12,13 @@ perun_templates_assets_files = files(
     'info.svg',
     'link.svg',
     'metadata.svg',
+    'moon_filled.svg',
+    'moon_hollow.svg',
     'note.svg',
     'note_small.svg',
     'row_view.svg',
     'stats.svg',
+    'stylus.svg',
     'trace.svg',
     'vulnerabilities.svg',
 )

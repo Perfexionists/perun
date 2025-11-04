@@ -1,0 +1,153 @@
+:root {
+    /* PROFILE DISTINCTION */
+    --color-baseline: rgba(80 201 206);
+    --color-target: rgba(152 131 229);
+    --color-common: rgba(239 122 133);
+
+    --color-baseline-transparent: rgba(80 201 206 / 30%);
+    --color-target-transparent: rgba(152 131 229 / 30%);
+    --color-common-transparent: rgba(248 117 117 / 30%);
+
+    --color-baseline-bg-tint: rgba(249 249 249);
+    --color-target-bg-tint: rgba(240 244 255);
+
+    /* BASE COLORS */
+    --color-primary: rgba(51 51 51);
+    --color-primary-transparent: rgba(51 51 51 / 30%);
+    --color-primary-hover: rgba(68 68 68);
+    --color-bs-secondary: rgba(108 117 125);
+
+    --color-secondary: rgba(255 255 255);
+    --color-secondary-hover: rgba(234 234 234);
+
+    --color-white-tinted: rgba(215 215 215);
+    --color-dark-white: rgba(190 190 190);
+    --color-light-gray: rgba(153 153 153);
+
+    --color-sidepanel-bg: rgba(68 68 68);
+
+    /* TEXT COLORS */
+    --color-primary-text: rgba(51 51 51);
+    --color-secondary-text: rgba(215 215 215);
+
+    /* BOOTSTRAP COLORS */
+    --color-correct: rgba(40 167 69);
+    --color-wrong: rgba(220 53 69);
+    --color-info: rgba(23 162 184);
+    --color-warning: rgba(255 193 7);
+
+    --color-correct-transparent: rgba(40 167 69 / 30%);
+    --color-wrong-transparent: rgba(220 53 69 / 30%);
+    --color-info-transparent: rgba(23 162 184 / 30%);
+    --color-warning-transparent: rgba(255 193 7 / 30%);
+    --color-bs-secondary-transparent: rgba(108 117 125 / 30%);
+
+    /* TRACE TABLE COLORS */
+    --dt-row-selected: 68, 68, 68 !important;
+    --dt-row-selected-text: 234, 234, 234 !important;
+    --color-bg-dt-table: rgba(215 215 215);
+
+    /* COLORS NOT CHANGING IN THEME */
+    --color-bg-not-changing: rgba(68 68 68);
+    --color-white-not-changing: rgba(234 234 234);
+    --color-gray-not-changing: rgba(68 68 68);
+    --color-almost-black-not-changing: rgba(28 28 28);
+}
+
+body.light-theme {
+    --color-primary: rgba(51 51 51);
+    --color-primary-hover: rgba(68 68 68);
+
+    --color-secondary: rgba(255 255 255);
+    --color-secondary-hover: rgba(234 234 234);
+
+    --color-primary-text: rgba(51 51 51);
+    --color-secondary-text: rgba(215 215 215);
+
+    --color-baseline-bg-tint: rgba(249 249 249);
+    --color-target-bg-tint: rgba(240 244 255);
+
+    --color-sidepanel-bg: rgba(68 68 68);
+    --color-bg-dt-table: rgba(215 215 215);
+
+    --color-wrong: rgba(220 53 69);
+    --color-correct: rgba(40 167 69);
+}
+
+body.dark-theme {
+    --color-primary: rgba(255 255 255);
+    --color-primary-hover: rgba(234 234 234);
+
+    --color-secondary: rgba(51 51 51);
+    --color-secondary-hover: rgba(41 41 41);
+
+    --color-primary-text: rgba(215 215 215);
+    --color-secondary-text: rgba(51 51 51);
+
+    --color-baseline-bg-tint: rgba(14 57 60);
+    --color-target-bg-tint: rgba(31 37 51);
+
+    --color-sidepanel-bg: rgba(96 96 96);
+    --color-bg-dt-table: rgba(80 80 80);
+
+    --color-wrong: rgba(255 137 148);
+    --color-correct: rgba(97 255 136);
+}
+
+body.mono-theme {
+    /* PRIMARY SURFACE COLORS */
+    --color-primary: rgba(45 45 45);
+    --color-primary-hover: rgba(65 65 65);
+    --color-primary-transparent: rgba(45 45 45 / 30%);
+    --color-bs-secondary: rgba(120 120 120);
+
+    --color-secondary: rgba(245 245 245);
+    --color-secondary-hover: rgba(225 225 225);
+
+    --color-white-tinted: rgba(210 210 210);
+    --color-dark-white: rgba(180 180 180);
+    --color-light-gray: rgba(140 140 140);
+
+    /* PROFILE DISTINCTION */
+    --color-baseline: rgba(110 110 110);
+    --color-target: rgba(140 140 140);
+    --color-common: rgba(170 170 170);
+
+    --color-baseline-transparent: rgba(110 110 110 / 30%);
+    --color-target-transparent: rgba(140 140 140 / 30%);
+    --color-common-transparent: rgba(170 170 170 / 30%);
+
+    --color-baseline-bg-tint: rgba(245 245 245);
+    --color-target-bg-tint: rgba(235 235 235);
+
+    /* SIDEPANEL + BACKGROUND */
+    --color-sidepanel-bg: rgba(60 60 60);
+    --color-bg-dt-table: rgba(210 210 210);
+
+    /* TEXT COLORS */
+    --color-primary-text: rgba(45 45 45);
+    --color-secondary-text: rgba(220 220 220);
+
+    /* BOOTSTRAP STATUS COLORS – neutralized */
+    --color-correct: rgba(120 120 120);
+    --color-wrong: rgba(160 160 160);
+    --color-info: rgba(100 100 100);
+    --color-warning: rgba(140 140 140);
+
+    --color-correct-transparent: rgba(120 120 120 / 30%);
+    --color-wrong-transparent: rgba(160 160 160 / 30%);
+    --color-info-transparent: rgba(100 100 100 / 30%);
+    --color-warning-transparent: rgba(140 140 140 / 30%);
+    --color-bs-secondary-transparent: rgba(120 120 120 / 30%);
+
+    /* TRACE TABLE COLORS */
+    --dt-row-selected: 60 60 60 !important;
+    --dt-row-selected-text: 235 235 235 !important;
+
+    /* CONSTANT COLORS */
+    --color-bg-not-changing: rgba(68 68 68);
+    --color-white-not-changing: rgba(234 234 234);
+    --color-gray-not-changing: rgba(68 68 68);
+    --color-almost-black-not-changing: rgba(45 45 45);
+}
+
