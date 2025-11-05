@@ -1,10 +1,32 @@
 Changelog
 =========
 
-0.25.4 (2025-07-28)
+0.25.6 (2025-11-05)
+-------------------
+
+  - Showdiff report:
+
+    - Added the 'Links' menu of user-defined links to resources into the sidepanel.
+    - Updated the chatbot version: it now supports user-defined initial prompt and passing additional context alongside prompts.
+    - Added light, dark and monochrome color themes.
+
+  - CLI changes:
+
+    - (optional) `showdiff report`: `--link` (-l) specifies http links to resources.
+    - (optional) `showdiff report`: `--default-theme` (-th) specifies the default color theme.
+    - (optional) `showdiff report`: `--chatbot-prompt-context` (-p) specifies the initial global context for prompts.
+
+  - Fixes:
+
+    - Fixed psutil cpu_freq failing on macOS due to a different exception type.
+    - Fixed CSV parsing in `perun import`: it now supports CSV comments and gracefully handles missing values.
+
+
+0.25.5 (2025-07-28)
 -------------------
 
   - Fixed issue with some template libraries missing in the distribution.
+
 
 0.25.4 (2025-07-23)
 -------------------
