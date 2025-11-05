@@ -93,8 +93,8 @@
 }
 
 .navigation-panel a:hover {
-    background-color: var(--color-secondary) !important;
-    color: var(--color-primary-text) !important;
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
 }
 
 .navigation-panel__submenu {
@@ -124,20 +124,13 @@
 .navigation-panel__submenu a {
     display: block;
     padding: 8px 12px;
-    color: var(--color-secondary-text);
+    color: var(--color-white-not-changing);
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 .navigation-panel__submenu a:hover {
-    background-color: var(--color-primary-hover);
-}
-
-#navigation-panel__submenu--trigger span {
-    color: var(--color-white-not-changing);
-}
-
-#navigation-panel__submenu--trigger span:hover {
+    background-color: var(--color-secondary);
     color: var(--color-primary-text);
 }
