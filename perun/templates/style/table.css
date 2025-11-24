@@ -1,0 +1,214 @@
+/* Base Styles */
+.perun-table-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0;
+    /* Solid background for card look */
+    background-color: var(--color-bg-dt-table);
+    color: var(--color-primary-text);
+    transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 4px 8px var(--color-primary-transparent);
+    border-radius: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.perun-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    /* Fixed layout to prevent jitter */
+    table-layout: fixed;
+}
+
+.perun-table th,
+.perun-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-light-gray);
+    /* Handle overflow for fixed layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.perun-table th {
+    /* Distinct header background */
+    background-color: var(--color-bg-not-changing);
+    color: var(--color-white-not-changing);
+    font-weight: bold;
+    font-size: 0.95em;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+.perun-table th.sortable:hover {
+    background-color: var(--color-primary-hover);
+    /* Slightly lighter/darker depending on theme, but distinct */
+}
+
+.perun-table th.asc::after {
+    content: ' ▲';
+    font-size: 0.8em;
+    color: var(--color-target);
+    /* Use accent color */
+    margin-left: 5px;
+}
+
+.perun-table th.desc::after {
+    content: ' ▼';
+    font-size: 0.8em;
+    color: var(--color-target);
+    margin-left: 5px;
+}
+
+/* Filter Row */
+.perun-table .filter-row th {
+    padding: 8px 15px;
+    background-color: var(--color-bg-dt-table);
+    /* Match container bg */
+    border-bottom: 1px solid var(--color-light-gray);
+    color: var(--color-primary-text);
+}
+
+.perun-table input,
+.perun-table select {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-light-gray);
+    background-color: var(--color-white-tinted);
+    color: var(--color-primary-text);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.perun-table input:focus,
+.perun-table select:focus {
+    outline: none;
+    border-color: var(--color-target);
+    box-shadow: 0 0 0 2px var(--color-target-transparent);
+    background-color: var(--color-secondary);
+}
+
+/* Range Filter */
+.range-filter-container {
+    display: flex;
+    gap: 5px;
+}
+
+.range-filter-container input {
+    width: 50%;
+    min-width: 0;
+    /* Allow shrinking */
+}
+
+/* Table Body */
+.perun-table tbody tr {
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.perun-table tbody tr:hover {
+    background-color: var(--color-secondary);
+}
+
+.perun-table td {
+    color: var(--color-primary-text);
+}
+
+.perun-table .no-data {
+    text-align: center;
+    padding: 30px;
+    color: var(--color-bs-secondary);
+    font-style: italic;
+}
+
+/* Text Utilities */
+.text-bold {
+    font-weight: bold;
+}
+
+.text-red {
+    color: var(--color-wrong) !important;
+}
+
+.text-green {
+    color: var(--color-correct) !important;
+}
+
+/* Pagination */
+.perun-pagination {
+    background-color: var(--color-bg-dt-table);
+    padding: 15px;
+    display: flex;
+    justify-content: flex-end;
+    /* Align right like standard tables often do */
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--color-light-gray);
+}
+
+.perun-pagination button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--color-white-tinted);
+    color: var(--color-gray-not-changing);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.perun-pagination button:hover:not(:disabled) {
+    background-color: var(--color-target-transparent);
+    color: var(--color-target);
+}
+
+.perun-pagination button:disabled {
+    background-color: var(--color-light-gray);
+    color: var(--color-white-tinted);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.perun-pagination span {
+    color: var(--color-primary-text);
+    font-size: 0.9em;
+    margin: 0 10px;
+}
+
+/* Mono Theme Specific Overrides */
+body.mono-theme .perun-table-container {
+    border: 2px solid var(--color-primary);
+    box-shadow: none;
+    border-radius: 0;
+}
+
+body.mono-theme .perun-table th {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+    border-bottom: 2px solid var(--color-primary);
+    text-transform: uppercase;
+}
+
+body.mono-theme .perun-table input,
+body.mono-theme .perun-table select {
+    border-radius: 0;
+    border: 1px solid var(--color-primary);
+}
+
+body.mono-theme .perun-pagination button {
+    border-radius: 0;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background-color: var(--color-secondary);
+}
+
+body.mono-theme .perun-pagination button:hover:not(:disabled) {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}

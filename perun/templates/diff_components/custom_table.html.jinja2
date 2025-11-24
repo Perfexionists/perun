@@ -1,0 +1,114 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+
+<div class="section">
+    {{ m_title.display_title("Custom Table", "custom-table", "", notes_enabled) }}
+    <div id="custom-table-container" class="comparison_container"></div>
+</div>
+
+<style>
+    {% include 'style/table.css' %}
+</style>
+
+<script>
+    {% include 'scripts/table.js' %}
+
+    (function() {
+        const rawData = [
+            {%- for val in selection_table %}
+            {
+                "uid": "{{ val.uid }}",
+                "index": "{{ val.index }}",
+                "fresh": "{{ val.fresh }}",
+                "type": "{{ val.main_stat }}",
+                "baseline_abs": "{{ val.baseline_abs }}",
+                "target_abs": "{{ val.target_abs }}",
+                "total_rel_delta": "{{ val.total_rel_delta }}",
+                "abs_delta": "{{ val.abs_delta }}",
+                "rel_delta": "{{ val.rel_delta }}"
+            },
+            {%- endfor %}
+        ];
+
+        const formatNumber = (num) => {
+            if (num === null || num === undefined || isNaN(num)) return num;
+            const absNum = Math.abs(num);
+            if (absNum >= 1.0e9) {
+                return (num / 1.0e9).toFixed(3) + " G";
+            } else if (absNum >= 1.0e6) {
+                return (num / 1.0e6).toFixed(3) + " M";
+            } else if (absNum >= 1.0e3) {
+                return (num / 1.0e3).toFixed(3) + " K";
+            } else {
+                return num.toString();
+            }
+        };
+
+        const formatDelta = (data, suffix = '') => {
+            const num = parseFloat(data);
+            if (isNaN(num)) return data;
+            let color = 'var(--color-primary-text)';
+            if (num > 0) color = 'var(--color-wrong)';
+            else if (num <= 0) color = 'var(--color-correct)';
+            const formatted = formatNumber(num);
+            return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
+        };
+
+        const formatBold = (data) => {
+             const num = parseFloat(data);
+             const formatted = !isNaN(num) ? formatNumber(num) : data;
+             return `<span style="font-weight: bold;">${formatted}</span>`;
+        };
+
+        const columns = [
+            { data: 'uid', title: 'UID', filterable: true, width: '250px' },
+            { 
+                data: 'fresh', 
+                title: 'State', 
+                filterable: true,
+                type: 'select',
+                render: (data) => {
+                    let color = 'var(--color-common)';
+                    if (data === 'not in baseline') color = 'var(--color-target)';
+                    else if (data === 'not in target') color = 'var(--color-baseline)';
+                    return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+                }
+            },
+            { 
+                data: 'baseline_abs', 
+                title: 'Baseline Abs', 
+                type: 'number',
+                render: (data) => formatBold(data)
+            },
+            { 
+                data: 'target_abs', 
+                title: 'Target Abs', 
+                type: 'number',
+                render: (data) => formatBold(data)
+            },
+            { 
+                data: 'total_rel_delta', 
+                title: 'Total Rel Δ', 
+                type: 'number',
+                render: (data) => formatDelta(data, '%')
+            },
+            { 
+                data: 'abs_delta', 
+                title: 'Abs Δ', 
+                type: 'number',
+                render: (data) => formatDelta(data)
+            },
+            { 
+                data: 'rel_delta', 
+                title: 'Rel Δ', 
+                type: 'number',
+                render: (data) => formatDelta(data, '%')
+            }
+        ];
+
+        new PerunTable('custom-table-container', {
+            data: rawData,
+            columns: columns,
+            itemsPerPage: 10
+        });
+    })();
+</script>
