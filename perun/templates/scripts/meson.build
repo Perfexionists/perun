@@ -1,10 +1,11 @@
 perun_templates_script_dir = perun_templates_dir / 'scripts'
 
 perun_templates_script_files = files(
-    'chatbot.html.jinja2',
+    'custom_table.js',
     'division_anchor.js',
     'environment_sidepanel.js',
     'flame_graph_js.html.jinja2',
+    'chatbot.html.jinja2',
     'navigation_sidepanel.js',
     'notes.js',
     'sankey_graph_js.html.jinja2',

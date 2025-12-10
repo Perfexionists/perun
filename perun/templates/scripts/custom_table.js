@@ -13,7 +13,6 @@ class PerunTable {
         this.sortDirection = 'asc';
         this.filters = {};
 
-        // Internal state for filtered/sorted data
         this.processedData = [...this.data];
 
         this.init();
@@ -21,7 +20,6 @@ class PerunTable {
 
     init() {
         this.container.classList.add('perun-table-container');
-        // Ensure flex column layout for pagination positioning
         this.container.style.display = 'flex';
         this.container.style.flexDirection = 'column';
         this.render();

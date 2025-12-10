@@ -1,16 +1,13 @@
 {% import 'macros/section_title.html.jinja2' as m_title %}
 
 <div class="section">
-    {{ m_title.display_title("Custom Table", "custom-table", "", notes_enabled) }}
+    {{ m_title.display_title("Custom Traces Table", "custom-table", "", notes_enabled) }}
     <div id="custom-table-container" class="comparison_container"></div>
 </div>
 
-<style>
-    {% include 'style/table.css' %}
-</style>
-
 <script>
-    {% include 'scripts/table.js' %}
+
+    {% include 'scripts/custom_table.js' %}
 
     (function() {
         const rawData = [

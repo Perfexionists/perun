@@ -8,27 +8,24 @@
     <!-- JS AND CSS LIBRARIES -->
     {% if not offline %}
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
-        <!--<link href=" https://cdn.jsdelivr.net/npm/ag-grid-community@34.3.1/styles/ag-grid.min.css " rel="stylesheet">-->
 
         <!-- <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>-->
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
+
         {% if chatbot %}
             <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
             <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
             <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/marked@15.0.12/lib/marked.umd.min.js"></script>
             <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
-            <script src=" https://cdn.jsdelivr.net/npm/ag-grid-community@34.3.1/dist/ag-grid-community.min.js "></script>
-    {% endif %}
+        {% endif %}
     {% else %}
         <style>
             {% if chatbot %}
                 {% include "libs/bootstrap.min.css" %}
-
             {% endif %}
             {% include "libs/dataTables.dataTables.min.css" %}
-            {#% include "libs/ag-grid.min.css" %#}
         </style>
         <script>
             {% if chatbot %}
@@ -40,7 +37,6 @@
             {#% include 'libs/plotly-2.30.0.min.js' %#}
             {% include 'libs/dataTables.min.js' %}
             {% include 'libs/dataTables.select.min.js' %}
-            {% include 'libs/ag-grid-community.min.js' %}
         </script>
 
     {% endif %}
@@ -63,6 +59,8 @@
         {% include 'style/tooltip.css' %}
 
         {% include 'style/traces_table.css' %}
+        {% include 'style/custom_table.css' %}
+
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
 
@@ -105,40 +103,11 @@
     <!-- TABLE WITH TRACES -->
     {% include 'diff_sections/section_traces_table.html.jinja2' %}
 
-    <!-- SANKEY GRAPH -->
-    {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}
-
     <!-- TABLE -->
     {% include 'diff_components/custom_table.html.jinja2' %}
 
-    <div class="grid-wrapper" style="width: 80%;">
-        <div style="padding: 20px; border-bottom: 1px solid #eee;">
-            <h2 style="margin:0; color:#1e293b;">Team Directory</h2>
-        </div>
-
-        <div id="myGrid" class="ag-theme-quartz" style="height: 530px; width: 100%;"></div>
-    </div>
-
-    <script>
-        const gridOptions = {
-            // Row Data: The data to be displayed.
-            rowData: [
-                { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-                { make: "Ford", model: "F-Series", price: 33850, electric: false },
-                { make: "Toyota", model: "Corolla", price: 29600, electric: false },
-            ],
-            // Column Definitions: Defines the columns to be displayed.
-            columnDefs: [
-                { field: "make" },
-                { field: "model" },
-                { field: "price" },
-                { field: "electric" }
-            ]
-        };
-
-        const myGridElement = document.querySelector('#myGrid');
-        agGrid.createGrid(myGridElement, gridOptions);
-    </script>
+    <!-- SANKEY GRAPH -->
+    {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}
 
     <!-- VULNERABILITIES -->
     {% include 'diff_sections/section_vulnerabilities.html.jinja2' %}
@@ -174,6 +143,7 @@
     {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
     {% include 'scripts/traces_table_js.html.jinja2' %}
+    {% include 'scripts/custom_table.js' %}
     {% include 'scripts/chatbot.html.jinja2' %}
     {#% include 'scripts/sankey_graph_js.html.jinja2' %#}
 
