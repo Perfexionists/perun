@@ -188,35 +188,3 @@
     font-size: 0.9em;
     margin: 0 10px;
 }
-
-/* Mono Theme Specific Overrides */
-body.mono-theme .perun-table-container {
-    border: 2px solid var(--color-primary);
-    box-shadow: none;
-    border-radius: 0;
-}
-
-body.mono-theme .perun-table th {
-    background-color: var(--color-primary);
-    color: var(--color-secondary);
-    border-bottom: 2px solid var(--color-primary);
-    text-transform: uppercase;
-}
-
-body.mono-theme .perun-table input,
-body.mono-theme .perun-table select {
-    border-radius: 0;
-    border: 1px solid var(--color-primary);
-}
-
-body.mono-theme .perun-pagination button {
-    border-radius: 0;
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
-    background-color: var(--color-secondary);
-}
-
-body.mono-theme .perun-pagination button:hover:not(:disabled) {
-    background-color: var(--color-primary);
-    color: var(--color-secondary);
-}
