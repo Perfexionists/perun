@@ -1,6 +1,6 @@
 <script>
     // Selection table
-    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","baseline_abs": "{{ val.baseline_abs }}","target_abs": "{{ val.target_abs }}","total_rel_delta": "{{ val.total_rel_delta }}","abs_delta": "{{ val.abs_delta }}","rel_delta": "{{ val.rel_delta }}" },{%- endfor %}]};
+    let table = {"data":[{%- for val in selection_table %}{"uid":"{{ val.uid }}","index":"{{ val.index }}","fresh": "{{ val.fresh }}","stats": {{ val.stats|map('list')|list }},"traces": {{ val.trace_stats|map('list')|list }},"type": "{{ val.main_stat }}","baseline_abs": "{{ val.baseline_abs }}","target_abs": "{{ val.target_abs }}","prop_rel_delta": "{{ val.proportional_rel_delta }}","abs_delta": "{{ val.abs_delta }}","rel_delta": "{{ val.rel_delta }}" },{%- endfor %}]};
     let selection_table = $("#table").DataTable({
         data: table.data,
         columns: [
@@ -40,7 +40,7 @@
                 className: "dt-body-right",
                 render: function(data, type) {return (type === 'display') ? format_value(data) : data;}
             }, {
-                data: "total_rel_delta",
+                data: "prop_rel_delta",
                 render: function(data, type) {return (type === 'display') ? format_relative(data) : data;}
             }, {
                 data: "abs_delta",

@@ -40,6 +40,8 @@ from .imports import (
     import_perf_from_script as import_perf_from_script,
     import_perf_from_stack as import_perf_from_stack,
     import_elk_from_json as import_elk_from_json,
+    parse_perf_import_entries as parse_perf_import_entries,
+    parse_metadata as parse_metadata,
 )
 
 from .query import (

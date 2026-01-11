@@ -1139,7 +1139,7 @@ my $inc = <<INC;
         // display matched percent
         var matched = calculate_matched(res.matches, res.maxwidth);
 		matchedtxt.classList.remove("hide");
-		matchedtxt.firstChild.nodeValue = "Matched (search): " + matched.totalSamples + " samples, " + matched.pct + "%";
+		matchedtxt.firstChild.nodeValue = "Matched (search): " + matched.totalSamples + " $countname, " + matched.pct + "%";
 	}
 	function search_hover(term) {
 	    if (term) hoverSearchTerm = term;
@@ -1149,7 +1149,7 @@ my $inc = <<INC;
 	    // display matched percent
         var matched = calculate_matched(res.matches, res.maxwidth);
 		matchedHoverTxt.classList.remove("hide");
-		matchedHoverTxt.firstChild.nodeValue = "Matched (mouseover): " + matched.totalSamples + " samples, " + matched.pct + "%";
+		matchedHoverTxt.firstChild.nodeValue = "Matched (mouseover): " + matched.totalSamples + " $countname, " + matched.pct + "%";
 	}
 	// The func_expr may be either a regex or a simple string
     function find_frames(func_expr, is_hover) {
