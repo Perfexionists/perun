@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Configuration files &#8212; Perun 0.25.6 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.26.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=b72c10c5"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/documentation_options.js?v=4aa2dafa"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Customize Logs and Statuses" href="logs.html" />
@@ -252,7 +252,7 @@ class attribute <code class="docutils literal notranslate"><span class="pre">Pro
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
-<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'stem',</span> <span class="pre">'copy',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></em><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'stem',</span> <span class="pre">'copy',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></span><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="std confkey">
@@ -553,6 +553,7 @@ instance wrapper:</p>
 vcs.type:<span class="w"> </span>git
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -623,6 +624,7 @@ $<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </s
 general.editor:<span class="w"> </span>vim
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;
 </pre></div>
 </div>
@@ -655,6 +657,7 @@ wrapper:</p>
 format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w"> </span>%source%<span class="w"> </span><span class="p">|</span><span class="w"> </span>%collector%<span class="w"> </span><span class="p">|</span>
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span>&lt;value&gt;
 </pre></div>
 </div>
@@ -679,6 +682,7 @@ format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w">
 specified in the nearest perun configuration..</p>
 <p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
 <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>edit<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -752,7 +756,7 @@ specified in the nearest perun configuration..</p>
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |

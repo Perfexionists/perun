@@ -5,13 +5,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command Line Interface &#8212; Perun 0.25.6 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.26.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=b72c10c5"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/documentation_options.js?v=4aa2dafa"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Collectors Overview" href="collectors.html" />
@@ -89,6 +89,7 @@ following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">run</span> <span class="n">matrix</span>
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -229,7 +230,7 @@ following:</p>
 <dl class="object">
 <dt class="sig sig-object">
 <span class="sig-name descname"><span class="pre">showdiff</span></span></dt>
-<dd><p>Interprets the difference of selected two…</p>
+<dd><p>Interprets the difference of baseline and…</p>
 </dd></dl>
 
 <dl class="object">
@@ -275,6 +276,7 @@ performance versioning system, the infrastructure is only reinitialized.</p>
 by setting the <code class="docutils literal notranslate"><span class="pre">--vcs-type</span></code> parameter (currently we support <code class="docutils literal notranslate"><span class="pre">git</span></code>).
 Additional parameters can be passed to the wrapped control system initialization
 using the <code class="docutils literal notranslate"><span class="pre">--vcs-params</span></code>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>init<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;path&gt;
 </pre></div>
 </div>
@@ -360,6 +362,7 @@ instance wrapper:</p>
 vcs.type:<span class="w"> </span>git
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -430,6 +433,7 @@ $<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </s
 general.editor:<span class="w"> </span>vim
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;
 </pre></div>
 </div>
@@ -462,6 +466,7 @@ wrapper:</p>
 format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w"> </span>%source%<span class="w"> </span><span class="p">|</span><span class="w"> </span>%collector%<span class="w"> </span><span class="p">|</span>
 </pre></div>
 </div>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;key&gt;<span class="w"> </span>&lt;value&gt;
 </pre></div>
 </div>
@@ -486,6 +491,7 @@ format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w">
 specified in the nearest perun configuration..</p>
 <p>Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
 <a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>config<span class="w"> </span>edit<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -537,6 +543,7 @@ profiling <code class="docutils literal notranslate"><span class="pre">mybin</sp
 perun, if &lt;profile&gt; points to incorrect profile (i.e. not w.r.t.
 <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>) or &lt;hash&gt; does not point to valid minor version ref.</p>
 <p>See <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a> for information how perun handles profiles internally.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>add<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;profile&gt;
 </pre></div>
 </div>
@@ -610,6 +617,7 @@ of registered profiles of current <code class="docutils literal notranslate"><sp
 <p>An error is raised if the command is executed outside of range of any
 Perun or if &lt;profile&gt; is not found inside the &lt;hash&gt; index.</p>
 <p>See <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a> for information how perun handles profiles internally.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>rm<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;profile&gt;
 </pre></div>
 </div>
@@ -650,6 +658,7 @@ set these keys in the local configuration for further usage. This means that
 using the pending or index tags will consider this order.</p>
 <p>Refer to <a class="reference internal" href="logs.html#logs-status"><span class="std std-ref">Customizing Statuses</span></a> for information how to customize the outputs of
 <code class="docutils literal notranslate"><span class="pre">status</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.status"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.status</span></code></a> in nearest configuration.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>status<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -689,6 +698,7 @@ default using <code class="docutils literal notranslate"><span class="pre">less<
 <p>Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for information how to customize the outputs of
 <code class="docutils literal notranslate"><span class="pre">log</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.shortlog"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">format.shortlog</span></code></a> in nearest
 configuration.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>log<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
@@ -712,6 +722,7 @@ configuration.</p>
 <p>Generates batch of profiles w.r.t. specification of list of jobs.</p>
 <p>Either runs the job matrix stored in local.yml configuration or lets the
 user construct the job run using the set of parameters.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -799,6 +810,7 @@ The profiles are then postprocessed, first using the
 and lifetimes of profiles. For list of available collectors and
 postprocessors refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a> and
 <a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a> respectively.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>job<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -871,6 +883,7 @@ of profiling data and postprocessors that alter the collected profiles.</p>
 <p>Refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="jobs.html#jobs-matrix"><span class="std std-ref">Job Matrix Format</span></a> for more details how to specify
 the job matrix inside local configuration and to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> how to work
 with Perun’s configuration files.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>run<span class="w"> </span>matrix<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -923,6 +936,7 @@ degradation:
 <li><p>Exclusive Time Outliers (ETO)</p></li>
 </ol>
 </div></blockquote>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -980,6 +994,7 @@ and its predecessor minor versions.</p>
 When it finds such a pair, it runs the check according to the strategies set in the
 configuration (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
 <p>By default, the <code class="docutils literal notranslate"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>head<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
@@ -999,6 +1014,7 @@ configuration (see <a class="reference internal" href="degradation.html#degradat
 tries to find a suitable predecessor profile (corresponding to some <cite>baseline</cite> minor version)
 and runs the performance check according to the set of strategies set in the configuration
 (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>all<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;hash&gt;
 </pre></div>
 </div>
@@ -1032,6 +1048,7 @@ there is a match, the found profile will be used.</p></li>
 is asked for confirmation by user.</p></li>
 </ol>
 </div></blockquote>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>check<span class="w"> </span>profiles<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;baseline&gt;<span class="w"> </span>&lt;target&gt;
 </pre></div>
 </div>
@@ -1059,6 +1076,7 @@ is asked for confirmation by user.</p></li>
 <section id="perun-fuzz">
 <h3>perun fuzz<a class="headerlink" href="#perun-fuzz" title="Link to this heading">¶</a></h3>
 <p>Performs fuzzing for the specified command according to the initial sample of workload.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>fuzz<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1238,6 +1256,7 @@ by the <code class="docutils literal notranslate"><span class="pre">-p</span></c
 <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a>. For a more subtle running of profiling jobs and
 more complex configuration consult either <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or
 <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span> <span class="pre">--help</span></code>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>collect<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -1450,6 +1469,7 @@ models (if the profile was postprocessed by regression analysis). Run
 information about <cite>scatter plots</cite>.</p>
 <p>Refer to <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> for more thorough description and
 examples of <cite>trace</cite> collector.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>collect<span class="w"> </span>trace<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1646,6 +1666,7 @@ description, such as the type of allocation, trace, etc.</p>
 },</pre>
 <p>Refer to <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a> for more thorough description and
 examples of <cite>memory</cite> collector.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>collect<span class="w"> </span>memory<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1696,6 +1717,7 @@ in the following form:</p>
 }</pre>
 <p>Refer to <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> for more thorough description and examples
 of <cite>trace</cite> collector.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>collect<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1745,6 +1767,7 @@ description, such as the type of allocation, trace, etc.</p>
 
 Refer to :ref:`collectors-bounds` for more thorough description and
 examples of `bounds` collector.</pre>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>collect<span class="w"> </span>bounds<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1812,6 +1835,7 @@ analysis:</p>
 <a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a>. For a more subtle running of profiling jobs and
 more complex configuration consult either <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or
 <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span> <span class="pre">--help</span></code>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;profile&gt;<span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -1897,6 +1921,7 @@ follows:</p>
 <p>For more details about regression analysis refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
 suitable resources refer to <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>regression_analysis<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -1983,6 +2008,7 @@ the code of these methods, you can visit <a class="reference external" href="htt
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>regressogram<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2056,6 +2082,7 @@ the <em>exponential</em> moving average (<strong>ema</strong>).</p>
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer
 to <a class="reference internal" href="postprocessors.html#postprocessors-moving-average"><span class="std std-ref">Moving Average Methods</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>moving_average<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -2137,6 +2164,7 @@ on both sides</div>
 <p>For more details about this window functions or for their visual view you can
 see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows">SciPyWindow</a>.</p>
 </div></blockquote>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>moving_average<span class="w"> </span>sma<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2174,6 +2202,7 @@ for the option for choosing the window type, which do not make sense in this app
 only difference between these two methods are the way of computation the values in the
 individual sub-intervals. Simple Moving <strong>Median</strong> is not based on the computation of
 average, but as the name suggests, it based on the <strong>median</strong>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>moving_average<span class="w"> </span>smm<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2222,6 +2251,7 @@ value of EMA is used the relevant formula. It is important do not confuse <stron
 Moving Average with <strong>Simple</strong> Moving Average. An <strong>Exponential</strong> Moving Average behaves
 quite differently from the second mentioned method, because it is the function of weighting
 factor or length of the average.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>moving_average<span class="w"> </span>ema<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2291,6 +2321,7 @@ regression methods</div>
 </div></blockquote>
 <p>For more details about this approach of non-parametric analysis refer
 to <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression"><span class="std std-ref">Kernel Regression Methods</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -2432,6 +2463,7 @@ from the CLI and you can see this in the list below. All these options are param
 <em>EstimatorSettings</em> (see <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_density.EstimatorSettings.html">EstimatorSettings</a>), that optimizing the kernel bandwidth based on the
 these specified settings.</p>
 <p>In the case of confusion about this approach of kernel regression, you can visit <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_regression.KernelReg.html#statsmodels.nonparametric.kernel_regression.KernelReg">StatsModels</a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span>estimator-settings<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2502,6 +2534,7 @@ This value will be used to execute the kernel regression. The value of kernel ba
 resulting estimate may change occasionally, specifically in the case, when the bandwidth value
 is too low to execute the kernel regression. Then will be a bandwidth value approximated to the
 closest appropriate value, so that is not decreased the accuracy of the resulting estimate.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span>user-selection<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2564,6 +2597,7 @@ symmetric and does not have fat tails, it works fine:</p>
 <p>where <span class="math notranslate nohighlight">\(\sigma\)</span> marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Standard_deviation">StandardDeviation</a> and IQR marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Interquartile_range">InterquartileRange</a>.</p>
 </div></blockquote>
 </div></blockquote>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span>method-selection<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2703,6 +2737,7 @@ The supported methods are <em>Scotts’s Rule</em> and <em>Silverman’s Rule</e
 <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-method-selection"><span class="std std-ref">perun postprocessby kernel-regression method-selection</span></a>. This parameter cannot be entered in
 combination with &lt;bandwidth-value&gt;, then will be ignored and will be accepted value from
 &lt;bandwidth-value&gt;.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span>kernel-smoothing<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2769,6 +2804,7 @@ divided on the base of size the given step &lt;gamma-step&gt;. The selection of 
 this range will be executing by minimizing <a class="reference external" href="https://en.wikipedia.org/wiki/Mean_squared_error">mean-squared-error</a> in
 <em>leave-one-out cross-validation</em>. The selected <em>bandwidth-value</em> will serves for <em>gaussian</em>
 kernel in resulting estimate: <span class="math notranslate nohighlight">\(K(x, y) = exp(-gamma * ||x-y||^2)\)</span>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>postprocessby<span class="w"> </span>kernel-regression<span class="w"> </span>kernel-ridge<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -2829,6 +2865,7 @@ using in raw JSON format:</p>
 </div>
 <p>For a thorough list and description of supported visualization techniques
 refer to <a class="reference internal" href="views.html#views-list"><span class="std std-ref">Supported Visualizations</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;profile&gt;<span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -2892,6 +2929,7 @@ the program):</p>
                                     &lt;per&gt;</pre>
 <p>Refer to <a class="reference internal" href="views.html#views-bars"><span class="std std-ref">Bars Plot</span></a> for more thorough description and example of
 <cite>bars</cite> interpretation possibilities.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>bars<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;aggregation_function&gt;
 </pre></div>
 </div>
@@ -3001,6 +3039,7 @@ and useful talks and visualization techniques!</p>
 examples of the interpretation technique. Refer to
 <a class="reference internal" href="profile.html#perun.profile.convert.to_flame_graph_format" title="perun.profile.convert.to_flame_graph_format"><code class="xref py py-func docutils literal notranslate"><span class="pre">perun.profile.convert.to_flame_graph_format()</span></code></a> for more details how
 the profiles are converted to the flame graph format.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>flamegraph<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3055,6 +3094,7 @@ structure over which the given function operated:</p>
                                   &lt;through&gt;</pre>
 <p>Refer to <a class="reference internal" href="views.html#views-flow"><span class="std std-ref">Flow Plot</span></a> for more thorough description and example of
 <cite>flow</cite> interpretation possibilities.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>flow<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;aggregation_function&gt;
 </pre></div>
 </div>
@@ -3167,6 +3207,7 @@ width.</p>
 <cite>scatter</cite> interpretation possibilities. For more thorough explanation of
 regression analysis and models refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>scatter<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3232,6 +3273,7 @@ regression analysis and models refer to
 <h3>perun utils<a class="headerlink" href="#perun-utils" title="Link to this heading">¶</a></h3>
 <p>Contains set of developer commands, wrappers over helper scripts and other functions that are
 not the part of the main perun suite.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>utils<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -3264,6 +3306,7 @@ templates stored in <cite>../perun/templates</cite> directory and uses _jinja as
 templates can be parametrized by the following by options (if not specified ‘none’ is used).</p>
 <p>Unless <code class="docutils literal notranslate"><span class="pre">--no-edit</span></code> is set, after the successful creation of the files, an external editor,
 which is specified by <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal notranslate"><span class="pre">general.editor</span></code></a> configuration key.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>utils<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>&lt;template&gt;<span class="w"> </span>&lt;unit&gt;
 </pre></div>
 </div>
@@ -3309,6 +3352,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 <section id="perun-temp">
 <h3>perun temp<a class="headerlink" href="#perun-temp" title="Link to this heading">¶</a></h3>
 <p>Provides a set of operations for maintaining the temporary directory (.perun/tmp/) of perun.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>temp<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -3338,6 +3382,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 files in specific subdirectory by supplying the ROOT path.</p>
 <p>The path can be either absolute or relative - the base of the relative path is the tmp/
 directory.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>temp<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>ROOT<span class="o">]</span>
 </pre></div>
 </div>
@@ -3396,6 +3441,7 @@ directory.</p>
 useful when some files or directories were deleted manually and the resulting inconsistency is
 causing troubles - however, this should be a very rare condition.</p>
 <p>Invoking the ‘temp list’ command should also synchronize the internal state automatically.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>temp<span class="w"> </span>sync<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3403,6 +3449,7 @@ causing troubles - however, this should be a very rare condition.</p>
 <section id="perun-stats">
 <h3>perun stats<a class="headerlink" href="#perun-stats" title="Link to this heading">¶</a></h3>
 <p>Provides a set of operations for manipulating the stats directory (.perun/stats/) of perun.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -3444,6 +3491,7 @@ causing troubles - however, this should be a very rare condition.</p>
 limited number of the most recent files by default. This can be, however, changed by the
 –top and –from-minor options.</p>
 <p>The default output format is ‘file size | minor version | file name’.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>list-files<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3496,6 +3544,7 @@ limited number of the most recent files by default. This can be, however, change
 This command shows only a limited number of the most recent versions by default. This can be,
 however, changed by the –top and –from-minor options.</p>
 <p>The default output format is ‘directory size | minor version | file count’.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>list-versions<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3545,6 +3594,7 @@ however, changed by the –top and –from-minor options.</p>
 <section id="perun-stats-delete">
 <h3>perun stats delete<a class="headerlink" href="#perun-stats-delete" title="Link to this heading">¶</a></h3>
 <p>Allows the deletion of stat files, minor versions or the whole stats directory.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
@@ -3572,6 +3622,7 @@ however, changed by the –top and –from-minor options.</p>
 <h3>perun stats delete file<a class="headerlink" href="#perun-stats-delete-file" title="Link to this heading">¶</a></h3>
 <p>Deletes a stat file in either specific minor version or across all the minor versions in the
 stats directory.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>delete<span class="w"> </span>file<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>NAME
 </pre></div>
 </div>
@@ -3599,6 +3650,7 @@ stats directory.</p>
 <section id="perun-stats-delete-minor">
 <h3>perun stats delete minor<a class="headerlink" href="#perun-stats-delete-minor" title="Link to this heading">¶</a></h3>
 <p>Deletes the specified minor version directory in stats with all its content.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>delete<span class="w"> </span>minor<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>VERSION
 </pre></div>
 </div>
@@ -3620,6 +3672,7 @@ stats directory.</p>
 <section id="perun-stats-delete-ll">
 <h3>perun stats delete ll<a class="headerlink" href="#perun-stats-delete-ll" title="Link to this heading">¶</a></h3>
 <p>Deletes the whole content of the <cite>stats</cite> directory.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>delete<span class="w"> </span>ll<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3637,6 +3690,7 @@ stats directory.</p>
 custom files and directories (i.e. not all the custom-made or manually created files /
 directories can be identified as custom, e.g. when they comply the correct format etc.)
 and by removing the empty minor version directories.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>clean<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3659,6 +3713,7 @@ and by removing the empty minor version directories.</p>
 <p>Synchronizes the actual contents of the stats directory with the internal ‘index’ file.
 The synchronization should be needed only rarely - mainly in cases when the stats directory
 has been manually tampered with and some files or directories were created or deleted by a user.</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>stats<span class="w"> </span>sync<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -3798,7 +3853,7 @@ has been manually tampered with and some files or directories were created or de
       &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
