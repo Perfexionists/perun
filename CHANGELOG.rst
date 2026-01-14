@@ -1,6 +1,15 @@
 Changelog
 =========
 
+
+0.26.0 (2026-01-14)
+-------------------
+
+  - Showdiff report now supports two variants: native and folded.
+  - Showdiff folded report works on external folded profiles (e.g., perf-folded) without the need to import them first.
+  - Breaking CLI changes: showdiff CLI has been changed substantially.
+
+
 0.25.6 (2025-11-05)
 -------------------
 
