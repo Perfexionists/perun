@@ -13,8 +13,16 @@ if TYPE_CHECKING:
     from perun import profile
 
 
+DEFAULT_AGGREGATE_FUNC: str = "median"
+
 FG_DEFAULT_IMAGE_WIDTH: int = 800
 FG_DEFAULT_MIN_WIDTH: float = 0.1
+
+DEFAULT_MAX_FUNCTION_TRACES: int = 10
+DEFAULT_TOP_DIFFS: int = 50
+DEFAULT_FUNCTION_THRESHOLD: float = 0.1
+DEFAULT_TRACE_THRESHOLD: float = 0.001
+DEFAULT_SQUASH_RE: str = r".*"
 
 
 class HeaderDisplayStyle(enum.Enum):

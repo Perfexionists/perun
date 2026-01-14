@@ -118,7 +118,7 @@
     <!-- TRACES TABLE DATA -->
     <script>
         {% autoescape off %}
-        let nodes = {{ nodes }}
+        let nodes = {{ nodes|list }}
         let stat_map = {{ stat_list }}
         let unit_map = {{ units }}
         {% endautoescape %}

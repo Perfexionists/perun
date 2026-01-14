@@ -311,7 +311,7 @@ class LocalPolynomialKernel1D(RegressionKernelMethod):
             WxXx = Wx * Xx
             XWX = np.dot(Xx.T, WxXx)
             Lx = scipy.linalg.solve(XWX, WxXx.T)[0]
-            out[i] = np.dot(Lx, ydata)
+            out[i] = np.dot(Lx, ydata)[0]
         return out
 
 

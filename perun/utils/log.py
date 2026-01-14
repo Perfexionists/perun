@@ -310,8 +310,8 @@ def major_info(msg: str, colour: ColorChoiceType = "blue", no_title: bool = Fals
     """Prints major information, formatted in brackets [], in bold and optionally in color
 
     :param msg: printed message
-    :param no_title: if set to true, then the title will be printed as it is
     :param colour: optional colour
+    :param no_title: if set to true, then the title will be printed as it is
     """
     stripped_msg = msg.strip() if no_title else msg.strip().title()
     printed_msg = "[" + in_color(stripped_msg, colour, attribute_style=["bold"]) + "]"

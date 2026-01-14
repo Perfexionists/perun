@@ -1,3 +1,4 @@
+ls 647
 ls;[ls];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;path_getxattr;getxattr;vfs_getxattr;v9fs_xattr_handler_get;v9fs_fid_xattr_get;p9_client_xattrwalk;p9_client_rpc;p9_fd_request;queue_work_on;__queue_work;insert_work 788525
 ls;[ls];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;path_getxattr;getxattr;vfs_getxattr;v9fs_xattr_handler_get;v9fs_fid_xattr_get;p9_client_xattrwalk;p9_client_rpc;schedule;__schedule;dequeue_task_fair;dequeue_entity 1081404
 ls;[ls];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;path_getxattr;getxattr;vfs_getxattr;v9fs_xattr_handler_get;v9fs_fid_xattr_get;p9_client_xattrwalk;p9_client_rpc;schedule;__schedule;finish_task_switch.isra.0;__perf_event_task_sched_in;__intel_pmu_enable_all.isra.0 173
@@ -125,6 +126,7 @@ ls;[unknown];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;path_getxatt
 ls;[unknown];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;path_getxattr;user_path_at_empty;getname_flags.part.0;strncpy_from_user;__check_object_size 833353
 ls;[unknown];lgetxattr;entry_SYSCALL_64_after_hwframe;do_syscall_64;syscall_exit_to_user_mode 303686
 ls;[unknown];lgetxattr;syscall_return_via_sysret 841935
+ls;[unknown];[unknown];[unknown] 10123
 ls;__GI___fstatat64;entry_SYSCALL_64_after_hwframe;do_syscall_64;__do_sys_newfstatat;vfs_statx;v9fs_vfs_getattr_dotl;p9_client_getattr_dotl;p9_client_rpc;p9_client_prepare_req.part.0;p9_fcall_init;kmem_cache_alloc 110150
 ls;__strlen_avx2 972738
 ls;statx;entry_SYSCALL_64 405507

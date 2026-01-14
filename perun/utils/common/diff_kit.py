@@ -100,7 +100,7 @@ def generate_specification(prof: profile.Profile) -> list[profile.ProfileHeaderE
     :return: the profile specification as a list of entries
     """
     command = " ".join([prof["header"]["cmd"], prof["header"]["workload"]]).strip()
-    exitcode = _format_exit_codes(prof["header"].get("exitcode", "?"))
+    exitcode = format_exit_codes(prof["header"].get("exitcode", "?"))
     machine_info = prof.get("machine", {})
     return [
         profile.ProfileHeaderEntry(
@@ -175,6 +175,11 @@ def generate_diff_of_headers(
     for header_key in sorted(header_map.keys()):
         is_diff: bool = False
         lhs_data, rhs_data = _generate_missing_entry(*header_map[header_key])
+        if header_key == "exitcode":
+            # TODO: quick hack, exit codes are already formatted.
+            lhs_diff.append(lhs_data.as_tuple())
+            rhs_diff.append(rhs_data.as_tuple())
+            continue
         if lhs_data.details or rhs_data.details:
             # There are details in this entry, compare them one by one
             is_diff, lhs_details, rhs_details = _generate_diff_of_details(
@@ -366,7 +371,7 @@ def _emphasize(value: str, color: ColorVariableType) -> str:
     return f'<span style="color: var(--color-{color}); font-weight: bold">{value}</span>'
 
 
-def _format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
+def format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
     """Format (a collection of) exit code(s) for HTML output.
 
     Exit codes that are non-zero will be emphasized with a color.
@@ -450,7 +455,7 @@ def _format_stat_value(value: str | float | tuple[str, int], stat_unit: str) -> 
                 value /= 1000.0
             else:
                 break
-    return f"{value:.3f}{unit}"
+    return f"{value:.2f}{unit}"
 
 
 @dataclasses.dataclass
