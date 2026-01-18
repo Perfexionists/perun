@@ -12,6 +12,7 @@ class TracesTable {
         this.sortColumn = null;
         this.sortDirection = 'asc';
         this.filters = {};
+        this.regexModes = {};
 
         this.processedData = [...this.data];
 
@@ -42,14 +43,12 @@ class TracesTable {
     processData() {
         let result = [...this.data];
 
-        // Filtering
         Object.keys(this.filters).forEach(colKey => {
             const filterValue = this.filters[colKey];
             if (filterValue) {
                 result = result.filter(row => {
                     const cellValue = row[colKey];
 
-                    // Numeric Range Filtering
                     if (typeof filterValue === 'object' && (filterValue.min !== undefined || filterValue.max !== undefined)) {
                         const numValue = parseFloat(cellValue);
                         if (isNaN(numValue)) return false;
@@ -59,21 +58,28 @@ class TracesTable {
                         return true;
                     }
 
-                    // Standard string filtering
                     const strCellValue = String(cellValue || '').toLowerCase();
+                    
+                    if (this.regexModes[colKey]) {
+                        try {
+                            const regex = new RegExp(filterValue, 'i');
+                            return regex.test(strCellValue);
+                        } catch (e) {
+                            return false; // Invalid regex, strict filtering
+                        }
+                    }
+
                     const strFilterValue = String(filterValue).toLowerCase();
                     return strCellValue.includes(strFilterValue);
                 });
             }
         });
 
-        // Sorting
         if (this.sortColumn) {
             result.sort((a, b) => {
                 let valA = a[this.sortColumn];
                 let valB = b[this.sortColumn];
 
-                // Try numeric sort
                 const numA = parseFloat(valA);
                 const numB = parseFloat(valB);
                 if (!isNaN(numA) && !isNaN(numB)) {
@@ -92,7 +98,6 @@ class TracesTable {
 
         this.processedData = result;
 
-        // Reset to page 1 if current page is out of bounds
         const maxPage = Math.ceil(this.processedData.length / this.itemsPerPage) || 1;
         if (this.currentPage > maxPage) {
             this.currentPage = 1;
@@ -100,7 +105,6 @@ class TracesTable {
     }
 
     render() {
-        // Save focus state if re-rendering
         const activeElement = document.activeElement;
         const activeElementId = activeElement ? activeElement.id : null;
         const selectionStart = activeElement ? activeElement.selectionStart : null;
@@ -118,17 +122,14 @@ class TracesTable {
         this.container.appendChild(table);
         this.container.appendChild(this.createPagination());
 
-        // Restore focus
         if (activeElementId) {
             const el = document.getElementById(activeElementId);
             if (el) {
                 el.focus();
-                // Only attempt to set selection range on inputs that support it
                 if (selectionStart !== null && (el.type === 'text' || el.type === 'search' || el.type === 'password' || el.type === 'tel' || el.type === 'url' || el.type === 'number')) {
                     try {
                         el.setSelectionRange(selectionStart, selectionEnd);
                     } catch (e) {
-                        // Ignore errors if element doesn't support selection range
                         console.warn('Could not set selection range', e);
                     }
                 }
@@ -143,7 +144,6 @@ class TracesTable {
         filterTr.className = 'filter-row';
 
         this.columns.forEach((col, index) => {
-            // Header Cell
             const th = document.createElement('th');
             th.innerText = col.title || col.data;
             th.className = 'sortable';
@@ -155,23 +155,21 @@ class TracesTable {
             }
             th.addEventListener('click', () => {
                 this.handleSort(col.data);
-                this.render(); // Re-render on sort
+                this.render();
             });
             tr.appendChild(th);
 
-            // Filter Cell
             const thFilter = document.createElement('th');
             if (col.filterable !== false) {
                 if (col.type === 'select') {
                     const select = document.createElement('select');
                     select.id = `filter-${col.data}`;
 
-                    // Get unique values for options
                     const uniqueValues = [...new Set(this.data.map(item => item[col.data]))].sort();
 
                     const defaultOption = document.createElement('option');
                     defaultOption.value = '';
-                    defaultOption.innerText = ''; // Empty default option
+                    defaultOption.innerText = '';
                     select.appendChild(defaultOption);
 
                     uniqueValues.forEach(val => {
@@ -218,15 +216,43 @@ class TracesTable {
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.id = `filter-${col.data}`;
-                    input.placeholder = 'Filter...';
                     input.value = this.filters[col.data] || '';
+                    
+                    if (col.data === 'uid') {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'regex-filter-wrapper';
+                        
+                        input.placeholder = this.regexModes[col.data] ? 'Regex...' : 'Filter...';
+                        
+                        const toggleBtn = document.createElement('button');
+                        toggleBtn.className = 'regex-toggle-btn';
+                        toggleBtn.innerHTML = '.*';
+                        toggleBtn.title = 'Toggle Regex Search';
+                        if (this.regexModes[col.data]) {
+                            toggleBtn.classList.add('active');
+                        }
+                        
+                        toggleBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.regexModes[col.data] = !this.regexModes[col.data];
+                            input.placeholder = this.regexModes[col.data] ? 'Regex...' : 'Filter...';
+                            toggleBtn.classList.toggle('active');
+                            this.handleFilter(col.data, input.value);
+                            this.render();
+                        });
 
-                    // Use 'input' event but rely on render restoring focus
+                        wrapper.appendChild(input);
+                        wrapper.appendChild(toggleBtn);
+                        thFilter.appendChild(wrapper);
+                    } else {
+                        input.placeholder = 'Filter...';
+                        thFilter.appendChild(input);
+                    }
+
                     input.addEventListener('input', (e) => {
                         this.handleFilter(col.data, e.target.value);
                         this.render();
                     });
-                    thFilter.appendChild(input);
                 }
             }
             filterTr.appendChild(thFilter);
@@ -260,11 +286,9 @@ class TracesTable {
                 const td = document.createElement('td');
                 let content = row[col.data];
 
-                // Custom render function support
                 if (col.render && typeof col.render === 'function') {
                     td.innerHTML = col.render(content, row);
                 } else {
-                    // Auto-format numbers if not explicitly disabled
                     if (col.formatNumber !== false && !isNaN(parseFloat(content)) && isFinite(content)) {
                         content = this.formatNumber(content);
                     }
@@ -288,33 +312,28 @@ class TracesTable {
         buttonContainer.style.display = 'flex';
         buttonContainer.style.gap = '5px';
 
-        // Helper to create buttons
         const createBtn = (text, onClick, disabled = false, active = false) => {
             const btn = document.createElement('button');
-            btn.innerHTML = text; // Use innerHTML for HTML entities
+            btn.innerHTML = text;
             btn.disabled = disabled;
             if (active) btn.classList.add('active');
             btn.addEventListener('click', onClick);
             return btn;
         };
 
-        // First Button
         buttonContainer.appendChild(createBtn('&laquo;', () => {
             this.changePage(1);
             this.render();
         }, this.currentPage === 1));
 
-        // Previous Button
         buttonContainer.appendChild(createBtn('&lsaquo;', () => {
             this.changePage(this.currentPage - 1);
             this.render();
         }, this.currentPage === 1));
 
-        // Page Numbers
         const rangeStart = Math.max(1, this.currentPage - 2);
         const rangeEnd = Math.min(totalPages, this.currentPage + 2);
 
-        // Always show page 1
         if (rangeStart > 1) {
             buttonContainer.appendChild(createBtn('1', () => {
                 this.changePage(1);
@@ -329,13 +348,8 @@ class TracesTable {
             }
         }
 
-        // Range
         for (let i = rangeStart; i <= rangeEnd; i++) {
-            // If i is 1, it's already handled above if rangeStart > 1. 
-            // If rangeStart == 1, then i=1 is handled here.
-            // Wait, logic above: if rangeStart > 1, we add 1.
-            // So if rangeStart is 1, we don't add 1 separately.
-            if (i === 1 && rangeStart > 1) continue; // Should not happen with logic above but for safety
+            if (i === 1 && rangeStart > 1) continue;
             
             buttonContainer.appendChild(createBtn(i.toString(), () => {
                 this.changePage(i);
@@ -343,7 +357,6 @@ class TracesTable {
             }, false, this.currentPage === i));
         }
 
-        // Always show last page
         if (rangeEnd < totalPages) {
             if (rangeEnd < totalPages - 1) {
                 const ellipsis = document.createElement('span');
@@ -357,13 +370,11 @@ class TracesTable {
             }, false, this.currentPage === totalPages));
         }
 
-        // Next Button
         buttonContainer.appendChild(createBtn('&rsaquo;', () => {
             this.changePage(this.currentPage + 1);
             this.render();
         }, this.currentPage === totalPages));
 
-        // Last Button
         buttonContainer.appendChild(createBtn('&raquo;', () => {
             this.changePage(totalPages);
             this.render();
@@ -384,7 +395,7 @@ class TracesTable {
                 this.sortDirection = 'desc';
             } else if (this.sortDirection === 'desc') {
                 this.sortColumn = null;
-                this.sortDirection = 'asc'; // Reset default
+                this.sortDirection = 'asc';
             }
         } else {
             this.sortColumn = columnKey;
@@ -394,7 +405,7 @@ class TracesTable {
 
     handleFilter(columnKey, value) {
         this.filters[columnKey] = value;
-        this.currentPage = 1; // Reset to first page on filter
+        this.currentPage = 1;
     }
 
     handleRangeFilter(columnKey, type, value) {

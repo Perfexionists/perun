@@ -188,6 +188,57 @@
 
 .traces-pagination button.active {
     background-color: var(--color-target);
-    color: var(--color-bg-dt-table);
+    color: var(--color-white-tinted);
     border-color: var(--color-target);
+}
+
+.regex-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.regex-filter-wrapper input {
+    padding-right: 30px;
+}
+
+.regex-toggle-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-white-tinted);
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--color-gray-not-changing);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+    pointer-events: none;
+}
+
+.regex-filter-wrapper:hover .regex-toggle-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.regex-toggle-btn:hover {
+    background-color: var(--color-target-transparent);
+    color: var(--color-target);
+}
+
+.regex-toggle-btn.active {
+    background-color: var(--color-target);
+    color: var(--color-white-not-changing);
+    opacity: 1;
+    pointer-events: auto;
 }
