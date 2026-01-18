@@ -1,4 +1,4 @@
-class PerunTable {
+class TracesTable {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
         if (!this.container) {
@@ -19,7 +19,7 @@ class PerunTable {
     }
 
     init() {
-        this.container.classList.add('perun-table-container');
+        this.container.classList.add('traces-table-container');
         this.container.style.display = 'flex';
         this.container.style.flexDirection = 'column';
         this.render();
@@ -110,7 +110,7 @@ class PerunTable {
         this.processData();
 
         const table = document.createElement('table');
-        table.className = 'perun-table';
+        table.className = 'traces-table';
 
         table.appendChild(this.createHeader());
         table.appendChild(this.createBody());
@@ -281,7 +281,7 @@ class PerunTable {
 
     createPagination() {
         const pagination = document.createElement('div');
-        pagination.className = 'perun-pagination';
+        pagination.className = 'traces-pagination';
 
         const totalPages = Math.ceil(this.processedData.length / this.itemsPerPage) || 1;
         const buttonContainer = document.createElement('div');

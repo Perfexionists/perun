@@ -1,37 +1,33 @@
-/* Base Styles */
 .traces-table-container {
     padding: 0;
-    /* Solid background for card look */
-    background-color: var(--color-bg-dt-table);
+    background-color: var(--color-target-bg-tint);
     color: var(--color-primary-text);
     transition: background-color 0.3s, color 0.3s;
     box-shadow: 0 4px 8px var(--color-primary-transparent);
+    border: 3px solid var(--color-sidepanel-bg);
     border-radius: 8px;
     box-sizing: border-box;
     overflow: hidden;
 }
 
-.perun-table {
+.traces-table {
     width: 100%;
     border-collapse: collapse;
     margin: 0;
-    /* Fixed layout to prevent jitter */
     table-layout: fixed;
 }
 
-.perun-table th,
-.perun-table td {
+.traces-table th,
+.traces-table td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid var(--color-light-gray);
-    /* Handle overflow for fixed layout */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.perun-table th {
-    /* Distinct header background */
+.traces-table th {
     background-color: var(--color-bg-not-changing);
     color: var(--color-white-not-changing);
     font-weight: bold;
@@ -42,36 +38,33 @@
     border-bottom: 2px solid var(--color-light-gray);
 }
 
-.perun-table th.sortable:hover {
+.traces-table th.sortable:hover {
     background-color: var(--color-almost-black-not-changing);
 }
 
-.perun-table th.asc::after {
+.traces-table th.asc::after {
     content: ' ▲';
     font-size: 0.8em;
     color: var(--color-target);
-    /* Use accent color */
     margin-left: 5px;
 }
 
-.perun-table th.desc::after {
+.traces-table th.desc::after {
     content: ' ▼';
     font-size: 0.8em;
     color: var(--color-target);
     margin-left: 5px;
 }
 
-/* Filter Row */
-.perun-table .filter-row th {
+.traces-table .filter-row th {
     padding: 8px 15px;
     background-color: var(--color-bg-dt-table);
-    /* Match container bg */
     border-bottom: 1px solid var(--color-light-gray);
     color: var(--color-primary-text);
 }
 
-.perun-table input,
-.perun-table select {
+.traces-table input,
+.traces-table select {
     width: 100%;
     padding: 6px 10px;
     border-radius: 4px;
@@ -83,8 +76,8 @@
     font-size: 0.9em;
 }
 
-.perun-table input:focus,
-.perun-table select:focus {
+.traces-table input:focus,
+.traces-table select:focus {
     outline: none;
     border-color: var(--color-target);
     box-shadow: 0 0 0 2px var(--color-target-transparent);
@@ -115,28 +108,26 @@
   appearance: textfield;
 }
 
-/* Table Body */
-.perun-table tbody tr {
+.traces-table tbody tr {
     background-color: transparent;
     transition: background-color 0.2s;
 }
 
-.perun-table tbody tr:hover {
+.traces-table tbody tr:hover {
     background-color: var(--color-secondary);
 }
 
-.perun-table td {
+.traces-table td {
     color: var(--color-primary-text);
 }
 
-.perun-table .no-data {
+.traces-table .no-data {
     text-align: center;
     padding: 30px;
     color: var(--color-bs-secondary);
     font-style: italic;
 }
 
-/* Text Utilities */
 .text-bold {
     font-weight: bold;
 }
@@ -149,8 +140,7 @@
     color: var(--color-correct) !important;
 }
 
-/* Pagination */
-.perun-pagination {
+.traces-pagination {
     background-color: var(--color-bg-dt-table);
     padding: 15px;
     display: flex;
@@ -160,7 +150,7 @@
     border-top: 1px solid var(--color-light-gray);
 }
 
-.perun-pagination button {
+.traces-pagination button {
     padding: 6px 12px;
     border: none;
     border-radius: 4px;
@@ -172,31 +162,31 @@
     font-size: 0.9em;
 }
 
-.perun-pagination button:hover:not(:disabled) {
+.traces-pagination button:hover:not(:disabled) {
     background-color: var(--color-target-transparent);
     color: var(--color-target);
 }
 
-.perun-pagination button:disabled {
+.traces-pagination button:disabled {
     background-color: var(--color-light-gray);
     color: var(--color-white-tinted);
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.perun-pagination span {
+.traces-pagination span {
     color: var(--color-primary-text);
     font-size: 0.9em;
     margin: 0 10px;
 }
 
-.perun-pagination .pagination-ellipsis {
+.traces-pagination .pagination-ellipsis {
     color: var(--color-primary-text);
     padding: 0 5px;
     align-self: center;
 }
 
-.perun-pagination button.active {
+.traces-pagination button.active {
     background-color: var(--color-target);
     color: var(--color-bg-dt-table);
     border-color: var(--color-target);
