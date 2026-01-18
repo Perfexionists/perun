@@ -1,5 +1,5 @@
 /* Base Styles */
-.perun-table-container {
+.traces-table-container {
     padding: 0;
     /* Solid background for card look */
     background-color: var(--color-bg-dt-table);

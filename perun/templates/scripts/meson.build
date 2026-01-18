@@ -11,7 +11,6 @@ perun_templates_script_files = files(
     'sankey_graph_js.html.jinja2',
     'themes_js.html.jinja2',
     'tooltip.js',
-    'traces_table_js.html.jinja2',
     'value_formatters_js.html.jinja2',
 )
 
