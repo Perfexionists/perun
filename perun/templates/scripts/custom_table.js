@@ -284,29 +284,96 @@ class PerunTable {
         pagination.className = 'perun-pagination';
 
         const totalPages = Math.ceil(this.processedData.length / this.itemsPerPage) || 1;
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.gap = '5px';
 
-        const prevBtn = document.createElement('button');
-        prevBtn.innerText = 'Previous';
-        prevBtn.disabled = this.currentPage === 1;
-        prevBtn.addEventListener('click', () => {
+        // Helper to create buttons
+        const createBtn = (text, onClick, disabled = false, active = false) => {
+            const btn = document.createElement('button');
+            btn.innerHTML = text; // Use innerHTML for HTML entities
+            btn.disabled = disabled;
+            if (active) btn.classList.add('active');
+            btn.addEventListener('click', onClick);
+            return btn;
+        };
+
+        // First Button
+        buttonContainer.appendChild(createBtn('&laquo;', () => {
+            this.changePage(1);
+            this.render();
+        }, this.currentPage === 1));
+
+        // Previous Button
+        buttonContainer.appendChild(createBtn('&lsaquo;', () => {
             this.changePage(this.currentPage - 1);
             this.render();
-        });
+        }, this.currentPage === 1));
 
-        const nextBtn = document.createElement('button');
-        nextBtn.innerText = 'Next';
-        nextBtn.disabled = this.currentPage === totalPages;
-        nextBtn.addEventListener('click', () => {
+        // Page Numbers
+        const rangeStart = Math.max(1, this.currentPage - 2);
+        const rangeEnd = Math.min(totalPages, this.currentPage + 2);
+
+        // Always show page 1
+        if (rangeStart > 1) {
+            buttonContainer.appendChild(createBtn('1', () => {
+                this.changePage(1);
+                this.render();
+            }, false, this.currentPage === 1));
+            
+            if (rangeStart > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.innerText = '...';
+                ellipsis.className = 'pagination-ellipsis';
+                buttonContainer.appendChild(ellipsis);
+            }
+        }
+
+        // Range
+        for (let i = rangeStart; i <= rangeEnd; i++) {
+            // If i is 1, it's already handled above if rangeStart > 1. 
+            // If rangeStart == 1, then i=1 is handled here.
+            // Wait, logic above: if rangeStart > 1, we add 1.
+            // So if rangeStart is 1, we don't add 1 separately.
+            if (i === 1 && rangeStart > 1) continue; // Should not happen with logic above but for safety
+            
+            buttonContainer.appendChild(createBtn(i.toString(), () => {
+                this.changePage(i);
+                this.render();
+            }, false, this.currentPage === i));
+        }
+
+        // Always show last page
+        if (rangeEnd < totalPages) {
+            if (rangeEnd < totalPages - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.innerText = '...';
+                ellipsis.className = 'pagination-ellipsis';
+                buttonContainer.appendChild(ellipsis);
+            }
+            buttonContainer.appendChild(createBtn(totalPages.toString(), () => {
+                this.changePage(totalPages);
+                this.render();
+            }, false, this.currentPage === totalPages));
+        }
+
+        // Next Button
+        buttonContainer.appendChild(createBtn('&rsaquo;', () => {
             this.changePage(this.currentPage + 1);
             this.render();
-        });
+        }, this.currentPage === totalPages));
+
+        // Last Button
+        buttonContainer.appendChild(createBtn('&raquo;', () => {
+            this.changePage(totalPages);
+            this.render();
+        }, this.currentPage === totalPages));
 
         const info = document.createElement('span');
         info.innerText = `Page ${this.currentPage} of ${totalPages} (${this.processedData.length} items)`;
 
-        pagination.appendChild(prevBtn);
+        pagination.appendChild(buttonContainer);
         pagination.appendChild(info);
-        pagination.appendChild(nextBtn);
 
         return pagination;
     }

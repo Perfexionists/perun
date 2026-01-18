@@ -112,6 +112,7 @@
 /* disable spin buttons in Firefox */
 .range-filter-container input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Table Body */
@@ -187,4 +188,16 @@
     color: var(--color-primary-text);
     font-size: 0.9em;
     margin: 0 10px;
+}
+
+.perun-pagination .pagination-ellipsis {
+    color: var(--color-primary-text);
+    padding: 0 5px;
+    align-self: center;
+}
+
+.perun-pagination button.active {
+    background-color: var(--color-target);
+    color: var(--color-bg-dt-table);
+    border-color: var(--color-target);
 }
