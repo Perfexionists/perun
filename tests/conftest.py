@@ -22,7 +22,6 @@ from perun.utils.common import common_kit
 import perun.testing.utils as test_utils
 from perun.view_diff import report_native
 
-
 if TYPE_CHECKING:
     from perun import profile
 

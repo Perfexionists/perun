@@ -16,7 +16,6 @@ from perun.utils import metrics
 from perun.utils.common import cli_kit
 from perun.utils.structs import common_structs, postprocess_structs
 
-
 _DEFAULT_STEPS = 3
 
 

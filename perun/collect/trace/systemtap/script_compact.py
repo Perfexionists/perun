@@ -6,7 +6,6 @@ from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType
 from perun.utils.structs.collect_structs import Optimizations, Parameters
 
-
 # Names of the global arrays used throughout the script
 ARRAY_PROBE_ID = "probe_id"
 ARRAY_SAMPLE_THRESHOLD = "sampling_threshold"
@@ -97,9 +96,7 @@ EXIT_APPROX_SAMPLE_TEMPLATE = """
         {{probe_handler}}
         {sampling_flag}[tid, pname] --
     }}}}
-""".format(
-    sampling_flag=ARRAY_SAMPLE_FLAG
-)
+""".format(sampling_flag=ARRAY_SAMPLE_FLAG)
 
 # Template of a sampled entry probe handler that can precisely measure even sampled recursive
 # functions - however, it is sensitive to call nesting errors (e.g., omitted retprobe calls etc.)
@@ -126,9 +123,7 @@ EXIT_PRECISE_SAMPLE_TEMPLATE = """
         delete {recursion_hit}[tid, pname, {recursion_depth}[tid, pname]]
     }}}}
     {recursion_depth}[tid, pname] --
-""".format(
-    recursion_depth=ARRAY_RECURSION_DEPTH, recursion_hit=ARRAY_RECURSION_SAMPLE_HIT
-)
+""".format(recursion_depth=ARRAY_RECURSION_DEPTH, recursion_hit=ARRAY_RECURSION_SAMPLE_HIT)
 
 
 # TODO: solve func name / USDT name collision in the arrays
@@ -264,9 +259,7 @@ def _add_timer_probe(handle, sampling_frequency):
 probe timer.ns({freq}) if ({stopwatch}) {{
     {switch} = !{switch}
 }}
-""".format(
-        freq=sampling_frequency, stopwatch=STOPWATCH_ON, switch=TIMED_SWITCH
-    )
+""".format(freq=sampling_frequency, stopwatch=STOPWATCH_ON, switch=TIMED_SWITCH)
     handle.write(timer_probe)
 
 

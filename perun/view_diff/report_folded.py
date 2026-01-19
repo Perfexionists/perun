@@ -60,7 +60,6 @@ from perun.utils.structs import diff_structs
 from perun.utils.structs.common_structs import WebColorPalette
 from perun.view_diff import flamegraph, report_native
 
-
 if TYPE_CHECKING:
     from subprocess import Popen
 

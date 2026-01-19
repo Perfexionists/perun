@@ -78,7 +78,6 @@ import perun.view
 import perun.view_diff
 import perun.deltadebugging.factory as delta
 
-
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 

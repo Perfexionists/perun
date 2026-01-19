@@ -26,7 +26,6 @@ from perun.utils import decorators, exceptions, log as perun_log, streams
 from perun.utils.common import common_kit
 from perun.utils.exceptions import SuppressedExceptions
 
-
 T = TypeVar("T")
 
 
@@ -202,8 +201,7 @@ def init_shared_config_at(path: str) -> None:
         path = os.path.join(path, "shared.yml")
     common_kit.touch_file(path)
 
-    shared_config = streams.safely_load_yaml_from_stream(
-        """
+    shared_config = streams.safely_load_yaml_from_stream("""
 general:
     editor: vim
     paging: only-log
@@ -241,8 +239,7 @@ generators:
         min_lines: 10
         max_lines: 10000
         step: 1000
-    """
-    )
+    """)
 
     write_config_to(path, shared_config)
 

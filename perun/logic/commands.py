@@ -425,16 +425,14 @@ def turn_off_paging_wrt_config(paged_function: str) -> bool:
         paging_option = perun_config.shared().get("general.paging")
     # Test for backward compatibility with old instances of Perun and possible issues
     except MissingConfigSectionException:
-        perun_log.warn(
-            """corrupted shared configuration file: missing ``general.paging`` option.
+        perun_log.warn("""corrupted shared configuration file: missing ``general.paging`` option.
 
 Run ``perun config --shared --edit`` and set the ``general.paging`` to one of following:
     always, only-log, only-status, never
 
 Consult the documentation (Configuration and Logs) for more information about paging of
 output of status, log and others.
-        """
-        )
+        """)
         return True
     return paging_option == "always" or (
         paging_option.startswith("only-") and paging_option.endswith(paged_function)

@@ -25,7 +25,6 @@ from perun.utils.common import common_kit
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.utils.structs.common_structs import PerformanceChange, DegradationInfo
 
-
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
