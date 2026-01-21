@@ -183,9 +183,9 @@
         result += "<thead><tr><th>Metric</th>"
         result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
         result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
-        result += '<th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>';
-        result += '<th title="The absolute difference of Target - Baseline.">Absolute Δ</th>';
-        result += '<th title="The relative difference of Target - Baseline.">Relative Δ [%]</th></tr></thead><tbody>';
+        result += '<th title="The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.">Proportional Δ [%]</th>';
+        result += '<th title="The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.">Absolute Δ</th>';
+        result += '<th title="The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -25%.">Relative Δ [%]</th></tr></thead><tbody>';
         d.stats.forEach((value, index) => {
             result += "<tr>";
             result += '<td style="white-space: pre-wrap">' + value[0] + "</td>";
@@ -196,15 +196,21 @@
             result += '<td style="white-space: pre-wrap">' + value[5] + "</td>";
             result += "</tr>";
         });
+
+
+
+
+
+
         result += '</tbody></table>';
         result += '<h4 style="text-align: center; width: 100%; border-bottom: 1px solid #ddd;">Top ' + d.traces.length + ' Traces</h4>';
         result += '<table id="traces' + d.index + '" class="display" style="margin-top: -30px; width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
         result += "<thead><tr><th></th><th>Trace</th><th>Metric</th>"
         result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
         result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
-        result += '<th title="The change in total amount of resources consumed by the target and baseline profile.">Total Δ [%]</th>';
-        result += '<th title="The absolute difference of Target - Baseline.">Absolute Δ</th>';
-        result += '<th title="The relative difference of Target - Baseline.">Relative Δ [%]</th></tr></thead><tbody>';
+        result += '<th title="The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.">Proportional Δ [%]</th>';
+        result += '<th title="The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.">Absolute Δ</th>';
+        result += '<th title="The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -25%.">Relative Δ [%]</th></tr></thead><tbody>';
         d.traces.forEach((value, index) => {
             result += "<tr>";
             result += '<td style="white-space: pre-wrap"></td>';

@@ -16,6 +16,10 @@
     color: var(--color-white-not-changing);
 }
 
+.traces_table .dt-column-title {
+    color: var(--color-white-not-changing);
+}
+
 .traces_table th {
     padding: 12px;
     text-align: left;
