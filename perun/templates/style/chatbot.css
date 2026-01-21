@@ -163,7 +163,7 @@
   transition: box-shadow 0.2s ease;
 }
 
-.context-selected {
+body.chat-open .context-selected {
   box-shadow: 0 0 0 2px #339af0;
   background-color: var(--color-secondary-hover);
 }
