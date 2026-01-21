@@ -85,7 +85,7 @@ if TYPE_CHECKING:
 DEV_MODE = False
 
 
-@click.group()
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "--dev-mode",
     "-d",
@@ -924,7 +924,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
 )
 @click.option(
     "--hang-timeout",
-    "-h",
+    "-ht",
     nargs=1,
     required=False,
     default=10,

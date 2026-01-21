@@ -257,7 +257,6 @@ def tableof(*_: Any, **__: Any) -> None:
 @tableof.command()
 @click.option(
     "--headers",
-    "-h",
     default=None,
     multiple=True,
     metavar="<key>",
@@ -322,7 +321,6 @@ def resources(
 @click.pass_context
 @click.option(
     "--headers",
-    "-h",
     default=None,
     multiple=True,
     metavar="<key>",
