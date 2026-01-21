@@ -203,36 +203,8 @@ def showdiff_group(**_: Any) -> None:
     limitations.
 
     There are in general two different categories of supported profiles: Perun-native profiles
-    and external profiles. Concrete showdiff commands may in general work with one or more supported
-    profile categories.
-
-    Perun-native profiles will be looked up in the following steps:
-
-        1. If [PROFILE] is in form ``i@i`` (i.e, an `index tag`), then `ith`
-           record registered in the minor version <hash> index will be shown.
-
-        2. If [PROFILE] is in form ``i@p`` (i.e., an `pending tag`), then
-           `ith` profile stored in ``.perun/jobs`` will be shown.
-
-        3. [PROFILE] is looked-up within the minor version <hash> index for a
-           match. In case the <profile> is registered there, it will be shown.
-
-        4. [PROFILE] is looked-up within the ``.perun/jobs`` directory. In case
-           there is a match, the found profile will be shown.
-
-        5. Otherwise, the directory is walked for any match. Each found match
-           is asked for confirmation by user.
-
-    Tags consider the sorted order as specified by the options
-    :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
-
-    Example 1. The following command will show the difference first two profiles
-    registered at index of ``HEAD~1`` commit::
-
-        perun showdiff -m HEAD~1 0@i 1@i report
-
-    Refer to concrete commands for details on their difference visualizations and supported profile
-    formats.
+    and external profiles. Refer to concrete commands for details on their difference visualizations
+    and supported profile formats.
     """
 
 
@@ -289,11 +261,36 @@ def short(profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwar
 def flamegraph(
     profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwargs: Any
 ) -> None:
-    """Creates a flame graph (or icicle graph) difference grid.
+    """Creates a flame graph (or icicle graph) difference grid from perun-native profiles.
 
     The grid consists of baseline, target, baseline-target diff, and target-baseline diff flame
     graphs. The grid is further accompanied by a set of automatically-derived,and possibly
     user-defined as well, statistics.
+
+    Perun-native profiles will be looked up in the following steps:
+
+        1. If [PROFILE] is in form ``i@i`` (i.e, an `index tag`), then `ith`
+           record registered in the minor version <hash> index will be shown.
+
+        2. If [PROFILE] is in form ``i@p`` (i.e., an `pending tag`), then
+           `ith` profile stored in ``.perun/jobs`` will be shown.
+
+        3. [PROFILE] is looked-up within the minor version <hash> index for a
+           match. In case the <profile> is registered there, it will be shown.
+
+        4. [PROFILE] is looked-up within the ``.perun/jobs`` directory. In case
+           there is a match, the found profile will be shown.
+
+        5. Otherwise, the directory is walked for any match. Each found match
+           is asked for confirmation by user.
+
+    Tags consider the sorted order as specified by the options
+    :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
+
+    Example 1. The following command will show the flamegraph grid of first two profiles
+    registered at index of ``HEAD~1`` commit::
+
+        perun showdiff flamegraph -m HEAD~1 0@i 1@i
 
     Supports only perun-native profiles.
     """
@@ -428,9 +425,35 @@ def native(
     *_: Any,
     **kwargs: Any,
 ) -> None:
-    """Creates a difference report from perun-native profiles.
+    """Creates an HTML difference report from perun-native baseline and target profiles.
 
-    Supports only perun-native profiles.
+    The difference reports contains comparison of the environment, profile metadata, profile stats,
+    and performance data using flamegraphs and tables.
+
+    Perun-native profiles will be looked up in the following steps:
+
+        1. If [PROFILE] is in form ``i@i`` (i.e, an `index tag`), then `ith`
+           record registered in the minor version <hash> index will be shown.
+
+        2. If [PROFILE] is in form ``i@p`` (i.e., an `pending tag`), then
+           `ith` profile stored in ``.perun/jobs`` will be shown.
+
+        3. [PROFILE] is looked-up within the minor version <hash> index for a
+           match. In case the <profile> is registered there, it will be shown.
+
+        4. [PROFILE] is looked-up within the ``.perun/jobs`` directory. In case
+           there is a match, the found profile will be shown.
+
+        5. Otherwise, the directory is walked for any match. Each found match
+           is asked for confirmation by user.
+
+    Tags consider the sorted order as specified by the options
+    :ckey:`format.sort_profiles_by` and :ckey:`format.sort_profiles_order`.
+
+    Example 1. The following command will show the difference first two profiles
+    registered at index of ``HEAD~1`` commit::
+
+        perun showdiff report native -m HEAD~1 0@i 1@i
     """
     # Lazy load the view_diff module and execute the command
     from perun import view_diff
@@ -567,7 +590,10 @@ def native(
 )
 @click.pass_context
 def report_folded(ctx: click.Context, baseline: str, target: str, **kwargs: Any) -> None:
-    """Creates a difference report from external folded profiles.
+    """Creates an HTML difference report from external folded profiles.
+
+    The difference reports contains comparison of the environment, profile metadata, profile stats,
+    and performance data using flamegraphs and tables.
 
     This report expects one or more baseline and target folded profiles with per-trace measurements,
     e.g., perf folded or eBPF folded profiles.
