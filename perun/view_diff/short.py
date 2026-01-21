@@ -27,7 +27,6 @@ import tabulate
 from perun import profile as profile
 from perun.utils import log
 
-
 PRECISION: int = 2
 
 

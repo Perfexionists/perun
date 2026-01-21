@@ -67,7 +67,6 @@ import jinja2
 from perun.utils import log
 from perun.utils.external import commands
 
-
 CONFIG_FILE_STRING = """
 vcs:
   type: {{ vcs.type }}

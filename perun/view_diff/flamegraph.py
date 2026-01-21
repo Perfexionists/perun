@@ -27,7 +27,6 @@ from perun.utils.structs.common_structs import WebColorPalette
 from perun.utils.structs.diff_structs import FG_DEFAULT_MIN_WIDTH
 from perun.view.flamegraph import flamegraph as flamegraph_factory
 
-
 TAGS_TO_INDEX: list[str] = []
 
 

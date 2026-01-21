@@ -13,7 +13,6 @@ from perun import cli
 from perun.logic import pcs
 from perun.testing import asserts, utils as test_utils
 
-
 TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], "references", "table_files")
 
 

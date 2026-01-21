@@ -33,7 +33,6 @@ from perun.workload.singleton_generator import SingletonGenerator
 from perun import profile
 import perun.workload as workloads
 
-
 if TYPE_CHECKING:
     import types
 

@@ -17,7 +17,6 @@ from perun.thirdparty.pyqt_fit_port.utils import (
     numpy_trans_idx,
 )
 
-
 S2PI = np.sqrt(2.0 * np.pi)
 S2 = np.sqrt(2.0)
 

@@ -24,7 +24,6 @@ from perun.utils.common import common_kit
 from perun.utils.exceptions import NotPerunRepositoryException
 import perun.testing.utils as test_utils
 
-
 TIMESTAMP_RE = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
 
 

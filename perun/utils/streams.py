@@ -26,7 +26,6 @@ from ruamel.yaml import YAML
 # Perun Imports
 from perun.utils import log
 
-
 GzBinaryMode = Literal["r", "rb", "w", "wb", "x", "xb", "a", "ab"]
 GzTextMode = Literal["rt", "wt", "xt", "at"]
 

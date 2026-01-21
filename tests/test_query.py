@@ -14,7 +14,6 @@ import pytest
 from perun.profile import query, helpers
 import perun.testing.utils as test_utils
 
-
 # number of expected resource fields in memory profile
 _MEMORY_RESOURCES_COUNT = 34
 # number of expected resource fields in complexity profile
