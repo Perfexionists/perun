@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+0.26.1 (2026-01-24)
+-------------------
+
+  - The nested traces table in showdiff report now has correctly styled table headers.
+  - All trace table headers now also use the same column names and tooltips.
+  - Perun now supports both long and short help options (--help and -h) for CLI commands.
+  - The showdiff report, showdiff report native, and showdiff flamegraph help text has been changed to be more user-friendly.
+  - The integrated chatbot has been updated to the latest version.
+
+
 0.26.0 (2026-01-14)
 -------------------
 
