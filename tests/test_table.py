@@ -69,9 +69,9 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "-h", "uid",
-            "-h", "model",
-            "-h", "coeffs",
+            "--headers", "uid",
+            "--headers", "model",
+            "--headers", "coeffs",
         ],
     )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -85,9 +85,9 @@ def test_table_cli(pcs_full):
             "tableof",
             "--to-stdout",
             "models",
-            "-h", "non-existant",
-            "-h", "model",
-            "-h", "coeffs",
+            "--headers", "non-existant",
+            "--headers", "model",
+            "--headers", "coeffs",
         ],
     )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 2)
@@ -104,9 +104,9 @@ def test_table_cli(pcs_full):
             "--to-stdout",
             "-f", "latex",
             "models",
-            "-h", "uid",
-            "-h", "model",
-            "-h", "coeffs",
+            "--headers", "uid",
+            "--headers", "model",
+            "--headers", "coeffs",
         ],
     )  # fmt: skip
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -121,9 +121,9 @@ def test_table_cli(pcs_full):
             "tableof",
             "--output-file", "test_output",
             "models",
-            "-h", "uid",
-            "-h", "model",
-            "-h", "coeffs",
+            "--headers", "uid",
+            "--headers", "model",
+            "--headers", "coeffs",
         ],
     )  # fmt: skip
     output_file = os.path.join(os.getcwd(), "test_output")

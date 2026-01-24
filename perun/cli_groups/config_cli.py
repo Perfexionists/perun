@@ -28,7 +28,7 @@ from perun.utils.exceptions import (
 )
 @click.option(
     "--shared",
-    "-h",
+    "-s",
     "store_type",
     flag_value="shared",
     help="Sets the shared config, i.e. ``shared.yml.``, as the source config",
