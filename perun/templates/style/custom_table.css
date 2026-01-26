@@ -97,15 +97,18 @@
 
 /* disable spin buttons in Chrome, Safari, Edge, Opera */
 .range-filter-container input[type=number]::-webkit-outer-spin-button,
-.range-filter-container input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.range-filter-container input[type=number]::-webkit-inner-spin-button,
+.pagination-jump input[type=number]::-webkit-outer-spin-button,
+.pagination-jump input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* disable spin buttons in Firefox */
-.range-filter-container input[type=number] {
-  -moz-appearance: textfield;
-  appearance: textfield;
+.range-filter-container input[type=number],
+.pagination-jump input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .traces-table tbody tr {
@@ -148,6 +151,34 @@
     align-items: center;
     gap: 10px;
     border-top: 1px solid var(--color-light-gray);
+    flex-wrap: wrap;
+}
+
+.pagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.pagination-jump input.page-input {
+    width: 60px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-light-gray);
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.pagination-jump input.page-input:focus {
+    outline: none;
+    border-color: var(--color-target);
+    box-shadow: 0 0 0 2px var(--color-target-transparent);
+    background-color: var(--color-secondary-hover);
 }
 
 .traces-pagination button {

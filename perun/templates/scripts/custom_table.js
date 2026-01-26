@@ -413,6 +413,32 @@ class TracesTable {
         pagination.appendChild(buttonContainer);
         pagination.appendChild(info);
 
+        const jumpContainer = document.createElement('div');
+        jumpContainer.className = 'pagination-jump';
+
+        const jumpInput = document.createElement('input');
+        jumpInput.type = 'number';
+        jumpInput.min = 1;
+        jumpInput.max = totalPages;
+        jumpInput.placeholder = 'Go to';
+        jumpInput.className = 'page-input';
+        
+        jumpInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                let page = parseInt(e.target.value);
+                if (isNaN(page)) return;
+                
+                if (page < 1) page = 1;
+                if (page > totalPages) page = totalPages;
+                
+                this.changePage(page);
+                this.render();
+            }
+        });
+
+        jumpContainer.appendChild(jumpInput);
+        pagination.appendChild(jumpContainer);
+
         return pagination;
     }
 
