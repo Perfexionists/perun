@@ -40,6 +40,30 @@ class TracesTable {
         }
     }
 
+    parseNumberInput(input) {
+        if (input === null || input === undefined || input === '') return NaN;
+        let str = String(input).trim().toUpperCase();
+
+        str = str.replace(/\s/g, '');
+        str = str.replace(',', '.');
+
+        let multiplier = 1;
+        if (str.endsWith('G')) {
+            multiplier = 1e9;
+            str = str.slice(0, -1);
+        } else if (str.endsWith('M')) {
+            multiplier = 1e6;
+            str = str.slice(0, -1);
+        } else if (str.endsWith('K')) {
+            multiplier = 1e3;
+            str = str.slice(0, -1);
+        }
+
+        const val = parseFloat(str);
+        if (isNaN(val)) return NaN;
+        return val * multiplier;
+    }
+
     processData() {
         let result = [...this.data];
 
@@ -53,8 +77,11 @@ class TracesTable {
                         const numValue = parseFloat(cellValue);
                         if (isNaN(numValue)) return false;
 
-                        if (filterValue.min !== '' && numValue < parseFloat(filterValue.min)) return false;
-                        if (filterValue.max !== '' && numValue > parseFloat(filterValue.max)) return false;
+                        const minVal = this.parseNumberInput(filterValue.min);
+                        const maxVal = this.parseNumberInput(filterValue.max);
+
+                        if (!isNaN(minVal) && numValue < minVal) return false;
+                        if (!isNaN(maxVal) && numValue > maxVal) return false;
                         return true;
                     }
 
@@ -190,7 +217,7 @@ class TracesTable {
                     container.className = 'range-filter-container';
 
                     const minInput = document.createElement('input');
-                    minInput.type = 'number';
+                    minInput.type = 'text';
                     minInput.placeholder = 'Min';
                     minInput.id = `filter-${col.data}-min`;
                     minInput.value = (this.filters[col.data] && this.filters[col.data].min) || '';
@@ -200,7 +227,7 @@ class TracesTable {
                     });
 
                     const maxInput = document.createElement('input');
-                    maxInput.type = 'number';
+                    maxInput.type = 'text';
                     maxInput.placeholder = 'Max';
                     maxInput.id = `filter-${col.data}-max`;
                     maxInput.value = (this.filters[col.data] && this.filters[col.data].max) || '';
