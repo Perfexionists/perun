@@ -20,7 +20,6 @@ import os
 # Perun Imports
 from perun.collect.complexity import symbols
 
-
 # Default internal parameters
 DEFAULT_DATA_FILENAME: str = "trace.log"
 DEFAULT_STORAGE_SIZE: int = 20000

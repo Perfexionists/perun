@@ -8,12 +8,14 @@ from __future__ import annotations
 
 # Standard Imports
 import contextlib
+import gzip
 import io
 import json
 import os
 from pathlib import Path
 import re
 from typing import Any, BinaryIO, Iterator, IO, Literal, TextIO, TYPE_CHECKING, overload
+import zlib
 
 if TYPE_CHECKING:
     from _typeshed import OpenBinaryMode, OpenTextMode
@@ -23,6 +25,9 @@ from ruamel.yaml import YAML
 
 # Perun Imports
 from perun.utils import log
+
+GzBinaryMode = Literal["r", "rb", "w", "wb", "x", "xb", "a", "ab"]
+GzTextMode = Literal["rt", "wt", "xt", "at"]
 
 
 def store_json(profile: dict[Any, Any], file_path: str) -> None:
@@ -169,9 +174,9 @@ def safely_open_and_log(
     terminate the program; a None value will never be returned if fatal_fail is True.
 
     When providing a fatal_fail parameter value, it needs to be written with a keyword, e.g.,
-    # safely_open_and_log(path, mode, fatal_fail=True) to conform to the expected call signature
-    # given how mypy currently handles overloads for parameters with default values.
-    # See this mypy issue for more details: https://github.com/python/mypy/issues/7333
+    safely_open_and_log(path, mode, fatal_fail=True) to conform to the expected call signature
+    given how mypy currently handles overloads for parameters with default values.
+    See this mypy issue for more details: https://github.com/python/mypy/issues/7333
 
     :param file_path: path to the file to open.
     :param mode: file opening mode.
@@ -187,6 +192,104 @@ def safely_open_and_log(
             log.minor_success(log.path_style(str(file_path)), success_msg)
             yield f_handle
     except OSError as exc:
+        log.minor_fail(log.path_style(str(file_path)), fail_msg)
+        if fatal_fail:
+            log.error(str(exc), exc)
+        yield None
+
+
+@overload
+@contextlib.contextmanager
+def safely_open_and_log_gz(
+    file_path: Path,
+    mode: GzTextMode,
+    fatal_fail: Literal[False] = ...,
+    success_msg: str = ...,
+    fail_msg: str = ...,
+    **open_args: Any,
+) -> Iterator[TextIO | None]: ...
+
+
+@overload
+@contextlib.contextmanager
+def safely_open_and_log_gz(
+    file_path: Path,
+    mode: GzBinaryMode,
+    fatal_fail: Literal[False] = ...,
+    success_msg: str = ...,
+    fail_msg: str = ...,
+    **open_args: Any,
+) -> Iterator[gzip.GzipFile | None]: ...
+
+
+@overload
+@contextlib.contextmanager
+def safely_open_and_log_gz(
+    file_path: Path,
+    mode: GzTextMode,
+    *,
+    fatal_fail: Literal[True],
+    success_msg: str = ...,
+    fail_msg: str = ...,
+    **open_args: Any,
+) -> Iterator[TextIO]: ...
+
+
+@overload
+@contextlib.contextmanager
+def safely_open_and_log_gz(
+    file_path: Path,
+    mode: GzBinaryMode,
+    *,
+    fatal_fail: Literal[True],
+    success_msg: str = ...,
+    fail_msg: str = ...,
+    **open_args: Any,
+) -> Iterator[gzip.GzipFile]: ...
+
+
+@contextlib.contextmanager
+def safely_open_and_log_gz(
+    file_path: Path,
+    mode: GzTextMode | GzBinaryMode,
+    fatal_fail: bool = False,
+    success_msg: str = "found",
+    fail_msg: str = "not found",
+    **open_args: Any,
+) -> Iterator[TextIO | gzip.GzipFile | None]:
+    """Attempt to safely open a gzipped file and log a success or failure message.
+
+    The gzipped file may be opened in binary or text mode. The text mode allows iteration over
+    the lines of the file without the need to load the entire file into the memory.
+
+    If the file is not a valid gzipped file, the function either returns a None or terminates the
+    program depending on the fatal_fail parameter value. If fatal_fail is specified as True, the
+    function will either return a valid file handle or terminate the program; a None value will
+    never be returned if fatal_fail is True.
+
+    When providing a fatal_fail parameter value, it needs to be written with a keyword, e.g.,
+    safely_open_and_log_gz(path, mode, fatal_fail=True) to conform to the expected call signature
+    given how mypy currently handles overloads for parameters with default values.
+    See this mypy issue for more details: https://github.com/python/mypy/issues/7333
+
+    :param file_path: path to the gzip file to open.
+    :param mode: file opening mode.
+    :param fatal_fail: specifies whether failing to open a file should terminate the program.
+    :param success_msg: a log message when the file has been successfully opened.
+    :param fail_msg: a log message when the file could not be opened.
+    :param open_args: additional arguments to pass to the open function.
+
+    :return: a file handle or None, depending on the success of opening the file.
+    """
+    try:
+        with gzip.open(file_path, mode, **open_args) as gz_handle:
+            log.minor_success(log.path_style(str(file_path)), success_msg)
+            # The file has been successfully opened, but decompression errors might still happen
+            fail_msg = "reading failed"
+            yield gz_handle
+    except (OSError, gzip.BadGzipFile, EOFError, zlib.error) as exc:
+        # This will either print the original fail_msg if opening the file failed, or the updated
+        # fail_msg if reading and decompressing the file failed for some reason.
         log.minor_fail(log.path_style(str(file_path)), fail_msg)
         if fatal_fail:
             log.error(str(exc), exc)

@@ -28,7 +28,7 @@ from perun.vcs import vcs_kit
 
 
 @dataclass
-class _PerfProfileSpec:
+class PerfProfileSpec:
     """A representation of a perf profile record to import.
 
     :ivar path: the absolute path to the perf
@@ -36,7 +36,7 @@ class _PerfProfileSpec:
     """
 
     path: Path
-    exit_code: int = -1
+    exit_code: str = "?"
 
 
 @vcs_kit.lookup_minor_version
@@ -63,7 +63,8 @@ def import_perf_from_record(
     if sys.platform == "darwin":
         log.error("Import from perf record is not supported on macOS platform.")
     parse_script = script_kit.get_script("stackcollapse-perf.pl")
-    profiles, stats = _parse_perf_import_entries(import_entries, stats_headers)
+    import_dir = Path(config.lookup_key_recursively("import.dir", os.getcwd()))
+    profiles, stats = parse_perf_import_entries(import_entries, import_dir, stats_headers)
     resources = []
 
     for imported_file in profiles:
@@ -106,7 +107,8 @@ def import_perf_from_script(
     :param kwargs: rest of the parameters.
     """
     parse_script = script_kit.get_script("stackcollapse-perf.pl")
-    profiles, stats = _parse_perf_import_entries(import_entries, stats_headers)
+    import_dir = Path(config.lookup_key_recursively("import.dir", os.getcwd()))
+    profiles, stats = parse_perf_import_entries(import_entries, import_dir, stats_headers)
     resources = []
 
     for imported_file in profiles:
@@ -136,7 +138,8 @@ def import_perf_from_stack(
     :param minor_version: minor version corresponding to the imported profiles.
     :param kwargs: rest of the parameters.
     """
-    profiles, stats = _parse_perf_import_entries(import_entries, stats_headers)
+    import_dir = Path(config.lookup_key_recursively("import.dir", os.getcwd()))
+    profiles, stats = parse_perf_import_entries(import_entries, import_dir, stats_headers)
     resources = []
 
     for imported_profile in profiles:
@@ -167,7 +170,7 @@ def import_elk_from_json(
     resources: list[dict[str, Any]] = []
     # Load the CLI-supplied metadata, if any
     elk_metadata: dict[str, profile.ProfileHeaderEntry] = {
-        data.name: data for data in _import_metadata(metadata, import_dir)
+        data.name: data for data in parse_metadata(metadata, import_dir)
     }
 
     for elk_file in import_entries:
@@ -187,7 +190,7 @@ def import_elk_from_json(
 
 
 def import_perf_profile(
-    profiles: list[_PerfProfileSpec],
+    profiles: list[PerfProfileSpec],
     stats: list[profile.ProfileStat],
     resources: list[dict[str, Any]],
     minor_version: MinorVersion,
@@ -211,8 +214,7 @@ def import_perf_profile(
             "origin": minor_version.checksum,
             "machine": get_machine_info(kwargs.get("machine_info", ""), import_dir),
             "metadata": [
-                asdict(data)
-                for data in _import_metadata(kwargs.get("metadata", tuple()), import_dir)
+                asdict(data) for data in parse_metadata(kwargs.get("metadata", tuple()), import_dir)
             ],
             "stats": [asdict(stat) for stat in stats],
             "header": {
@@ -401,9 +403,7 @@ def extract_machine_info_from_elk_metadata(
     return machine_info
 
 
-def _import_metadata(
-    metadata: tuple[str, ...], import_dir: Path
-) -> list[profile.ProfileHeaderEntry]:
+def parse_metadata(metadata: tuple[str, ...], import_dir: Path) -> list[profile.ProfileHeaderEntry]:
     """Parse the metadata entries from CLI and convert them to our internal representation.
 
     :param import_dir: the import directory to use for relative metadata file paths.
@@ -449,9 +449,9 @@ def _parse_metadata_json(metadata_path: Path) -> list[profile.ProfileHeaderEntry
         return metadata_list
 
 
-def _parse_perf_import_entries(
-    import_entries: list[str], cli_stats_headers: str | None
-) -> tuple[list[_PerfProfileSpec], list[profile.ProfileStat]]:
+def parse_perf_import_entries(
+    import_entries: list[str], import_dir: Path, cli_stats_headers: str | None
+) -> tuple[list[PerfProfileSpec], list[profile.ProfileStat]]:
     """Parses perf import entries and stats.
 
     An import entry is either a profile entry
@@ -474,6 +474,7 @@ def _parse_perf_import_entries(
     profile entries specified directly in CLI.
 
     :param import_entries: the perf import entries to parse.
+    :param import_dir: the import directory to use for relative profile paths.
     :param cli_stats_headers: the stats headers specified in CLI.
 
     :return: parsed profiles and stats.
@@ -485,9 +486,7 @@ def _parse_perf_import_entries(
             for stat in cli_stats_headers.split(",")
         ]
     cli_stats_len = len(stats)
-
-    import_dir = Path(config.lookup_key_recursively("import.dir", os.getcwd()))
-    profiles: list[_PerfProfileSpec] = []
+    profiles: list[PerfProfileSpec] = []
 
     for record in import_entries:
         if record.strip().lower().endswith(".csv"):
@@ -504,7 +503,7 @@ def _parse_perf_import_entries(
 def _parse_perf_import_csv(
     csv_file: str,
     import_dir: Path,
-    profiles: list[_PerfProfileSpec],
+    profiles: list[PerfProfileSpec],
     stats: list[profile.ProfileStat],
 ) -> None:
     """Parse stats headers and perf import entries in a CSV file.
@@ -520,7 +519,7 @@ def _parse_perf_import_csv(
             import_csv = pl.read_csv(csvfile_handle, comment_prefix="#")
         except pl.exceptions.NoDataError:
             # Empty CSV file, skip
-            log.warn(f"Empty import file {csv_path}. Skipping.")
+            log.warn(f"Empty file {csv_path}. Skipping.")
             return
         except pl.exceptions.ComputeError as e:
             # The CSV file contains spurious columns, or is otherwise weirdly formatted.
@@ -549,7 +548,7 @@ def _parse_perf_import_csv(
 
 def _parse_perf_entry(
     entry: Sequence[str | float], import_dir: Path, stats: list[profile.ProfileStat]
-) -> _PerfProfileSpec | None:
+) -> PerfProfileSpec | None:
     """Parse a single perf profile import entry.
 
     :param entry: the perf import entry to parse.
@@ -561,22 +560,22 @@ def _parse_perf_entry(
     # Attempt to parse the profile specification.
     if len(entry) == 0 or entry[0] is None or str(entry[0]).strip() == "":
         # Empty profile specification, warn and skip.
-        log.warn("Empty import profile specification. Skipping.")
+        log.warn("Empty profile specification. Skipping.")
         return None
     profile_path = _massage_import_path(str(entry[0]), import_dir)
     # Attempt to parse the exit code, if provided.
-    exit_code = _PerfProfileSpec.exit_code
+    exit_code = PerfProfileSpec.exit_code
     try:
-        exit_code = int(entry[1])
+        exit_code = str(entry[1])
     except (IndexError, TypeError):
         # No exit code was provided. Either there is no value, or the value is None.
-        log.warn(f"No exit code provided, using the default code {exit_code}.")
-    except ValueError:
-        # An exit code was provided, but it is an invalid value that cannot be represented as int.
-        log.warn(f"Invalid exit code '{entry[1]}' provided, using the default code {exit_code}.")
-    if exit_code != 0:
-        log.warn("Importing a profile with non-zero exit code.")
-    profile_info = _PerfProfileSpec(profile_path, exit_code)
+        log.warn(
+            f"No exit code provided for profile '{profile_path}', using the default code "
+            f"'{exit_code}'."
+        )
+    if exit_code != "0":
+        log.warn("Loading a profile with non-zero exit code.")
+    profile_info = PerfProfileSpec(profile_path, exit_code)
 
     # Parse the stat values and add them to respective stats
     for stat_value, stat_obj in zip(entry[2:], stats):

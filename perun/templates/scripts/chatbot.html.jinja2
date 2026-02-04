@@ -64,7 +64,18 @@ const $messageInput = $("#message-input");
 const $chatHeader   = $("#chat-header");
 
 $chatButton.on("click", function () {
-  $chatWindow.css("display", $chatWindow.is(":visible") ? "none" : "flex");
+  const isVisible = $chatWindow.is(":visible");
+
+  // Toggle visibility
+  $chatWindow.css("display", isVisible ? "none" : "flex");
+
+  // Add/remove global chat-open flag
+  if (isVisible) {
+    document.body.classList.remove("chat-open");
+  } else {
+    document.body.classList.add("chat-open");
+  }
+
 });
 
 function getPilotPrompt() {
@@ -215,13 +226,14 @@ $(document).ready(() => {
 
     $block.hover(
       function () {
-        if (!isSelected) {
+        // Only show highlight and eye icon if chat is open
+        if (!isSelected && $("body").hasClass("chat-open")) {
           $block.addClass("context-highlight");
           $eyeIcon.show();
         }
       },
       function () {
-        if (!isSelected) {
+        if (!isSelected && $("body").hasClass("chat-open")) {
           $block.removeClass("context-highlight");
           $eyeIcon.hide();
         }

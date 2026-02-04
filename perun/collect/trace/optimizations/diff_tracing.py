@@ -14,7 +14,6 @@ import itertools
 from perun.logic import pcs
 from perun.collect.trace.optimizations.structs import DiffCfgMode
 
-
 # The set of ASM JUMP instruction that are omitted during the operands check
 JUMP_INSTRUCTIONS = {
     "call", "jmp", "je", "jne", "jz", "jnz", "jg", "jge", "jnle", "jnl", "jl", "jle", "jnge",

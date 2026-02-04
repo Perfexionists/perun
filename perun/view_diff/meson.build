@@ -4,7 +4,8 @@ perun_view_diff_files = files(
     '__init__.py',
     '__init__.pyi',
     'flamegraph.py',
-    'report.py',
+    'report_folded.py',
+    'report_native.py',
     'short.py',
 )
 

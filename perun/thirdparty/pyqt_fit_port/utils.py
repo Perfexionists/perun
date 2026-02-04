@@ -12,7 +12,6 @@ import inspect
 
 import numpy as np
 
-
 _epsilon = np.sqrt(np.finfo(float).eps)
 
 # Find the largest float available for this numpy
