@@ -860,7 +860,7 @@ def generate_report_from_native(
         container_height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
         notes_enabled=True,
         links=list(kwargs.get("link", [])),
-        default_theme=kwargs.get("default_theme", "light"),
+        default_theme=kwargs.get("default_theme", "dark"),
     )
     log.minor_success("HTML template", "rendered")
     output_file = diff_kit.save_diff_view(

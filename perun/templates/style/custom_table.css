@@ -1,0 +1,275 @@
+.traces-table-container {
+    padding: 0;
+    background-color: var(--color-target-bg-tint);
+    color: var(--color-primary-text);
+    transition: background-color 0.3s, color 0.3s;
+    box-shadow: 0 4px 8px var(--color-primary-transparent);
+    border: 3px solid var(--color-sidepanel-bg);
+    border-radius: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.traces-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    table-layout: fixed;
+}
+
+.traces-table th,
+.traces-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-light-gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.traces-table th {
+    background-color: var(--color-bg-not-changing);
+    color: var(--color-white-not-changing);
+    font-weight: bold;
+    font-size: 0.95em;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+.traces-table th.sortable:hover {
+    background-color: var(--color-almost-black-not-changing);
+}
+
+.traces-table th.asc::after {
+    content: ' ▲';
+    font-size: 0.8em;
+    color: var(--color-target);
+    margin-left: 5px;
+}
+
+.traces-table th.desc::after {
+    content: ' ▼';
+    font-size: 0.8em;
+    color: var(--color-target);
+    margin-left: 5px;
+}
+
+.traces-table .filter-row th {
+    padding: 8px 15px;
+    background-color: var(--color-bg-dt-table);
+    border-bottom: 1px solid var(--color-light-gray);
+    color: var(--color-primary-text);
+}
+
+.traces-table input,
+.traces-table select {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-light-gray);
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.traces-table input:focus,
+.traces-table select:focus {
+    outline: none;
+    border-color: var(--color-target);
+    box-shadow: 0 0 0 2px var(--color-target-transparent);
+    background-color: var(--color-secondary-hover);
+}
+
+.range-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.range-filter-container input {
+    width: 100%;
+    min-width: 0;
+}
+
+/* disable spin buttons in Chrome, Safari, Edge, Opera */
+.range-filter-container input[type=number]::-webkit-outer-spin-button,
+.range-filter-container input[type=number]::-webkit-inner-spin-button,
+.pagination-jump input[type=number]::-webkit-outer-spin-button,
+.pagination-jump input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* disable spin buttons in Firefox */
+.range-filter-container input[type=number],
+.pagination-jump input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.traces-table tbody tr {
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.traces-table tbody tr:hover {
+    background-color: var(--color-secondary);
+}
+
+.traces-table td {
+    color: var(--color-primary-text);
+}
+
+.traces-table .no-data {
+    text-align: center;
+    padding: 30px;
+    color: var(--color-bs-secondary);
+    font-style: italic;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.text-red {
+    color: var(--color-wrong) !important;
+}
+
+.text-green {
+    color: var(--color-correct) !important;
+}
+
+.traces-pagination {
+    background-color: var(--color-bg-dt-table);
+    padding: 15px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--color-light-gray);
+    flex-wrap: wrap;
+}
+
+.pagination-jump {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.pagination-jump input.page-input {
+    width: 95px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-light-gray);
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.pagination-jump input.page-input:focus {
+    outline: none;
+    border-color: var(--color-target);
+    box-shadow: 0 0 0 2px var(--color-target-transparent);
+    background-color: var(--color-secondary-hover);
+}
+
+.traces-pagination button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--color-white-tinted);
+    color: var(--color-gray-not-changing);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.traces-pagination button:hover:not(:disabled) {
+    background-color: var(--color-target-transparent);
+    color: var(--color-target);
+}
+
+.traces-pagination button:disabled {
+    background-color: var(--color-light-gray);
+    color: var(--color-white-tinted);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.traces-pagination span {
+    color: var(--color-primary-text);
+    font-size: 0.9em;
+    margin: 0 10px;
+}
+
+.traces-pagination .pagination-ellipsis {
+    color: var(--color-primary-text);
+    padding: 0 5px;
+    align-self: center;
+}
+
+.traces-pagination button.active {
+    background-color: var(--color-target);
+    color: var(--color-white-tinted);
+    border-color: var(--color-target);
+}
+
+.regex-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.regex-filter-wrapper input {
+    padding-right: 30px;
+}
+
+.regex-toggle-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-white-tinted);
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--color-gray-not-changing);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+    pointer-events: none;
+}
+
+.regex-filter-wrapper:hover .regex-toggle-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.regex-toggle-btn:hover {
+    background-color: var(--color-target-transparent);
+    color: var(--color-target);
+}
+
+.regex-toggle-btn.active {
+    background-color: var(--color-target);
+    color: var(--color-white-not-changing);
+    opacity: 1;
+    pointer-events: auto;
+}
