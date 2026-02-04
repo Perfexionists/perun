@@ -420,7 +420,7 @@ class TracesTable {
         jumpInput.type = 'number';
         jumpInput.min = 1;
         jumpInput.max = totalPages;
-        jumpInput.placeholder = 'Go to';
+        jumpInput.placeholder = 'Go to page';
         jumpInput.className = 'page-input';
         
         jumpInput.addEventListener('keydown', (e) => {
