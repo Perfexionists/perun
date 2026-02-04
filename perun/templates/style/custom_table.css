@@ -162,7 +162,7 @@
 }
 
 .pagination-jump input.page-input {
-    width: 60px;
+    width: 95px;
     padding: 6px 10px;
     border-radius: 4px;
     border: 1px solid var(--color-light-gray);
