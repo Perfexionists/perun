@@ -19,7 +19,7 @@
                 "type": "{{ val.main_stat }}",
                 "baseline_abs": "{{ val.baseline_abs }}",
                 "target_abs": "{{ val.target_abs }}",
-                "total_rel_delta": "{{ val.total_rel_delta }}",
+                "prop_rel_delta": "{{ val.proportional_rel_delta }}",
                 "abs_delta": "{{ val.abs_delta }}",
                 "rel_delta": "{{ val.rel_delta }}"
             },
@@ -57,10 +57,16 @@
         };
 
         const columns = [
-            { data: 'uid', title: 'UID', filterable: true, width: '250px' },
+            {
+                data: 'uid',
+                title: 'Unit',
+                filterable: true,
+                width: '250px',
+                tooltip: 'The unit name.'
+            },
             { 
                 data: 'fresh', 
-                title: 'State', 
+                title: 'Occurrence',
                 filterable: true,
                 type: 'select',
                 render: (data) => {
@@ -68,37 +74,43 @@
                     if (data === 'not in baseline') color = 'var(--color-target)';
                     else if (data === 'not in target') color = 'var(--color-baseline)';
                     return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
-                }
+                },
+                tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
             },
             { 
                 data: 'baseline_abs', 
-                title: 'Baseline Abs', 
+                title: 'Baseline', 
                 type: 'number',
-                render: (data) => formatBold(data)
+                render: (data) => formatBold(data),
+                tooltip: 'The amount of resources consumed by the Unit in the baseline profile.'
             },
             { 
                 data: 'target_abs', 
-                title: 'Target Abs', 
+                title: 'Target', 
                 type: 'number',
-                render: (data) => formatBold(data)
+                render: (data) => formatBold(data),
+                tooltip: 'The amount of resources consumed by the Unit in the target profile.'
             },
             { 
-                data: 'total_rel_delta', 
-                title: 'Total Rel Δ', 
+                data: 'prop_rel_delta', 
+                title: 'Proportional Δ [%]', 
                 type: 'number',
-                render: (data) => formatDelta(data, '%')
+                render: (data) => formatDelta(data, '%'),
+                tooltip: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.'
             },
             { 
                 data: 'abs_delta', 
-                title: 'Abs Δ', 
+                title: 'Absolute Δ', 
                 type: 'number',
-                render: (data) => formatDelta(data)
+                render: (data) => formatDelta(data),
+                tooltip: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.' 
             },
             { 
-                data: 'rel_delta', 
-                title: 'Rel Δ', 
+                data: 'rel_delta',
+                title: 'Relative Δ [%]', 
                 type: 'number',
-                render: (data) => formatDelta(data, '%')
+                render: (data) => formatDelta(data, '%'),
+                tooltip: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
             }
         ];
 

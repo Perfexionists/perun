@@ -172,6 +172,7 @@ class TracesTable {
 
         this.columns.forEach((col, index) => {
             const th = document.createElement('th');
+            th.title = col.tooltip || '';
             th.innerText = col.title || col.data;
             th.className = 'sortable';
             if (col.width) {
