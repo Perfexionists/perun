@@ -325,6 +325,16 @@ class TracesTable {
 
                 tr.appendChild(td);
             });
+            
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', () => {
+                if (window.openTracePopup) {
+                    window.openTracePopup(row);
+                } else {
+                    console.warn('openTracePopup function not found');
+                }
+            });
+
             tbody.appendChild(tr);
         });
 
@@ -426,7 +436,7 @@ class TracesTable {
         
         jumpInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                let page = parseInt(e.target.value);
+                let page = parseInt(e.target.value, 10);
                 if (isNaN(page)) return;
                 
                 if (page < 1) page = 1;

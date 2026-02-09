@@ -52,6 +52,7 @@
         {% include 'style/tooltip.css' %}
 
         {% include 'style/custom_table.css' %}
+        {% include 'style/trace_details.css' %}
 
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
@@ -94,6 +95,7 @@
 
     <!-- TABLE -->
     {% include 'diff_components/custom_table.html.jinja2' %}
+    {% include 'diff_components/trace_details_modal.html.jinja2' %}
 
     <!-- SANKEY GRAPH -->
     {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}

@@ -1,0 +1,83 @@
+<div id="trace-popup-container" style="display: none">
+    <div class="note-overlay" onclick="closeTracePopup()"></div>
+
+    <div class="note-popup" id="trace-popup">
+
+        <span id="trace-popup-close" onclick="closeTracePopup()">
+            {% include 'assets/close.svg' %}
+        </span>
+
+        <h2 id="trace-popup-title">Trace Details</h2>
+
+        <div id="trace-popup-content-wrapper">
+            <div id="trace-popup-header">
+                <span id="trace-info-text"></span>
+            </div>
+
+            <div id="trace-popup-body">
+                <div id="trace-stats-container">
+                    <h3>Trace Statistics</h3>
+                    <table class="traces-table">
+                        <thead>
+                            <tr>
+                                <th>Trace</th>
+                                <th>Baseline</th>
+                                <th>Target</th>
+                                <th>Δ Abs</th>
+                                <th>Δ Rel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trace-stats-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="trace-extra-container">
+                    <h3>Details</h3>
+                    <!-- for future content -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function closeTracePopup() {
+        document.getElementById('trace-popup-container').style.display = 'none';
+        // Clear selection or other states if needed
+    }
+
+    function openTracePopup(rowData) {
+        document.getElementById('trace-popup-container').style.display = 'flex';
+
+        document.getElementById('trace-popup-title').textContent = `Unit: ${rowData.uid}`;
+        document.getElementById('trace-info-text').innerHTML = `
+            <strong>Index:</strong> ${rowData.index} &nbsp;|&nbsp; 
+            <strong>Occurence:</strong> ${rowData.fresh} &nbsp;|&nbsp; 
+            <strong>Type:</strong> ${rowData.type}
+        `;
+
+        const tbody = document.getElementById('trace-stats-tbody');
+        tbody.innerHTML = '';
+
+        if (rowData.trace_stats && rowData.trace_stats.length > 0) {
+            rowData.trace_stats.forEach(stat => {
+                // stat structure: [trace, stat_t_index, baseline, target, prop_rel, abs, rel, long_trace]
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="trace-cell" title="${stat[7] || stat[0]}">
+                        ${stat[0]}
+                    </td>
+                    <td>${formatNumber(stat[2])}</td>
+                    <td>${formatNumber(stat[3])}</td>
+                    <td style="color: ${parseFloat(stat[5]) > 0 ? 'var(--color-wrong)' : 'var(--color-correct)'}">${formatNumber(stat[5])}</td>
+                    <td style="color: ${parseFloat(stat[6]) > 0 ? 'var(--color-wrong)' : 'var(--color-correct)'}">${stat[6]}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No trace statistics available.</td></tr>';
+        }
+    }
+</script>

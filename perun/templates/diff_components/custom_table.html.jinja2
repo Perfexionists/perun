@@ -21,7 +21,8 @@
                 "target_abs": "{{ val.target_abs }}",
                 "prop_rel_delta": "{{ val.proportional_rel_delta }}",
                 "abs_delta": "{{ val.abs_delta }}",
-                "rel_delta": "{{ val.rel_delta }}"
+                "rel_delta": "{{ val.rel_delta }}",
+                "trace_stats": {{ val.trace_stats|tojson }}
             },
             {%- endfor %}
         ];
