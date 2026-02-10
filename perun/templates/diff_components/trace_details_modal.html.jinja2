@@ -18,7 +18,7 @@
                 <!-- Left: Trace Stats Table (Green Area) -->
                 <div id="trace-stats-container">
                     <h3>Trace Statistics</h3>
-                    <div id="trace-details-table-container"></div>
+                    <div id="trace-details-table-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;"></div>
                 </div>
 
                 <!-- Right: Empty Area (Red Area) -->
@@ -41,7 +41,6 @@
 
         // Populate Header
         document.getElementById('trace-popup-title').textContent = `Unit: ${rowData.uid}`;
-        // Info text - using the uid/trace info 
         document.getElementById('trace-info-text').innerHTML = `
             <div class="trace-header-stats">
                 <div class="stat-item">
@@ -77,54 +76,57 @@
             return 'var(--color-common)';
         }
 
-        // Clear previous table
         const containerId = 'trace-details-table-container';
         document.getElementById(containerId).innerHTML = '';
 
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
-            // Define columns
             const columns = [
                 {
-                    data: 0, // Trace
+                    data: 0,
                     title: 'Trace',
-                    render: (data, row) => {
-                        // Use row[7] (long trace) for tooltip if available
+                    filterable: false,
+                    render: (data, row, index) => {
                         const longTrace = row[7] || data;
-                        return `<div class="trace-cell" title="${longTrace}">${data}</div>`;
+                        return `<div class="trace-cell" title="${longTrace}">${index + 1}</div>`;
                     },
-                    width: '300px'
+                    width: '75px'
                 },
                 {
-                    data: 2, // Baseline
+                    data: 2,
                     title: 'Baseline',
                     type: 'number',
                     render: (data) => formatBold(data)
                 },
                 {
-                    data: 3, // Target
+                    data: 3,
                     title: 'Target',
                     type: 'number',
                     render: (data) => formatBold(data)
                 },
                 {
-                    data: 5, // Abs Delta
+                    data: 4,
+                    title: 'Prop Δ [%]',
+                    type: 'number',
+                    render: (data) => formatDelta(data, '%')
+                },
+                {
+                    data: 5,
                     title: 'Abs Δ',
                     type: 'number',
                     render: (data) => formatDelta(data)
                 },
                 {
-                    data: 6, // Rel Delta
+                    data: 6,
                     title: 'Rel Δ [%]',
                     type: 'number',
                     render: (data) => formatDelta(data, '%')
                 }
             ];
 
-            // trace_stats is array of arrays, TracesTable supports it (row[col.data] where col.data is index)
             new TracesTable(containerId, {
                 data: rowData.trace_stats,
                 columns: columns,
-                itemsPerPage: 10
+                enablePagination: false
             });
         } else {
             document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';

@@ -119,6 +119,8 @@
         data: rawData,
         columns: columns,
         itemsPerPage: 10,
+        initialSortColumn: 'prop_rel_delta',
+        initialSortDirection: 'desc',
         onRowClick: (row) => {
             if (window.openTracePopup) {
                 window.openTracePopup(row);

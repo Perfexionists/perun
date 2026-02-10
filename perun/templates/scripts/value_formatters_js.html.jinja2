@@ -52,7 +52,14 @@
         let color = 'var(--color-primary-text)';
         if (num > 0) color = 'var(--color-wrong)';
         else if (num <= 0) color = 'var(--color-correct)';
-        const formatted = formatNumber(num);
+        
+        let formatted;
+        if (suffix === '%' && Math.abs(num) < 1000) {
+             formatted = num.toFixed(2);
+        } else {
+             formatted = formatNumber(num);
+        }
+        
         return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
     }
 

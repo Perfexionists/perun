@@ -8,10 +8,11 @@ class TracesTable {
         this.data = options.data || [];
         this.columns = options.columns || [];
         this.itemsPerPage = options.itemsPerPage || 10;
+        this.enablePagination = options.enablePagination !== undefined ? options.enablePagination : true;
         this.onRowClick = options.onRowClick || null;
         this.currentPage = 1;
-        this.sortColumn = null;
-        this.sortDirection = 'asc';
+        this.sortColumn = options.initialSortColumn || null;
+        this.sortDirection = options.initialSortDirection || 'asc';
         this.filters = {};
         this.regexModes = {};
 
@@ -141,14 +142,21 @@ class TracesTable {
         this.container.innerHTML = '';
         this.processData();
 
+        const scrollContainer = document.createElement('div');
+        scrollContainer.className = 'traces-table-scroll';
+        
         const table = document.createElement('table');
         table.className = 'traces-table';
 
         table.appendChild(this.createHeader());
         table.appendChild(this.createBody());
 
-        this.container.appendChild(table);
-        this.container.appendChild(this.createPagination());
+        scrollContainer.appendChild(table);
+        this.container.appendChild(scrollContainer);
+        
+        if (this.enablePagination) {
+            this.container.appendChild(this.createPagination());
+        }
 
         if (activeElementId) {
             const el = document.getElementById(activeElementId);
@@ -294,9 +302,16 @@ class TracesTable {
 
     createBody() {
         const tbody = document.createElement('tbody');
-        const start = (this.currentPage - 1) * this.itemsPerPage;
-        const end = start + this.itemsPerPage;
-        const pageData = this.processedData.slice(start, end);
+        let pageData;
+        let start = 0;
+        
+        if (this.enablePagination) {
+            start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            pageData = this.processedData.slice(start, end);
+        } else {
+            pageData = this.processedData;
+        }
 
         if (pageData.length === 0) {
             const tr = document.createElement('tr');
@@ -309,19 +324,25 @@ class TracesTable {
             return tbody;
         }
 
-        pageData.forEach(row => {
+        pageData.forEach((row, index) => {
             const tr = document.createElement('tr');
+            const absoluteIndex = start + index;
+
             this.columns.forEach(col => {
                 const td = document.createElement('td');
                 let content = row[col.data];
 
                 if (col.render && typeof col.render === 'function') {
-                    td.innerHTML = col.render(content, row);
+                    td.innerHTML = col.render(content, row, absoluteIndex);
                 } else {
                     if (col.formatNumber !== false && !isNaN(parseFloat(content)) && isFinite(content)) {
                         content = this.formatNumber(content);
                     }
                     td.innerText = content !== undefined ? content : '';
+                }
+
+                if (this.sortColumn === col.data) {
+                    td.classList.add('sorted-column');
                 }
 
                 tr.appendChild(td);

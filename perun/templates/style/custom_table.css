@@ -120,6 +120,17 @@
     background-color: var(--color-secondary);
 }
 
+.traces-table-scroll {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+    width: 100%;
+}
+
+.traces-table td.sorted-column {
+    background-color: var(--color-sorted-column-bg);
+}
+
 .traces-table td {
     color: var(--color-primary-text);
 }
