@@ -15,27 +15,16 @@
             </div>
 
             <div id="trace-popup-body">
+                <!-- Left: Trace Stats Table (Green Area) -->
                 <div id="trace-stats-container">
                     <h3>Trace Statistics</h3>
-                    <table class="traces-table">
-                        <thead>
-                            <tr>
-                                <th>Trace</th>
-                                <th>Baseline</th>
-                                <th>Target</th>
-                                <th>Δ Abs</th>
-                                <th>Δ Rel</th>
-                            </tr>
-                        </thead>
-                        <tbody id="trace-stats-tbody">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                    <div id="trace-details-table-container"></div>
                 </div>
 
+                <!-- Right: Empty Area (Red Area) -->
                 <div id="trace-extra-container">
                     <h3>Details</h3>
-                    <!-- for future content -->
+                    <!-- Placeholder for future content -->
                 </div>
             </div>
         </div>
@@ -45,39 +34,100 @@
 <script>
     function closeTracePopup() {
         document.getElementById('trace-popup-container').style.display = 'none';
-        // Clear selection or other states if needed
     }
 
     function openTracePopup(rowData) {
         document.getElementById('trace-popup-container').style.display = 'flex';
 
+        // Populate Header
         document.getElementById('trace-popup-title').textContent = `Unit: ${rowData.uid}`;
+        // Info text - using the uid/trace info 
         document.getElementById('trace-info-text').innerHTML = `
-            <strong>Index:</strong> ${rowData.index} &nbsp;|&nbsp; 
-            <strong>Occurence:</strong> ${rowData.fresh} &nbsp;|&nbsp; 
-            <strong>Type:</strong> ${rowData.type}
+            <div class="trace-header-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Occurrence:</span>
+                    <span class="stat-value" style="color: ${getColorForFreshness(rowData.fresh)}">${rowData.fresh}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Baseline:</span>
+                    <span class="stat-value">${formatBold(rowData.baseline_abs)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Target:</span>
+                    <span class="stat-value">${formatBold(rowData.target_abs)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Prop Δ:</span>
+                    <span class="stat-value">${formatDelta(rowData.prop_rel_delta, '%')}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Abs Δ:</span>
+                    <span class="stat-value">${formatDelta(rowData.abs_delta)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rel Δ:</span>
+                    <span class="stat-value">${formatDelta(rowData.rel_delta, '%')}</span>
+                </div>
+            </div>
         `;
 
-        const tbody = document.getElementById('trace-stats-tbody');
-        tbody.innerHTML = '';
+        function getColorForFreshness(fresh) {
+            if (fresh === 'not in baseline') return 'var(--color-target)';
+            if (fresh === 'not in target') return 'var(--color-baseline)';
+            return 'var(--color-common)';
+        }
+
+        // Clear previous table
+        const containerId = 'trace-details-table-container';
+        document.getElementById(containerId).innerHTML = '';
 
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
-            rowData.trace_stats.forEach(stat => {
-                // stat structure: [trace, stat_t_index, baseline, target, prop_rel, abs, rel, long_trace]
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="trace-cell" title="${stat[7] || stat[0]}">
-                        ${stat[0]}
-                    </td>
-                    <td>${formatNumber(stat[2])}</td>
-                    <td>${formatNumber(stat[3])}</td>
-                    <td style="color: ${parseFloat(stat[5]) > 0 ? 'var(--color-wrong)' : 'var(--color-correct)'}">${formatNumber(stat[5])}</td>
-                    <td style="color: ${parseFloat(stat[6]) > 0 ? 'var(--color-wrong)' : 'var(--color-correct)'}">${stat[6]}%</td>
-                `;
-                tbody.appendChild(tr);
+            // Define columns
+            const columns = [
+                {
+                    data: 0, // Trace
+                    title: 'Trace',
+                    render: (data, row) => {
+                        // Use row[7] (long trace) for tooltip if available
+                        const longTrace = row[7] || data;
+                        return `<div class="trace-cell" title="${longTrace}">${data}</div>`;
+                    },
+                    width: '300px'
+                },
+                {
+                    data: 2, // Baseline
+                    title: 'Baseline',
+                    type: 'number',
+                    render: (data) => formatBold(data)
+                },
+                {
+                    data: 3, // Target
+                    title: 'Target',
+                    type: 'number',
+                    render: (data) => formatBold(data)
+                },
+                {
+                    data: 5, // Abs Delta
+                    title: 'Abs Δ',
+                    type: 'number',
+                    render: (data) => formatDelta(data)
+                },
+                {
+                    data: 6, // Rel Delta
+                    title: 'Rel Δ [%]',
+                    type: 'number',
+                    render: (data) => formatDelta(data, '%')
+                }
+            ];
+
+            // trace_stats is array of arrays, TracesTable supports it (row[col.data] where col.data is index)
+            new TracesTable(containerId, {
+                data: rowData.trace_stats,
+                columns: columns,
+                itemsPerPage: 10
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No trace statistics available.</td></tr>';
+            document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';
         }
     }
 </script>

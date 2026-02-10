@@ -1,4 +1,5 @@
-{%- macro tooltip(tooltip_text) %}<div class="hover-text">[?]<!-- Tooltip text --><span class="tooltip-text tright">{{ tooltip_text }}</span></div>{%- endmacro %}
+{%- macro tooltip(tooltip_text) %}<div class="hover-text">[?]<!-- Tooltip text --><span class="tooltip-text tright">{{
+        tooltip_text }}</span></div>{%- endmacro %}
 
 <script>
     function ensureNumber(val) {
@@ -8,7 +9,7 @@
         return val;
     }
 
-    function format_value(val, show_positive_sign=false) {
+    function format_value(val, show_positive_sign = false) {
         let result = "<span";
         val = ensureNumber(val);
         let sign = "";
@@ -39,7 +40,26 @@
             formatted = value;
         }
 
-        return formatted.toLocaleString().replace(/,/g, " ");
+        if (typeof formatted === 'number') {
+            return formatted.toLocaleString().replace(/,/g, " ");
+        }
+        return formatted;
+    }
+
+    function formatDelta(data, suffix = '') {
+        const num = parseFloat(data);
+        if (isNaN(num)) return data;
+        let color = 'var(--color-primary-text)';
+        if (num > 0) color = 'var(--color-wrong)';
+        else if (num <= 0) color = 'var(--color-correct)';
+        const formatted = formatNumber(num);
+        return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
+    }
+
+    function formatBold(data) {
+        const num = parseFloat(data);
+        const formatted = !isNaN(num) ? formatNumber(num) : data;
+        return `<span style="font-weight: bold;">${formatted}</span>`;
     }
 
     function format_relative(value) {
@@ -115,7 +135,7 @@
 
     function format_path_prex(path_stats, index, path_cost) {
         let result = '<span class="';
-        let prefix_sum = path_stats.slice(0, index+1).reduce((acc, v) => acc + v, 0);
+        let prefix_sum = path_stats.slice(0, index + 1).reduce((acc, v) => acc + v, 0);
         let prefix_rate = (path_cost === 0) ? 0 : (prefix_sum / path_cost);
         if (prefix_rate < 0.5) {
             result += 'decrease';
@@ -139,7 +159,7 @@
         let bottleneck_rate = (stat === 0) ? 0 : min / stat;
         result += getColor(bottleneck_rate * 100);
         result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
-        result += '{{ tooltip('<span style="font-weight: bold">Bottleneck rate:</span> the ratio between the cost of the whole path to all paths leading to the current uid') }}'
+        result += '{{ tooltip(' < span style = "font-weight: bold" > Bottleneck rate:</span > the ratio between the cost of the whole path to all paths leading to the current uid') }}'
         return result;
     }
 
@@ -154,14 +174,14 @@
             let node = nodes[v];
             result += '<tr><td style="white-space: pre-wrap">';
             if (i != 0 && i != traces.length) {
-                let base_stat = base[i-1],
-                    tgt_stat = tgt[i-1];
+                let base_stat = base[i - 1],
+                    tgt_stat = tgt[i - 1];
                 let diff = base_stat - tgt_stat;
                 result += '  '.repeat(i) + "⎸ " + format_stat(base_stat, tgt_stat, stat_unit);
                 if (stat_type.includes("inclusive")) {
                     result += "    " + format_bottleneck(base_stat, min_base) + " | " + format_bottleneck(tgt_stat, min_tgt);
                 } else if (stat_type.includes("exclusive")) {
-                    result += "    " + format_path_prex(base, i-1, sum_base) + " | " + format_path_prex(tgt, i-1, sum_tgt);
+                    result += "    " + format_path_prex(base, i - 1, sum_base) + " | " + format_path_prex(tgt, i - 1, sum_tgt);
                 }
                 result += " "
             }

@@ -9,7 +9,7 @@
 
     {% include 'scripts/custom_table.js' %}
 
-    (function() {
+    (function () {
         const rawData = [
             {%- for val in selection_table %}
             {
@@ -27,98 +27,103 @@
             {%- endfor %}
         ];
 
-        const formatNumber = (num) => {
-            if (num === null || num === undefined || isNaN(num)) return num;
-            const absNum = Math.abs(num);
-            if (absNum >= 1.0e9) {
-                return (num / 1.0e9).toFixed(3) + " G";
-            } else if (absNum >= 1.0e6) {
-                return (num / 1.0e6).toFixed(3) + " M";
-            } else if (absNum >= 1.0e3) {
-                return (num / 1.0e3).toFixed(3) + " K";
-            } else {
-                return num.toString();
+    const formatNumber = (num) => {
+        if (num === null || num === undefined || isNaN(num)) return num;
+        const absNum = Math.abs(num);
+        if (absNum >= 1.0e9) {
+            return (num / 1.0e9).toFixed(3) + " G";
+        } else if (absNum >= 1.0e6) {
+            return (num / 1.0e6).toFixed(3) + " M";
+        } else if (absNum >= 1.0e3) {
+            return (num / 1.0e3).toFixed(3) + " K";
+        } else {
+            return num.toString();
+        }
+    };
+
+    const formatDelta = (data, suffix = '') => {
+        const num = parseFloat(data);
+        if (isNaN(num)) return data;
+        let color = 'var(--color-primary-text)';
+        if (num > 0) color = 'var(--color-wrong)';
+        else if (num <= 0) color = 'var(--color-correct)';
+        const formatted = formatNumber(num);
+        return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
+    };
+
+    const formatBold = (data) => {
+        const num = parseFloat(data);
+        const formatted = !isNaN(num) ? formatNumber(num) : data;
+        return `<span style="font-weight: bold;">${formatted}</span>`;
+    };
+
+    const columns = [
+        {
+            data: 'uid',
+            title: 'Unit',
+            filterable: true,
+            width: '250px',
+            tooltip: 'The unit name.'
+        },
+        {
+            data: 'fresh',
+            title: 'Occurrence',
+            filterable: true,
+            type: 'select',
+            render: (data) => {
+                let color = 'var(--color-common)';
+                if (data === 'not in baseline') color = 'var(--color-target)';
+                else if (data === 'not in target') color = 'var(--color-baseline)';
+                return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+            },
+            tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
+        },
+        {
+            data: 'baseline_abs',
+            title: 'Baseline',
+            type: 'number',
+            render: (data) => formatBold(data),
+            tooltip: 'The amount of resources consumed by the Unit in the baseline profile.'
+        },
+        {
+            data: 'target_abs',
+            title: 'Target',
+            type: 'number',
+            render: (data) => formatBold(data),
+            tooltip: 'The amount of resources consumed by the Unit in the target profile.'
+        },
+        {
+            data: 'prop_rel_delta',
+            title: 'Proportional Δ [%]',
+            type: 'number',
+            render: (data) => formatDelta(data, '%'),
+            tooltip: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.'
+        },
+        {
+            data: 'abs_delta',
+            title: 'Absolute Δ',
+            type: 'number',
+            render: (data) => formatDelta(data),
+            tooltip: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.'
+        },
+        {
+            data: 'rel_delta',
+            title: 'Relative Δ [%]',
+            type: 'number',
+            render: (data) => formatDelta(data, '%'),
+            tooltip: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
+        }
+    ];
+
+    new TracesTable('custom-table-container', {
+        data: rawData,
+        columns: columns,
+        itemsPerPage: 10,
+        onRowClick: (row) => {
+            if (window.openTracePopup) {
+                window.openTracePopup(row);
             }
-        };
-
-        const formatDelta = (data, suffix = '') => {
-            const num = parseFloat(data);
-            if (isNaN(num)) return data;
-            let color = 'var(--color-primary-text)';
-            if (num > 0) color = 'var(--color-wrong)';
-            else if (num <= 0) color = 'var(--color-correct)';
-            const formatted = formatNumber(num);
-            return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
-        };
-
-        const formatBold = (data) => {
-             const num = parseFloat(data);
-             const formatted = !isNaN(num) ? formatNumber(num) : data;
-             return `<span style="font-weight: bold;">${formatted}</span>`;
-        };
-
-        const columns = [
-            {
-                data: 'uid',
-                title: 'Unit',
-                filterable: true,
-                width: '250px',
-                tooltip: 'The unit name.'
-            },
-            { 
-                data: 'fresh', 
-                title: 'Occurrence',
-                filterable: true,
-                type: 'select',
-                render: (data) => {
-                    let color = 'var(--color-common)';
-                    if (data === 'not in baseline') color = 'var(--color-target)';
-                    else if (data === 'not in target') color = 'var(--color-baseline)';
-                    return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
-                },
-                tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
-            },
-            { 
-                data: 'baseline_abs', 
-                title: 'Baseline', 
-                type: 'number',
-                render: (data) => formatBold(data),
-                tooltip: 'The amount of resources consumed by the Unit in the baseline profile.'
-            },
-            { 
-                data: 'target_abs', 
-                title: 'Target', 
-                type: 'number',
-                render: (data) => formatBold(data),
-                tooltip: 'The amount of resources consumed by the Unit in the target profile.'
-            },
-            { 
-                data: 'prop_rel_delta', 
-                title: 'Proportional Δ [%]', 
-                type: 'number',
-                render: (data) => formatDelta(data, '%'),
-                tooltip: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.'
-            },
-            { 
-                data: 'abs_delta', 
-                title: 'Absolute Δ', 
-                type: 'number',
-                render: (data) => formatDelta(data),
-                tooltip: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.' 
-            },
-            { 
-                data: 'rel_delta',
-                title: 'Relative Δ [%]', 
-                type: 'number',
-                render: (data) => formatDelta(data, '%'),
-                tooltip: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
-            }
-        ];
-
-        new TracesTable('custom-table-container', {
-            data: rawData,
-            columns: columns,
-            itemsPerPage: 10
-        });
-    })();
+        }
+    });
+    }) ();
 </script>
