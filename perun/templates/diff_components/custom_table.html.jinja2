@@ -27,19 +27,6 @@
             {%- endfor %}
         ];
 
-    const formatNumber = (num) => {
-        if (num === null || num === undefined || isNaN(num)) return num;
-        const absNum = Math.abs(num);
-        if (absNum >= 1.0e9) {
-            return (num / 1.0e9).toFixed(3) + " G";
-        } else if (absNum >= 1.0e6) {
-            return (num / 1.0e6).toFixed(3) + " M";
-        } else if (absNum >= 1.0e3) {
-            return (num / 1.0e3).toFixed(3) + " K";
-        } else {
-            return num.toString();
-        }
-    };
 
     const formatDelta = (data, suffix = '') => {
         const num = parseFloat(data);
@@ -47,13 +34,13 @@
         let color = 'var(--color-primary-text)';
         if (num > 0) color = 'var(--color-wrong)';
         else if (num <= 0) color = 'var(--color-correct)';
-        const formatted = formatNumber(num);
+        const formatted = TracesTable.formatNumber(num);
         return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
     };
 
     const formatBold = (data) => {
         const num = parseFloat(data);
-        const formatted = !isNaN(num) ? formatNumber(num) : data;
+        const formatted = !isNaN(num) ? TracesTable.formatNumber(num) : data;
         return `<span style="font-weight: bold;">${formatted}</span>`;
     };
 
