@@ -10,26 +10,28 @@
     }
 
 
-    function formatNumber(value) {
-        const absValue = Math.abs(value);
-        let formatted;
+    function formatNumber(num) {
+        if (num === null || num === undefined || isNaN(num)) return num;
 
-        if (absValue >= 1_000_000_000_000) {
-            formatted = (value / 1_000_000_000_000).toFixed(3) + " T";
-        } else if (absValue >= 1_000_000_000) {
-            formatted = (value / 1_000_000_000).toFixed(3) + " G";
-        } else if (absValue >= 1_000_000) {
-            formatted = (value / 1_000_000).toFixed(3) + " M";
-        } else if (absValue >= 1_000) {
-            formatted = (value / 1_000).toFixed(3) + " K";
+        const formatVal = (n) => {
+            const absN = Math.abs(n);
+            if (absN === 0) return "0.00";
+            if (absN < 1) return n.toFixed(2);
+            return n.toPrecision(3);
+        };
+
+        const absNum = Math.abs(num);
+        if (absNum >= 1.0e12) {
+            return formatVal(num / 1.0e12) + " T";
+        } else if (absNum >= 1.0e9) {
+            return formatVal(num / 1.0e9) + " G";
+        } else if (absNum >= 1.0e6) {
+            return formatVal(num / 1.0e6) + " M";
+        } else if (absNum >= 1.0e3) {
+            return formatVal(num / 1.0e3) + " K";
         } else {
-            formatted = value;
+            return formatVal(num);
         }
-
-        if (typeof formatted === 'number') {
-            return formatted.toLocaleString().replace(/,/g, " ");
-        }
-        return formatted;
     }
 
     function formatDelta(data, suffix = '') {
@@ -39,12 +41,7 @@
         if (num > 0) color = 'var(--color-wrong)';
         else if (num <= 0) color = 'var(--color-correct)';
         
-        let formatted;
-        if (suffix === '%' && Math.abs(num) < 1000) {
-             formatted = num.toFixed(2);
-        } else {
-             formatted = formatNumber(num);
-        }
+        const formatted = formatNumber(num);
         
         return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
     }

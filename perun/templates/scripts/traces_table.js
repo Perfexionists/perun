@@ -29,28 +29,6 @@ class TracesTable {
         this.render();
     }
 
-    static formatNumber(num) {
-        if (num === null || num === undefined || isNaN(num)) return num;
-        
-        const formatVal = (n) => {
-            const absN = Math.abs(n);
-            if (absN === 0) return "0.00";
-            if (absN < 1) return n.toFixed(2);
-            return n.toPrecision(3);
-        };
-
-        const absNum = Math.abs(num);
-        if (absNum >= 1.0e9) {
-            return formatVal(num / 1.0e9) + " G";
-        } else if (absNum >= 1.0e6) {
-            return formatVal(num / 1.0e6) + " M";
-        } else if (absNum >= 1.0e3) {
-            return formatVal(num / 1.0e3) + " K";
-        } else {
-            return formatVal(num);
-        }
-    }
-
     parseNumberInput(input) {
         if (input === null || input === undefined || input === '') return NaN;
         let str = String(input).trim().toUpperCase();
@@ -349,7 +327,7 @@ class TracesTable {
                     td.innerHTML = col.render(content, row, absoluteIndex);
                 } else {
                     if (col.formatNumber !== false && !isNaN(parseFloat(content)) && isFinite(content)) {
-                        content = TracesTable.formatNumber(content);
+                        content = formatNumber(content);
                     }
                     td.innerText = content !== undefined ? content : '';
                 }
