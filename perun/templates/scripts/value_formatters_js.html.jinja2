@@ -9,20 +9,6 @@
         return val;
     }
 
-    function format_value(val, show_positive_sign = false) {
-        let result = "<span";
-        val = ensureNumber(val);
-        let sign = "";
-        if (val > 0) {
-            result += ' style="font-weight: bold; color: {{ palette.DarkIncrease }}';
-            if (show_positive_sign) {
-                sign = "+"
-            }
-        } else if (val < 0) {
-            result += ' style="font-weight: bold; color: {{ palette.DarkDecrease }}';
-        }
-        return result + '">' + sign + formatNumber(val) + "</span>";
-    }
 
     function formatNumber(value) {
         const absValue = Math.abs(value);
@@ -69,21 +55,6 @@
         return `<span style="font-weight: bold;">${formatted}</span>`;
     }
 
-    function format_relative(value) {
-        value = ensureNumber(value);
-        let fixedValue = Number(value).toFixed(2)
-        let result = '<span style="font-weight: bold; ';
-        let sign = "";
-        if (value > 0 && value <= 100) {
-            result += 'color: {{ palette.DarkIncrease }}"';
-            sign = "+"
-        } else if (value >= -100 && value < 0) {
-            result += 'color: {{ palette.DarkDecrease }}"';
-        } else {
-            result += 'color: {{ palette.DarkEqual}}"';
-        }
-        return result + '">' + sign + fixedValue + "%</span>";
-    }
 
     function formatMs(ms) {
         ms = Math.abs(ms);
@@ -128,126 +99,9 @@
         }
     }
 
-    function format_stat(base, tgt, stat_unit) {
-        let result = "";
-        if (base === tgt) {
-            result += '<span class="equal">' + format(base, stat_unit) + '</span>';
-        } else if (base < tgt) {
-            result += '<span class="increase">' + format(base, stat_unit) + ' ↗ ' + format(tgt, stat_unit) + '</span>';
-        } else {
-            result += '<span class="decrease">' + format(base, stat_unit) + ' ↘ ' + format(tgt, stat_unit) + '</span>';
-        }
-        return result;
-    }
-
-    function format_path_prex(path_stats, index, path_cost) {
-        let result = '<span class="';
-        let prefix_sum = path_stats.slice(0, index + 1).reduce((acc, v) => acc + v, 0);
-        let prefix_rate = (path_cost === 0) ? 0 : (prefix_sum / path_cost);
-        if (prefix_rate < 0.5) {
-            result += 'decrease';
-        } else if (prefix_rate > 0.5) {
-            result += 'increase';
-        } else {
-            result += 'equal';
-        }
-        result += '">' + format_value(prefix_sum) + ' (' + (prefix_rate * 100).toFixed(2) + '%)</span>';
-        result += '{{ tooltip("Prefix cost: the sum up to the current uid") }}'
-        return result;
-    }
-
-    function getColor(n) {
-        let R = (255 * n) / 100, G = (255 * (100 - n)) / 100, B = 0;
-        return "rgba(" + R + ", " + G + ", " + B + ", 1.0)";
-    }
-
-    function format_bottleneck(stat, min) {
-        let result = '<span style="font-weight: bold; color: ';
-        let bottleneck_rate = (stat === 0) ? 0 : min / stat;
-        result += getColor(bottleneck_rate * 100);
-        result += '">' + (bottleneck_rate * 100).toFixed(2) + '%</span>';
-        result += '{{ tooltip(' < span style = "font-weight: bold" > Bottleneck rate:</span > the ratio between the cost of the whole path to all paths leading to the current uid') }}'
-        return result;
-    }
-
-    function format_sub_row(d, uid) {
-        let result = '<table style="width: 100%; border: none;" class="nested">';
-        let stat_type = stat_map[d[2]].toLowerCase(), stat_unit = unit_map[stat_map.indexOf(d[2])];
-        let parts = d[8].split('#');
-        let traces = parts[0].split(';'), base = parts[1].split(';').map(Number), tgt = parts[2].split(';').map(Number);
-        let min_base = Math.min(...base), min_tgt = Math.min(...tgt);
-        let sum_base = base.reduce((acc, v) => acc + v, 0), sum_tgt = tgt.reduce((acc, v) => acc + v, 0);
-        traces.forEach((v, i) => {
-            let node = nodes[v];
-            result += '<tr><td style="white-space: pre-wrap">';
-            if (i != 0 && i != traces.length) {
-                let base_stat = base[i - 1],
-                    tgt_stat = tgt[i - 1];
-                let diff = base_stat - tgt_stat;
-                result += '  '.repeat(i) + "⎸ " + format_stat(base_stat, tgt_stat, stat_unit);
-                if (stat_type.includes("inclusive")) {
-                    result += "    " + format_bottleneck(base_stat, min_base) + " | " + format_bottleneck(tgt_stat, min_tgt);
-                } else if (stat_type.includes("exclusive")) {
-                    result += "    " + format_path_prex(base, i - 1, sum_base) + " | " + format_path_prex(tgt, i - 1, sum_tgt);
-                }
-                result += " "
-            }
-            result += '</td></tr><tr'
-            if (node === uid)
-                result += ' class="highlight"';
-            result += '><td style="white-space: pre-wrap">';
-            if (i !== 0)
-                result += '  '.repeat(i) + "⤷ ";
-            result += (node === uid) ? '<span style="font-weight: bold">' + node + '</span>' : node;
-            result += "</td></tr>";
-        });
-        result += '</table>';
-        return result
-    }
-
-    function format_row(d) {
-        let result = '<table id="metrics' + d.index + '" class="display" style="width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th>Metric</th>"
-        result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
-        result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
-        result += '<th title="The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.">Proportional Δ [%]</th>';
-        result += '<th title="The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.">Absolute Δ</th>';
-        result += '<th title="The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -25%.">Relative Δ [%]</th></tr></thead><tbody>';
-        d.stats.forEach((value, index) => {
-            result += "<tr>";
-            result += '<td style="white-space: pre-wrap">' + value[0] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[5] + "</td>";
-            result += "</tr>";
-        });
-
-        result += '</tbody></table>';
-        result += '<h4 style="text-align: center; width: 100%; border-bottom: 1px solid #ddd;">Top ' + d.traces.length + ' Traces</h4>';
-        result += '<table id="traces' + d.index + '" class="display" style="margin-top: -30px; width:100%; border-right: 10px solid #ddd; border-left: 10px solid #ddd;">';
-        result += "<thead><tr><th></th><th>Trace</th><th>Metric</th>"
-        result += '<th title="The amount of resources consumed by the Unit in the baseline profile.">Baseline</th>';
-        result += '<th title="The amount of resources consumed by the Unit in the target profile.">Target</th>';
-        result += '<th title="The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.">Proportional Δ [%]</th>';
-        result += '<th title="The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.">Absolute Δ</th>';
-        result += '<th title="The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -25%.">Relative Δ [%]</th></tr></thead><tbody>';
-        d.traces.forEach((value, index) => {
-            result += "<tr>";
-            result += '<td style="white-space: pre-wrap"></td>';
-            let uids = value[0].toString().split(';');
-            result += '<td style="white-space: pre-wrap">' + nodes[uids[0]] + ' ⇢ ' + nodes[uids[1]] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[1] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[2] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[3] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[4] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[5] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[6] + "</td>";
-            result += '<td style="white-space: pre-wrap">' + value[7] + "</td>";
-            result += "</tr>";
-        });
-        result += '</tbody></table>';
-        return result;
+    function getColorForFreshness(fresh) {
+        if (fresh === 'not in baseline') return 'var(--color-target)';
+        if (fresh === 'not in target') return 'var(--color-baseline)';
+        return 'var(--color-common)';
     }
 </script>

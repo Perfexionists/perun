@@ -28,21 +28,6 @@
         ];
 
 
-    const formatDelta = (data, suffix = '') => {
-        const num = parseFloat(data);
-        if (isNaN(num)) return data;
-        let color = 'var(--color-primary-text)';
-        if (num > 0) color = 'var(--color-wrong)';
-        else if (num <= 0) color = 'var(--color-correct)';
-        const formatted = TracesTable.formatNumber(num);
-        return `<span style="font-weight: bold; color: ${color}">${formatted}${suffix}</span>`;
-    };
-
-    const formatBold = (data) => {
-        const num = parseFloat(data);
-        const formatted = !isNaN(num) ? TracesTable.formatNumber(num) : data;
-        return `<span style="font-weight: bold;">${formatted}</span>`;
-    };
 
     const columns = [
         {
@@ -58,9 +43,7 @@
             filterable: true,
             type: 'select',
             render: (data) => {
-                let color = 'var(--color-common)';
-                if (data === 'not in baseline') color = 'var(--color-target)';
-                else if (data === 'not in target') color = 'var(--color-baseline)';
+                let color = getColorForFreshness(data);
                 return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
             },
             tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'

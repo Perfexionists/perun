@@ -70,12 +70,6 @@
             </div>
         `;
 
-        function getColorForFreshness(fresh) {
-            if (fresh === 'not in baseline') return 'var(--color-target)';
-            if (fresh === 'not in target') return 'var(--color-baseline)';
-            return 'var(--color-common)';
-        }
-
         const containerId = 'trace-details-table-container';
         document.getElementById(containerId).innerHTML = '';
 

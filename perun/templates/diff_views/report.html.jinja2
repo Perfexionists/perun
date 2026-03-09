@@ -66,6 +66,9 @@
 </head>
 <body>
 
+    <!-- GLOBAL FORMATTERS -->
+    {% include 'scripts/value_formatters_js.html.jinja2' %}
+
     <!----------------------- COMPONENTS ----------------------->
     <!-- CHATBOT -->
     {% include 'diff_components/chatbot.html.jinja2' %}
@@ -130,7 +133,6 @@
         {% include 'scripts/tooltip.js' %}
     </script>
 
-    {% include 'scripts/value_formatters_js.html.jinja2' %}
     {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
     {% include 'scripts/chatbot.html.jinja2' %}
