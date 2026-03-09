@@ -1,7 +1,6 @@
 perun_templates_script_dir = perun_templates_dir / 'scripts'
 
 perun_templates_script_files = files(
-    'custom_table.js',
     'division_anchor.js',
     'environment_sidepanel.js',
     'flame_graph_js.html.jinja2',
@@ -11,6 +10,7 @@ perun_templates_script_files = files(
     'sankey_graph_js.html.jinja2',
     'themes_js.html.jinja2',
     'tooltip.js',
+    'traces_table.js',
     'value_formatters_js.html.jinja2',
 )
 
