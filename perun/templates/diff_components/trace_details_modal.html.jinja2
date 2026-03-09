@@ -130,7 +130,9 @@
                 data: rowData.trace_stats,
                 columns: columns,
                 enablePagination: false,
-                enableFilters: false
+                enableFilters: false,
+                initialSortColumn: 4,
+                initialSortDirection: 'desc'
             });
         } else {
             document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';
