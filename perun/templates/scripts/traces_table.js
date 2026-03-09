@@ -329,7 +329,11 @@ class TracesTable {
                     if (col.formatNumber !== false && !isNaN(parseFloat(content)) && isFinite(content)) {
                         content = formatNumber(content);
                     }
-                    td.innerText = content !== undefined ? content : '';
+                    if (col.data === 'uid') {
+                        td.innerHTML = `<span class="trace-uid" style="display: block; width: 100%; height: 100%;" title="Click to view more details about the trace">${content !== undefined ? content : ''}</span>`;
+                    } else {
+                        td.innerText = content !== undefined ? content : '';
+                    }
                 }
 
                 if (this.sortColumn === col.data) {

@@ -8,6 +8,11 @@
     border-radius: 8px;
     box-sizing: border-box;
     overflow: hidden;
+
+}
+
+.traces-table tbody tr:hover .trace-uid {
+    font-weight: bold;
 }
 
 .traces-table {
