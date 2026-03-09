@@ -9,6 +9,7 @@ class TracesTable {
         this.columns = options.columns || [];
         this.itemsPerPage = options.itemsPerPage || 10;
         this.enablePagination = options.enablePagination !== undefined ? options.enablePagination : true;
+        this.enableFilters = options.enableFilters !== undefined ? options.enableFilters : true;
         this.onRowClick = options.onRowClick || null;
         this.currentPage = 1;
         this.sortColumn = options.initialSortColumn || null;
@@ -197,7 +198,7 @@ class TracesTable {
             tr.appendChild(th);
 
             const thFilter = document.createElement('th');
-            if (col.filterable !== false) {
+            if (this.enableFilters && col.filterable !== false) {
                 if (col.type === 'select') {
                     const select = document.createElement('select');
                     select.id = `filter-${col.data}`;
@@ -292,11 +293,15 @@ class TracesTable {
                     });
                 }
             }
-            filterTr.appendChild(thFilter);
+            if (this.enableFilters) {
+                filterTr.appendChild(thFilter);
+            }
         });
 
         thead.appendChild(tr);
-        thead.appendChild(filterTr);
+        if (this.enableFilters) {
+            thead.appendChild(filterTr);
+        }
         return thead;
     }
 

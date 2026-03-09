@@ -17,7 +17,7 @@
             <div id="trace-popup-body">
                 <!-- Left: Trace Stats Table (Green Area) -->
                 <div id="trace-stats-container">
-                    <h3>Trace Statistics</h3>
+                    <h3 id="trace-stats-heading">Trace Statistics</h3>
                     <div id="trace-details-table-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;"></div>
                 </div>
 
@@ -79,6 +79,9 @@
         const containerId = 'trace-details-table-container';
         document.getElementById(containerId).innerHTML = '';
 
+        const titleForTraces = rowData.trace_stats && rowData.trace_stats.length > 0 ? `Top ${rowData.trace_stats.length} traces` : 'No traces available';
+        document.getElementById('trace-stats-heading').textContent = titleForTraces;
+
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
             const columns = [
                 {
@@ -126,7 +129,8 @@
             new TracesTable(containerId, {
                 data: rowData.trace_stats,
                 columns: columns,
-                enablePagination: false
+                enablePagination: false,
+                enableFilters: false
             });
         } else {
             document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';
