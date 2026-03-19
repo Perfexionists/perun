@@ -7,12 +7,9 @@
 
     <!-- JS AND CSS LIBRARIES -->
     {% if not offline %}
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
-
         <!-- <script type="text/javascript" charset="utf8" src='https://cdn.plot.ly/plotly-2.30.0.min.js'></script>-->
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
-        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/2.0.0/js/dataTables.select.min.js"></script>
+
         {% if chatbot %}
             <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
             <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
@@ -23,9 +20,7 @@
         <style>
             {% if chatbot %}
                 {% include "libs/bootstrap.min.css" %}
-
             {% endif %}
-            {% include "libs/dataTables.dataTables.min.css" %}
         </style>
         <script>
             {% if chatbot %}
@@ -35,9 +30,8 @@
             {% endif %}
             {% include 'libs/jquery-3.6.0.min.js' %}
             {#% include 'libs/plotly-2.30.0.min.js' %#}
-            {% include 'libs/dataTables.min.js' %}
-            {% include 'libs/dataTables.select.min.js' %}
         </script>
+
     {% endif %}
 
     <!-- CSS STYLES -->
@@ -57,7 +51,8 @@
         {% include 'style/tag.css' %}
         {% include 'style/tooltip.css' %}
 
-        {% include 'style/traces_table.css' %}
+        {% include 'style/custom_table.css' %}
+
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
 
@@ -86,7 +81,7 @@
     <!-- NOTES SIDE-PANEL AND POPUP WINDOW -->
     {% include 'diff_components/side_panels/notes.html.jinja2' %}
 
-   <!-- COLOR THEMES & PALETTE -->
+    <!-- COLOR THEMES & PALETTE -->
     {% include 'diff_components/side_panels/themes_sidepanel.html.jinja2' %}
 
     <!----------------------- SECTIONS ----------------------->
@@ -97,8 +92,8 @@
     <!-- FLAME GRAPHS -->
     {% include 'diff_sections/section_flame_graphs.html.jinja2' %}
 
-    <!-- TABLE WITH TRACES -->
-    {% include 'diff_sections/section_traces_table.html.jinja2' %}
+    <!-- TABLE -->
+    {% include 'diff_components/custom_table.html.jinja2' %}
 
     <!-- SANKEY GRAPH -->
     {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}
@@ -136,7 +131,6 @@
     {% include 'scripts/value_formatters_js.html.jinja2' %}
     {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
-    {% include 'scripts/traces_table_js.html.jinja2' %}
     {% include 'scripts/chatbot.html.jinja2' %}
     {#% include 'scripts/sankey_graph_js.html.jinja2' %#}
 

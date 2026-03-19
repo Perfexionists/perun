@@ -1170,7 +1170,7 @@ def generate_report_from_folded(
         offline=is_report_offline,
         notes_enabled=True,
         links=report_links,
-        default_theme=cli_kwargs.get("default_theme", "light"),
+        default_theme=cli_kwargs.get("default_theme", "dark"),
         # FIXME: the top diffs will be used in the future.
         top_trace_diffs=trace_top_diffs,
         top_func_diffs=func_top_diffs,
