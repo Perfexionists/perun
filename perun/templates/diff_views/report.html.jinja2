@@ -51,7 +51,8 @@
         {% include 'style/tag.css' %}
         {% include 'style/tooltip.css' %}
 
-        {% include 'style/custom_table.css' %}
+        {% include 'style/traces_table.css' %}
+        {% include 'style/trace_details.css' %}
 
         {% include 'style/flame_graphs.css' %}
         {#% include 'style/sankey_graph.css' %#}
@@ -64,6 +65,9 @@
     </style>
 </head>
 <body>
+
+    <!-- GLOBAL FORMATTERS -->
+    {% include 'scripts/value_formatters_js.html.jinja2' %}
 
     <!----------------------- COMPONENTS ----------------------->
     <!-- CHATBOT -->
@@ -93,7 +97,8 @@
     {% include 'diff_sections/section_flame_graphs.html.jinja2' %}
 
     <!-- TABLE -->
-    {% include 'diff_components/custom_table.html.jinja2' %}
+    {% include 'diff_components/traces_table.html.jinja2' %}
+    {% include 'diff_components/trace_details_modal.html.jinja2' %}
 
     <!-- SANKEY GRAPH -->
     {#% include 'diff_sections/section_sankey_graph.html.jinja2' %#}
@@ -128,7 +133,6 @@
         {% include 'scripts/tooltip.js' %}
     </script>
 
-    {% include 'scripts/value_formatters_js.html.jinja2' %}
     {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
     {% include 'scripts/chatbot.html.jinja2' %}

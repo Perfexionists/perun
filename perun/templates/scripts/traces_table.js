@@ -1,3 +1,11 @@
+const TRACES_TOOLTIPS = {
+    baseline: 'The amount of resources consumed by the Unit/Trace in the baseline profile.',
+    target: 'The amount of resources consumed by the Unit/Trace in the target profile.',
+    prop_rel_delta: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.',
+    abs_delta: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.',
+    rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
+};
+
 class TracesTable {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
@@ -8,9 +16,12 @@ class TracesTable {
         this.data = options.data || [];
         this.columns = options.columns || [];
         this.itemsPerPage = options.itemsPerPage || 10;
+        this.enablePagination = options.enablePagination !== undefined ? options.enablePagination : true;
+        this.enableFilters = options.enableFilters !== undefined ? options.enableFilters : true;
+        this.onRowClick = options.onRowClick || null;
         this.currentPage = 1;
-        this.sortColumn = null;
-        this.sortDirection = 'asc';
+        this.sortColumn = options.initialSortColumn || null;
+        this.sortDirection = options.initialSortDirection || 'asc';
         this.filters = {};
         this.regexModes = {};
 
@@ -24,20 +35,6 @@ class TracesTable {
         this.container.style.display = 'flex';
         this.container.style.flexDirection = 'column';
         this.render();
-    }
-
-    formatNumber(num) {
-        if (num === null || num === undefined || isNaN(num)) return num;
-        const absNum = Math.abs(num);
-        if (absNum >= 1.0e9) {
-            return (num / 1.0e9).toFixed(3) + " G";
-        } else if (absNum >= 1.0e6) {
-            return (num / 1.0e6).toFixed(3) + " M";
-        } else if (absNum >= 1.0e3) {
-            return (num / 1.0e3).toFixed(3) + " K";
-        } else {
-            return num.toString();
-        }
     }
 
     parseNumberInput(input) {
@@ -140,14 +137,21 @@ class TracesTable {
         this.container.innerHTML = '';
         this.processData();
 
+        const scrollContainer = document.createElement('div');
+        scrollContainer.className = 'traces-table-scroll';
+        
         const table = document.createElement('table');
         table.className = 'traces-table';
 
         table.appendChild(this.createHeader());
         table.appendChild(this.createBody());
 
-        this.container.appendChild(table);
-        this.container.appendChild(this.createPagination());
+        scrollContainer.appendChild(table);
+        this.container.appendChild(scrollContainer);
+        
+        if (this.enablePagination) {
+            this.container.appendChild(this.createPagination());
+        }
 
         if (activeElementId) {
             const el = document.getElementById(activeElementId);
@@ -172,8 +176,15 @@ class TracesTable {
 
         this.columns.forEach((col, index) => {
             const th = document.createElement('th');
-            th.title = col.tooltip || '';
             th.innerText = col.title || col.data;
+            
+            if (col.tooltip) {
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'header-info-icon';
+                iconSpan.title = col.tooltip;
+                iconSpan.innerHTML = `{% include 'assets/info.svg' %}`;
+                th.appendChild(iconSpan);
+            }
             th.className = 'sortable';
             if (col.width) {
                 th.style.width = col.width;
@@ -188,7 +199,7 @@ class TracesTable {
             tr.appendChild(th);
 
             const thFilter = document.createElement('th');
-            if (col.filterable !== false) {
+            if (this.enableFilters && col.filterable !== false) {
                 if (col.type === 'select') {
                     const select = document.createElement('select');
                     select.id = `filter-${col.data}`;
@@ -283,19 +294,30 @@ class TracesTable {
                     });
                 }
             }
-            filterTr.appendChild(thFilter);
+            if (this.enableFilters) {
+                filterTr.appendChild(thFilter);
+            }
         });
 
         thead.appendChild(tr);
-        thead.appendChild(filterTr);
+        if (this.enableFilters) {
+            thead.appendChild(filterTr);
+        }
         return thead;
     }
 
     createBody() {
         const tbody = document.createElement('tbody');
-        const start = (this.currentPage - 1) * this.itemsPerPage;
-        const end = start + this.itemsPerPage;
-        const pageData = this.processedData.slice(start, end);
+        let pageData;
+        let start = 0;
+        
+        if (this.enablePagination) {
+            start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            pageData = this.processedData.slice(start, end);
+        } else {
+            pageData = this.processedData;
+        }
 
         if (pageData.length === 0) {
             const tr = document.createElement('tr');
@@ -308,23 +330,41 @@ class TracesTable {
             return tbody;
         }
 
-        pageData.forEach(row => {
+        pageData.forEach((row, index) => {
             const tr = document.createElement('tr');
+            const absoluteIndex = start + index;
+
             this.columns.forEach(col => {
                 const td = document.createElement('td');
                 let content = row[col.data];
 
                 if (col.render && typeof col.render === 'function') {
-                    td.innerHTML = col.render(content, row);
+                    td.innerHTML = col.render(content, row, absoluteIndex);
                 } else {
                     if (col.formatNumber !== false && !isNaN(parseFloat(content)) && isFinite(content)) {
-                        content = this.formatNumber(content);
+                        content = formatNumber(content);
                     }
-                    td.innerText = content !== undefined ? content : '';
+                    if (col.data === 'uid') {
+                        td.innerHTML = `<span class="trace-uid" style="display: block; width: 100%; height: 100%;" title="Click to view more details about the trace">${content !== undefined ? content : ''}</span>`;
+                    } else {
+                        td.innerText = content !== undefined ? content : '';
+                    }
+                }
+
+                if (this.sortColumn === col.data) {
+                    td.classList.add('sorted-column');
                 }
 
                 tr.appendChild(td);
             });
+            
+            if (this.onRowClick) {
+                tr.style.cursor = 'pointer';
+                tr.addEventListener('click', () => {
+                    this.onRowClick(row);
+                });
+            }
+
             tbody.appendChild(tr);
         });
 
@@ -426,7 +466,7 @@ class TracesTable {
         
         jumpInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                let page = parseInt(e.target.value);
+                let page = parseInt(e.target.value, 10);
                 if (isNaN(page)) return;
                 
                 if (page < 1) page = 1;

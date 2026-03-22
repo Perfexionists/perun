@@ -2,7 +2,6 @@ perun_templates_style_dir = perun_templates_dir / 'style'
 
 perun_templates_style_files = files(
     'colors_setup.css',
-    'custom_table.css',
     'division_anchor.css',
     'environment_sidepanel.css',
     'flame_graphs.css',
@@ -17,6 +16,8 @@ perun_templates_style_files = files(
     'tag.css',
     'themes_sidepanel.css',
     'tooltip.css',
+    'trace_details.css',
+    'traces_table.css',
 )
 
 py3.install_sources(
