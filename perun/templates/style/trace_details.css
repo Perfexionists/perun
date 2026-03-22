@@ -104,6 +104,12 @@
   width: 100%;
 }
 
+#trace-stats-container th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 .trace-cell {
   max-width: 300px;
   overflow: hidden;
