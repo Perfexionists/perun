@@ -1,3 +1,6 @@
+/* global formatNumber */
+/* exported TRACES_TOOLTIPS, TracesTable */
+
 const TRACES_TOOLTIPS = {
     baseline: 'The amount of resources consumed by the Unit/Trace in the baseline profile.',
     target: 'The amount of resources consumed by the Unit/Trace in the target profile.',
