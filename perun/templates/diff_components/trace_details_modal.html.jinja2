@@ -40,7 +40,7 @@
             <div class="trace-header-stats">
                 <div class="stat-item">
                     <span class="stat-label">Occurrence:</span>
-                    <span class="stat-value" style="color: ${getColorForFreshness(rowData.fresh)}">${rowData.fresh}</span>
+                    <span class="stat-value" style="font-weight: bold; color: ${getColorForFreshness(rowData.fresh)}">${rowData.fresh}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Baseline:</span>
@@ -81,37 +81,43 @@
                         const longTrace = row[7] || data;
                         return `<div class="trace-cell" title="${longTrace}">${index + 1}</div>`;
                     },
-                    width: '75px'
+                    width: '120px',
+                    tooltip: 'Synthetic index of the Trace.'
                 },
                 {
                     data: 2,
                     title: 'Baseline',
                     type: 'number',
-                    render: (data) => formatBold(data)
+                    render: (data) => formatBold(data),
+                    tooltip: TRACES_TOOLTIPS.baseline
                 },
                 {
                     data: 3,
                     title: 'Target',
                     type: 'number',
-                    render: (data) => formatBold(data)
+                    render: (data) => formatBold(data),
+                    tooltip: TRACES_TOOLTIPS.target
                 },
                 {
                     data: 4,
                     title: 'Prop Δ [%]',
                     type: 'number',
-                    render: (data) => formatDelta(data, '%')
+                    render: (data) => formatDelta(data, '%'),
+                    tooltip: TRACES_TOOLTIPS.prop_rel_delta
                 },
                 {
                     data: 5,
                     title: 'Abs Δ',
                     type: 'number',
-                    render: (data) => formatDelta(data)
+                    render: (data) => formatDelta(data),
+                    tooltip: TRACES_TOOLTIPS.abs_delta
                 },
                 {
                     data: 6,
                     title: 'Rel Δ [%]',
                     type: 'number',
-                    render: (data) => formatDelta(data, '%')
+                    render: (data) => formatDelta(data, '%'),
+                    tooltip: TRACES_TOOLTIPS.rel_delta
                 }
             ];
 
