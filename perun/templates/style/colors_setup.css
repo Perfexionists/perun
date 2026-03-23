@@ -68,6 +68,8 @@ body.light-theme {
     --color-baseline-bg-tint: rgba(249 249 249);
     --color-target-bg-tint: rgba(240 244 255);
 
+    --color-bg-btn-tinted: rgba(245 245 245);
+    --color-bg-btn: rgba(190 190 190);
     --color-sidepanel-bg: rgba(68 68 68);
     --color-bg-dt-table: rgba(215 215 215);
 
@@ -88,6 +90,8 @@ body.dark-theme {
     --color-baseline-bg-tint: rgba(14 57 60);
     --color-target-bg-tint: rgba(31 37 51);
 
+    --color-bg-btn-tinted: rgba(215 215 215);
+    --color-bg-btn: rgba(215 215 215);
     --color-sidepanel-bg: rgba(96 96 96);
     --color-bg-dt-table: rgba(80 80 80);
     --color-sorted-column-bg: rgba(255 255 255 / 5%);
@@ -152,5 +156,9 @@ body.mono-theme {
     --color-white-not-changing: rgba(234 234 234);
     --color-gray-not-changing: rgba(68 68 68);
     --color-almost-black-not-changing: rgba(45 45 45);
+
+    /* BUTTON COLORS */
+    --color-bg-btn-tinted: rgba(245 245 245);
+    --color-bg-btn: rgba(190 190 190);
 }
 
