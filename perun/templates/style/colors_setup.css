@@ -46,6 +46,7 @@
     --dt-row-selected: 68, 68, 68 !important;
     --dt-row-selected-text: 234, 234, 234 !important;
     --color-bg-dt-table: rgba(215 215 215);
+    --color-sorted-column-bg: rgba(0 0 0 / 5%);
 
     /* COLORS NOT CHANGING IN THEME */
     --color-bg-not-changing: rgba(68 68 68);
@@ -89,6 +90,7 @@ body.dark-theme {
 
     --color-sidepanel-bg: rgba(96 96 96);
     --color-bg-dt-table: rgba(80 80 80);
+    --color-sorted-column-bg: rgba(255 255 255 / 5%);
 
     --color-wrong: rgba(255 137 148);
     --color-correct: rgba(97 255 136);
@@ -123,6 +125,7 @@ body.mono-theme {
     /* SIDEPANEL + BACKGROUND */
     --color-sidepanel-bg: rgba(60 60 60);
     --color-bg-dt-table: rgba(210 210 210);
+    --color-sorted-column-bg: rgba(0 0 0 / 5%);
 
     /* TEXT COLORS */
     --color-primary-text: rgba(45 45 45);

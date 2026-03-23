@@ -1,0 +1,101 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+
+<div class="section" id="traces">
+    {{ m_title.display_title("Traces Table", "traces", "", notes_enabled) }}
+    <div id="custom-table-container" class="comparison_container"></div>
+</div>
+
+<script>
+
+    {% include 'scripts/traces_table.js' %}
+
+    (function () {
+        const rawData = [
+            {%- for val in selection_table %}
+            {
+                "uid": "{{ val.uid }}",
+                "index": "{{ val.index }}",
+                "fresh": "{{ val.fresh }}",
+                "type": "{{ val.main_stat }}",
+                "baseline_abs": "{{ val.baseline_abs }}",
+                "target_abs": "{{ val.target_abs }}",
+                "prop_rel_delta": "{{ val.proportional_rel_delta }}",
+                "abs_delta": "{{ val.abs_delta }}",
+                "rel_delta": "{{ val.rel_delta }}",
+                "trace_stats": {{ val.trace_stats|tojson }}
+            },
+            {%- endfor %}
+        ];
+
+
+
+    const columns = [
+        {
+            data: 'uid',
+            title: 'Unit',
+            filterable: true,
+            width: '250px',
+            tooltip: 'The unit name.'
+        },
+        {
+            data: 'fresh',
+            title: 'Occurrence',
+            filterable: true,
+            type: 'select',
+            render: (data) => {
+                let color = getColorForFreshness(data);
+                return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+            },
+            tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
+        },
+        {
+            data: 'baseline_abs',
+            title: 'Baseline',
+            type: 'number',
+            render: (data) => formatBold(data),
+            tooltip: TRACES_TOOLTIPS.baseline
+        },
+        {
+            data: 'target_abs',
+            title: 'Target',
+            type: 'number',
+            render: (data) => formatBold(data),
+            tooltip: TRACES_TOOLTIPS.target
+        },
+        {
+            data: 'prop_rel_delta',
+            title: 'Proportional Δ [%]',
+            type: 'number',
+            render: (data) => formatDelta(data, '%'),
+            tooltip: TRACES_TOOLTIPS.prop_rel_delta
+        },
+        {
+            data: 'abs_delta',
+            title: 'Absolute Δ',
+            type: 'number',
+            render: (data) => formatDelta(data),
+            tooltip: TRACES_TOOLTIPS.abs_delta
+        },
+        {
+            data: 'rel_delta',
+            title: 'Relative Δ [%]',
+            type: 'number',
+            render: (data) => formatDelta(data, '%'),
+            tooltip: TRACES_TOOLTIPS.rel_delta
+        }
+    ];
+
+    new TracesTable('custom-table-container', {
+        data: rawData,
+        columns: columns,
+        itemsPerPage: 10,
+        initialSortColumn: 'prop_rel_delta',
+        initialSortDirection: 'desc',
+        onRowClick: (row) => {
+            if (window.openTracePopup) {
+                window.openTracePopup(row);
+            }
+        }
+    });
+    }) ();
+</script>
