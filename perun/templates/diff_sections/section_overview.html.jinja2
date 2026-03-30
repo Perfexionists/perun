@@ -1,0 +1,48 @@
+{% import 'macros/overview.html.jinja2' as o_macros %}
+<script>
+    const topTraceDiffs = [
+        /* Top traces w.r.t. INCLUSIVE proportional delta */
+        [
+            /*
+             [0]: deleted from baseline,
+             [1]: added to target,
+             [2]: present in both profiles and the largest increase,
+             [3]: present in both profiles and the largest decrease.
+            */
+            {{ o_macros.populate_top_diffs(top_diffs_trace_inclusive) }}
+        ],
+        /* Top traces w.r.t. EXCLUSIVE proportional delta */
+        [
+            /*
+             [0]: deleted from baseline,
+             [1]: added to target,
+             [2]: present in both profiles and the largest increase,
+             [3]: present in both profiles and the largest decrease.
+            */
+            {{ o_macros.populate_top_diffs(top_diffs_trace_exclusive) }}
+        ]
+    ];
+
+    const topFunctionDiffs = [
+        /* Top functions w.r.t. INCLUSIVE proportional delta */
+        [
+            /*
+             [0]: deleted from baseline,
+             [1]: added to target,
+             [2]: present in both profiles and the largest increase,
+             [3]: present in both profiles and the largest decrease.
+            */
+            {{ o_macros.populate_top_diffs(top_diffs_func_inclusive) }}
+        ],
+        /* Top functions w.r.t. EXCLUSIVE proportional delta */
+        [
+            /*
+             [0]: deleted from baseline,
+             [1]: added to target,
+             [2]: present in both profiles and the largest increase,
+             [3]: present in both profiles and the largest decrease.
+            */
+            {{ o_macros.populate_top_diffs(top_diffs_func_exclusive) }}
+        ]
+    ];
+</script>

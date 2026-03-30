@@ -1,0 +1,9 @@
+{% macro populate_top_diffs(top_diffs) %}
+        {%- for data_set in top_diffs %}
+            [
+            {%- for symbol, prop_delta in data_set %}
+                ["{{ symbol }}", {{ prop_delta }}],
+            {%- endfor %}
+            ],
+        {%- endfor %}
+{% endmacro %}
