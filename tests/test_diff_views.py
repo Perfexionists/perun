@@ -290,7 +290,7 @@ def test_diff_report_folded(pcs_with_svs):
             # Report-folded-specific options.
             "folded",
             baseline_profiles,
-            "import-stressng.stack",  # "import-empty.csv",
+            "import-stressng.stack",
             "--baseline-dir",
             pool_path,
             "--target-dir",
