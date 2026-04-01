@@ -14,7 +14,7 @@ build-backend = "mesonpy"
 [project]
 name = "perun-toolsuite"
 description = "Perun: Lightweight Performance Version System"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -222,9 +222,10 @@ exclude_also = [
 # ----------------------
 [tool.black]
 target-version = [
-    "py39",
     "py310",
     "py311",
     "py312",
+    "py313",
+    "py314",
 ]
 line-length = 100
