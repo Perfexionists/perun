@@ -1,6 +1,6 @@
 {% macro select_top_x_traces1(x, name, data) %}
-    <div class="column">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Top {{ x }} {{ name }} Functions</h2>
+    <div class="column top-traces-column">
+        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
         <div class="data-row">
             <div class="data-key">search_binary_handler</div>
             <div style="font-weight: bold" class="data-value">-3.132G</div>
@@ -25,34 +25,34 @@
 {% endmacro %}
 
 {% macro select_top_x_traces2(x, name, data) %}
-    <div class="column">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Top {{ x }} {{ name }} Functions</h2>
+    <div class="column top-traces-column">
+        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
         <div class="data-row">
             <div class="data-key">__x64_sys_exit_group</div>
-            <div style="font-weight: bold" class="data-value">8.182G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
+            <div style="font-weight: bold" class="data-value">8.182G <span class="color-segment-1" style="margin-left: 8px;"> +84.51%</span></div>
         </div>
         <div class="data-row">
             <div class="data-key">do_group_exit</div>
-            <div style="font-weight: bold" class="data-value">8.181G <span style="color: #ef4444; margin-left: 8px;"> +84.51%</span></div>
+            <div style="font-weight: bold" class="data-value">8.181G <span class="color-segment-1" style="margin-left: 8px;"> +84.51%</span></div>
         </div>
         <div class="data-row">
             <div class="data-key">do_exit</div>
-            <div style="font-weight: bold" class="data-value">8.172G <span style="color: #ef4444; margin-left: 8px;"> +84.49%</span></div>
+            <div style="font-weight: bold" class="data-value">8.172G <span class="color-segment-1" style="margin-left: 8px;"> +84.49%</span></div>
         </div>
         <div class="data-row">
             <div class="data-key">x64_sys_call</div>
-            <div style="font-weight: bold" class="data-value">7.887G <span style="color: #ef4444; margin-left: 8px;"> +80.70%</span></div>
+            <div style="font-weight: bold" class="data-value">7.887G <span class="color-segment-1" style="margin-left: 8px;"> +80.70%</span></div>
         </div>
         <div class="data-row">
             <div class="data-key">exit_mm</div>
-            <div style="font-weight: bold" class="data-value">7.764G <span style="color: #ef4444; margin-left: 8px;"> +84.93%</span></div>
+            <div style="font-weight: bold" class="data-value">7.764G <span class="color-segment-1" style="margin-left: 8px;"> +84.93%</span></div>
         </div>
     </div>
 {% endmacro %}
 
 {% macro select_top_x_traces3(x, name, data) %}
-    <div class="column">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Top {{ x }} {{ name }} Functions</h2>
+    <div class="column top-traces-column">
+        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
         <div class="data-row">
             <div class="data-key">zap_present_ptes.constprop.0</div>
             <div style="font-weight: bold" class="data-value">2.377G</div>

@@ -3,10 +3,12 @@
 {% import 'macros/titles.html.jinja2' as titles %}
 {% import 'macros/rating_slider.html.jinja2' as summary_tools %}
 {% import 'macros/traces_selection.html.jinja2' as traces_selection %}
+{% import 'macros/section_title.html.jinja2' as m_title %}
 
 {% set STATS_NOTE_TITLE = "overview" %}
 
 <div class="section" id="overview">
+    {{ m_title.display_title("Perun Performance Report", "overview") }}
 
     <div class="comparison_container">
 

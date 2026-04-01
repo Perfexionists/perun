@@ -40,16 +40,13 @@
     {% if segment_number < 1 %}{% set segment_number = 1 %}{% endif %}
     {% if segment_number > 10 %}{% set segment_number = 10 %}{% endif %}
 
-    {% set segment_colors = [
-        '#ef4444', '#f97316', '#f59e0b', '#fbbf24', '#facc15',
-        '#c0eb34', '#9cd62f', '#6fc22a', '#3aa825', '#1a7f1a'
-    ] %}
-
     <div class="slider-container" id="slider-container-{{ index }}" data-slider-index="{{ slider_index }}">
-        <h2 class="text-2xl font-bold text-gray-800" style="margin-bottom: 0;">
-            {{ name }}
-        </h2>
-        <h2 style="color: {{ segment_colors[segment_number - 1] }}; font-size: 1.5em;">
+        <div class="slider-title-wrapper">
+            <h2 style="margin-bottom: 0;">
+                {{ name }}
+            </h2>
+        </div>
+        <h2 class="color-segment-{{ segment_number }}" style="font-size: 1.5em;">
             {{ change_magnitude_label }} ({{ percentage_change }}%)
         </h2>
         <div class="rating-display" id="ratingDisplay-{{ index }}">
