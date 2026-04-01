@@ -84,12 +84,18 @@
 
     </div>
 
+    {{ m_title.display_subtitle("Top Traces", "top-traces") }}
     <div class="comparison_container">
-        {{ traces_selection.select_top_x_traces1(5, 'Baseline-Only', traces_test) }}
+        {{ traces_selection.empty_table('Baseline-Only', 'traces-baseline') }}
+        {{ traces_selection.empty_table_switchable('Common', 'traces-common') }}
+        {{ traces_selection.empty_table('Target-Only', 'traces-target') }}
+    </div>
 
-        {{ traces_selection.select_top_x_traces2(5, 'Common', traces_test) }}
-
-        {{ traces_selection.select_top_x_traces3(5, 'Target-Only', traces_test) }}
+    {{ m_title.display_subtitle("Top Functions", "top-functions") }}
+    <div class="comparison_container">
+        {{ traces_selection.empty_table('Baseline-Only', 'funcs-baseline') }}
+        {{ traces_selection.empty_table_switchable('Common', 'funcs-common') }}
+        {{ traces_selection.empty_table('Target-Only', 'funcs-target') }}
     </div>
 </div>
 
@@ -139,4 +145,63 @@
             {{ o_macros.populate_top_diffs(top_diffs_func_exclusive) }}
         ]
     ];
+
+    function renderTable(containerId, dataArray) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!dataArray || dataArray.length === 0) {
+            container.innerHTML = '<div style="font-style: italic; color: #888; padding: 10px;">No data</div>';
+            return;
+        }
+        dataArray.forEach(row => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'data-row';
+            
+            const keyDiv = document.createElement('div');
+            keyDiv.className = 'data-key';
+            keyDiv.title = row[0];
+            keyDiv.textContent = row[0];
+
+            const valDiv = document.createElement('div');
+            valDiv.className = 'data-value';
+            
+            const percentage = (row[1] * 100).toFixed(2);
+            const sign = row[1] > 0 ? '+' : '';
+            valDiv.innerHTML = `<span class="color-segment-1" style="margin-left: 8px; font-weight: bold;">${sign}${percentage}%</span>`;
+
+            rowDiv.appendChild(keyDiv);
+            rowDiv.appendChild(valDiv);
+            container.appendChild(rowDiv);
+        });
+    }
+
+    function updateTables() {
+        // Traces
+        renderTable('traces-baseline', topTraceDiffs[0][0]);
+        renderTable('traces-target', topTraceDiffs[0][1]);
+        
+        const tracesSwitch = document.getElementById('traces-common-switch');
+        const tracesCommonData = tracesSwitch.checked ? topTraceDiffs[0][2] : topTraceDiffs[0][3];
+        document.getElementById('traces-common-switch-label').textContent = tracesSwitch.checked ? 'Descending' : 'Ascending';
+        renderTable('traces-common', tracesCommonData);
+
+        // Functions
+        renderTable('funcs-baseline', topFunctionDiffs[0][0]);
+        renderTable('funcs-target', topFunctionDiffs[0][1]);
+        
+        const funcsSwitch = document.getElementById('funcs-common-switch');
+        const funcsCommonData = funcsSwitch.checked ? topFunctionDiffs[0][2] : topFunctionDiffs[0][3];
+        document.getElementById('funcs-common-switch-label').textContent = funcsSwitch.checked ? 'Descending' : 'Ascending';
+        renderTable('funcs-common', funcsCommonData);
+    }
+
+    function toggleTable(id) {
+        updateTables();
+    }
+
+    // Execute immediately after DOM is loaded or script runs
+    document.addEventListener("DOMContentLoaded", updateTables);
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        updateTables();
+    }
 </script>

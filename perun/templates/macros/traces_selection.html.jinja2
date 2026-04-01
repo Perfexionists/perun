@@ -1,77 +1,23 @@
-{% macro select_top_x_traces1(x, name, data) %}
+{% macro empty_table(title, id) %}
     <div class="column top-traces-column">
-        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
-        <div class="data-row">
-            <div class="data-key">search_binary_handler</div>
-            <div style="font-weight: bold" class="data-value">-3.132G</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">perf_ctx_unlock</div>
-            <div style="font-weight: bold" class="data-value">-50.123M</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">mnt_want_write</div>
-            <div style="font-weight: bold" class="data-value">-1.787M</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">perf_event_exec</div>
-            <div style="font-weight: bold" class="data-value">-204.375K</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">perf_event_addr_filters_exec</div>
-            <div style="font-weight: bold" class="data-value">-189.485K</div>
+        <h2 style="margin-bottom: 20px;">{{ title }}</h2>
+        <div id="{{ id }}" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+            <!-- Content filled dynamically by JS -->
         </div>
     </div>
 {% endmacro %}
 
-{% macro select_top_x_traces2(x, name, data) %}
+{% macro empty_table_switchable(title, id) %}
     <div class="column top-traces-column">
-        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
-        <div class="data-row">
-            <div class="data-key">__x64_sys_exit_group</div>
-            <div style="font-weight: bold" class="data-value">8.182G <span class="color-segment-1" style="margin-left: 8px;"> +84.51%</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">{{ title }}</h2>
+            <label class="switch" style="font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="{{ id }}-switch" onchange="toggleTable('{{ id }}')" checked style="cursor: pointer;">
+                <span id="{{ id }}-switch-label">Descending</span>
+            </label>
         </div>
-        <div class="data-row">
-            <div class="data-key">do_group_exit</div>
-            <div style="font-weight: bold" class="data-value">8.181G <span class="color-segment-1" style="margin-left: 8px;"> +84.51%</span></div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">do_exit</div>
-            <div style="font-weight: bold" class="data-value">8.172G <span class="color-segment-1" style="margin-left: 8px;"> +84.49%</span></div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">x64_sys_call</div>
-            <div style="font-weight: bold" class="data-value">7.887G <span class="color-segment-1" style="margin-left: 8px;"> +80.70%</span></div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">exit_mm</div>
-            <div style="font-weight: bold" class="data-value">7.764G <span class="color-segment-1" style="margin-left: 8px;"> +84.93%</span></div>
-        </div>
-    </div>
-{% endmacro %}
-
-{% macro select_top_x_traces3(x, name, data) %}
-    <div class="column top-traces-column">
-        <h2 style="margin-bottom: 20px;">Top {{ x }} {{ name }} Functions</h2>
-        <div class="data-row">
-            <div class="data-key">zap_present_ptes.constprop.0</div>
-            <div style="font-weight: bold" class="data-value">2.377G</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">__alloc_frozen_pages_noprof</div>
-            <div style="font-weight: bold" class="data-value">730.417M</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">alloc_pages_mpol</div>
-            <div style="font-weight: bold" class="data-value">682.113M</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">free_frozen_page_commit</div>
-            <div style="font-weight: bold" class="data-value">108.589M</div>
-        </div>
-        <div class="data-row">
-            <div class="data-key">free_frozen_pages</div>
-            <div style="font-weight: bold" class="data-value">41.203M</div>
+        <div id="{{ id }}" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+            <!-- Content filled dynamically by JS -->
         </div>
     </div>
 {% endmacro %}
