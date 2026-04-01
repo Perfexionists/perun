@@ -13,7 +13,6 @@ import os
 # Perun Imports
 from perun.fuzz import helpers, randomizer
 
-
 RULE_ITERATIONS = 10
 
 

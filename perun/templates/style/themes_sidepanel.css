@@ -1,0 +1,17 @@
+.side-panel__themes {
+    top: 10px;
+    right: 0;
+    height: 45px;
+    border-radius: 8px 0 0 8px;
+    cursor: unset !important;
+}
+
+.side-panel__themes:hover {
+    width: 50px;
+}
+
+.side-panel__themes span svg {
+    font-size: 24px;
+    fill: var(--color-white-not-changing);
+    cursor: pointer;
+}

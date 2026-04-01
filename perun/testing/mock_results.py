@@ -8,7 +8,6 @@ from __future__ import annotations
 from perun.utils.structs.common_structs import DegradationInfo
 from perun.utils.structs.common_structs import PerformanceChange as pc
 
-
 _PREG_EXPECTED_RESULTS = [
     # CONSTANT MODEL
     [

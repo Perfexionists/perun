@@ -1,17 +1,9 @@
 .notes-sidepanel {
-    position: fixed;
     right: 0;
-    bottom: 10%;
-    width: 50px;
     height: 45px;
-    background-color: var(--color-primary-hover);
+    bottom: 10%;
     border-radius: 8px 0 0 8px;
-    transition: all 0.3s ease-in-out;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 1000;
+    cursor: unset !important;
 }
 
 .notes-sidepanel:hover {
@@ -20,21 +12,18 @@
     overflow: scroll;
 }
 
-/* highlights notes section when user adds note */
-@keyframes pulse-glow {
-    0% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
-    50% { box-shadow: 0 0 20px 20px var(--color-target); }
-    100% { box-shadow: 0 0 20px 15px rgba(152 131 229 / 80%); }
+.notes-sidepanel a {
+    color: var(--color-white-not-changing);
+    width: unset !important;
 }
 
-.highlight-notes-sidepanel {
-    animation: pulse-glow 1s ease-in-out infinite alternate;
-    border: 2px solid var(--color-primary);
+.notes-sidepanel a:hover {
+    background-color: unset !important;
 }
 
 .notes-sidepanel-content {
     display: none;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     padding: 10px;
     width: 100%;
     flex-direction: column;
@@ -42,14 +31,14 @@
 
 .notes-sidepanel .material-icons {
     font-size: 24px;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     cursor: pointer;
     margin: 10px 0;
 }
 
 .notes-sidepanel .notes-sidepanel-content {
     display: none;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     padding: 10px;
     width: 100%;
 }
@@ -64,8 +53,13 @@
     justify-content: space-between;
     margin: 5px 0;
     padding: 5px;
-    background-color: #666;
+    background-color: var(--color-light-gray);
     border-radius: 5px;
+}
+
+.note-item a {
+    width: unset !important;
+    padding: unset !important;
 }
 
 .note-item p {
@@ -103,12 +97,12 @@
 
 .note-status-toggle.attention {
     background-color: var(--color-wrong);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
 }
 
 .note-status-toggle.approved {
     background-color: var(--color-correct);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
 }
 
 .note-input {
@@ -121,7 +115,7 @@
 
 .note-link {
     text-decoration: none;
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     transition: all 0.3s ease-in-out;
     font-size: 1.2rem;
     cursor: pointer;
@@ -174,8 +168,8 @@
     min-height: 38vh;
     width: 45vw;
     z-index: 9999;
-    color: var(--color-almost-white);
-    background-color: var(--color-primary);
+    color: var(--color-white-not-changing);
+    background-color: var(--color-bg-not-changing);
     display: flex;
     flex-direction: column;
     align-items: start;
@@ -248,7 +242,7 @@
     padding: 5px 10px;
     border-radius: 5px;
     background-color: var(--color-white-tinted);
-    color: var(--color-primary-hover);
+    color: var(--color-gray-not-changing);
     border: none;
     transition: all 0.3s ease-in-out;
 }
@@ -259,23 +253,23 @@
 
 .note-popup-button.attention {
     background-color: var(--color-wrong);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
 }
 
 .note-popup-button.approved {
     background-color: var(--color-correct);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
 }
 
 .note-popup-button.not-chosen {
     background-color: var(--color-light-gray);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     scale: 0.9;
 }
 
 .note-popup-button.save {
     background-color: var(--color-target);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     box-sizing: border-box;
 }
 

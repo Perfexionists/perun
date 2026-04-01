@@ -7,7 +7,20 @@
                 <div class="data-row">
                     <p class="data-key" title="{{ title }}">{{ key }}</p>
                     {{ m_pin.notes_pin('%s > %s > %s' | format(section_id, type, key | striptags), "pin-icon", notes_enabled) }}
-                    <p class="data-value">{{ value }}</p>
+                    {% if nested_values %}
+                        {% set tooltip_text %}
+                        {%- for key, val in nested_values.items() -%}
+                            <b>{{ key }}</b>: {% if val is number %}{{ val | round(2) }}{% else %}{{ val }}{% endif %}{% if not loop.last %}{{ '\n' }}{% endif %}
+                        {%- endfor -%}
+                        {% endset %}
+                        <p class="data-value">
+                            <span class="info-icon__header" data-tooltip="{{ tooltip_text | trim }}">
+                                {{ value }}
+                            </span>
+                        </p>
+                    {% else %}
+                        <p class="data-value">{{ value }}</p>
+                    {% endif %}
                 </div>
             {%- endfor %}
         </div>

@@ -1,7 +1,7 @@
 .section_guide {
     position: absolute;
     background-color: var(--color-primary);
-    color: var(--color-light-white);
+    color: var(--color-secondary);
     padding: 20px;
     border-radius: 5px;
     max-width: 50%;
@@ -23,7 +23,7 @@
     z-index: 2;
     width: 200px;
     font-size: 12px;
-    background-color: #ccc;
+    background-color: var(--color-white-tinted);
     border-radius: 10px;
     padding: 5px 10px;
 }
@@ -32,7 +32,7 @@
     content: "";
     position: absolute;
     transform: rotate(45deg);
-    background-color: #ccc;
+    background-color: var(--color-white-tinted);
     padding: 5px;
     z-index: 1;
 }

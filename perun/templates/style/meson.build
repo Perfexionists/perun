@@ -1,18 +1,22 @@
 perun_templates_style_dir = perun_templates_dir / 'style'
 
 perun_templates_style_files = files(
+    'colors_setup.css',
     'division_anchor.css',
     'environment_sidepanel.css',
     'flame_graphs.css',
+    'footer.css',
     'general_setup.css',
+    'chatbot.css',
     'layout.css',
     'navigation_sidepanel.css',
     'notes.css',
     'pins.css',
     'sankey_graph.css',
-    'summary.css',
     'tag.css',
+    'themes_sidepanel.css',
     'tooltip.css',
+    'trace_details.css',
     'traces_table.css',
 )
 

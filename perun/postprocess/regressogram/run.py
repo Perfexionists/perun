@@ -18,7 +18,6 @@ from perun.profile.factory import pass_profile, Profile
 from perun.utils.common import cli_kit
 from perun.utils.structs.common_structs import PostprocessStatus
 
-
 _DEFAULT_BUCKETS_METHOD = "doane"
 _DEFAULT_STATISTIC = "mean"
 

@@ -21,7 +21,6 @@ from perun.utils.common import common_kit
 from perun.utils.external import commands
 from perun.utils.structs.common_structs import CollectStatus, Executable
 
-
 TIME_TYPES = ("real", "user", "sys")
 
 

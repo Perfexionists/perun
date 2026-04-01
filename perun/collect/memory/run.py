@@ -15,7 +15,6 @@ from perun.logic import runner
 from perun.utils import log
 from perun.utils.structs.common_structs import CollectStatus, Executable
 
-
 _lib_name: str = "malloc.so"
 _tmp_log_filename: str = "MemoryLog"
 DEFAULT_SAMPLING: float = 0.001

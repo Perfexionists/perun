@@ -19,7 +19,6 @@ import perun.collect.trace.optimizations.dynamic_sampling as sampling
 from perun.collect.trace.optimizations.dynamic_stats import DynamicStats
 import perun.utils.metrics as metrics
 
-
 SPECIAL_CALL_COUNT = 101
 
 

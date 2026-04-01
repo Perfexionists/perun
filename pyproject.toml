@@ -60,6 +60,7 @@ dependencies = [
     # Science / math / statistics / ML
     "numpy>=2.0.0",
     "pandas>=2.2.2",
+    "polars>=1.34.0",
     "statsmodels>=0.14.2",
     "scikit-learn>=1.5.1",
     "scipy>=1.13",

@@ -1,0 +1,53 @@
+{%- if chatbot %}
+    <button id="chat-button">💬</button>
+
+    <div id="chat-window">
+        <div id="chat-header">
+            <div class="row justify-content-between">
+                <div class="col">
+                    <h5 class="title">Chat</h5>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-secondary" data-toggle="modal" data-bs-toggle="modal" data-bs-target="#modelSelectModal">⋮</button>
+                </div>
+            </div>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modelSelectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" id="modelSelectModalContent">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Select preferred model</h5>
+          </div>
+          <div class="modal-body">
+            <div id="model-list-container">
+              <select id="model-select" class="form-control"></select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="llm-prompt-context" style="display: none;">
+        Pilot prompt: You are a helpful assistant in a chat window in a html report.
+        Your response will be directly injected into that chat window, so keep
+        your messages reasonably short.
+
+        We will provide a context to you, something the user clicked on to focus
+        your attention, those messages will be formatted like this "Context:
+        {context}", use the latest context to your advantage to improve your
+        response.
+        {{ chatbot_prompt_context }}
+    </div>
+{%- endif %}

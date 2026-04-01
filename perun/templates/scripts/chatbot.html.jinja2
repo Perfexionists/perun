@@ -1,0 +1,274 @@
+{% if chatbot %}
+<script>
+    const BACKEND_API_URL = "{{ chatbot }}";
+
+    async function loadModels() {
+  try {
+    const res = await fetch(`${BACKEND_API_URL}/available_models`);
+    const models = await res.json();
+    const $select = $("#model-select");
+
+    $select.empty(); // clear previous options
+
+    models.forEach(model => {
+      const $option = $("<option>").val(model).text(model);
+      $select.append($option);
+    });
+
+    const storedModel = localStorage.getItem("selectedModel");
+    if (storedModel && models.includes(storedModel)) {
+      $select.val(storedModel); // Set the selected option
+    }
+
+  } catch (err) {
+    console.error("Failed to load models:", err);
+  }
+}
+
+loadModels();
+
+// Wait for the DOM to be ready
+$(document).ready(function () {
+  // Handle "Save changes" button click in modal
+  $('#modelSelectModal .btn-primary').on('click', function () {
+    const selectedModel = $('#model-select').val();
+    console.log("Selected model:", selectedModel);
+
+    // Save to localStorage
+    localStorage.setItem("selectedModel", selectedModel);
+
+    // Hide the modal
+    $('#modelSelectModal').modal('hide');
+  });
+
+  // On page load, get the stored model
+  const stored = localStorage.getItem("selectedModel");
+  if (stored) {
+    selectedModel = stored;
+  }
+});
+
+//Logic for focusing the assistant's context
+let currentFocusEl = null;
+let selectedBlocks = [];
+
+function getContextText() {
+  return selectedBlocks.map(el => el.innerText.trim()).join("\n\n---\n\n");
+}
+
+
+const $chatButton   = $("#chat-button");
+const $chatWindow   = $("#chat-window");
+const $chatMessages = $("#chat-messages");
+const $messageInput = $("#message-input");
+const $chatHeader   = $("#chat-header");
+
+$chatButton.on("click", function () {
+  const isVisible = $chatWindow.is(":visible");
+
+  // Toggle visibility
+  $chatWindow.css("display", isVisible ? "none" : "flex");
+
+  // Add/remove global chat-open flag
+  if (isVisible) {
+    document.body.classList.remove("chat-open");
+  } else {
+    document.body.classList.add("chat-open");
+  }
+
+});
+
+function getPilotPrompt() {
+  const $block = $(".llm-prompt-context").first();
+  return $block.length ? $block.text().trim() : "";
+}
+
+async function sendMessage() {
+  const message = $messageInput.val().trim();
+  if (!message) return;
+
+  appendMessage("You", message);
+  $messageInput.val("");
+
+  try {
+    const context = getContextText();
+
+   const stored = localStorage.getItem("selectedModel");
+    if (stored) {
+        selectedModel = stored;
+    }
+
+    // Fetch model's response from backend
+    const res = await fetch(`${BACKEND_API_URL}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: message,
+        pilot_prompt: getPilotPrompt(),
+        context: context,
+        model: selectedModel,
+        report_url: window.location.href
+      }),
+      credentials: 'include'
+    });
+
+    const data = await res.json();
+    const reply = data.reply || data.error || "No reply.";
+    appendMessage("Bot", reply);
+  } catch (err) {
+    appendMessage("Bot", "Error: " + err.message);
+  }
+}
+
+function appendMessage(sender, message) {
+  const $chatMessages = $("#chat-messages");
+
+  let safeHtml;
+
+  // Check if marked and DOMPurify are loaded
+  if (typeof marked !== "undefined" && typeof DOMPurify !== "undefined") {
+    // Convert Markdown -> HTML and sanitize
+    safeHtml = DOMPurify.sanitize(marked.parse(message));
+  } else {
+    // Fallback: escape HTML so raw text is safe
+    safeHtml = $("<div>").text(message).html();
+  }
+
+  const $messageWrapper = $(`
+    <div class="chat-message ${sender === "You" ? "user" : "bot"}">
+      <div class="chat-sender ${sender === "You" ? "user" : "bot"}">${sender}</div>
+      <div class="chat-text">${safeHtml}</div>
+    </div>
+  `);
+
+  $chatMessages.append($messageWrapper);
+  $chatMessages.scrollTop($chatMessages[0].scrollHeight);
+}
+
+
+
+$messageInput.on("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault(); // prevents form submission or newline
+    sendMessage();
+  }
+});
+
+// Chat window drag
+// Source: https://www.w3schools.com/howto/howto_js_draggable.asp
+dragElement($chatWindow[0], $chatHeader[0]);
+
+function dragElement(elem, header) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  header.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+
+    // set the element's new position:
+    elem.style.top = (elem.offsetTop - pos2) + "px";
+    elem.style.left = (elem.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    // stop moving when mouse button is released:
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+
+$(document).ready(() => {
+  $(".section, .column, .data-row, tr").each(function () {
+    const $block = $(this);
+
+    $block.css("position", "relative"); // Ensure positioning for icon
+
+    const $eyeIcon = $(`
+      <svg class="context-eye-icon fill-eye-icon" title="Select this context"
+        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        width="20" height="20" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      </svg>
+    `).hide();
+
+    $eyeIcon.css({
+      position: "absolute",
+      top: "6px",
+      right: "6px",
+      cursor: "pointer",
+      opacity: 0.7,
+      "z-index": 1000
+    });
+
+    $block.append($eyeIcon);
+
+    let isSelected = false;
+
+    $block.hover(
+      function () {
+        // Only show highlight and eye icon if chat is open
+        if (!isSelected && $("body").hasClass("chat-open")) {
+          $block.addClass("context-highlight");
+          $eyeIcon.show();
+        }
+      },
+      function () {
+        if (!isSelected && $("body").hasClass("chat-open")) {
+          $block.removeClass("context-highlight");
+          $eyeIcon.hide();
+        }
+      }
+    );
+
+$eyeIcon.on("click", function (e) {
+  e.stopPropagation();
+
+  const isAlreadySelected = $block.hasClass("context-selected");
+
+  if (isAlreadySelected) {
+    $block.removeClass("context-selected");
+    selectedBlocks = selectedBlocks.filter(el => el !== $block[0]);
+
+    // Hover styling fallback
+    if ($block.is(":hover")) {
+      $block.addClass("context-highlight");
+      $eyeIcon.show();
+    } else {
+      $block.removeClass("context-highlight");
+      $eyeIcon.hide();
+    }
+
+    console.log("Block deselected:", $block[0]);
+  } else {
+    $block.addClass("context-selected");
+    $block.removeClass("context-highlight");
+    $eyeIcon.show();
+
+    selectedBlocks.push($block[0]);
+    console.log("Block selected:", $block[0]);
+  }
+});
+  });
+});
+</script>
+{% endif %}

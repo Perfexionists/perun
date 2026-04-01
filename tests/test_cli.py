@@ -30,7 +30,6 @@ from perun.utils.structs.common_structs import CollectStatus, RunnerReport
 from perun import check as check
 import perun.testing.utils as test_utils
 
-
 SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 
 

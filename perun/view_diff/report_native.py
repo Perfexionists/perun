@@ -15,6 +15,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from operator import itemgetter
+from pathlib import Path
 import sys
 from typing import Any, Literal
 
@@ -25,7 +26,7 @@ import perun
 from perun import profile as profile
 from perun.logic import config
 from perun.templates import factory as templates
-from perun.utils import log, mapping
+from perun.utils import log, mapping, streams
 from perun.utils.common import diff_kit, common_kit
 from perun.utils.structs.common_structs import WebColorPalette
 from perun.utils.structs.diff_structs import Config
@@ -67,11 +68,16 @@ class SelectionRow:
 
     :ivar uid: uid of the selected graph
     :ivar index: index in the sorted list of data
-    :ivar abs_amount: absolute change in the units
     :ivar fresh: the state of the uid - 1) not in baseline (added in target),
         2) not in target (removed in target), or 3) possibly unchanged
-    :ivar main_stat: type of the
-    :ivar rel_amount: relative change in the units
+    :ivar main_stat: type of the data
+    :ivar baseline_abs: the absolute baseline value
+    :ivar target_abs: the absolute target value
+    :ivar proportional_rel_delta: the relative delta between total target and baseline value
+    :ivar abs_delta: absolute change between target and baseline
+    :ivar rel_delta: relative change between target and baseline
+    :ivar stats: overview of all stat values
+    :ivar trace_stats: a collection of stats for traces
     """
 
     __slots__ = [
@@ -79,8 +85,11 @@ class SelectionRow:
         "index",
         "fresh",
         "main_stat",
-        "abs_amount",
-        "rel_amount",
+        "baseline_abs",
+        "target_abs",
+        "proportional_rel_delta",
+        "abs_delta",
+        "rel_delta",
         "stats",
         "trace_stats",
     ]
@@ -90,30 +99,43 @@ class SelectionRow:
         uid: str,
         index: int,
         fresh: Literal["not in baseline", "not in target", "in both"],
-        stats: list[tuple[int, float, float]],
-        trace_stats: list[tuple[str, str, float, float, str]],
+        stats: list[tuple[int, float, float, float, float, float]],
+        trace_stats: list[tuple[str, str, float, float, float, float, float, str]],
     ) -> None:
         """Initializes the selection row"""
         self.uid: str = uid
         self.index: int = index
         self.fresh: Literal["not in baseline", "not in target", "in both"] = fresh
         self.main_stat: int = stats[0][0]
-        self.abs_amount: float = common_kit.to_compact_num(stats[0][1])
-        self.rel_amount: float = common_kit.to_compact_num(stats[0][2])
-        # stat_type, abs, rel
-        self.stats: list[tuple[int, float, float]] = [
-            (stat[0], common_kit.to_compact_num(stat[1]), common_kit.to_compact_num(stat[2]))
+        self.baseline_abs: float = common_kit.to_compact_num(stats[0][1])
+        self.target_abs: float = common_kit.to_compact_num(stats[0][2])
+        self.proportional_rel_delta: float = common_kit.to_compact_num(stats[0][3])
+        self.abs_delta: float = common_kit.to_compact_num(stats[0][4])
+        self.rel_delta: float = common_kit.to_compact_num(stats[0][5])
+        # stat_type, baseline_abs, target_abs, prop_rel_delta, abs_delta, rel_delta
+        self.stats: list[tuple[int, float, float, float, float, float]] = [
+            (
+                stat[0],
+                common_kit.to_compact_num(stat[1]),
+                common_kit.to_compact_num(stat[2]),
+                common_kit.to_compact_num(stat[3]),
+                common_kit.to_compact_num(stat[4]),
+                common_kit.to_compact_num(stat[5]),
+            )
             for stat in stats
         ]
-        # trace, stat_type, abs, rel, long_trace
+        # trace, stat_t, baseline_abs, target_abs, prop_rel_delta, abs_delta, rel_delta, long_trace
         all_stats = Stats.all_stats()
-        self.trace_stats: list[tuple[str, int, float, float, str]] = [
+        self.trace_stats: list[tuple[str, int, float, float, float, float, float, str]] = [
             (
                 t[0],
                 all_stats.index(t[1]),
                 common_kit.to_compact_num(t[2]),
                 common_kit.to_compact_num(t[3]),
-                t[4],
+                common_kit.to_compact_num(t[4]),
+                common_kit.to_compact_num(t[5]),
+                common_kit.to_compact_num(t[6]),
+                t[7],
             )
             for t in trace_stats
         ]
@@ -567,6 +589,33 @@ def generate_trace_stats(graph: Graph) -> dict[str, list[TraceStat]]:
     return trace_stats
 
 
+def _get_baseline_target_total() -> tuple[list[float], list[float]]:
+    """A helper function to obtain baseline target total values for all stats.
+
+    :return: collections of baseline and target total values
+    """
+    # TODO: Nasty, but currently the only reasonable way to access the maxima.
+    return [
+        float(stat.value[0])
+        for stat in Config().profile_stats["baseline"]
+        if stat.name.startswith("Overall")
+    ], [
+        float(stat.value[0])
+        for stat in Config().profile_stats["target"]
+        if stat.name.startswith("Overall")
+    ]
+
+
+def _to_percentage(value: float) -> float:
+    """Transforms a value to a percentage and round it to 2 decimal places.
+
+    :param value: the value to transform and round
+
+    :return: the transformed value
+    """
+    return round(100 * value, 2)
+
+
 def generate_selection(graph: Graph, trace_stats: dict[str, list[TraceStat]]) -> list[SelectionRow]:
     """Generates selection table
 
@@ -576,25 +625,31 @@ def generate_selection(graph: Graph, trace_stats: dict[str, list[TraceStat]]) ->
     """
     selection = []
     log.minor_info("Generating selection table")
-    trace_stat_cache: dict[str, tuple[str, str, float, float, str]] = {}
+    trace_stat_cache: dict[str, tuple[str, str, float, float, float, float, float, str]] = {}
     stat_len = len(Stats.all_stats())
+    baseline_max, target_max = _get_baseline_target_total()
     for uid, nodes in log.progress(
         graph.uid_to_nodes.items(), description="Generating Selection Rows"
     ):
         baseline_overall: array.array[float] = array.array("d", [0.0] * stat_len)
         target_overall: array.array[float] = array.array("d", [0.0] * stat_len)
-        stats: list[tuple[int, float, float]] = []
+        # StatID, baseline abs, target abs, proportional delta, abs delta, rel delta
+        stats: list[tuple[int, float, float, float, float, float]] = []
         for node in nodes:
             for i, known_stat in enumerate(Stats.all_stats()):
                 baseline_overall[i] += node.stats.baseline[known_stat]
                 target_overall[i] += node.stats.target[known_stat]
         for i in range(0, stat_len):
             baseline, target = baseline_overall[i], target_overall[i]
-            if baseline != 0 or target != 0:
-                abs_diff = target - baseline
-                rel_diff = round(100 * abs_diff / max(baseline, target), 2)
-                stats.append((i, abs_diff, rel_diff))
-        stats = sorted(stats, key=itemgetter(2))
+            prop_diff = _to_percentage(target / target_max[i] - baseline / baseline_max[i])
+            abs_diff = target - baseline
+            try:
+                rel_diff = _to_percentage(abs_diff / max(baseline, target))
+            except ZeroDivisionError:
+                # Skip this record, both baseline and target are 0
+                continue
+            stats.append((i, baseline, target, prop_diff, abs_diff, rel_diff))
+        stats = sorted(stats, key=itemgetter(3))
 
         if stats:
             state: Literal["not in baseline", "not in target", "in both"] = "in both"
@@ -612,30 +667,39 @@ def generate_selection(graph: Graph, trace_stats: dict[str, list[TraceStat]]) ->
 
 
 def extract_stats_from_trace(
-    graph: Graph, uid_stats: list[TraceStat], cache: dict[str, tuple[str, str, float, float, str]]
-) -> list[tuple[str, str, float, float, str]]:
+    graph: Graph,
+    uid_stats: list[TraceStat],
+    cache: dict[str, tuple[str, str, float, float, float, float, float, str]],
+) -> list[tuple[str, str, float, float, float, float, float, str]]:
     """Extracts stats from trace
 
     :param graph: sankey graph
     :param uid_stats: stats for each uid in the graph
     :param cache: helper cache for reducing the statistics
     """
-    uid_trace_stats: list[tuple[str, str, float, float, str]] = []
-    top_n_limit, sort_by_key, relative_thresh = (
+    uid_trace_stats: list[tuple[str, str, float, float, float, float, float, str]] = []
+    top_n_limit, sort_by_key, relative_thresh, threshold_idx = (
         Config().top_n_traces,
-        3,
+        4,
         Config().relative_threshold,
+        6,
     )
+    baseline_max, target_max = _get_baseline_target_total()
     for trace in uid_stats:
-        # Trace is in form of [short_trace, stat_type, abs, rel, long_trace]
+        # Trace is in form of [short_trace, stat_type, baseline abs, target abs, proportional delta,
+        # abs delta, rel delta, long_trace]
         for i, stat in enumerate(Stats.all_stats()):
             key = f"{trace.trace_id}#{stat}"
             if key not in cache:
                 target_cost, baseline_cost = trace.target_cost[i], trace.baseline_cost[i]
-                if target_cost == 0 and baseline_cost == 0:
-                    continue
                 abs_amount = target_cost - baseline_cost
-                rel_amount = abs_amount / max(target_cost, baseline_cost)
+                try:
+                    rel_amount = _to_percentage(abs_amount / max(baseline_cost, target_cost))
+                except ZeroDivisionError:
+                    continue
+                prop_diff = _to_percentage(
+                    target_cost / target_max[i] - baseline_cost / baseline_max[i]
+                )
 
                 short_id = f"{graph.uid_to_id[trace.trace[0]]};{graph.uid_to_id[trace.trace[-1]]}"
                 long_trace = ";".join([f"{graph.uid_to_id[t]}" for t in trace.trace])
@@ -646,15 +710,42 @@ def extract_stats_from_trace(
                     common_kit.compact_convert_list_to_str(trace.target_partial_costs[i])
                 )
                 long_data = f"{long_trace}#{long_baseline_stats}#{long_target_stats}"
-                cache[key] = (short_id, stat, abs_amount, rel_amount, long_data)
-            if float(cache[key][sort_by_key]) >= relative_thresh:
+                cache[key] = (
+                    short_id,
+                    stat,
+                    baseline_cost,
+                    target_cost,
+                    prop_diff,
+                    abs_amount,
+                    rel_amount,
+                    long_data,
+                )
+            if float(cache[key][threshold_idx]) >= relative_thresh:
                 common_kit.add_to_sorted(
                     uid_trace_stats, cache[key], itemgetter(sort_by_key), top_n_limit
                 )
     return uid_trace_stats
 
 
-def generate_report(
+def compose_chatbot_contexts(sources: tuple[str, ...]) -> str:
+    """Compose the additional chatbot prompt context from possibly multiple sources.
+
+    :param sources: sources of the prompt context; may be either strings or a file paths.
+    :return: the resulting prompt context string.
+    """
+    context_str: str = ""
+    for source in sources:
+        if source.endswith(".prompt"):
+            # The context is stored in a file, attempt to open and read it.
+            with streams.safely_open_and_log(Path(source), "r", fatal_fail=False) as handle:
+                if handle is not None:
+                    context_str += f"\n{handle.read()}"
+        else:
+            context_str += f"\n{source}"
+    return context_str + "\n"
+
+
+def generate_report_from_native(
     lhs_profile: profile.Profile, rhs_profile: profile.Profile, **kwargs: Any
 ) -> None:
     """Generates differences of two profiles as sankey diagram
@@ -668,6 +759,8 @@ def generate_report(
         for arg, val in kwargs.items()
         if arg.startswith("flamegraph_")
     }
+    # FIXME: temporary solution before refactoring to FlameGraphSettings.
+    del fg_forward_kwargs["parallelize"]
 
     # We automatically set the value of True for kperf, which samples
     Config().minimize = kwargs.get("minimize", False)
@@ -715,11 +808,21 @@ def generate_report(
         lhs_profile.all_metadata(), rhs_profile.all_metadata()
     )
 
+    # Process user-defined chatbot prompt context, if provided.
+    prompt_ctx = ""
+    if kwargs["chatbot_url"] is not None:
+        prompt_ctx_sources: tuple[str, ...] | None = kwargs.get("chatbot_prompt_context", None)
+        if prompt_ctx_sources is not None:
+            log.minor_info("Processing chatbot prompt context")
+            prompt_ctx = compose_chatbot_contexts(prompt_ctx_sources)
+
     template = templates.get_template("diff_views/report.html.jinja2")
     content = template.render(
         title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,
         timestamp=datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M:%S") + " UTC",
+        chatbot=kwargs["chatbot_url"],
+        chatbot_prompt_context=prompt_ctx,
         lhs_tag="Baseline (base)",
         lhs_header=lhs_header,
         lhs_vulnerabilities=lhs_vulnerabilities,
@@ -742,7 +845,7 @@ def generate_report(
             list(map(itemgetter(0), sorted(list(graph.stats_to_id.items()), key=itemgetter(1))))
         )
         + "]",
-        nodes=list(map(itemgetter(0), sorted(list(graph.uid_to_id.items()), key=itemgetter(1)))),
+        nodes=map(itemgetter(0), sorted(list(graph.uid_to_id.items()), key=itemgetter(1))),
         node_map=[
             sorted([node.get_order() for node in nodes])
             for nodes in map(
@@ -757,9 +860,10 @@ def generate_report(
         container_height=Config().max_seen_trace * Config().DefaultHeightCoefficient + 200,
         notes_enabled=True,
         links=list(kwargs.get("link", [])),
+        default_theme=kwargs.get("default_theme", "dark"),
     )
     log.minor_success("HTML template", "rendered")
     output_file = diff_kit.save_diff_view(
-        kwargs.get("output_file"), content, "report", lhs_profile, rhs_profile
+        kwargs.get("output_path"), content, "report", lhs_profile, rhs_profile
     )
     log.minor_status("Output saved", log.path_style(output_file))

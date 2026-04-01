@@ -1,3 +1,4 @@
 #Stackfile,Exit_code,bogo-ops-per-second-real-time| higher_is_better|bogo-ops-per-second |min,stat2|stat2_direction|stat2_unit|max,timer|auto||sequence,wall-clock|lower_is_better|ns||wall-clock run time
 import.stack.gz, 0, 18511.379883,956.36,"TSC",1564819
-import.stack,0,17894.875698,897.01,"HPET",1568644
+import.stack,,17894.875698,897.01,"HPET",1568644,10
+import.stack,nan,17894.875698,897.01,,nan

@@ -28,11 +28,7 @@ import click
 
 # Perun Imports
 from perun.postprocess.regression_analysis import tools
-from perun.utils.exceptions import (
-    NotPerunRepositoryException,
-    SignalReceivedException,
-    SuppressedExceptions,
-)
+from perun.utils.exceptions import NotPerunRepositoryException, SignalReceivedException
 
 if TYPE_CHECKING:
     import types
@@ -353,7 +349,7 @@ def locate_dir_on(path: str, searched_dir: str) -> str:
     return ""
 
 
-def try_convert(value: Any, list_of_types: list[type]) -> Any:
+def try_convert(value: Any, list_of_types: Iterable[type]) -> Any:
     """Tries to convert a value into one of the specified types
 
     :param value: object that is going to be converted to one of the types

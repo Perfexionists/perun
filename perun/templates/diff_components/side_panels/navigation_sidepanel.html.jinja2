@@ -1,7 +1,6 @@
 <div id="navigation-side-panel" class="side-panel navigation-panel">
 
     {% set navigation_contents = [
-        ("summary", "home", "Summary"),
         ("environment", "environment", "Environment"),
         ("flame", "fire", "Flame Graphs"),
         ("traces", "trace", "Traces Table"),
@@ -12,14 +11,14 @@
 
     {% for href_id, svg_name, display_title in navigation_contents %}
         <a href="#{{ href_id }}">
-        <span class="full_visible fully_centered">
-            {% include 'assets/' ~ svg_name ~ '.svg' %}
-        </span>
-        <span class="side-panel__description">{{ display_title }}</span>
-    </a>
+            <span class="full_visible fully_centered">
+                {% include 'assets/' ~ svg_name ~ '.svg' %}
+            </span>
+            <span class="side-panel__description">{{ display_title }}</span>
+        </a>
     {% endfor %}
 
-    <a id="navigation-panel__submenu--trigger">
+    <a id="navigation-panel__submenu--trigger" class="">
         <span class="full_visible fully_centered">
             {% include 'assets/link.svg' %}
         </span>
@@ -28,7 +27,7 @@
 </div>
 
 <div id="navigation-panel__submenu--links" class="navigation-panel__submenu">
-    <a href="https://github.com/Perfexionists/perun" target="_blank">Perun repository</a>
+    <a href="https://github.com/Perfexionists/perun" target="_blank">Perun Repository</a>
     <a href="https://github.com/brendangregg/FlameGraph" target="_blank">Flame Graphs</a>
     {% for link, link_title in links %}
         <a href="{{ link }}" target="_blank">{{ link_title }}</a>

@@ -18,7 +18,6 @@ import perun.profile.convert as convert
 import perun.utils.log as log
 import perun.utils.streams as streams
 
-
 RUN_SINGLE = False
 
 

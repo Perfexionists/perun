@@ -10,7 +10,6 @@ records and to keep sufficient amount of data records for any further post-proce
 import math
 from perun.collect.trace.optimizations.structs import Complexity
 
-
 _SAMPLE_MAX = 2000000000  # Due to the type limitation of collection programs
 _THRESHOLD_EPS_RATIO = 0.1  # The threshold eps tolerance
 _CONSTANT_RATIO = 2  # The ratio applied to constant functions in the initial phase

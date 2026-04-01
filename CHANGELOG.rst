@@ -1,38 +1,105 @@
 Changelog
 =========
 
+
+0.26.1 (2026-01-24)
+-------------------
+
+  - The nested traces table in showdiff report now has correctly styled table headers.
+  - All trace table headers now also use the same column names and tooltips.
+  - Perun now supports both long and short help options (--help and -h) for CLI commands.
+  - The showdiff report, showdiff report native, and showdiff flamegraph help text has been changed to be more user-friendly.
+  - The integrated chatbot has been updated to the latest version.
+
+
+0.26.0 (2026-01-14)
+-------------------
+
+  - Showdiff report now supports two variants: native and folded.
+  - Showdiff folded report works on external folded profiles (e.g., perf-folded) without the need to import them first.
+  - Breaking CLI changes: showdiff CLI has been changed substantially.
+
+
+0.25.6 (2025-11-05)
+-------------------
+
+  - Showdiff report:
+
+    - Added the 'Links' menu of user-defined links to resources into the sidepanel.
+    - Updated the chatbot version: it now supports user-defined initial prompt and passing additional context alongside prompts.
+    - Added light, dark and monochrome color themes.
+
+  - CLI changes:
+
+    - (optional) `showdiff report`: `--link` (-l) specifies http links to resources.
+    - (optional) `showdiff report`: `--default-theme` (-th) specifies the default color theme.
+    - (optional) `showdiff report`: `--chatbot-prompt-context` (-p) specifies the initial global context for prompts.
+
+  - Fixes:
+
+    - Fixed psutil cpu_freq failing on macOS due to a different exception type.
+    - Fixed CSV parsing in `perun import`: it now supports CSV comments and gracefully handles missing values.
+
+
+0.25.5 (2025-07-28)
+-------------------
+
+  - Fixed issue with some template libraries missing in the distribution.
+
+
+0.25.4 (2025-07-23)
+-------------------
+
+  - Removed obsolete view diff subcommands: `sankey` and `datatables`.
+  - Fixed broken `flamegraph` view diff subcommand. It now adheres to the new visual style of report.
+  - View diff report now optionally integrates AI chatbot through a new `-c <API URL>` option.
+  - Traces table in the view diff report now contains additional metrics: absolute baseline and target, and total delta.
+
+
 0.25.3 (2025-05-14)
 -------------------
 
   - Flame Graph:
+
     - Search and mouseover highlighting are now separate and no longer influence each other.
     - Large sample counts are now formatted the same way as in the Traces table.
     - The 'matched' label is now split into two: search and mouseover.
     - Both 'matched' labels now also show the absolute number of samples.
     - The [unknown] frames are now by-default squashed into a single frame to avoid tall [unknown] towers.
+
   - Report stats:
+
     - Comparison of different stats aggregations (e.g., SingleValue, StatisticalSummary) with the same type of value
-    (e.g., string or numeric) is now permitted.
+      (e.g., string or numeric) is now permitted.
+
   - Report notes:
+
     - Notes are now edited using a popup window that supports editing, saving, or deleting notes.
     - Notes may now be specified as requiring Attention or being Waived.
     - The save button changes colors based on the (un)saved changes.
+
   - Profiles:
+
     - Profiles are no longer overwritten by default if an existing profile with identical name exists; instead, the
-    profile name is suffixed with a copy number, e.g., custom_profile(N).perf.
+      profile name is suffixed with a copy number, e.g., custom_profile(N).perf.
     - Profiles may now be sorted w.r.t. multiple keys and orderings.
+
   - CLI changes:
+
     - The report CLI now supports a new `--flamegraph-colors` option that is forwarded to the flamegraph script.
     - The report CLI now supports a `--flamegraph-inverted` flag, which creates icicle graphs instead of flame graphs.
     - The report CLI now supports a `--no-squash-unknown` flag that disables squashing of [unknown] frames.
     - The collect and import CLI now define identical options `--profile-name` and `--profile-dir` that determine
-    the name and target directory for storage of the profile.
+      the name and target directory for storage of the profile.
+
   - Configuration changes:
+
     - Keys `format.sort_profiles_by` and `format.sort_profiles_order` now support collection of values.
     - A new `profiles.overwrite` key sets the preference for (not) overwriting profiles with conflicting names.
     - New values `stem` and `copy` are now recognized by `format.sort_profiles_by` to match the new naming scheme of profiles.
     - By default, the `format.sort_profiles_by` is now set to a multikey [`time`, `stem`, `copy`] that results in
-    a more natural ordering of profiles.
+      a more natural ordering of profiles.
+
 
 0.25.2 (2025-03-27)
 -------------------

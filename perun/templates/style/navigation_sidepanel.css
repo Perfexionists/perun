@@ -4,17 +4,26 @@
 
 .side-panel {
     position: fixed;
-    right: 0;
     width: 50px;
     padding: 10px;
-    background-color: var(--color-primary);
-    border-radius: 8px 0 0 8px;
-    transition: width 0.3s ease;
+    background-color: var(--color-sidepanel-bg);
+    transition: all 0.3s ease-in-out;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     z-index: 1000;
+    cursor: pointer;
+}
+
+.side-panel span {
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+}
+
+.side-panel span svg {
+    font-size: 24px;
+    fill: var(--color-white-not-changing);
     cursor: pointer;
 }
 
@@ -37,7 +46,7 @@
     padding: 8px 12px;
     border-radius: 4px;
     text-decoration: none;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     transition: all 0.2s;
 }
 
@@ -45,15 +54,13 @@
     background-color: var(--color-primary-hover);
 }
 
-.side-panel .material-icons {
-    font-size: 24px;
-    color: var(--color-light-white);
-    transition: opacity 0.3s ease;
+.side-panel a span svg {
+    fill: var(--color-white-not-changing);
 }
 
-.side-panel span {
-    white-space: nowrap;
-    opacity: 0;
+.side-panel .material-icons {
+    font-size: 24px;
+    color: var(--color-secondary);
     transition: opacity 0.3s ease;
 }
 
@@ -70,9 +77,24 @@
 }
 
 .navigation-panel {
+    right: 0;
+    border-radius: 8px 0 0 8px;
     top: 30%;
     transform: translateY(-50%);
     gap: 10px;
+}
+
+.navigation-panel span {
+    opacity: 0;
+}
+
+.navigation-panel a {
+    padding: 8px 12px 8px 4px;
+}
+
+.navigation-panel a:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
 }
 
 .navigation-panel__submenu {
@@ -80,9 +102,9 @@
     right: calc(50px + 10px);
     top: 50%;
     transform: translateY(-50%);
-    background-color: var(--color-primary);
+    background-color: var(--color-sidepanel-bg);
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 8px rgba(0 0 0 / 25% );
     padding: 10px;
     display: none;
     flex-direction: column;
@@ -102,12 +124,13 @@
 .navigation-panel__submenu a {
     display: block;
     padding: 8px 12px;
-    color: var(--color-light-white);
+    color: var(--color-white-not-changing);
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 .navigation-panel__submenu a:hover {
-    background-color: var(--color-primary-hover);
+    background-color: var(--color-secondary);
+    color: var(--color-primary-text);
 }

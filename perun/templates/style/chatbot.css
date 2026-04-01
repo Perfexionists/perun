@@ -1,0 +1,239 @@
+.enlighter-default{
+  margin-bottom: 0;
+}
+
+/* Custom CSS for the static button */
+.static-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+#chat-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: var(--color-sidepanel-bg);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+#chat-window {
+  position: fixed;
+  bottom: 90px;
+  left: 20px;
+  width: 500px;
+  height: 400px;
+  border: 2px solid var(--color-bg-dt-table);
+  border-radius: 10px 10px 0;
+  box-shadow: 0 0 10px var(--color-primary-transparent);
+  display: none;
+  flex-direction: column;
+  resize: both;
+  overflow: hidden;
+  background: var(--color-secondary);
+  z-index: 9999;
+}
+
+#chat-header {
+  background: var(--color-almost-black-not-changing);
+  color: var(--color-white-not-changing);
+  padding: 10px;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  cursor: move;
+}
+
+#chat-header button {
+  background-color: var(--color-gray-not-changing);
+}
+
+#chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  height: 200px;
+}
+
+#chat-messages span {
+  color: var(--color-primary-text);
+}
+
+#chat-input {
+  display: flex;
+  border-top: 2px solid var(--color-bg-dt-table);
+}
+
+#message-input:focus {
+  outline: none;
+}
+
+#chat-input input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+}
+
+#chat-input button {
+  border: none;
+  background: var(--color-correct);
+  color: var(--color-secondary-text);
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+#chat-footer {
+  border-top: 2px solid var(--color-bg-dt-table);
+  color: gray;
+  font-size: 9pt;
+  padding: 2px 10px;
+}
+
+#settings-button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+#settings-menu {
+  padding: 10px;
+  border-top: 2px solid var(--color-bg-dt-table);
+  background: var(--color-secondary);
+}
+
+#modelSelectModalContent {
+  color: var(--color-primary-text);
+  background-color: var(--color-secondary);
+}
+
+#modelSelectModalContent .btn-primary {
+  background-color: var(--color-sidepanel-bg);
+  border: 2px solid var(--color-bg-dt-table);
+}
+
+#modelSelectModalContent .btn-primary:hover {
+  background-color: var(--color-gray-not-changing);
+}
+
+.modal-dialog {
+  margin-top: 4%;
+}
+
+#model-select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--color-bg-dt-table) !important;
+  background-color: var(--color-white-tinted);
+}
+
+.context-highlight {
+  position: relative;
+  box-shadow: 0 0 8px 2px rgba(100 149 237 / 50%); /* subtle blue glow */
+  transition: box-shadow 0.3s ease;
+}
+
+.context-eye-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  color: cornflowerblue;
+  background: white;
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 0 4px rgba(0 0 0 / 20%);
+  display: none; /* initially hidden */
+  z-index: 9999;
+}
+
+.fill-eye-icon {
+  fill: none !important;
+}
+
+.context-highlight {
+  box-shadow: 0 0 0 2px #cce5ff;
+  transition: box-shadow 0.2s ease;
+}
+
+body.chat-open .context-selected {
+  box-shadow: 0 0 0 2px #339af0;
+  background-color: var(--color-secondary-hover);
+}
+
+.context-eye-icon {
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.context-eye-icon:active {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+}
+
+.eye-clicked {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+/* Chat message container */
+.chat-message {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0 0 0 / 20%);
+  max-width: 90%;
+  position: relative;
+  word-wrap: break-word;
+  background-color: #f5f5f5; /* Light bubble */
+  color: #1a1a1a; /* Dark text */
+}
+
+/* Bot message styling */
+.chat-message.bot {
+  background-color: #e6f0ff; /* Pale blue for bot */
+  align-self: flex-start;
+}
+
+/* User message styling */
+.chat-message.user {
+  background-color: #e9fbe9; /* Pale green for user */
+  align-self: flex-end;
+}
+
+/* Sender label above or inside the bubble */
+.chat-sender {
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+/* Bot label color */
+.chat-sender.bot {
+  background-color: #007aff;
+  color: white;
+}
+
+/* User label color */
+.chat-sender.user {
+  background-color: #34c759;
+  color: white;
+}
+
+/* Text content of the message */
+.chat-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

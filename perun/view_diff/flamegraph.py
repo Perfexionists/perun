@@ -27,7 +27,6 @@ from perun.utils.structs.common_structs import WebColorPalette
 from perun.utils.structs.diff_structs import FG_DEFAULT_MIN_WIDTH
 from perun.view.flamegraph import flamegraph as flamegraph_factory
 
-
 TAGS_TO_INDEX: list[str] = []
 
 
@@ -298,6 +297,8 @@ def generate_flamegraph_difference(
         for arg, val in kwargs.items()
         if arg.startswith("flamegraph_")
     }
+    # FIXME: temporary solution before refactoring to FlameGraphSettings.
+    del fg_forward_kwargs["parallelize"]
 
     lhs_stats: list[profile.ProfileStat] = list(lhs_profile.all_stats())
     rhs_stats: list[profile.ProfileStat] = list(rhs_profile.all_stats())
@@ -341,6 +342,6 @@ def generate_flamegraph_difference(
     )
     log.minor_success("Flame Graph grid template", "rendered")
     output_file = diff_kit.save_diff_view(
-        kwargs.get("output_file"), content, "flamegraph", lhs_profile, rhs_profile
+        kwargs.get("output_path"), content, "flamegraph", lhs_profile, rhs_profile
     )
     log.minor_status("Output saved", log.path_style(output_file))

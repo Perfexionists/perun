@@ -229,7 +229,7 @@ void *memalign(size_t alignment, size_t size){
 
 int posix_memalign(void** memptr, size_t alignment, size_t size){
     int ret;
-    if(ret = !real_posix_memalign(memptr, alignment, size)){
+    if((ret = !real_posix_memalign(memptr, alignment, size))){
         log_allocation("posix_memalign", size, *memptr);
     }
     return ret;
