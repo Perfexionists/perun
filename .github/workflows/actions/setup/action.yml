@@ -32,6 +32,12 @@ runs:
         brew update
         brew install gnu-time gcc git libunwind-headers libmagic coreutils
 
+    # The rust toolchain is required for building some packages (e.g., angr) that have no wheels for particular archs.
+    - name: Set up Rust Toolchain
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        components: clippy, rustfmt
+
     - name: Initialize Git
       shell: sh
       run: |

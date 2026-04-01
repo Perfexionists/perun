@@ -1020,8 +1020,8 @@ def generate_report_from_folded(
     grid: FlameGraphGrid = FlameGraphGrid()
     log.minor_info("Saving post-processed profiles in temporary files.")
     with (
-        tempfile.NamedTemporaryFile(mode="w") as baseline_folded,
-        tempfile.NamedTemporaryFile(mode="w") as target_folded,
+        tempfile.NamedTemporaryFile(mode="w+") as baseline_folded,
+        tempfile.NamedTemporaryFile(mode="w+") as target_folded,
     ):
         base_maxtrace = polars_traces_to_folded_profile(
             pair_profile.baseline, baseline_folded, minwidth_threshold
@@ -1351,6 +1351,7 @@ def polars_traces_to_folded_profile(
         # Update the maximum trace length
         if inclusive >= min_width_threshold:
             max_filtered_len = max(max_filtered_len, len(trace_parts))
+    folded_file.flush()
     return max_filtered_len
 
 
