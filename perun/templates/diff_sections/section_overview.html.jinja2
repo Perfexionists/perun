@@ -1,4 +1,96 @@
 {% import 'macros/overview.html.jinja2' as o_macros %}
+{% import 'macros/comparison_table.html.jinja2' as m_tables %}
+{% import 'macros/titles.html.jinja2' as titles %}
+{% import 'macros/rating_slider.html.jinja2' as summary_tools %}
+{% import 'macros/traces_selection.html.jinja2' as traces_selection %}
+
+{% set STATS_NOTE_TITLE = "overview" %}
+
+<div class="section" id="overview">
+
+    <div class="comparison_container">
+
+        {% set user_names = (lhs_user_stats + rhs_user_stats) | map(attribute=0) | unique | sort | list %}
+        
+        {% set max_metrics = 3 %}
+        {% set selected_user_names = user_names[:max_metrics] %}
+        
+        {% set remaining_slots = max_metrics - (selected_user_names | length) %}
+        {% set selected_implicit_names = [] %}
+        
+        {% if remaining_slots > 0 %}
+            {% set implicit_unique = (lhs_fg_stats + rhs_fg_stats) | map(attribute=0) | unique | list %}
+            
+            {% set prio_list = [
+                'Total samples [#] (value)',
+                'Measured Functions [#] (value)',
+                'Unique Functions [#] (value)',
+                'Measured Traces [#] (value)',
+                'Unique Traces [#] (value)',
+                'Longest Profile Trace [#] (value)',
+                'Total Inclusive Samples  [#] (value)',
+                'Longest Flame Graph Trace [#] (value)'
+            ] %}
+            
+            {% set ordered_implicit = [] %}
+            {% for p in prio_list %}
+                {% if p in implicit_unique %}
+                    {% set _ = ordered_implicit.append(p) %}
+                {% endif %}
+            {% endfor %}
+            
+            {% set selected_implicit_names = ordered_implicit[:remaining_slots] %}
+        {% endif %}
+
+        {% set ns = namespace(count=1) %}
+        
+        {# Render user metrics first #}
+        {% for metric in selected_user_names %}
+            {% set l_user_sample = (lhs_user_stats | selectattr(0, 'equalto', metric) | list | first) %}
+            {% set r_user_sample = (rhs_user_stats | selectattr(0, 'equalto', metric) | list | first) %}
+
+            {% if not l_user_sample %}
+                {% set l_user_sample = (lhs_user_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% endif %}
+            {% if not r_user_sample %}
+                {% set r_user_sample = (rhs_user_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% endif %}
+
+            {% if l_user_sample and r_user_sample %}
+                {{ summary_tools.rating_slider(ns.count, metric, l_user_sample, r_user_sample) }}
+                {% set ns.count = ns.count + 1 %}
+            {% endif %}
+        {% endfor %}
+
+        {# Render implicit metrics next #}
+        {% for metric in selected_implicit_names %}
+            {% set l_fg_sample = (lhs_fg_stats | selectattr(0, 'equalto', metric) | list | first) %}
+            {% set r_fg_sample = (rhs_fg_stats | selectattr(0, 'equalto', metric) | list | first) %}
+
+            {% if not l_fg_sample %}
+                {% set l_fg_sample = (lhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% endif %}
+            {% if not r_fg_sample %}
+                {% set r_fg_sample = (rhs_fg_stats | selectattr(0, 'in', metric) | list | first) %}
+            {% endif %}
+
+            {% if l_fg_sample and r_fg_sample %}
+                {{ summary_tools.rating_slider(ns.count, metric, l_fg_sample, r_fg_sample) }}
+                {% set ns.count = ns.count + 1 %}
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+    <div class="comparison_container">
+        {{ traces_selection.select_top_x_traces1(5, 'Baseline-Only', traces_test) }}
+
+        {{ traces_selection.select_top_x_traces2(5, 'Common', traces_test) }}
+
+        {{ traces_selection.select_top_x_traces3(5, 'Target-Only', traces_test) }}
+    </div>
+</div>
+
 <script>
     const topTraceDiffs = [
         /* Top traces w.r.t. INCLUSIVE proportional delta */
