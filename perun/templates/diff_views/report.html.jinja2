@@ -51,7 +51,6 @@
         {% include 'style/tag.css' %}
         {% include 'style/tooltip.css' %}
 
-        {% include 'style/summary.css' %}
         {% include 'style/traces_table.css' %}
         {% include 'style/trace_details.css' %}
 
@@ -91,8 +90,8 @@
 
     <!----------------------- SECTIONS ----------------------->
 
-    <!-- SUMMARY VIEW -->
-    {% include 'diff_sections/section_summary.html.jinja2' %}
+    <!-- OVERVIEW -->
+    {% include 'diff_sections/section_overview.html.jinja2' %}
 
     <!-- ENVIRONMENT -->
     {% include 'diff_sections/section_environment.html.jinja2' %}
@@ -135,7 +134,6 @@
         {% include 'scripts/environment_sidepanel.js' %}
         {% include 'scripts/notes.js' %}
         {% include 'scripts/tooltip.js' %}
-        {% include 'scripts/summary.js' %}
     </script>
 
     {% include 'scripts/themes_js.html.jinja2' %}

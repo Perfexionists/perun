@@ -457,6 +457,10 @@ class KeyDiffs:
     The class stores the top increases and decreases of a key (metric) for baseline-only,
     target-only, and common partitions of a merged profile.
 
+    The individual DataFrames contain only two columns: "symbol" and "diff".
+     - "symbol" identifies either a trace or a function by their IDs, and
+     - "diff" is the value of the diff metric.
+
     :ivar baseline_top_inc: the largest increases in baseline-only records
     :ivar baseline_top_dec: the largest decreases in baseline-only records
     :ivar target_top_inc: the largest increases in target-only records
@@ -1171,9 +1175,10 @@ def generate_report_from_folded(
         notes_enabled=True,
         links=report_links,
         default_theme=cli_kwargs.get("default_theme", "dark"),
-        # FIXME: the top diffs will be used in the future.
-        top_trace_diffs=trace_top_diffs,
-        top_func_diffs=func_top_diffs,
+        top_diffs_trace_inclusive=iterate_top_diffs(trace_top_diffs[0]),
+        top_diffs_trace_exclusive=iterate_top_diffs(trace_top_diffs[1]),
+        top_diffs_func_inclusive=iterate_top_diffs(func_top_diffs[0]),
+        top_diffs_func_exclusive=iterate_top_diffs(func_top_diffs[1]),
     )
     log.minor_success("HTML report", "rendered")
 
@@ -1430,6 +1435,32 @@ def merge_and_filter_polars_profiles(
     )
 
 
+def find_top_diffs(
+    data_lf: pl.LazyFrame, count: int, symbol_key: str, diff_key: str, *, top: bool = True
+) -> pl.LazyFrame:
+    """Find and format the top or bottom diffs w.r.t. the diff_key metric.
+
+    The resulting frame will contain up to <count> records maximal (resp. minimal) w.r.t. the
+    <diff_key>. The schema of the resulting frame will have only two columns: "symbol" and "diff"
+    corresponding to the <symbol_key> and <diff_key>.
+
+    :param data_lf: the data where to search for the maximal/minimal records.
+    :param count: the upper limit on the number of top records to search for.
+    :param symbol_key: the name of the column with symbols (e.g., "trace")
+    :param diff_key: the name of the column containing the diff metric
+    :param top: specifies whether to search for the maximal or minimal records.
+
+    :return: a lazy frame containing the maximal/minimal records.
+    """
+    search_func = pl.LazyFrame.top_k if top else pl.LazyFrame.bottom_k
+
+    return (
+        search_func(data_lf, count, by=diff_key)
+        .select([symbol_key, diff_key])
+        .rename({symbol_key: "symbol", diff_key: "diff"})
+    )
+
+
 def compute_top_diffs(
     merged_profile: pl.LazyFrame,
     common_symbols: pl.LazyFrame,
@@ -1462,7 +1493,7 @@ def compute_top_diffs(
     # Partition the merged profile into baseline-only, target-only, and common parts based on
     # the symbol_key and the set of common symbols.
     common_lf = merged_profile.join(common_symbols, on=symbol_key, how="semi")
-    baseline_only_lf = merged_profile.join(common_symbols, on=symbol_key, how="anti").filter(
+    base_only_lf = merged_profile.join(common_symbols, on=symbol_key, how="anti").filter(
         pl.col("inclusive_target") == 0
     )
     target_only_lf = merged_profile.join(common_symbols, on=symbol_key, how="anti").filter(
@@ -1472,18 +1503,20 @@ def compute_top_diffs(
     # share the same lazy frames and collect_all is able to optimize across all those computations.
     dfs = pl.collect_all(
         [
-            baseline_only_lf.top_k(records_num, by=inclusive_diff_key),
-            baseline_only_lf.bottom_k(records_num, by=inclusive_diff_key),
-            target_only_lf.top_k(records_num, by=inclusive_diff_key),
-            target_only_lf.bottom_k(records_num, by=inclusive_diff_key),
-            common_lf.top_k(records_num, by=inclusive_diff_key),
-            common_lf.bottom_k(records_num, by=inclusive_diff_key),
-            baseline_only_lf.top_k(records_num, by=exclusive_diff_key),
-            baseline_only_lf.bottom_k(records_num, by=exclusive_diff_key),
-            target_only_lf.top_k(records_num, by=exclusive_diff_key),
-            target_only_lf.bottom_k(records_num, by=exclusive_diff_key),
-            common_lf.top_k(records_num, by=exclusive_diff_key),
-            common_lf.bottom_k(records_num, by=exclusive_diff_key),
+            # Inclusive diff metric.
+            find_top_diffs(base_only_lf, records_num, symbol_key, inclusive_diff_key),
+            find_top_diffs(base_only_lf, records_num, symbol_key, inclusive_diff_key, top=False),
+            find_top_diffs(target_only_lf, records_num, symbol_key, inclusive_diff_key),
+            find_top_diffs(target_only_lf, records_num, symbol_key, inclusive_diff_key, top=False),
+            find_top_diffs(common_lf, records_num, symbol_key, inclusive_diff_key),
+            find_top_diffs(common_lf, records_num, symbol_key, inclusive_diff_key, top=False),
+            # Exclusive diff metric.
+            find_top_diffs(base_only_lf, records_num, symbol_key, exclusive_diff_key),
+            find_top_diffs(base_only_lf, records_num, symbol_key, exclusive_diff_key, top=False),
+            find_top_diffs(target_only_lf, records_num, symbol_key, exclusive_diff_key),
+            find_top_diffs(target_only_lf, records_num, symbol_key, exclusive_diff_key, top=False),
+            find_top_diffs(common_lf, records_num, symbol_key, exclusive_diff_key),
+            find_top_diffs(common_lf, records_num, symbol_key, exclusive_diff_key, top=False),
         ]
     )
     return KeyDiffs(*dfs[:6]), KeyDiffs(*dfs[6:])
@@ -1560,6 +1593,26 @@ def polars_merged_to_tabular_profiles(
     )
 
     return PolarsTabularTraceProfiles(*pl.collect_all([table_traces_lf, table_funcs_lf]))
+
+
+def iterate_top_diffs(top_diff: KeyDiffs) -> list[Iterator[tuple[str, float]]]:
+    """Iterates over the top difference data frames and generates records for the report overview.
+
+    :param top_diff: the top difference data frames
+
+    :return: a generator of the overview table records
+    """
+    diff_iterators: list[Iterator[tuple[str, float]]] = []
+    for diff_data in [
+        top_diff.baseline_top_dec,
+        top_diff.target_top_inc,
+        top_diff.common_top_inc,
+        top_diff.common_top_dec,
+    ]:
+        diff_iterators.append(
+            ((symbol, diff_metric) for symbol, diff_metric in diff_data.iter_rows())
+        )
+    return diff_iterators
 
 
 def iterate_polars_tabular(

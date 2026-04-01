@@ -1,7 +1,7 @@
 project(
     'perun',
     'c',
-    version: '0.26.1',
+    version: '0.27.0',
     license: 'GPL-3',
     meson_version: '>=1.0.0',
     default_options: [

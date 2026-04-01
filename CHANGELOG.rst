@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+0.27.0 (2026-03-23)
+-------------------
+
+  - The traces table have been completely reworked: we no longer rely on an external library.
+  - A first version of traces detail model popup has been added to the traces table.
+
+
 0.26.1 (2026-01-24)
 -------------------
 

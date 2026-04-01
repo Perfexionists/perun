@@ -13,7 +13,6 @@ perun_templates_style_files = files(
     'notes.css',
     'pins.css',
     'sankey_graph.css',
-    'summary.css',
     'tag.css',
     'themes_sidepanel.css',
     'tooltip.css',
