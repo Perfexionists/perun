@@ -203,9 +203,9 @@
         renderTable('top-funcs-baseline', topFunctionDiffs[0][0]);
         renderTable('top-funcs-target', topFunctionDiffs[0][1]);
         
-        const funcsSwitch = document.getElementById('funcs-common-switch');
+        const funcsSwitch = document.getElementById('top-funcs-common-switch');
         const funcsCommonData = funcsSwitch.checked ? topFunctionDiffs[0][2] : topFunctionDiffs[0][3];
-        document.getElementById('funcs-common-switch-label').textContent = funcsSwitch.checked ? 'Descending' : 'Ascending';
+        document.getElementById('top-funcs-common-switch-label').textContent = funcsSwitch.checked ? 'Descending' : 'Ascending';
         renderTable('top-funcs-common', funcsCommonData);
     }
 

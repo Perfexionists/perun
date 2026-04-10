@@ -96,3 +96,7 @@
     overflow: auto;
     color: var(--color-primary-text);
 }
+
+.switch {
+    color: var(--color-primary-text);
+}
