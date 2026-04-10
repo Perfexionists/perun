@@ -11,10 +11,10 @@
     <div class="column top-traces-column">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin: 0;">{{ title }}</h2>
-            <label class="switch" style="font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="{{ id }}-switch" onchange="toggleTable('{{ id }}')" checked style="cursor: pointer;">
-                <span id="{{ id }}-switch-label">Descending</span>
-            </label>
+            <div id="{{ id }}-sort-toggle" class="sort-toggle" onclick="toggleTable('{{ id }}')" data-sort="desc" style="cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                <span id="{{ id }}-sort-label">Descending</span>
+                <span id="{{ id }}-sort-arrow" style="color: var(--color-target); font-size: 0.8em;">▼</span>
+            </div>
         </div>
         <div id="{{ id }}" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
             <!-- Content filled dynamically by JS -->
