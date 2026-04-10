@@ -176,9 +176,12 @@
             const valDiv = document.createElement('div');
             valDiv.className = 'data-value';
             
-            const percentage = (row[1] * 100).toFixed(2);
-            const sign = row[1] > 0 ? '+' : '';
-            valDiv.innerHTML = `<span class="color-segment-1" style="margin-left: 8px; font-weight: bold;">${sign}${percentage}%</span>`;
+            const value = row[1];
+            const percentage = (value * 100).toFixed(2);
+            const sign = value > 0 ? '+' : '';
+            const colorClass = value >= 0 ? 'diff-plus' : 'diff-minus';
+            
+            valDiv.innerHTML = `<span class="${colorClass}" style="margin-left: 8px; font-weight: bold;">${sign}${percentage}%</span>`;
 
             rowDiv.appendChild(keyDiv);
             rowDiv.appendChild(valDiv);
