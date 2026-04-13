@@ -5,9 +5,11 @@ perun_templates_macros_files = files(
     'environment_sidepanel_property.html.jinja2',
     'overview.html.jinja2',
     'pin.html.jinja2',
+    'rating_slider.html.jinja2',
     'section_sankey.html.jinja2',
     'section_title.html.jinja2',
-    'titles.html.jinja2'
+    'titles.html.jinja2',
+    'traces_selection.html.jinja2'
 )
 
 py3.install_sources(
