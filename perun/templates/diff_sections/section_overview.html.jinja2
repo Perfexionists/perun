@@ -177,7 +177,7 @@
             valDiv.className = 'data-value';
             
             const value = row[1];
-            const percentage = (value * 100).toFixed(2);
+            const percentage = value.toFixed(2);
             const sign = value > 0 ? '+' : '';
             const colorClass = value >= 0 ? 'diff-plus' : 'diff-minus';
             
