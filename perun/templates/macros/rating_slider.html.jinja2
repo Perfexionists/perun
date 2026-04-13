@@ -18,7 +18,12 @@
         {% set clamped_change = -100 %}
     {% endif %}
 
+    {% set is_higher_better = "[higher_is_better]" in name %}
+    
     {% set slider_index = (1 - ((clamped_change + 100) / 200)) * 9 %}
+    {% if is_higher_better %}
+        {% set slider_index = ((clamped_change + 100) / 200) * 9 %}
+    {% endif %}
 
     {% if percentage_change <= -15 %}
         {% set change_magnitude_label = "Substantial Decrease" %}
