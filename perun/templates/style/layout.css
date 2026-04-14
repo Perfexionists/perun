@@ -96,3 +96,21 @@
     overflow: auto;
     color: var(--color-primary-text);
 }
+
+.sort-toggle {
+    color: var(--color-primary-text);
+    transition: opacity 0.2s;
+    user-select: none;
+}
+
+.sort-toggle:hover {
+    opacity: 0.7;
+}
+
+.diff-plus {
+    color: var(--color-correct) !important;
+}
+
+.diff-minus {
+    color: var(--color-wrong) !important;
+}

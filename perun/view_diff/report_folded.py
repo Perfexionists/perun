@@ -1165,11 +1165,13 @@ def generate_report_from_folded(
         units=[fg_settings.countname],
         nodes=iter(pair_profile.baseline.maps.func_id_reverse_map.values()),
         flamegraphs=flamegraphs,
-        selection_table=iterate_polars_tabular(
-            tabular_profile,
-            pair_profile.common_funcs,
-            pair_profile.baseline.maps.func_id_reverse_map,
-            fg_settings.countname,
+        selection_table=list(
+            iterate_polars_tabular(
+                tabular_profile,
+                pair_profile.common_funcs,
+                pair_profile.baseline.maps.func_id_reverse_map,
+                fg_settings.countname,
+            )
         ),
         offline=is_report_offline,
         notes_enabled=True,

@@ -1,14 +1,14 @@
 files: ^perun/|^tests|^tests-perf
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-    -   id: end-of-file-fixer
-        types: [ file, python ]
-    -   id: trailing-whitespace
-        types: [ file, python ]
--   repo: https://github.com/psf/black-pre-commit-mirror
+      - id: end-of-file-fixer
+        types: [file, python]
+      - id: trailing-whitespace
+        types: [file, python]
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.3.1
     hooks:
-    -   id: black
+      - id: black
         types_or: [python, pyi]

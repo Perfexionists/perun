@@ -1,0 +1,68 @@
+{% macro rating_slider(index, name, l_value_tuple, r_value_tuple) %}
+
+    {% set l_value_clean = l_value_tuple[1] | striptags %}
+    {% set r_value_clean = r_value_tuple[1] | striptags %}
+    {% set l_value_float = l_value_clean.split(' ')[0] | float %}
+    {% set r_value_float = r_value_clean.split(' ')[0] | float %}
+
+    {% if l_value_float != 0 %}
+        {% set percentage_change = (((r_value_float - l_value_float) / l_value_float) * 100) | round(2) %}
+    {% else %}
+        {% set percentage_change = 0 %}
+    {% endif %}
+
+    {% set clamped_change = percentage_change %}
+    {% if clamped_change > 100 %}
+        {% set clamped_change = 100 %}
+    {% elif clamped_change < -100 %}
+        {% set clamped_change = -100 %}
+    {% endif %}
+
+    {% set is_higher_better = "[higher_is_better]" in name %}
+    
+    {% set slider_index = (1 - ((clamped_change + 100) / 200)) * 9 %}
+    {% if is_higher_better %}
+        {% set slider_index = ((clamped_change + 100) / 200) * 9 %}
+    {% endif %}
+
+    {% if percentage_change <= -15 %}
+        {% set change_magnitude_label = "Substantial Decrease" %}
+    {% elif percentage_change <= -5 %}
+        {% set change_magnitude_label = "Decrease" %}
+    {% elif percentage_change < 0 %}
+        {% set change_magnitude_label = "Slight Decrease" %}
+    {% elif percentage_change == 0 %}
+        {% set change_magnitude_label = "No Change" %}
+    {% elif percentage_change < 5 %}
+        {% set change_magnitude_label = "Slight Increase" %}
+    {% elif percentage_change < 15 %}
+        {% set change_magnitude_label = "Increase" %}
+    {% else %}
+        {% set change_magnitude_label = "Substantial Increase" %}
+    {% endif %}
+
+    {% set segment_number = ((slider_index + 0.5) | round(0, 'floor')  + 1) | int %}
+    {% if segment_number < 1 %}{% set segment_number = 1 %}{% endif %}
+    {% if segment_number > 10 %}{% set segment_number = 10 %}{% endif %}
+
+    <div class="slider-container" id="slider-container-{{ index }}" data-slider-index="{{ slider_index }}">
+        <div class="slider-title-wrapper">
+            <h2 style="margin-bottom: 0;">
+                {{ name }}
+            </h2>
+        </div>
+        <h2 class="color-segment-{{ segment_number }}" style="font-size: 1.5em;">
+            {{ change_magnitude_label }} ({{ percentage_change }}%)
+        </h2>
+        <div class="rating-display" id="ratingDisplay-{{ index }}">
+            {{ l_value_clean }} → {{ r_value_clean }}
+        </div>
+
+        <div class="segments-wrapper" id="segmentsWrapper-{{ index }}">
+            {% for i in range(10) %}
+                <div class="segment"></div>
+            {% endfor %}
+        </div>
+        <div class="arrow-indicator" id="arrowIndicator-{{ index }}"></div>
+    </div>
+{%- endmacro %}

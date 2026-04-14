@@ -12,3 +12,16 @@
         {{ m_pin.notes_pin(section_name, "pin-icon pin-icon__header", notes_enabled) }}
     </div>
 {%- endmacro %}
+
+{% macro display_subtitle(title, section_name, info_text='', notes_enabled=false) %}
+    <div class="section_header" style="margin-top: 40px;">
+        {% if info_text %}
+        <span class="pin-icon pin-icon__header info-icon__header"
+              data-tooltip="{{ info_text }}">
+            {% include 'assets/info.svg' %}
+        </span>
+        {% endif %}
+        <h2>{{ title }}</h2>
+        {{ m_pin.notes_pin(section_name, "pin-icon pin-icon__header", notes_enabled) }}
+    </div>
+{%- endmacro %}
