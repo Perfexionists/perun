@@ -1,15 +1,22 @@
-const traces_table = document.getElementById("traces");
 const anchorsBase = document.getElementById("division_anchor__baseline");
 const anchorTgt = document.getElementById("division_anchor__target");
 
-document.addEventListener("scroll", () => {
-    const tracesTableBottomOffset =
-        traces_table.offsetTop + traces_table.offsetHeight;
+const hiddenSections = [
+    document.getElementById("traces"),
+    document.getElementById("overview")
+].filter(el => el !== null);
 
-    if (
-        traces_table.offsetTop <= window.scrollY &&
-        tracesTableBottomOffset >= window.scrollY
-    ) {
+document.addEventListener("scroll", () => {
+    let shouldHide = false;
+    for (const section of hiddenSections) {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 150 && rect.bottom >= 0) {
+            shouldHide = true;
+            break;
+        }
+    }
+
+    if (shouldHide) {
         anchorsBase.style.display = "none";
         anchorTgt.style.display = "none";
     } else {
@@ -17,3 +24,5 @@ document.addEventListener("scroll", () => {
         anchorTgt.style.display = "unset";
     }
 });
+
+document.dispatchEvent(new Event("scroll"));
