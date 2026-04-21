@@ -18,7 +18,7 @@
         {% set clamped_change = -100 %}
     {% endif %}
 
-    {% set is_higher_better = "[higher_is_better]" in name %}
+    {% set is_higher_better = "higher is better" in l_value_tuple[2] %}
     
     {% set slider_index = (1 - ((clamped_change + 100) / 200)) * 9 %}
     {% if is_higher_better %}
