@@ -16,7 +16,7 @@
   top: auto;
   left: auto;
   width: 80vw;
-  max-width: 1200px;
+  max-width: 1600px;
   height: 80vh;
   max-height: 900px;
   padding: 20px;
@@ -111,10 +111,10 @@
 }
 
 .trace-cell {
-  max-width: 300px;
-  overflow: hidden;
+  max-width: 500px;
+  overflow: auto;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre;
   font-family: monospace;
   font-size: 0.9em;
 }
