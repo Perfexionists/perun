@@ -43,11 +43,11 @@ def test_cli(monkeypatch, pcs_with_root):
 
     # Testing calling cli groups withouth commands
     result = runner.invoke(cli.cli, ["utils"])
-    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, result.exit_code == 2)
     result = runner.invoke(utils_cli.utils_group, ["temp", "list"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     result = runner.invoke(utils_cli.utils_group, ["stats"])
-    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, result.exit_code == 2)
     result = runner.invoke(utils_cli.stats_group, ["delete", "file"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
 
@@ -1979,7 +1979,7 @@ def test_check_all(pcs_with_degradations, monkeypatch):
     """
     runner = CliRunner()
     result = runner.invoke(check_cli.check_group, [])
-    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, result.exit_code == 2)
 
     result = runner.invoke(check_cli.check_all, [])
     asserts.predicate_from_cli(result, result.exit_code == 0)
