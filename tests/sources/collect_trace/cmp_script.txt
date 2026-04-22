@@ -38,7 +38,7 @@ probe process("cmp").end
 probe process("cmp").thread.begin {
     printf("5 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
 }
-    
+
 probe process("cmp").thread.end {
     printf("6 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
     delete sampling_counter[tid(), *]
