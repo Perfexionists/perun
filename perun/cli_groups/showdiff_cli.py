@@ -172,9 +172,9 @@ def common_flamegraph_options(command: Callable[..., Any]) -> Callable[..., Any]
         "flamegraph.pl script.",
     )
     @click.option(
-        "--flamegraph-normalize",
+        "--flamegraph-normalize/--flamegraph-no-normalize",
         is_flag=True,
-        default=False,
+        default=True,
         help="Normalize the baseline sample counts when creating differential flame graphs using "
         "the formula '(baseline_count * target_sum / baseline_sum)'. This colors the flame graph "
         "frames with hues that respect the change in the total consumptions between two profiles. "
@@ -192,7 +192,7 @@ def common_flamegraph_options(command: Callable[..., Any]) -> Callable[..., Any]
         is_flag=True,
         default=False,
         help="Use the canonical Perl scripts for generating flame graphs. Otherwise, our custom "
-        "and more efficient Python scripts will be used.",
+        "Python scripts will be used.",
     )
     @functools.wraps(command)
     def wrapper_common_flamegraph_options(*args, **kwargs):

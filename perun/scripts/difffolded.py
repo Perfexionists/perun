@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """difffolded.py 	Diff baseline and target folded stack files.
-                    Use this for generating flame graph differentials.
+
+Use this for generating flame graph differentials.
 
 USAGE: ./difffolded.py [-hnst] [-f integer|float|auto] baseline target | ./flamegraph.py > diff2.svg
 

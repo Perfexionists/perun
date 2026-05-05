@@ -144,7 +144,11 @@ from pathlib import Path
 import random
 import re
 import sys
-from typing import Any, TextIO, ClassVar, Literal, TypeAlias, overload
+from typing import Any, TextIO, ClassVar, Literal, TypeAlias, overload, Type, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from _typeshed import OpenTextModeReading
 
 ColoringFn: TypeAlias = Callable[[str], str]
 ColoringCtxFn: TypeAlias = Callable[["Colors", str], str]
@@ -265,7 +269,6 @@ class NameAttributes:
 
     @staticmethod
     def _construct_name_attrs(
-        id: str | None = None,
         g_extra: str | None = None,
         href: str | None = None,
         target: str | None = None,
@@ -274,19 +277,18 @@ class NameAttributes:
     ) -> tuple[str, str]:
         """Build the opening and closing SVG fragments for the given attributes.
 
-        :param id: an ``id=`` value.
         :param g_extra: extra attributes to use in ``<g>``.
         :param href: if set, emit ``<a xlink:href=...>`` instead of ``<g>``.
         :param target: link target (defaults to ``_top`` when ``href`` is set).
         :param a_extra: extra attributes to use in ``<a>`` when ``href`` is set.
-        :param rest: remaining ``name=value`` pairs (e.g. ``class``).
+        :param rest: remaining ``name=value`` pairs (e.g. ``class``, ``id``).
 
         :return: (opening markup, closing markup).
         """
         # Process the ``<g>`` attributes.
         g_attrs = []
-        if id is not None:
-            g_attrs.append(f'id="{id}"')
+        if (g_id := rest.get("id")) is not None:
+            g_attrs.append(f'id="{g_id}"')
         if (g_class := rest.get("class")) is not None:
             # Cannot name the parameter ``class`` (reserved keyword).
             g_attrs.append(f'class="{g_class}"')
@@ -1675,7 +1677,9 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
             }}
             if (upstack) {{
                 // Direct ancestor
-                if (ex <= xmin && (ex+ew+fudge) >= xmax) {{
+                // The ex + ew + fudge could sometimes end up being higher than
+                // xmax due to rounding error.
+                if (ex <= xmin && (ex+ew+fudge) >= xmin) {{
                     e.classList.add("parent");
                     zoom_parent(e);
                     update_text(e);
@@ -1938,8 +1942,57 @@ class FoldedDiffData:
         self.is_diff: Literal[True] = True
 
 
+class InputTextFile:
+    """A helper context manager for reading from a file or stdin correctly.
+
+    There is no easy built-in way to read from both an external file that
+    needs to be opened and closed, and the standard input which is already
+    opened and should not be closed. This simple wrapper handles both cases
+    and exposes interface to interact with both input types identically.
+
+    Note that this wrapper works only for text files in read mode.
+    """
+
+    def __init__(self, input_file: Path | None, mode: OpenTextModeReading) -> None:
+        """Initialize the CM object.
+
+        :param input_file: a path to the input file, or ``None`` for stdin.
+        :param mode: a read-only file opening mode.
+        """
+        # We cannot simply assign the grids as it would not propagate outside the object.
+        self.input_file: Path | None = input_file
+        self.mode: OpenTextModeReading = mode
+        self.handle: TextIO = sys.stdin
+
+    def __enter__(self) -> TextIO:
+        """Opens the input file if it is supplied.
+
+        :return: a handle to the opened file or stdin.
+        """
+        if self.input_file is not None:
+            self.handle = open(self.input_file, self.mode)
+        return self.handle
+
+    def __exit__(
+        self,
+        _: Type[BaseException] | None,
+        __: BaseException | None,
+        ___: TracebackType | None,
+    ) -> None:
+        """Closes the input file but not the stdin.
+
+        Any unhandled exceptions should be propagated outside the CM.
+
+        :param _: the type of the exception that occurred, if any
+        :param __: the actual exception object, if any
+        :param ___: the traceback of the error, if any
+        """
+        if self.input_file is not None:
+            self.handle.close()
+
+
 def parse_folded_profile(
-    input_file: Path, is_flame_chart: bool, is_stack_reverse: bool
+    input_file: Path | None, is_flame_chart: bool, is_stack_reverse: bool
 ) -> FoldedData | FoldedDiffData:
     """Parse a folded profile file.
 
@@ -1947,7 +2000,7 @@ def parse_folded_profile(
     folded profile and selects the appropriate optimized parsing function for
     the type, i.e., (non-)differential, forward or reversed stacks.
 
-    :param input_file: the path to the folded profile.
+    :param input_file: a path to the folded profile, or ``None`` for stdin.
     :param is_flame_chart: we are drawing a flame chart; the parsing functions
            should preserve the order of the records instead of sorting them as
            in the case of flame graphs.
@@ -1958,16 +2011,18 @@ def parse_folded_profile(
     """
     result: FoldedData | FoldedDiffData
     ignored: int = 0
-    with open(input_file, "r") as input_handle:
+    with InputTextFile(input_file, "r") as input_handle:
         # Peek column count from the first line.
-        _, *counts = input_handle.readline().split()
-        input_handle.seek(0)
+        # We sadly cannot use seek(0) as we might be working with the stdin, so
+        # we need to pass that line for processing to the specialized functions.
+        first_line = input_handle.readline()
+        _, *counts = first_line.split()
         is_diff = len(counts) == 2
         # Select differential vs single-column and reversed-stack parsers.
         parse_variants: dict[
             tuple[bool, bool],
-            Callable[[TextIO, bool], tuple[FoldedData, int]]
-            | Callable[[TextIO, bool], tuple[FoldedDiffData, int]],
+            Callable[[TextIO, str, bool], tuple[FoldedData, int]]
+            | Callable[[TextIO, str, bool], tuple[FoldedDiffData, int]],
         ] = {
             (False, False): _parse_folded,
             (False, True): _parse_reverse_folded,
@@ -1975,7 +2030,7 @@ def parse_folded_profile(
             (True, True): _parse_reverse_differential_folded,
         }
         parse_fn = parse_variants[is_diff, is_stack_reverse]
-        result, ignored = parse_fn(input_handle, is_flame_chart)
+        result, ignored = parse_fn(input_handle, first_line, is_flame_chart)
     # Report possible input format violations.
     if ignored:
         print(
@@ -2024,10 +2079,13 @@ def validate_profile_total(profile: FoldedData | FoldedDiffData, settings: Setti
     return settings.total
 
 
-def _parse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[FoldedData, int]:
+def _parse_folded(
+    input_handle: TextIO, first_line: str, is_flame_chart: bool
+) -> tuple[FoldedData, int]:
     """Parse a standard (non-differential) folded profile.
 
     :param input_handle: a file handle containing a folded profile.
+    :param first_line: an already read line used to determine the profile type.
     :param is_flame_chart: we are drawing a flame chart; the order of the
            records should be preserved.
 
@@ -2041,16 +2099,19 @@ def _parse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[FoldedDat
     str_rsplit = str.rsplit
     list_append = list.append
 
-    for line in input_handle:
-        try:
-            # Using ``rsplit(..., maxsplit=1)`` is faster because the count
-            # is at the end of line.
-            stack, count_str = str_rsplit(line, maxsplit=1)
-            count = float(count_str)
-            total += count
-            list_append(data, (stack, count))
-        except ValueError:
-            ignored += 1
+    # This is a bit of a hack to not duplicate the processing code for both the
+    # already read line and the file handle.
+    for source in ([first_line], input_handle):
+        for line in source:
+            try:
+                # Using ``rsplit(..., maxsplit=1)`` is faster because the count
+                # is at the end of line.
+                stack, count_str = str_rsplit(line, maxsplit=1)
+                count = float(count_str)
+                total += count
+                list_append(data, (stack, count))
+            except ValueError:
+                ignored += 1
 
     # Lexicographic stack order unless we are generating a flame chart.
     if not is_flame_chart:
@@ -2058,13 +2119,16 @@ def _parse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[FoldedDat
     return FoldedData(data, total), ignored
 
 
-def _parse_reverse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[FoldedData, int]:
+def _parse_reverse_folded(
+    input_handle: TextIO, first_line: str, is_flame_chart: bool
+) -> tuple[FoldedData, int]:
     """Parse a standard (non-differential) folded profile with reversed frames.
 
     The parse function reverses the frames in the stacks such that they are in
     a unified caller-to-callee order.
 
     :param input_handle: a file handle containing a folded profile.
+    :param first_line: an already read line used to determine the profile type.
     :param is_flame_chart: we are drawing a flame chart; the order of the
            records should be preserved.
 
@@ -2080,16 +2144,17 @@ def _parse_reverse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[F
     str_join = str.join
     list_append = list.append
 
-    for line in input_handle:
-        try:
-            stack, count_str = str_rsplit(line, maxsplit=1)
-            count = float(count_str)
-            total += count
-            # TODO: We can defer the reversal until the nodes processing when
-            #  generating flame charts since we do not have to sort the stacks.
-            list_append(data, (str_join(";", reversed(str_split(stack, ";"))), count))
-        except ValueError:
-            ignored += 1
+    for source in ([first_line], input_handle):
+        for line in source:
+            try:
+                stack, count_str = str_rsplit(line, maxsplit=1)
+                count = float(count_str)
+                total += count
+                # TODO: We can defer the reversal until the nodes processing when
+                #  generating flame charts since we do not have to sort the stacks.
+                list_append(data, (str_join(";", reversed(str_split(stack, ";"))), count))
+            except ValueError:
+                ignored += 1
 
     if not is_flame_chart:
         data.sort(key=itemgetter(0))
@@ -2097,11 +2162,12 @@ def _parse_reverse_folded(input_handle: TextIO, is_flame_chart: bool) -> tuple[F
 
 
 def _parse_differential_folded(
-    input_handle: TextIO, is_flame_chart: bool
+    input_handle: TextIO, first_line: str, is_flame_chart: bool
 ) -> tuple[FoldedDiffData, int]:
     """Parse a differential folded profile.
 
     :param input_handle: a file handle containing a diff folded profile.
+    :param first_line: an already read line used to determine the profile type.
     :param is_flame_chart: we are drawing a flame chart; the order of the
            records should be preserved.
 
@@ -2115,15 +2181,16 @@ def _parse_differential_folded(
     str_rsplit = str.rsplit
     list_append = list.append
 
-    for line in input_handle:
-        try:
-            stack, count_str, count2_str = str_rsplit(line, maxsplit=2)
-            count = float(count_str)
-            count2 = float(count2_str)
-            total += count2
-            list_append(data, (stack, count, count2))
-        except ValueError:
-            ignored += 1
+    for source in ([first_line], input_handle):
+        for line in source:
+            try:
+                stack, count_str, count2_str = str_rsplit(line, maxsplit=2)
+                count = float(count_str)
+                count2 = float(count2_str)
+                total += count2
+                list_append(data, (stack, count, count2))
+            except ValueError:
+                ignored += 1
 
     if not is_flame_chart:
         data.sort(key=itemgetter(0))
@@ -2131,7 +2198,7 @@ def _parse_differential_folded(
 
 
 def _parse_reverse_differential_folded(
-    input_handle: TextIO, is_flame_chart: bool
+    input_handle: TextIO, first_line: str, is_flame_chart: bool
 ) -> tuple[FoldedDiffData, int]:
     """Parse a differential folded profile with reversed frames.
 
@@ -2139,6 +2206,7 @@ def _parse_reverse_differential_folded(
     a unified caller-to-callee order.
 
     :param input_handle: a file handle containing a folded diff profile.
+    :param first_line: an already read line used to determine the profile type.
     :param is_flame_chart: we are drawing a flame chart; the order of the
            records should be preserved.
 
@@ -2154,20 +2222,21 @@ def _parse_reverse_differential_folded(
     str_join = str.join
     list_append = list.append
 
-    for line in input_handle:
-        try:
-            stack, count_str, count2_str = str_rsplit(line, maxsplit=2)
-            count = float(count_str)
-            count2 = float(count2_str)
-            total += count2
-            # TODO: We can defer the reversal until the nodes processing when
-            #  generating flame charts since we do not have to sort the stacks.
-            list_append(
-                data,
-                (str_join(";", reversed(str_spl(stack, ";"))), count, count2),
-            )
-        except ValueError:
-            ignored += 1
+    for source in ([first_line], input_handle):
+        for line in source:
+            try:
+                stack, count_str, count2_str = str_rsplit(line, maxsplit=2)
+                count = float(count_str)
+                count2 = float(count2_str)
+                total += count2
+                # TODO: We can defer the reversal until the nodes processing when
+                #  generating flame charts since we do not have to sort the stacks.
+                list_append(
+                    data,
+                    (str_join(";", reversed(str_spl(stack, ";"))), count, count2),
+                )
+            except ValueError:
+                ignored += 1
 
     if not is_flame_chart:
         data.sort(key=itemgetter(0))
@@ -3470,6 +3539,8 @@ if __name__ == "__main__":
     _cli_parser.add_argument(
         "infile",
         type=Path,
+        nargs="?",
+        default=None,
         metavar="infile",
         help="The input folded stack file.",
     )
