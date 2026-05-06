@@ -279,6 +279,7 @@ def test_diff_report_folded(pcs_with_svs):
     assert result.exit_code == 0
     assert Path.cwd() / "diff_report_folded.html" in Path.cwd().iterdir()
 
+    # Test Perl versions of the flame graph scripts.
     result = runner.invoke(
         showdiff,
         [
@@ -290,6 +291,7 @@ def test_diff_report_folded(pcs_with_svs):
             "--flamegraph-no-parallelize",
             "--flamegraph-inverted",
             "--hide-generics",
+            "--flamegraph-use-perl-scripts",
             # Report-folded-specific options.
             "folded",
             baseline_profiles,

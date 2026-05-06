@@ -336,6 +336,7 @@ class Settings:
         "consistent_palette_flag",
         "random_flag",
         "root_node",
+        "sub_root_node",
         "stack_reverse_flag",
         "subtitle",
         "total",
@@ -355,7 +356,7 @@ class Settings:
     DefaultHashFlag: ClassVar[bool] = False
     DefaultImageWidth: ClassVar[int] = 1200
     DefaultInvertedFlag: ClassVar[bool] = False
-    DefaultMaxTrace: ClassVar[int] = -1
+    DefaultMaxTrace: ClassVar[int] = 0
     DefaultMinWidth: ClassVar[str] = "0.1"
     DefaultNameType: ClassVar[str] = "Function:"
     DefaultNameAttrFile: ClassVar[str] = ""
@@ -365,9 +366,10 @@ class Settings:
     DefaultPaletteFlag: ClassVar[bool] = False
     DefaultRandomFlag: ClassVar[bool] = False
     DefaultRootNode: ClassVar[str] = "all"
+    DefaultSubRootNode: ClassVar[str] = "subtotal"
     DefaultStackReverseFlag: ClassVar[bool] = False
     DefaultSubtitle: ClassVar[str] = ""
-    DefaultTotal: ClassVar[int] = -1
+    DefaultTotal: ClassVar[int] = 0
     DefaultTitle: ClassVar[str] = ""
 
     # Used to cheaply translate SVG-breaking characters.
@@ -400,8 +402,9 @@ class Settings:
         notes: str = DefaultNotesText,
         outfile: str = DefaultOutFile,
         random: bool = DefaultRandomFlag,
-        rootnode: str = DefaultRootNode,
         reverse: bool = DefaultStackReverseFlag,
+        rootnode: str = DefaultRootNode,
+        subrootnode: str = DefaultSubRootNode,
         subtitle: str = DefaultSubtitle,
         total: int = DefaultTotal,
         title: str = DefaultTitle,
@@ -437,8 +440,8 @@ class Settings:
                to align two SVGs with possibly different data side-by-side.
         :param minwidth: specifies the minimum width of displayed frames.
                Narrower frames will be discarded. May be specified either as
-               a fixed pixel width (e.g., ``0.5``) or relative to the total
-               count (e.g., ``0.1%``).
+               a fixed pixel width, e.g., ``0.5``, or relative to the actual
+               total (not the user-supplied ``--total``) count, e.g., ``0.1%``.
         :param nameattr: a path to the name-attribute file
                (see ``NameAttributes``).
         :param nametype: the name of the frames in stacks
@@ -452,9 +455,12 @@ class Settings:
         :param random: use randomized frame colors within the selected palette.
                Note that even frames with identical names will have their
                colors chosen randomly.
-        :param rootnode: the label on the synthetic root frame.
         :param reverse: the stacks in the folded profile are in the
                callee-to-caller (instead of caller-to-callee) order.
+        :param rootnode: the label on the synthetic root frame.
+        :param subrootnode: the label on the synthetic sub-root frame used when
+               '--total' is supplied. The sub-root allows to scale (zoom) the
+               rendered frames when the root node is much wider than the data.
         :param subtitle: optional second title line below the main title.
         :param total: overrides the sum of all counts, which causes the root
                node to be wider (suitable for comparing two profiles
@@ -490,6 +496,7 @@ class Settings:
         self.consistent_palette_flag: bool = cp
         self.random_flag: bool = random
         self.root_node: str = rootnode
+        self.sub_root_node: str = subrootnode
         self.stack_reverse_flag: bool = reverse
         self.subtitle: str = subtitle
         self.total: int = total
@@ -550,6 +557,9 @@ class Geometry:
     :ivar title_size: the font size of the graph title (px).
     :ivar char_space: an approximate width of a font glyph. Used to compute the
           available space for frame names.
+    :ivar profile_total: the sum of all counts in the folded records.
+    :ivar total: the total count used for horizontal scaling: either
+          ``profile_total`` or ``--total`` depending on which is bigger.
     :ivar total_factor: scales the total counts by the user-supplied factor.
     :ivar image_width: the SVG canvas width.
     :ivar image_height: the SVG canvas height w.r.t. maximum trace length.
@@ -564,6 +574,8 @@ class Geometry:
         "total",
         "title_size",
         "char_space",
+        "profile_total",
+        "total",
         "total_factor",
         "image_width",
         "image_height",
@@ -576,14 +588,14 @@ class Geometry:
     def __init__(
         self,
         settings: Settings,
-        total: float,
+        profile_total: float,
         width_per_count_unit: float,
         max_profile_trace: int,
     ) -> None:
         """Compute dimensions, pads and offset tables.
 
         :param settings: rendering and processing options.
-        :param total: the sum of counts that determines horizontal scaling.
+        :param profile_total: the sum of all counts in folded records.
         :param width_per_count_unit: pixels per a unit of count.
         :param max_profile_trace: the depth of the longest trace found in the
                profile (possibly overridden by the user).
@@ -593,7 +605,9 @@ class Geometry:
         self.width_per_count_unit: float = width_per_count_unit
         self.title_size = int(settings.font_size) + 5
         self.char_space: float = settings.font_size * settings.font_width
-        self.total_factor: float = total * settings.factor
+        self.profile_total: float = profile_total
+        self.total: float = max(profile_total, settings.total)
+        self.total_factor: float = self.total * settings.factor
         self.image_width: int = settings.image_width
         self.image_height, self.y1_table, self.y2_table = self._init_heights(
             settings,
@@ -621,30 +635,35 @@ class Geometry:
         y_pad_1 = int(settings.font_size * 3)  # Pad top, include title.
         frame_pad: int = 1  # Vertical padding between frames.
         image_height: int = y_pad_1 + y_pad_2
-        if settings.max_trace != -1:
-            image_height += (settings.max_trace + 1) * settings.frame_height
+
+        # The depth offset is influenced by the number of root nodes (1/2).
+        depth_offset = 3 if settings.total else 2
+        if settings.max_trace:
+            image_height += (settings.max_trace + depth_offset - 1) * settings.frame_height
         else:
-            image_height += (max_profile_trace + 2) * settings.frame_height
+            image_height += (max_profile_trace + depth_offset) * settings.frame_height
         if settings.subtitle:
             y_pad_3 = int(settings.font_size * 2)  # Pad top, include subtitle.
             image_height += y_pad_3
 
         if settings.inverted:
             y1_table = [
-                y_pad_1 + depth * settings.frame_height for depth in range(max_profile_trace + 2)
+                y_pad_1 + depth * settings.frame_height
+                for depth in range(max_profile_trace + depth_offset)
             ]
             y2_table = [
                 y_pad_1 + (depth + 1) * settings.frame_height - frame_pad
-                for depth in range(max_profile_trace + 2)
+                for depth in range(max_profile_trace + depth_offset)
             ]
         else:
             y1_base: int = image_height - y_pad_2
             y1_table = [
                 y1_base - (depth + 1) * settings.frame_height + frame_pad
-                for depth in range(max_profile_trace + 2)
+                for depth in range(max_profile_trace + depth_offset)
             ]
             y2_table = [
-                y1_base - depth * settings.frame_height for depth in range(max_profile_trace + 2)
+                y1_base - depth * settings.frame_height
+                for depth in range(max_profile_trace + depth_offset)
             ]
         return image_height, y1_table, y2_table
 
@@ -2041,15 +2060,14 @@ def parse_folded_profile(
 
 
 def validate_profile_total(profile: FoldedData | FoldedDiffData, settings: Settings) -> int:
-    """Validate totals, emit diagnostics, and return the effective ``total``.
+    """Validate the sum of all counts and the ``--total`` option.
 
-    The ``total`` value obtained from simply summing the counts might need
-    to be adjusted based on the input parameters.
+    Returns a possibly updated ``--total`` value.
 
     :param profile: a parsed folded profile.
     :param settings: rendering and processing options.
 
-    :return: the possibly adjusted ``total`` value.
+    :return: the possibly adjusted ``--total`` value.
     """
     if profile.total == 0:
         print("ERROR: No stack counts found", file=sys.stderr)
@@ -2064,15 +2082,13 @@ def validate_profile_total(profile: FoldedData | FoldedDiffData, settings: Setti
                 file=sys.stderr,
             )
 
-    if settings.total == -1:
-        return int(profile.total)
-    if -1 < settings.total < profile.total:
+    if 0 < settings.total < profile.total:
         if settings.total / profile.total > 0.02:
             # Warn only if the difference is significant.
             print(
                 f"WARNING: Specified --total {settings.total} is less than"
                 f" actual total {profile.total}. Ignoring the --total"
-                " argument.",
+                " value.",
                 file=sys.stderr,
             )
         return int(profile.total)
@@ -2348,9 +2364,10 @@ def process_stacks(
     :return: the processed nodes and a matching ``Geometry`` instance.
     """
     # Compute the width threshold so stacks can be filtered during traversal.
-    width_per_count_unit = (settings.image_width - 2 * Geometry.XPad1) / profile.total
+    total = max(settings.total, profile.total)
+    width_per_count_unit = (settings.image_width - 2 * Geometry.XPad1) / total
     if settings.min_width_relative:
-        min_width_threshold: float = settings.min_width_value * profile.total / 100
+        min_width_threshold: float = settings.min_width_value * total / 100
     else:
         min_width_threshold = settings.min_width_value / width_per_count_unit
     # Dispatch to the correct specialized function by profile type. The explicit
@@ -2639,7 +2656,6 @@ def _process_differential_waker_stacks(
 
 def construct_frames(
     nodes: ProcessedNodes | ProcessedDiffNodes,
-    total: float,
     geometry: Geometry,
     settings: Settings,
     colors: Colors,
@@ -2652,45 +2668,22 @@ def construct_frames(
     name attributes.
 
     :param nodes: graph nodes obtained from ``process_stacks``.
-    :param total: the (possibly user-adjusted) sum of all counts used for
-           horizontal scale.
     :param geometry: rendering geometry for the SVG layout.
     :param settings: rendering and processing options.
     :param colors: coloring options for the SVG.
 
     :return: a list of SVG frame strings forming the flame graph content.
     """
-    # Create the auxiliary full-width root frame.
     frames: list[str] = ['<g id="frames">\n']
-    x1 = Geometry.XPad1
-    x2 = Geometry.XPad1 + total * geometry.width_per_count_unit
-    y1 = geometry.y1_table[0]
-    y2 = geometry.y2_table[0]
-    samples = int(geometry.total_factor)
-    samples_txt = _format_with_suffix(samples)
-    info = f"{settings.root_node} ({samples_txt} {settings.count_name}, 100%)"
-    escaped_func = settings.root_node
-
-    if nodes.is_diff:
-        color_val = colors.color_scale(0.0, nodes.max_delta)
-    else:
-        color_val = colors[""]
-
-    chars = int((x2 - x1) / geometry.char_space)
-    text = ""  # Show no text in too narrow frames.
-    if chars >= 3:  # Enough room for one visible character plus an ellipsis.
-        text = escaped_func[:chars]
-        if chars < len(escaped_func):
-            # Truncate with a two-character ellipsis when the label is too long.
-            text = text[:-2] + ".."
-
-    frame_rectangle = (
-        f'<rect x="{x1:.1f}" y="{y1:.1f}" width="{x2 - x1:.1f}"'
-        f' height="{y2 - y1:.1f}" fill="{color_val}" rx="2" ry="2" />\n'
+    # Create the auxiliary full-width root frame.
+    frames += _construct_root_frame(
+        nodes, geometry, settings, colors, settings.root_node, geometry.total, 0
     )
-    frame_text = f'<text x="{x1 + 3:.2f}" y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
-    frame_begin, frame_end = settings.name_attr.get_frame("", info)
-    frames.append(f"{frame_begin}{frame_rectangle}{frame_text}{frame_end}")
+    # Optionally create a sub-root frame when ``--total`` was specified.
+    if settings.total:
+        frames += _construct_root_frame(
+            nodes, geometry, settings, colors, settings.sub_root_node, geometry.profile_total, 1
+        )
 
     # Dispatch to the correct specialized function. Similarly to the
     # ``process_stacks`` function, we intentionally keep the explicit
@@ -2708,6 +2701,62 @@ def construct_frames(
             _construct_node_frames(nodes, frames, geometry, settings, colors)
 
     frames.append("</g>")
+    return frames
+
+
+def _construct_root_frame(
+    nodes: ProcessedNodes | ProcessedDiffNodes,
+    geometry: Geometry,
+    settings: Settings,
+    colors: Colors,
+    root_name: str,
+    root_total: float,
+    root_depth: Literal[0, 1],
+) -> list[str]:
+    """Construct a root or sub-root frame.
+
+    :param nodes: graph nodes obtained from ``process_stacks``.
+    :param geometry: rendering geometry for the SVG layout.
+    :param settings: rendering and processing options.
+    :param colors: coloring options for the SVG.
+    :param root_name: the name of the (sub-)root frame.
+    :param root_total: the width of the (sub-)root frame given as count.
+    :param root_depth: determines the root frame type (0 = root, 1 = subroot).
+
+    :return: a collection of SVG elements forming a (sub-)root frame.
+    """
+    frames: list[str] = []
+    x1 = Geometry.XPad1
+    x2 = Geometry.XPad1 + root_total * geometry.width_per_count_unit
+    y1 = geometry.y1_table[root_depth]
+    y2 = geometry.y2_table[root_depth]
+
+    samples = int(root_total * settings.factor)
+    samples_txt = _format_with_suffix(samples)
+    pct = (100 * samples) / geometry.total_factor
+    root_name = f"[[ {root_name} ]]"
+    info = f"{root_name} ({samples_txt} {settings.count_name}, {pct:.2f}%)"
+
+    if nodes.is_diff:
+        color_val = colors.color_scale(0.0, nodes.max_delta)
+    else:
+        color_val = colors[""]
+
+    chars = int((x2 - x1) / geometry.char_space)
+    text = ""  # Show no text in too narrow frames.
+    if chars >= 3:  # Enough room for one visible character plus an ellipsis.
+        text = root_name[:chars]
+        if chars < len(root_name):
+            # Truncate with a two-character ellipsis when the label is too long.
+            text = text[:-2] + ".."
+
+    frame_rectangle = (
+        f'<rect x="{x1:.1f}" y="{y1:.1f}" width="{x2 - x1:.1f}"'
+        f' height="{y2 - y1:.1f}" fill="{color_val}" rx="2" ry="2" />\n'
+    )
+    frame_text = f'<text x="{x1 + 3:.2f}" y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
+    frame_begin, frame_end = settings.name_attr.get_frame("", info)
+    frames.append(f"{frame_begin}{frame_rectangle}{frame_text}{frame_end}")
     return frames
 
 
@@ -2746,11 +2795,13 @@ def _construct_node_frames(
     count_name: str = settings.count_name
     translation_table: dict[int, str] = Settings.TranslationTable
 
+    # Determine the number of root frames.
+    root_frames = 2 if settings.total else 1
     for func, depth, etime, stime in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
-        y1 = y1_table[depth + 1]
-        y2 = y2_table[depth + 1]
+        y1 = y1_table[depth + root_frames]
+        y2 = y2_table[depth + root_frames]
 
         samples = int((etime - stime) * factor)
         # -- BEGIN: inlined '_format_with_suffix'.
@@ -2822,11 +2873,12 @@ def _construct_node_frames_with_attrs(
     name_attr_cache = settings.name_attr.attr_cache
     translation_table: dict[int, str] = Settings.TranslationTable
 
+    root_frames = 2 if settings.total else 1
     for func, depth, etime, stime in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
-        y1 = y1_table[depth + 1]
-        y2 = y2_table[depth + 1]
+        y1 = y1_table[depth + root_frames]
+        y2 = y2_table[depth + root_frames]
 
         samples = int((etime - stime) * factor)
         # -- BEGIN: inlined '_format_with_suffix'.
@@ -2906,11 +2958,12 @@ def _construct_node_diff_frames(
     max_delta: float = nodes.max_delta
 
     negate_coeff: int = -1 if settings.negate else 1
+    root_frames = 2 if settings.total else 1
     for func, depth, etime, stime, delta in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
-        y1 = y1_table[depth + 1]
-        y2 = y2_table[depth + 1]
+        y1 = y1_table[depth + root_frames]
+        y2 = y2_table[depth + root_frames]
 
         samples = int((etime - stime) * factor)
         # -- BEGIN: inlined '_format_with_suffix'.
@@ -2989,11 +3042,12 @@ def _construct_node_diff_frames_with_attrs(
     max_delta: float = nodes.max_delta
 
     negate_coeff: int = -1 if settings.negate else 1
+    root_frames = 2 if settings.total else 1
     for func, depth, etime, stime, delta in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
-        y1 = y1_table[depth + 1]
-        y2 = y2_table[depth + 1]
+        y1 = y1_table[depth + root_frames]
+        y2 = y2_table[depth + root_frames]
 
         samples = int((etime - stime) * factor)
         # -- BEGIN: inlined '_format_with_suffix'.
@@ -3085,8 +3139,9 @@ def create_flame_graph(
     notes: str = ...,
     outfile: None = ...,
     random: bool = ...,
-    rootnode: str = ...,
     reverse: bool = ...,
+    rootnode: str = ...,
+    subrootnode: str = ...,
     subtitle: str = ...,
     total: int = ...,
     title: str = ...,
@@ -3120,8 +3175,9 @@ def create_flame_graph(
     notes: str = ...,
     outfile: str = ...,
     random: bool = ...,
-    rootnode: str = ...,
     reverse: bool = ...,
+    rootnode: str = ...,
+    subrootnode: str = ...,
     subtitle: str = ...,
     total: int = ...,
     title: str = ...,
@@ -3154,8 +3210,9 @@ def create_flame_graph(
     notes: str = Settings.DefaultNotesText,
     outfile: str | None = None,
     random: bool = Settings.DefaultRandomFlag,
-    rootnode: str = Settings.DefaultRootNode,
     reverse: bool = Settings.DefaultStackReverseFlag,
+    rootnode: str = Settings.DefaultRootNode,
+    subrootnode: str = Settings.DefaultSubRootNode,
     subtitle: str = Settings.DefaultSubtitle,
     total: int = Settings.DefaultTotal,
     title: str = Settings.DefaultTitle,
@@ -3199,8 +3256,8 @@ def create_flame_graph(
            to align two SVGs with possibly different data side-by-side.
     :param minwidth: specifies the minimum width of displayed frames.
            Narrower frames will be discarded. May be specified either as
-           a fixed pixel width (e.g., ``0.5``) or relative to the total
-           count (e.g., ``0.1%``).
+           a fixed pixel width, e.g., ``0.5``, or relative to the actual
+           total (not the user-supplied ``--total``) count, e.g., ``0.1%``.
     :param nameattr: a path to the name-attribute file
            (see ``NameAttributes``).
     :param nametype: the name of the frames in stacks
@@ -3214,9 +3271,12 @@ def create_flame_graph(
     :param random: use randomized frame colors within the selected palette.
            Note that even frames with identical names will have their
            colors chosen randomly.
-    :param rootnode: the label on the synthetic root frame.
     :param reverse: the stacks in the folded profile are in the
            callee-to-caller (instead of caller-to-callee) order.
+    :param rootnode: the label on the synthetic root frame.
+    :param subrootnode: the label on the synthetic sub-root frame used when
+           '--total' is supplied. The sub-root allows to scale (zoom) the
+           rendered frames when the root node is much wider than the data.
     :param subtitle: optional second title line below the main title.
     :param total: overrides the sum of all counts, which causes the root
            node to be wider (suitable for comparing two profiles
@@ -3251,8 +3311,9 @@ def create_flame_graph(
         negate=negate,
         notes=notes,
         random=random,
-        rootnode=rootnode,
         reverse=reverse,
+        rootnode=rootnode,
+        subrootnode=subrootnode,
         subtitle=subtitle,
         total=total,
         title=title,
@@ -3439,6 +3500,12 @@ def initialize_cli_options(cli_parser: argparse.ArgumentParser) -> None:
         help="Set the name of the root node (default: %(default)s).",
     )
     cli_parser.add_argument(
+        "--subrootnode",
+        type=str,
+        default=Settings.DefaultSubRootNode,
+        help="Set the name of the sub root node to use when '--total' is specified (default: %(default)s).",
+    )
+    cli_parser.add_argument(
         "--subtitle",
         type=str,
         default=Settings.DefaultSubtitle,
@@ -3488,7 +3555,7 @@ def _build_flame_graph(
         )
     else:
         parsed_profile = profile
-    parsed_profile.total = validate_profile_total(parsed_profile, settings)
+    settings.total = validate_profile_total(parsed_profile, settings)
     colors: Colors = Colors(
         settings.colors,
         settings.bg_colors,
@@ -3500,9 +3567,7 @@ def _build_flame_graph(
 
     # Construct the SVG.
     svg_setup = create_svg_without_frames(settings, geometry, colors)
-    svg_frames: list[str] = construct_frames(
-        nodes, parsed_profile.total, geometry, settings, colors
-    )
+    svg_frames: list[str] = construct_frames(nodes, geometry, settings, colors)
     svg_frames.append("</svg>\n")
     colors.store_palette()
     return svg_setup, svg_frames

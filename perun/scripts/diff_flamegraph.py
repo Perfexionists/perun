@@ -42,8 +42,9 @@ def create_diff_flame_graph(
     notes: str = ...,
     outfile: None = ...,
     random: bool = ...,
-    rootnode: str = ...,
     reverse: bool = ...,
+    rootnode: str = ...,
+    subrootnode: str = ...,
     subtitle: str = ...,
     total: int = ...,
     title: str = ...,
@@ -78,8 +79,9 @@ def create_diff_flame_graph(
     notes: str = ...,
     outfile: str = ...,
     random: bool = ...,
-    rootnode: str = ...,
     reverse: bool = ...,
+    rootnode: str = ...,
+    subrootnode: str = ...,
     subtitle: str = ...,
     total: int = ...,
     title: str = ...,
@@ -114,8 +116,9 @@ def create_diff_flame_graph(
     notes: str = fg.Settings.DefaultNotesText,
     outfile: str | None = None,
     random: bool = fg.Settings.DefaultRandomFlag,
-    rootnode: str = fg.Settings.DefaultRootNode,
     reverse: bool = fg.Settings.DefaultStackReverseFlag,
+    rootnode: str = fg.Settings.DefaultRootNode,
+    subrootnode: str = fg.Settings.DefaultSubRootNode,
     striphex: bool = False,
     subtitle: str = fg.Settings.DefaultSubtitle,
     total: int = fg.Settings.DefaultTotal,
@@ -153,8 +156,8 @@ def create_diff_flame_graph(
            to align two SVGs with possibly different data side-by-side.
     :param minwidth: specifies the minimum width of displayed frames.
            Narrower frames will be discarded. May be specified either as
-           a fixed pixel width (e.g., ``0.5``) or relative to the total
-           count (e.g., ``0.1%``).
+           a fixed pixel width, e.g., ``0.5``, or relative to the actual
+           total (not the user-supplied ``--total``) count, e.g., ``0.1%``.
     :param nameattr: a path to the name-attribute file
            (see ``NameAttributes``).
     :param nametype: the name of the frames in stacks
@@ -170,9 +173,12 @@ def create_diff_flame_graph(
     :param random: use randomized frame colors within the selected palette.
            Note that even frames with identical names will have their
            colors chosen randomly.
-    :param rootnode: the label on the synthetic root frame.
     :param reverse: the stacks in the folded profile are in the
            callee-to-caller (instead of caller-to-callee) order.
+    :param rootnode: the label on the synthetic root frame.
+    :param subrootnode: the label on the synthetic sub-root frame used when
+           '--total' is supplied. The sub-root allows to scale (zoom) the
+           rendered frames when the root node is much wider than the data.
     :param striphex: strip hex addresses in the stacks, e.g., replace
            '0x1234abc' with '0x...'.
     :param subtitle: optional second title line below the main title.
@@ -232,8 +238,9 @@ def create_diff_flame_graph(
         notes=notes,
         outfile=outfile,
         random=random,
-        rootnode=rootnode,
         reverse=reverse,
+        rootnode=rootnode,
+        subrootnode=subrootnode,
         subtitle=subtitle,
         total=total,
         title=title,
