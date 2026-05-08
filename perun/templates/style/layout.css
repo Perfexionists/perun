@@ -89,6 +89,7 @@
     text-decoration: underline;
     text-align: left;
     margin-right: 10px;
+    cursor: pointer;
 }
 
 .data-value {

@@ -26,6 +26,7 @@
             },
             {%- endfor %}
         ];
+        window.tracesData = rawData;
 
 
 
@@ -85,7 +86,7 @@
         }
     ];
 
-    new TracesTable('custom-table-container', {
+    window.tracesTable = new TracesTable('custom-table-container', {
         data: rawData,
         columns: columns,
         itemsPerPage: 10,
