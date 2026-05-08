@@ -31,6 +31,12 @@
         document.getElementById('trace-popup-container').style.display = 'none';
     }
 
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeTracePopup();
+        }
+    });
+
     function openTracePopup(rowData) {
         document.getElementById('trace-popup-container').style.display = 'flex';
 
