@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+0.27.1 (2026-04-22)
+-------------------
+
+  - A new Overview section has been added to the folded report.
+  - The top traces detail has been refined. The full traces are now shown in the table.
+  - Added support for Python 3.14.
+  - Dropped support for EoL Python 3.9.
+  - Bumped all dependencies to their latest versions supporting Python 3.10+.
+
+
 0.27.0 (2026-03-23)
 -------------------
 

@@ -149,13 +149,6 @@
         ]
     ];
 
-    const indexToName = {
-        {%- for val in selection_table %}
-        "{{ val.index }}": "{{ val.uid }}",
-        {%- endfor %}
-    };
-
-
     function renderTable(containerId, dataArray) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
@@ -169,7 +162,7 @@
             
             const keyDiv = document.createElement('div');
             keyDiv.className = 'data-key';
-            const functionName = indexToName[row[0]] || row[0];
+            const functionName = nodes[row[0]] || row[0];
             keyDiv.title = functionName;
             keyDiv.textContent = functionName;
 

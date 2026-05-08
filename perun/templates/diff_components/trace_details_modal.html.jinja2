@@ -77,18 +77,35 @@
         const titleForTraces = rowData.trace_stats && rowData.trace_stats.length > 0 ? `Top ${rowData.trace_stats.length} traces` : 'No traces available';
         document.getElementById('trace-stats-heading').textContent = titleForTraces;
 
+        // Decodes and formats the stack trace string in a format 'id1;id2;id3;[...]#[...]'.
+        function decodeStackTrace(trace) {
+            if (!trace) return "";
+
+            // Ignore everything after the '#'
+            const funcIds = trace.split('#')[0];
+            const funcNames = funcIds
+                .split(';')
+                .map(id => Number(id))
+                .reverse()  // Reverse the order to be consistent with the flamegraph visualization.
+                .map(id => nodes[id] ?? `[unknown:${id}]`) // Map to names.
+            // Make the function at the top bold.
+            return funcNames
+                .map((name, index) => index === 0 ? `<b>${name}</b>` : name)
+                .join('\n');
+        }
+
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
             const columns = [
                 {
                     data: 0,
-                    title: 'Index',
+                    title: 'Trace',
                     filterable: false,
-                    render: (data, row, index) => {
-                        const longTrace = row[7] || data;
-                        return `<div class="trace-cell" title="${longTrace}">${index + 1}</div>`;
+                    render: (data, row) => {
+                        const longTrace = decodeStackTrace(row[7] || data);
+                        return `<div class="trace-cell" title="${longTrace}">${longTrace}</div>`;
                     },
-                    width: '120px',
-                    tooltip: 'Synthetic index of the Trace.'
+                    width: '500px',
+                    tooltip: 'The trace stack.'
                 },
                 {
                     data: 2,
