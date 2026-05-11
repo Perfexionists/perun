@@ -230,6 +230,9 @@ class NameAttributes:
         opening and closing markup used for names without any user-supplied
         attributes.
 
+        The opening markup has a formatting placeholder for ``data-*``
+        attributes used to store exclusive consumption values.
+
         :param name: the frame name used as a key in the cache lookup.
         :param title: the inner ``<title>`` text.
 
@@ -238,7 +241,7 @@ class NameAttributes:
         try:
             begin, end = self.attr_cache[name]
         except KeyError:
-            begin, end = ("<g>\n<title>", "</g>\n")
+            begin, end = ("<g {}>\n<title>", "</g>\n")
         return f"{begin}{title}</title>\n", end
 
     @staticmethod
@@ -303,8 +306,9 @@ class NameAttributes:
             ]
             if a_extra is not None:
                 a_attrs.append(a_extra)
-            return f'<a {" ".join(a_attrs + g_attrs)}>\n<title>', "</a>\n"
-        return f'<g {" ".join(g_attrs)}>\n<title>', "</g>\n"
+            return f'<a {{}} {" ".join(a_attrs + g_attrs)}>\n<title>', "</a>\n"
+        # Create a placeholder for additional ``data-*`` attributes.
+        return f'<g {{}} {" ".join(g_attrs)}>\n<title>', "</g>\n"
 
 
 class Settings:
@@ -729,7 +733,11 @@ class Colors:
     RGBvdgrey = "rgb(160,160,160)"
     RGBdgrey = "rgb(200,200,200)"
     RGBsearch = "rgb(230,0,230)"  # Search highlight fill color.
+    # Search highlight fill color for overlay rectangles.
+    RGBsearchOverlay = "rgb(200,0,200)"
     RGBhover = "rgb(0,230,230)"  # Hover highlight fill color.
+    # Hover highlight fill color for overlay rectangles.
+    RGBhoverOverlay = "rgb(0,200,200)"
 
     def __init__(
         self,
@@ -1346,7 +1354,9 @@ def create_error_svg(settings: Settings) -> str:
     )
 
 
-def create_svg_without_frames(settings: Settings, geometry: Geometry, colors: Colors) -> list[str]:
+def create_svg_without_frames(
+    settings: Settings, geometry: Geometry, colors: Colors, is_diff: bool
+) -> list[str]:
     """Build the SVG header, JS/CSS components, and canvas.
 
     The resulting string is not a valid SVG document as it is missing the
@@ -1355,6 +1365,7 @@ def create_svg_without_frames(settings: Settings, geometry: Geometry, colors: Co
     :param settings: rendering and processing options.
     :param geometry: rendering geometry for the SVG layout.
     :param colors: coloring options for the SVG.
+    :param is_diff: ``True`` if we are generating a difference graph SVG.
 
     :return: a collection of strings representing the incomplete SVG.
     """
@@ -1365,7 +1376,9 @@ def create_svg_without_frames(settings: Settings, geometry: Geometry, colors: Co
             settings.encoding,
             settings.notes_text,
         ),
-        create_svg_js_css(settings, colors.bg_color_1, colors.bg_color_2, geometry.title_size),
+        create_svg_js_css(
+            settings, colors.bg_color_1, colors.bg_color_2, geometry.title_size, is_diff
+        ),
         (
             f'<rect x="0" y="0" width="{settings.image_width}"'
             f' height="{geometry.image_height}" fill="url(#background)" />\n'
@@ -1398,6 +1411,12 @@ def create_svg_without_frames(settings: Settings, geometry: Geometry, colors: Co
             settings.font_size * 2,
             "Reset Zoom",
             'class="hide"',
+        ),
+        create_svg_text(
+            "excToggle",
+            settings.image_width - Geometry.XPad1 - 220,
+            settings.font_size * 2,
+            "Show exclusive",
         ),
         create_svg_text(
             "search",
@@ -1460,7 +1479,9 @@ def create_svg_text(id_attr: str | None, x: float, y: float, str_val: str, extra
     return f'<text {id_str} x="{x:.2f}" y="{y:.2f}" {extra}>{str_val}</text>\n'
 
 
-def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, title_size: int) -> str:
+def create_svg_js_css(
+    settings: Settings, bg_color_1: str, bg_color_2: str, title_size: int, is_diff: bool
+) -> str:
     """Create an SVG stylesheet and JS scripts.
 
     The scripts implement operations such as zoom/unzoom, search, hover, etc.
@@ -1469,6 +1490,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
     :param bg_color_1: gradient start color (top of the canvas).
     :param bg_color_2: gradient end color (bottom of the canvas).
     :param title_size: the title element font size.
+    :param is_diff: ``True`` if we are generating a difference graph SVG.
 
     :return: an SVG stylesheet and JS scripts.
     """
@@ -1480,8 +1502,8 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
 </defs>
 <style type="text/css">
     text {{ font-family:{settings.font_type}; font-size:{settings.font_size}px; fill:{Colors.RGBblack}; }}
-    #search, #ignorecase {{ opacity:0.1; cursor:pointer; }}
-    #search:hover, #search.show, #ignorecase:hover, #ignorecase.show {{ opacity:1; }}
+    #search, #ignorecase, #excToggle {{ opacity:0.5; cursor:pointer; }}
+    #search:hover, #search.show, #ignorecase:hover, #ignorecase.show, #excToggle:hover {{ opacity:1; }}
     #subtitle {{ text-anchor:middle; font-color:{Colors.RGBvdgrey}; }}
     #title {{ text-anchor:middle; font-size:{title_size}px}}
     #unzoom {{ cursor:pointer; }}
@@ -1494,6 +1516,8 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
     "use strict";
     var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
     var matchedHoverTxt, hoverSearchTerm;
+    var exclusiveMode;
+    var isDiff = {'true' if is_diff else 'false'};
     function init(evt) {{
         details = document.getElementById("details").firstChild;
         searchbtn = document.getElementById("search");
@@ -1505,6 +1529,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         searching = 0;
         currentSearchTerm = null;
         hoverSearchTerm = null;
+        exclusiveMode = false;
     }}
 
     // event listeners
@@ -1525,6 +1550,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         else if (e.target.id == "unzoom") clearzoom();
         else if (e.target.id == "search") search_prompt();
         else if (e.target.id == "ignorecase") toggle_ignorecase();
+        else if (e.target.id == "excToggle") toggleExclusive();
     }}, false)
 
     // mouse-over for info
@@ -1652,7 +1678,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
             zoom_child(c[i], x - {Geometry.XPad1}, ratio);
         }}
     }}
-    function zoom_parent(e) {{
+    function zoom_parent(e, ratio) {{
         if (e.attributes) {{
             if (e.attributes.x != undefined) {{
                 orig_save(e, "x");
@@ -1660,12 +1686,35 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
             }}
             if (e.attributes.width != undefined) {{
                 orig_save(e, "width");
-                e.attributes.width.value = parseInt(svg.width.baseVal.value) - ({Geometry.XPad1} * 2);
+                if (ratio) {{
+                    // This parent node needs to be scaled instead of spanning
+                    // the entire width (e.g., overlay rectangles).
+                    e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+                }} else {{
+                    e.attributes.width.value = parseInt(svg.width.baseVal.value) - ({Geometry.XPad1} * 2);
+                }}
             }}
         }}
         if (e.childNodes == undefined) return;
+
+        // We are scaling a group with an overlay rectangle. All the elements
+        // within that group should span the entire width *except* the overlay,
+        // which needs to be scaled.
+        if (e.nodeName === "g" && exclusiveMode && !isDiff) {{
+            var {{ rect, overlay }} = getGroupRectangles(e);
+            const overlay_ratio = (svg.width.baseVal.value - 2 * {Geometry.XPad1}) / rect.getAttribute("width");
+            for (var i = 0, c = e.childNodes; i < c.length; i++) {{
+                if (c[i] === overlay) {{
+                    zoom_parent(c[i], overlay_ratio);
+                }} else {{
+                    zoom_parent(c[i], null);
+                }}
+            }}
+            return;
+        }}
+        // We are scaling some other element.
         for (var i = 0, c = e.childNodes; i < c.length; i++) {{
-            zoom_parent(c[i]);
+            zoom_parent(c[i], null);
         }}
     }}
     function zoom(node) {{
@@ -1700,7 +1749,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
                 // xmax due to rounding error.
                 if (ex <= xmin && (ex+ew+fudge) >= xmin) {{
                     e.classList.add("parent");
-                    zoom_parent(e);
+                    zoom_parent(e, null);
                     update_text(e);
                 }}
                 // not in current path
@@ -1748,9 +1797,19 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         search();
     }}
     function reset_search() {{
-        var el = document.querySelectorAll("#frames rect");
+        var el = document.getElementById("frames").children;
         for (var i = 0; i < el.length; i++) {{
-            orig_load(el[i], "fill")
+            var {{ rect, overlay }} = getGroupRectangles(el[i]);
+            if (overlay) {{
+                orig_load(overlay, "fill");
+                if (!isDiff) {{
+                    rect.setAttribute("fill", "white");
+                }} else {{
+                    orig_load(rect, "fill");
+                }}
+            }} else {{
+                orig_load(rect, "fill");
+            }}
         }}
         searching = 0;
         currentSearchTerm = null;
@@ -1758,6 +1817,9 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         searchbtn.firstChild.nodeValue = "Search"
         matchedtxt.classList.add("hide");
         matchedtxt.firstChild.nodeValue = ""
+        if (isDiff) {{
+            updateExclusiveView();
+        }}
     }}
 
     function reset_search_hover() {{
@@ -1765,20 +1827,38 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
         for (var i = 0; i < el.length; i++) {{
             var func = g_to_func(el[i]);
-            var rect = find_child(el[i], "rect");
-            if (rect.attributes.fill.value == "{Colors.RGBhover}") {{
-                if (func.match(re)) {{
+            var {{ rect, overlay }} = getGroupRectangles(el[i]);
+            if (rect.getAttribute("fill") != "{Colors.RGBhover}" && (!overlay || overlay.getAttribute("fill") != "{Colors.RGBhover}")) continue;
+
+            if (func.match(re)) {{
+                if (isDiff) {{
+                    if (overlay) {{
+                        overlay.attributes.fill.value = "{Colors.RGBsearch}";
+                    }} else {{
+                        rect.attributes.fill.value = "{Colors.RGBsearch}";
+                    }}
+                }} else {{
                     rect.attributes.fill.value = "{Colors.RGBsearch}";
+                    if (overlay) {{
+                        overlay.attributes.fill.value = "{Colors.RGBsearchOverlay}";
+                    }}
+                }}
+            }} else {{
+                if (overlay) {{
+                    orig_load(overlay, "fill");
+                    if (!isDiff) {{
+                        rect.setAttribute("fill", "white");
+                    }}
                 }} else {{
                     orig_load(rect, "fill");
                 }}
             }}
-
         }}
         hoverSearchTerm = null;
         matchedHoverTxt.classList.add("hide");
         matchedHoverTxt.firstChild.nodeValue = ""
     }}
+
     function search_prompt() {{
         if (!searching) {{
             var term = prompt("Enter a search term (regexp " +
@@ -1823,7 +1903,7 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         for (var i = 0; i < el.length; i++) {{
             var e = el[i];
             var func = g_to_func(e);
-            var rect = find_child(e, "rect");
+            var {{ rect, overlay }} = getGroupRectangles(e);
             if (func == null || rect == null)
                 continue;
 
@@ -1835,8 +1915,18 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
             if ((is_hover && func.startsWith(func_expr)) || (!is_hover && func.match(func_expr))) {{
                 // highlight
                 var x = parseFloat(rect.attributes.x.value);
-                orig_save(rect, "fill");
-                rect.attributes.fill.value = is_hover ? "{Colors.RGBhover}" : "{Colors.RGBsearch}";
+                if (overlay) {{
+                    orig_save(overlay, "fill");
+                    if (isDiff) {{
+                        overlay.attributes.fill.value = is_hover ? "{Colors.RGBhover}" : "{Colors.RGBsearch}";
+                    }} else {{
+                        rect.attributes.fill.value = is_hover ? "{Colors.RGBhover}" : "{Colors.RGBsearch}";
+                        overlay.attributes.fill.value = is_hover ? "{Colors.RGBhoverOverlay}" : "{Colors.RGBsearchOverlay}";
+                    }}
+                }} else {{
+                    orig_save(rect, "fill");
+                    rect.attributes.fill.value = is_hover ? "{Colors.RGBhover}" : "{Colors.RGBsearch}";
+                }}
 
                 // remember matches
                 const absSamples = parseFormattedSuffix(func);
@@ -1890,6 +1980,91 @@ def create_svg_js_css(settings: Settings, bg_color_1: str, bg_color_2: str, titl
         var pct = 100 * count / maxwidth;
         if (pct != 100) pct = pct.toFixed(1)
         return {{ pct: pct, totalSamples: formatWithSuffix(totalSamples) }};
+    }}
+
+    // exclusive/inclusive toggle
+    function toggleExclusive() {{
+        exclusiveMode = !exclusiveMode;
+        var excToggleBtn = document.getElementById("excToggle");
+        if (exclusiveMode) {{
+            excToggleBtn.firstChild.nodeValue = "Show inclusive"
+            updateExclusiveView();
+        }} else {{
+            excToggleBtn.firstChild.nodeValue = "Show exclusive"
+            removeExclusiveView();
+        }}
+    }}
+
+    function getGroupRectangles(group) {{
+        var rects = group.getElementsByTagName("rect");
+        if (!rects) {{
+            return {{ rect: null, overlay: null }};
+        }}
+        return {{ rect: rects.item(0), overlay: rects.item(1) }}
+    }}
+
+    function removeExclusiveView() {{
+        // Here we want to iterate over all frames since the graph may be
+        // zoomed and unzooming it later might show the leftover overlay rects.
+        var frames = document.getElementById("frames").children;
+        for (var i = 0; i < frames.length; i++) {{
+            var g = frames[i];
+            var {{ rect, overlay }} = getGroupRectangles(g);
+            if (!overlay) continue;
+
+            if (!isDiff) {{
+                rect.setAttribute("fill", overlay.getAttribute("fill"));
+                if (rect.getAttribute("fill") == "{Colors.RGBsearchOverlay}") {{
+                    rect.setAttribute("fill", "{Colors.RGBsearch}");
+                }}
+            }}
+            overlay.remove();
+        }}
+    }}
+
+    function updateExclusiveView() {{
+        if (!exclusiveMode) return;
+
+        var frames = document.getElementById("frames").children;
+        for (var i = 0; i < frames.length; i++) {{
+            var g = frames[i];
+            var {{ rect, overlay }} = getGroupRectangles(g);
+
+            // We might need to first create the overlay rectangle.
+            if (!overlay) {{
+                overlay = rect.cloneNode(false);
+                g.insertBefore(overlay, rect.nextSibling);
+            }}
+
+            if (isDiff) {{
+                // Now adjust the color. The exclusive diff color is stored in
+                // the group's "data-ed" attr.
+                const excDeltaColor = g.getAttribute("data-ed") || "white";
+                overlay.setAttribute("fill", excDeltaColor);
+                if (rect.getAttribute("fill") == "{Colors.RGBsearch}") {{
+                    orig_save(overlay, "fill");
+                    overlay.setAttribute("fill", "{Colors.RGBsearch}");
+                }}
+            }} else {{
+                // Now adjust the geometry. The exclusive consumption relative
+                // to the width of the frame is stored in the group's "data-e"
+                // attribute.
+                const excRelative = parseFloat(g.getAttribute("data-e") || "0");
+                const rectWidth = parseFloat(rect.getAttribute("width"));
+                const overlayWidth = (rectWidth * excRelative / 100);
+                overlay.setAttribute("width", overlayWidth);
+                // The frame may be zoomed: adjust _orig_width if needed.
+                var unzoomed_width = overlay.getAttribute("_orig_width");
+                if (unzoomed_width) {{
+                    overlay.setAttribute("_orig_width", unzoomed_width * excRelative / 100);
+                }}
+                if (rect.getAttribute("fill") == "{Colors.RGBsearch}") {{
+                    overlay.setAttribute("fill", "{Colors.RGBsearchOverlay}");
+                }} else {{
+                    rect.setAttribute("fill", "white");
+                }}
+            }}
+        }}
     }}
 ]]>
 </script>
@@ -2296,20 +2471,24 @@ class ProcessedNodes:
     The sequence contains only nodes that satisfy the 'min_width' threshold and
     should be thus drawn in the flame graph.
 
-    :ivar nodes: a sequence of ``(name, depth, end_time, start_time)`` records.
+    :ivar nodes: a sequence of ``(name, depth, end_time, start_time,
+          exclusive_time)`` records.
     :ivar max_trace: the length of the longest trace after filtering.
     :ivar is_diff: always ``False`` for static typing discrimination.
     """
 
     __slots__ = "nodes", "max_trace", "is_diff"
 
-    def __init__(self, nodes: Sequence[tuple[str, int, float, float]], max_trace: int) -> None:
+    def __init__(
+        self, nodes: Sequence[tuple[str, int, float, float, float]], max_trace: int
+    ) -> None:
         """Initialize an object.
 
-        :param nodes: a ``(name, depth, end_time, start_time)`` sequence.
+        :param nodes: a ``(name, depth, end_time, start_time, exclusive_time)``
+               sequence.
         :param max_trace: the length of the longest trace after filtering.
         """
-        self.nodes: Sequence[tuple[str, int, float, float]] = nodes
+        self.nodes: Sequence[tuple[str, int, float, float, float]] = nodes
         self.max_trace: int = max_trace
         self.is_diff: Literal[False] = False
 
@@ -2317,35 +2496,44 @@ class ProcessedNodes:
 class ProcessedDiffNodes:
     """Stores a sequence of nodes representing differential graph frames.
 
-    :ivar nodes: a sequence of ``(name, depth, end_time, start_time, delta)``
-          records.
+    :ivar nodes: a sequence of ``(name, depth, end_time, start_time,
+          inclusive_delta, exclusive_delta)`` records.
     :ivar max_trace: the length of the longest trace after filtering.
-    :ivar max_delta: the maximum observed delta between the baseline and
-          target counts of a stack (used for scaling differential hues).
-          Note that compared to ``max_trace`,` this maximum ignores the
+    :ivar max_delta_excl: the maximum observed delta between the baseline and
+          target *exclusive* counts of a stack (used for scaling differential
+          hues). Note that compared to ``max_trace`,` this maximum ignores the
           ``min_width`` filtering to stay consistent with the original Perl
           script.
+    :ivar max_delta_incl: the maximum observed delta between the baseline and
+          target *inclusive* counts (see ``max_delta_excl``).
     :ivar is_diff: always ``True`` for static typing discrimination.
     """
 
-    __slots__ = "nodes", "max_trace", "max_delta", "is_diff"
+    __slots__ = "nodes", "max_trace", "max_delta_excl", "max_delta_incl", "is_diff"
 
     def __init__(
         self,
-        nodes: Sequence[tuple[str, int, float, float, float]],
+        nodes: Sequence[tuple[str, int, float, float, float, float]],
         max_trace: int,
-        max_delta: float,
+        max_delta_excl: float,
+        max_delta_incl: float,
     ) -> None:
         """Initialize an object.
 
-        :param nodes: a ``(name, depth, end_time, start_time, delta)`` sequence.
+        :param nodes: a ``(name, depth, end_time, start_time, inclusive_delta,
+               exclusive_delta)`` sequence.
         :param max_trace: the length of the longest trace after filtering.
-        :param max_delta: the maximum observed delta between the baseline and
-               target counts of a stack (used for scaling differential hues).
+        :param max_delta_excl: the maximum observed delta between the baseline
+               and target *exclusive* counts of a stack (used for scaling
+               differential hues).
+        :param max_delta_excl: the maximum observed delta between the baseline
+               and target *inclusive* counts of a stack (used for scaling
+               differential hues).
         """
-        self.nodes: Sequence[tuple[str, int, float, float, float]] = nodes
+        self.nodes: Sequence[tuple[str, int, float, float, float, float]] = nodes
         self.max_trace: int = max_trace
-        self.max_delta: float = max_delta
+        self.max_delta_excl: float = max_delta_excl
+        self.max_delta_incl: float = max_delta_incl
         self.is_diff: Literal[True] = True
 
 
@@ -2406,8 +2594,8 @@ def _process_stacks(profile: FoldedData, min_width: float) -> ProcessedNodes:
     prev_stack: list[str] = []
     time: float = 0.0
     max_trace: int = 0
-    nodes: list[tuple[str, int, float, float]] = []
-    tmp: dict[tuple[str, int], float] = {}
+    nodes: list[tuple[str, int, float, float, float]] = []
+    tmp: dict[tuple[str, int], tuple[float, float]] = {}
 
     # Optimize dot access.
     str_split = str.split
@@ -2427,28 +2615,28 @@ def _process_stacks(profile: FoldedData, min_width: float) -> ProcessedNodes:
         # First process the remaining differing frames in the old stack and
         # create the actual nodes that should be drawn.
         for depth in range(len_same, prev_stack_len):
-            stime = tmp[(prev_stack[depth], depth)]
+            stime, exc_time = tmp[(prev_stack[depth], depth)]
             if (time - stime) < min_width:
                 # All the callee nodes must have lower or equal time consumption
                 # than (time - stime), and thus will fail the check as well.
                 break
-            list_append(nodes, (prev_stack[depth], depth, time, stime))
+            list_append(nodes, (prev_stack[depth], depth, time, stime, exc_time))
             max_trace = max(depth, max_trace)
 
         # The remaining differing frames in the current stack must be stored
         # for processing in the next iteration.
         for depth in range(len_same, this_stack_len):
-            tmp[(this_stack[depth], depth)] = time
+            tmp[(this_stack[depth], depth)] = (time, count)
         # -- END: inlined 'flow'.
         prev_stack = this_stack
         time += count
 
     # Finish processing the last stack.
     for idx, frame in enumerate(prev_stack):
-        stime = tmp[(frame, idx)]
+        stime, exc_time = tmp[(frame, idx)]
         if (time - stime) < min_width:
             break
-        list_append(nodes, (frame, idx, time, stime))
+        list_append(nodes, (frame, idx, time, stime, exc_time))
         max_trace = max(idx, max_trace)
     return ProcessedNodes(nodes, max_trace)
 
@@ -2466,8 +2654,8 @@ def _process_waker_stacks(profile: FoldedData, min_width: float) -> ProcessedNod
     prev_stack: list[str] = []
     time: float = 0.0
     max_trace: int = 0
-    nodes: list[tuple[str, int, float, float]] = []
-    tmp: dict[tuple[str, int], float] = {}
+    nodes: list[tuple[str, int, float, float, float]] = []
+    tmp: dict[tuple[str, int], tuple[float, float]] = {}
 
     # Optimize dot access.
     str_split = str.split
@@ -2492,23 +2680,23 @@ def _process_waker_stacks(profile: FoldedData, min_width: float) -> ProcessedNod
             len_same += 1
 
         for depth in range(len_same, prev_stack_len):
-            stime = tmp[(prev_stack[depth], depth)]
+            stime, exc_time = tmp[(prev_stack[depth], depth)]
             if (time - stime) < min_width:
                 break
-            list_append(nodes, (prev_stack[depth], depth, time, stime))
+            list_append(nodes, (prev_stack[depth], depth, time, stime, exc_time))
             max_trace = max(depth, max_trace)
 
         for depth in range(len_same, this_stack_len):
-            tmp[(this_stack[depth], depth)] = time
+            tmp[(this_stack[depth], depth)] = (time, count)
         # -- END: inlined 'flow'.
         prev_stack = this_stack
         time += count
 
     for idx, frame in enumerate(prev_stack):
-        stime = tmp[(frame, idx)]
+        stime, exc_time = tmp[(frame, idx)]
         if (time - stime) < min_width:
             break
-        list_append(nodes, (frame, idx, time, stime))
+        list_append(nodes, (frame, idx, time, stime, exc_time))
         max_trace = max(idx, max_trace)
     return ProcessedNodes(nodes, max_trace)
 
@@ -2522,22 +2710,24 @@ def _process_differential_stacks(profile: FoldedDiffData, min_width: float) -> P
     :return: processed nodes that should be drawn as frames.
     """
     prev_stack: list[str] = []
-    time: float = 0.0
+    time_target: float = 0.0
+    time_base: float = 0.0
     max_trace: int = 0
-    max_delta: float = 1.0
-    nodes: list[tuple[str, int, float, float, float]] = []
-    tmp: dict[tuple[str, int], tuple[float, float]] = {}
+    max_delta_excl: float = 1.0
+    max_delta_incl: float = 1.0
+    nodes: list[tuple[str, int, float, float, float, float]] = []
+    tmp: dict[tuple[str, int], tuple[float, float, float]] = {}
 
     # Optimize dot access.
     str_split = str.split
     list_append = list.append
 
     # See ``_process_stacks`` for the shared unwinding logic.
-    for stack, count, count2 in profile.data:
+    for stack, count_base, count_target in profile.data:
         this_stack = str_split(stack, ";")
         prev_stack_len, this_stack_len = len(prev_stack), len(this_stack)
-        delta = count2 - count
-        max_delta = max(max_delta, abs(delta))
+        delta = count_target - count_base
+        max_delta_excl = max(max_delta_excl, abs(delta))
         # -- BEGIN: inlined 'flow'.
         max_common_len = min(prev_stack_len, this_stack_len)
         len_same = 0
@@ -2545,29 +2735,48 @@ def _process_differential_stacks(profile: FoldedDiffData, min_width: float) -> P
             len_same += 1
 
         for depth in range(len_same, prev_stack_len):
-            stime, tmp_delta = tmp[(prev_stack[depth], depth)]
-            if (time - stime) < min_width:
+            stime_target, stime_base, exclusive_delta = tmp[(prev_stack[depth], depth)]
+            inclusive_target: float = time_target - stime_target
+            inclusive_delta = inclusive_target - (time_base - stime_base)
+            max_delta_incl = max(max_delta_incl, abs(inclusive_delta))
+            if inclusive_target < min_width:
                 break
-            list_append(nodes, (prev_stack[depth], depth, time, stime, tmp_delta))
+            list_append(
+                nodes,
+                (
+                    prev_stack[depth],
+                    depth,
+                    time_target,
+                    stime_target,
+                    inclusive_delta,
+                    exclusive_delta,
+                ),
+            )
             max_trace = max(depth, max_trace)
 
         # The delta belongs to the leaf frame of this stack.
         for depth in range(len_same, this_stack_len - 1):
-            tmp[(this_stack[depth], depth)] = (time, 0.0)
+            tmp[(this_stack[depth], depth)] = (time_target, time_base, 0.0)
         if this_stack_len > len_same:
-            tmp[(this_stack[-1], this_stack_len - 1)] = (time, delta)
+            tmp[(this_stack[-1], this_stack_len - 1)] = (time_target, time_base, delta)
         # -- END: inlined 'flow'.
         prev_stack = this_stack
-        time += count2
+        time_target += count_target
+        time_base += count_base
 
     for idx, frame in enumerate(prev_stack):
-        stime, delta = tmp[(frame, idx)]
-        if (time - stime) < min_width:
+        stime_target, stime_base, exclusive_delta = tmp[(frame, idx)]
+        inclusive_target = time_target - stime_target
+        inclusive_delta = inclusive_target - (time_base - stime_base)
+        max_delta_incl = max(max_delta_incl, abs(inclusive_delta))
+        if inclusive_target < min_width:
             break
-        list_append(nodes, (frame, idx, time, stime, delta))
+        list_append(
+            nodes, (frame, idx, time_target, stime_target, inclusive_delta, exclusive_delta)
+        )
         max_trace = max(idx, max_trace)
 
-    return ProcessedDiffNodes(nodes, max_trace, max_delta)
+    return ProcessedDiffNodes(nodes, max_trace, max_delta_excl, max_delta_incl)
 
 
 def _process_differential_waker_stacks(
@@ -2583,17 +2792,21 @@ def _process_differential_waker_stacks(
     :return: processed nodes that should be drawn as frames.
     """
     prev_stack: list[str] = []
-    time: float = 0.0
+    time_target: float = 0.0
+    time_base: float = 0.0
     max_trace: int = 0
-    max_delta: float = 1.0
-    nodes: list[tuple[str, int, float, float, float]] = []
-    tmp: dict[tuple[str, int], tuple[float, float]] = {}
+    max_delta_excl: float = 1.0
+    max_delta_incl: float = 1.0
+    nodes: list[tuple[str, int, float, float, float, float]] = []
+    tmp: dict[tuple[str, int], tuple[float, float, float]] = {}
+
+    # Optimize dot access.
     str_split = str.split
     list_append = list.append
 
     # See ``_process_stacks`` for the shared unwinding logic.
     # See ``_process_differential_stacks`` for handling deltas.
-    for stack, count, count2 in profile.data:
+    for stack, count_base, count_target in profile.data:
         this_stack = str_split(stack, ";")
         prev_stack_len, this_stack_len = len(prev_stack), len(this_stack)
         # Annotate frames after ``--`` with ``_[w]`` for coloring purposes.
@@ -2604,38 +2817,57 @@ def _process_differential_waker_stacks(
                     this_stack[depth] += "_[w]"
         except ValueError:
             pass
-        delta = count2 - count
-        max_delta = max(max_delta, abs(delta))
+        delta = count_target - count_base
+        max_delta_excl = max(max_delta_excl, abs(delta))
         # -- BEGIN: inlined 'flow'.
-
         max_common_len = min(prev_stack_len, this_stack_len)
         len_same = 0
         while len_same < max_common_len and prev_stack[len_same] == this_stack[len_same]:
             len_same += 1
 
         for depth in range(len_same, prev_stack_len):
-            stime, tmp_delta = tmp[(prev_stack[depth], depth)]
-            if (time - stime) < min_width:
+            stime_target, stime_base, exclusive_delta = tmp[(prev_stack[depth], depth)]
+            inclusive_target: float = time_target - stime_target
+            inclusive_delta = inclusive_target - (time_base - stime_base)
+            max_delta_incl = max(max_delta_incl, abs(inclusive_delta))
+            if inclusive_target < min_width:
                 break
-            list_append(nodes, (prev_stack[depth], depth, time, stime, tmp_delta))
+            list_append(
+                nodes,
+                (
+                    prev_stack[depth],
+                    depth,
+                    time_target,
+                    stime_target,
+                    inclusive_delta,
+                    exclusive_delta,
+                ),
+            )
             max_trace = max(depth, max_trace)
 
+        # The delta belongs to the leaf frame of this stack.
         for depth in range(len_same, this_stack_len - 1):
-            tmp[(this_stack[depth], depth)] = (time, 0.0)
+            tmp[(this_stack[depth], depth)] = (time_target, time_base, 0.0)
         if this_stack_len > len_same:
-            tmp[(this_stack[-1], this_stack_len - 1)] = (time, delta)
+            tmp[(this_stack[-1], this_stack_len - 1)] = (time_target, time_base, delta)
         # -- END: inlined 'flow'.
         prev_stack = this_stack
-        time += count2
+        time_target += count_target
+        time_base += count_base
 
     for idx, frame in enumerate(prev_stack):
-        stime, delta = tmp[(frame, idx)]
-        if (time - stime) < min_width:
+        stime_target, stime_base, exclusive_delta = tmp[(frame, idx)]
+        inclusive_target = time_target - stime_target
+        inclusive_delta = inclusive_target - (time_base - stime_base)
+        max_delta_incl = max(max_delta_incl, abs(inclusive_delta))
+        if inclusive_target < min_width:
             break
-        list_append(nodes, (frame, idx, time, stime, delta))
+        list_append(
+            nodes, (frame, idx, time_target, stime_target, inclusive_delta, exclusive_delta)
+        )
         max_trace = max(idx, max_trace)
 
-    return ProcessedDiffNodes(nodes, max_trace, max_delta)
+    return ProcessedDiffNodes(nodes, max_trace, max_delta_excl, max_delta_incl)
 
 
 #### SECTION: FRAMES CONSTRUCTION
@@ -2738,7 +2970,7 @@ def _construct_root_frame(
     info = f"{root_name} ({samples_txt} {settings.count_name}, {pct:.2f}%)"
 
     if nodes.is_diff:
-        color_val = colors.color_scale(0.0, nodes.max_delta)
+        color_val = colors.color_scale(0.0, nodes.max_delta_excl)
     else:
         color_val = colors[""]
 
@@ -2756,7 +2988,7 @@ def _construct_root_frame(
     )
     frame_text = f'<text x="{x1 + 3:.2f}" y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
     frame_begin, frame_end = settings.name_attr.get_frame("", info)
-    frames.append(f"{frame_begin}{frame_rectangle}{frame_text}{frame_end}")
+    frames.append(f"{frame_begin.format('')}{frame_rectangle}{frame_text}{frame_end}")
     return frames
 
 
@@ -2797,7 +3029,7 @@ def _construct_node_frames(
 
     # Determine the number of root frames.
     root_frames = 2 if settings.total else 1
-    for func, depth, etime, stime in nodes.nodes:
+    for func, depth, etime, stime, exc_time in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
         y1 = y1_table[depth + root_frames]
@@ -2814,6 +3046,7 @@ def _construct_node_frames(
         # -- END: inlined '_format_with_suffix'.
 
         pct = (100 * samples) / total_factor
+        exc_pct = (exc_time * factor) / samples * 100
         # Strip stack annotations and SVG-breaking characters.
         escaped_func = re_sub(suffix_regex, "", str_translate(func, translation_table))
         info = f"{escaped_func} ({samples_txt} {count_name}, {pct:.2f}%)"
@@ -2833,7 +3066,7 @@ def _construct_node_frames(
         frame_text = f'<text x="{x1 + 3:.2f}"' f' y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
         list_append(
             frames,
-            f"<g>\n<title>{info}</title>\n{frame_rectangle}{frame_text}</g>\n",
+            f"<g data-e={exc_pct}>\n<title>{info}</title>\n{frame_rectangle}{frame_text}</g>\n",
         )
 
 
@@ -2874,7 +3107,7 @@ def _construct_node_frames_with_attrs(
     translation_table: dict[int, str] = Settings.TranslationTable
 
     root_frames = 2 if settings.total else 1
-    for func, depth, etime, stime in nodes.nodes:
+    for func, depth, etime, stime, exc_time in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
         y1 = y1_table[depth + root_frames]
@@ -2891,6 +3124,7 @@ def _construct_node_frames_with_attrs(
         # -- END: inlined '_format_with_suffix'.
 
         pct = (100 * samples) / total_factor
+        exc_pct = (exc_time * factor) / samples * 100
         # Strip stack annotations and SVG-breaking characters.
         escaped_func = re_sub(suffix_regex, "", str_translate(func, translation_table))
         info = f"{escaped_func} ({samples_txt} {count_name}, {pct:.2f}%)"
@@ -2912,11 +3146,12 @@ def _construct_node_frames_with_attrs(
         try:
             frame_begin, frame_end = name_attr_cache[func]
         except KeyError:
-            frame_begin, frame_end = ("<g>\n<title>", "</g>\n")
+            frame_begin, frame_end = ("<g {}>\n<title>", "</g>\n")
         # -- END: inlined 'settings.name_attr.get_frame'.
         list_append(
             frames,
-            f"{frame_begin}{info}</title>\n{frame_rectangle}" f"{frame_text}{frame_end}",
+            f"{frame_begin.format(f'data-e={exc_pct}')}{info}</title>\n{frame_rectangle}"
+            f"{frame_text}{frame_end}",
         )
 
 
@@ -2955,11 +3190,12 @@ def _construct_node_diff_frames(
     factor: float = settings.factor
     count_name: str = settings.count_name
     translation_table: dict[int, str] = Settings.TranslationTable
-    max_delta: float = nodes.max_delta
+    max_delta_incl: float = nodes.max_delta_incl
+    max_delta_excl: float = nodes.max_delta_excl
 
     negate_coeff: int = -1 if settings.negate else 1
     root_frames = 2 if settings.total else 1
-    for func, depth, etime, stime, delta in nodes.nodes:
+    for func, depth, etime, stime, delta_incl, delta_excl in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
         y1 = y1_table[depth + root_frames]
@@ -2978,10 +3214,11 @@ def _construct_node_diff_frames(
         pct = (100 * samples) / total_factor
         # Strip stack annotations and SVG-breaking characters.
         escaped_func = re_sub(suffix_regex, "", str_translate(func, translation_table))
-        d = delta * negate_coeff
+        d_incl = delta_incl * negate_coeff
+        d_excl = delta_excl * negate_coeff
         info = (
             f"{escaped_func} ({samples_txt} {count_name}, {pct:.2f}%;"
-            f" {(100 * d) / total_factor:+.2f}%)"
+            f" {(100 * d_incl) / total_factor:+.2f}%)"
         )
 
         chars = int((x2 - x1) / char_space)
@@ -2993,13 +3230,13 @@ def _construct_node_diff_frames(
 
         frame_rectangle = (
             f'<rect x="{x1:.1f}" y="{y1:.1f}" width="{x2 - x1:.1f}"'
-            f' height="{y2 - y1:.1f}" fill="{color_scale(d, max_delta)}" rx="2"'
+            f' height="{y2 - y1:.1f}" fill="{color_scale(d_incl, max_delta_incl)}" rx="2"'
             ' ry="2" />\n'
         )
         frame_text = f'<text x="{x1 + 3:.2f}"' f' y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
         list_append(
             frames,
-            f"<g>\n<title>{info}</title>\n{frame_rectangle}{frame_text}</g>\n",
+            f"<g data-ed={color_scale(d_excl, max_delta_excl)}>\n<title>{info}</title>\n{frame_rectangle}{frame_text}</g>\n",
         )
 
 
@@ -3039,11 +3276,12 @@ def _construct_node_diff_frames_with_attrs(
     count_name: str = settings.count_name
     translation_table: dict[int, str] = Settings.TranslationTable
     name_attr_cache = settings.name_attr.attr_cache
-    max_delta: float = nodes.max_delta
+    max_delta_incl: float = nodes.max_delta_incl
+    max_delta_excl: float = nodes.max_delta_excl
 
     negate_coeff: int = -1 if settings.negate else 1
     root_frames = 2 if settings.total else 1
-    for func, depth, etime, stime, delta in nodes.nodes:
+    for func, depth, etime, stime, delta_incl, delta_excl in nodes.nodes:
         x1 = x_pad_1 + stime * width_per_count_unit
         x2 = x_pad_1 + etime * width_per_count_unit
         y1 = y1_table[depth + root_frames]
@@ -3062,10 +3300,11 @@ def _construct_node_diff_frames_with_attrs(
         pct = (100 * samples) / total_factor
         # Strip stack annotations and SVG-breaking characters.
         escaped_func = re_sub(suffix_regex, "", str_translate(func, translation_table))
-        d = delta * negate_coeff
+        d_incl = delta_incl * negate_coeff
+        d_excl = delta_excl * negate_coeff
         info = (
             f"{escaped_func} ({samples_txt} {count_name}, {pct:.2f}%;"
-            f" {(100 * d) / total_factor:+.2f}%)"
+            f" {(100 * d_incl) / total_factor:+.2f}%)"
         )
 
         chars = int((x2 - x1) / char_space)
@@ -3077,7 +3316,7 @@ def _construct_node_diff_frames_with_attrs(
 
         frame_rectangle = (
             f'<rect x="{x1:.1f}" y="{y1:.1f}" width="{x2 - x1:.1f}"'
-            f' height="{y2 - y1:.1f}" fill="{color_scale(d, max_delta)}" rx="2"'
+            f' height="{y2 - y1:.1f}" fill="{color_scale(d_incl, max_delta_incl)}" rx="2"'
             ' ry="2" />\n'
         )
         frame_text = f'<text x="{x1 + 3:.2f}"' f' y="{3 + (y1 + y2) / 2:.2f}">{text}</text>\n'
@@ -3085,11 +3324,12 @@ def _construct_node_diff_frames_with_attrs(
         try:
             frame_begin, frame_end = name_attr_cache[func]
         except KeyError:
-            frame_begin, frame_end = ("<g>\n<title>", "</g>\n")
+            frame_begin, frame_end = ("<g {}>\n<title>", "</g>\n")
         # -- END: inlined 'settings.name_attr.get_frame'.
         list_append(
             frames,
-            f"{frame_begin}{info}</title>\n{frame_rectangle}" f"{frame_text}{frame_end}",
+            f"{frame_begin.format(f'data-ed={color_scale(d_excl, max_delta_excl)}')}{info}</title>\n{frame_rectangle}"
+            f"{frame_text}{frame_end}",
         )
 
 
@@ -3566,7 +3806,7 @@ def _build_flame_graph(
     nodes, geometry = process_stacks(parsed_profile, settings)
 
     # Construct the SVG.
-    svg_setup = create_svg_without_frames(settings, geometry, colors)
+    svg_setup = create_svg_without_frames(settings, geometry, colors, nodes.is_diff)
     svg_frames: list[str] = construct_frames(nodes, geometry, settings, colors)
     svg_frames.append("</svg>\n")
     colors.store_palette()
