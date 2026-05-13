@@ -49,7 +49,11 @@
                         const textElement = node.querySelector("title");
 
                         if (textElement && textElement.innerHTML) {
-                            let searchTerm = cleanTitle(textElement.innerHTML);
+                            {% if use_perl %}
+                            let searchTerm = cleanTitlePerl(textElement.innerHTML);
+                            {% else %}
+                            let searchTerm = cleanTitlePython(textElement.innerHTML);
+                            {% endif %}
 
                             window[`lhs_{{index}}_search_hover`](searchTerm);
                             window[`rhs_{{index}}_search_hover`](searchTerm);
@@ -148,12 +152,22 @@
             });
         });
 
-        function cleanTitle(title) {
-            // strips the number of samples from the function names. Keeps the opening parenthesis symbol '('
-            // to ensure exact match.
+        function cleanTitlePerl(title) {
+            // strips the number of samples from the function names. Keeps the opening
+            // parenthesis symbol '(' to ensure exact match.
             let index = title.search(/\(\d/);
             if (index !== -1) {
                 title = title.slice(0, index) + '(';
+            }
+            return title;
+        }
+
+        function cleanTitlePython(title) {
+            // strips the number of samples from the function names. Keeps the newline
+            // symbol to ensure exact match.
+            let index = title.search(/\n/);
+            if (index !== -1) {
+                title = title.slice(0, index) + '\n';
             }
             return title;
         }

@@ -100,6 +100,10 @@ def escape_content(tag: str, content: str) -> str:
         (r"\"matched\"", f'"{tag}_matched"'),
         (r"\"matchedhover\"", f'"{tag}_matchedhover"'),
         (r"details", f"{tag}_details"),
+        (r"nameTypeLabel", f"{tag}_nameTypeLabel"),
+        (r"inclusiveLabel", f"{tag}_inclusiveLabel"),
+        (r"exclusiveLabel", f"{tag}_exclusiveLabel"),
+        (r"matched", f"{tag}_matched"),
         (r"searchbtn", f"{tag}_searchbtn"),
         (r"unzoombtn", f"{tag}_unzoombtn"),
         (r"currentSearchTerm", f"{tag}_currentSearchTerm"),
@@ -122,7 +126,7 @@ def escape_content(tag: str, content: str) -> str:
         (r"document.", f"{tag}_svg."),
         (f"{tag}_svg.createElementNS", "document.createElementNS"),
         (
-            f"({tag}_(svg|details|searchbtn|matchedtxt|matchedHoverTxt|ignorecaseBtn|unzoombtn)) = {tag}_svg.",
+            f"({tag}_(svg|details|detailsName|detailsIncl|detailsExcl|matchedHoverCount|matchedHoverIncl|matchedHoverExcl|matchedSearchCount|matchedSearchIncl|matchedSearchExcl|nameTypeLabel|inclusiveLabel|exclusiveLabel|matchedHoverLabel|matchedSearchLabel|searchbtn|matchedtxt|matchedHoverTxt|ignorecaseBtn|unzoombtn)) = {tag}_svg.",
             "\\1 = document.",
         ),
         # Huge thanks to following article:

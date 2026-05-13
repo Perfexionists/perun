@@ -1193,6 +1193,7 @@ def generate_report_from_folded(
         stat_list=[flamegraphs[0][0]],
         units=[fg_settings.countname],
         nodes=iter(pair_profile.baseline.maps.func_id_reverse_map.values()),
+        use_perl=fg_settings.use_perl,
         flamegraphs=flamegraphs,
         selection_table=iterate_polars_tabular(
             tabular_profile,
