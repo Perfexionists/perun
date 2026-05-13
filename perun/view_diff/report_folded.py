@@ -698,8 +698,8 @@ class FlameGraphGrid:
     DefaultTitles: ClassVar[tuple[str, str, str, str]] = (
         "Baseline Flamegraph",
         "Target Flamegraph",
-        "Baseline-Target Diff Flamegraph",
-        "Target-Baseline Diff Flamegraph",
+        "Baseline > Target Diff Flamegraph",
+        "Target > Baseline Diff Flamegraph",
     )
     # The tags used for escaping flamegraphs in the grid.
     EscapeTags: ClassVar[tuple[str, str, str, str]] = ("lhs_0", "rhs_0", "lhs_diff_0", "rhs_diff_0")
@@ -1897,10 +1897,10 @@ def build_flamegraph_grid_commands(
         build_flamegraph_command(baseline, settings, titles[0], *new_flags, **override_kwargs),
         build_flamegraph_command(target, settings, titles[1], *new_flags, **override_kwargs),
         *build_differential_flamegraph_commands(
-            baseline, target, settings, titles[2], *new_flags, **override_kwargs
+            target, baseline, settings, titles[2], "negate", *new_flags, **override_kwargs
         ),
         *build_differential_flamegraph_commands(
-            target, baseline, settings, titles[3], "negate", *new_flags, **override_kwargs
+            baseline, target, settings, titles[3], *new_flags, **override_kwargs
         ),
     )
 
