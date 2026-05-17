@@ -500,6 +500,7 @@ class FlameGraphSettings:
     :ivar bgcolors: the image background color
     :ivar inverted: whether an icicle graph should be rendered instead
     :ivar rootnode: the root node name
+    :ivar subrootnode: the sub-root node name
     :ivar total: the total amount of consumed resources
     :ivar normalize: normalize the sample counts in differential graphs
     :ivar parallelize: parallelize the creation of flamegraph grids
@@ -521,6 +522,7 @@ class FlameGraphSettings:
         "bgcolors",
         "inverted",
         "rootnode",
+        "subrootnode",
         "total",
         "normalize",
         "parallelize",
@@ -542,6 +544,7 @@ class FlameGraphSettings:
     DefaultBgColors: ClassVar[str] = ""
     DefaultInverted: ClassVar[bool] = False
     DefaultRootNode: ClassVar[str] = "all"
+    DefaultSubRootNode: ClassVar[str] = "subtotal"
     DefaultTotal: ClassVar[int] = 0
 
     # The map links the attribute names and their default values for easier iteration over the
@@ -557,6 +560,7 @@ class FlameGraphSettings:
         "colors": DefaultColors,
         "bgcolors": DefaultBgColors,
         "rootnode": DefaultRootNode,
+        "subrootnode": DefaultSubRootNode,
         "total": DefaultTotal,
     }
 
@@ -573,6 +577,7 @@ class FlameGraphSettings:
         bgcolors: str = DefaultBgColors,
         inverted: bool = DefaultInverted,
         rootnode: str = DefaultRootNode,
+        subrootnode: str = DefaultSubRootNode,
         total: int = DefaultTotal,
         normalize: bool = False,
         parallelize: bool = True,
@@ -591,6 +596,7 @@ class FlameGraphSettings:
         :param bgcolors: the image background color
         :param inverted: whether an icicle graph should be rendered instead
         :param rootnode: the root node name
+        :param subrootnode: the sub-root node name
         :param total: the total amount of consumed resources
         :param parallelize: parallelize the creation of flamegraph grids
         :param use_perl_scripts: use the Perl variants of flame graph scripts
@@ -608,6 +614,7 @@ class FlameGraphSettings:
         self.bgcolors: str = str(bgcolors)
         self.inverted: bool = bool(inverted)
         self.rootnode: str = str(rootnode)
+        self.subrootnode: str = str(subrootnode)
         self.total: int = int(total)
         self.normalize: bool = bool(normalize)
 
@@ -615,8 +622,8 @@ class FlameGraphSettings:
         self.use_perl = use_perl_scripts
         suffix: str = ".pl" if use_perl_scripts else ".py"
         self.fg_script_path: Path = Path(script_kit.get_script(f"flamegraph{suffix}"))
-        self.difffolded_path: Path = Path(script_kit.get_script(f"difffolded.pl"))
-        self.diff_fg_path: Path = Path(script_kit.get_script(f"diff_flamegraph.py"))
+        self.difffolded_path: Path = Path(script_kit.get_script("difffolded.pl"))
+        self.diff_fg_path: Path = Path(script_kit.get_script("diff_flamegraph.py"))
 
     @classmethod
     def from_cli(cls, **cli_kwargs: Any) -> FlameGraphSettings:
@@ -1023,6 +1030,7 @@ def generate_report_from_folded(
         **cli_kwargs,
         countname=cli_kwargs["profiled_resource"],
         rootnode="Maximum (Baseline, Target)",
+        subrootnode="Profile Total",
     )
 
     # Parse the input profiles and create their Polars representation.
@@ -1817,6 +1825,9 @@ def _add_flamegraph_params(
     kw_params: dict[str, str | int] = settings.get_nondefault_kw_attributes()
     # The parameters may be overridden and extended by the caller.
     kw_params.update(override_kwargs)
+    if settings.use_perl:
+        # Sub-root is unsupported by Perl.
+        del kw_params["subrootnode"]
     for key, val in kw_params.items():
         if val is not None:
             params.append(f"--{key}")
