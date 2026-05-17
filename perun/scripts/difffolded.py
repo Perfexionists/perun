@@ -245,12 +245,17 @@ def diff_folded_lazy(
         ...
     ```
 
+    The lazy variant will store the baseline profile in memory and then, when
+    possible, will yield diff records on demand without storing the entire
+    target profile in memory.
+
     Note that the most efficient use-case for lazy diff is when neither sorting
     nor normalization is requested. Otherwise, requesting normalization and/or
     sorting will lead to slightly slower execution and more memory consumption
-    as the entire target profile needs to be parsed eagerly. Still, minor
-    performance gains compared to a fully eager approach can be expected as the
-    normalization and sorting can be done at least partially lazily.
+    as the entire target profile needs to be eagerly parsed and stored in
+    memory. Still, minor performance gains compared to a fully eager approach
+    can be expected as the normalization and sorting can be done at least
+    partially lazily.
 
 
     :param baseline: a path to the baseline folded profile.
