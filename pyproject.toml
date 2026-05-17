@@ -194,7 +194,8 @@ source = [
 omit = [
     "tests/*",
     "perun/collect/trace/*",
-    "perun/thirdparty/*"
+    "perun/thirdparty/*",
+    "perun/scripts/"  # FIXME: The Python scripts are only temporary.
 ]
 
 [tool.coverage.report]

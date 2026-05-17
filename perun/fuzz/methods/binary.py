@@ -70,8 +70,8 @@ def swap_byte(lines: list[bytes]) -> None:
     ba1[index1] = ba2[index2]
     ba2[index2] = tmp
 
-    lines[line_num1] = ba1
-    lines[line_num2] = ba2
+    lines[line_num1] = bytes(ba1)
+    lines[line_num2] = bytes(ba2)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)

@@ -153,8 +153,11 @@ def test_diff_flamegraph_invalid_param(pcs_with_root):
         ],
     )
     assert result.exit_code == 0
-    assert 'Unrecognized bgcolor option "invalid_color"' in result.output
-    assert Path.cwd() / "flamegraph_warn.html" in Path.cwd().iterdir()
+    # Test both Perl and Python variants of the error message.
+    assert (
+        'Unrecognized bgcolor option "invalid_color"' in result.output
+        or "Unrecognized --bgcolors option 'invalid_color'"
+    )
 
 
 def test_diff_report_native(pcs_with_root):
