@@ -761,6 +761,7 @@ def generate_report_from_native(
     }
     # FIXME: temporary solution before refactoring to FlameGraphSettings.
     del fg_forward_kwargs["parallelize"]
+    del fg_forward_kwargs["normalize"]
 
     # We automatically set the value of True for kperf, which samples
     Config().minimize = kwargs.get("minimize", False)
