@@ -393,11 +393,12 @@ class PolarsTabularTraceProfiles:
     'trace' column. See the module docstring for description of the difference metrics.
 
     *Filtered*: The trace profile will have only up to top 'max_traces_per_func' traces per each
-    function w.r.t. the 'prop_diff_incl' metric.
+    function w.r.t. the 'prop_diff_incl' and 'prop_diff_excl' metric. Note that the traces are
+    deduplicated; for example, if `max_traces_per_func` = 10 and some function has a total of 15
+    traces, but only 13 of them appear in both top selections, the resulting table will keep only
+    the 13 traces instead of 20 (7 of which would be duplicated).
 
-    *Sorted*: Both profiles are sorted by the function IDs in the ascending order. Additionally,
-    the trace profile also contains traces within each function sorted w.r.t. the 'prop_diff_incl'
-    metric in the descending order.
+    *Sorted*: Both profiles are sorted by the function IDs in the ascending order.
 
     For example, the tabular traces and function DataFrames might look like this:
 
@@ -1200,6 +1201,7 @@ def generate_report_from_folded(
             pair_profile.baseline.maps.func_id_reverse_map,
             fg_settings.countname,
         ),
+        max_traces_per_func=filter_params.max_function_traces,
         offline=is_report_offline,
         notes_enabled=True,
         links=report_links,
@@ -1606,20 +1608,46 @@ def polars_merged_to_tabular_profiles(
     )
 
     # Build merged trace profile with additional absolute and relative diff metrics, where each
-    # function keeps only up to top 'max_traces_per_func' traces w.r.t. the inclusive proportional
-    # diff metric.
-    # TODO: Eventually, we will want to keep top 'max_traces_per_func' for more than one difference
-    #  metric. However, we first need to update the report table such that it allows the user to
-    #  switch between the per-metric sets of top traces.
-    table_traces_lf = (
+    # function keeps only up to top 'max_traces_per_func' traces w.r.t. both inclusive and
+    # exclusive proportional diff metric.
+    # TODO: calculate the top traces also for other metrics, e.g., absolute delta or relative
+    #  delta. This will, however, require some hook on sort operation in our trace tables to
+    #  always retrieve the correct set of functions.
+    top_incl_traces = (
+        # This groups traces on a per-function basis and then filters up to top N rows (traces)
+        # for each function w.r.t. the inclusive proportional delta.
         merged.traces.lazy()
-        # This sorts the DataFrame rows first by function IDs, and then the traces for each
-        # individual function by the diff value in descending order.
-        .sort(["func", "prop_diff_incl"], descending=[False, True])
-        .group_by("func", maintain_order=True)
-        # We keep only up to 'max_traces_per_func' top number of traces per each function.
-        .head(max_traces_per_func)
+        .group_by("func")
+        .agg(
+            pl.struct(pl.exclude("func"))
+            .top_k_by("prop_diff_incl", k=max_traces_per_func)
+            .alias("rows")
+        )
+        .explode("rows")
+        .unnest("rows")
+    )
+
+    top_excl_traces = (
+        # Similar to the previous step, but filters based on th exclusive proportional delta.
+        merged.traces.lazy()
+        .group_by("func")
+        .agg(
+            pl.struct(pl.exclude("func"))
+            .top_k_by("prop_diff_excl", k=max_traces_per_func)
+            .alias("rows")
+        )
+        .explode("rows")
+        .unnest("rows")
+    )
+
+    # Concatenate and deduplicate both tables. For example, if `max_traces_per_func` = 10 and some
+    # function has a total of 15 traces, but only 13 of them appear in both top selections, the
+    # resulting table will keep only the 13 traces instead of 20 (7 of which would be duplicated).
+    table_traces_lf = (
+        pl.concat([top_incl_traces, top_excl_traces])
+        .unique(subset=["func", "trace"])
         .with_columns(*abs_rel_diff_expressions)
+        .sort("func", descending=False)
     )
 
     return PolarsTabularTraceProfiles(*pl.collect_all([table_traces_lf, table_funcs_lf]))
@@ -1668,14 +1696,15 @@ def iterate_polars_tabular(
     tabular_funcs = tabular_profile.funcs
     df_row = pl.DataFrame.row
     df_iter_rows = pl.DataFrame.iter_rows
+    # FIXME: Remove the dependency on SelectRow. We should ideally pass the records as tuples
+    #  directly to improve performance.
     SelectRow = report_native.SelectionRow
 
     common_funcs: set[int] = set(common_functions["func"].to_list())
 
-    # TODO: We want to support both inclusive and exclusive traces later on.
     inclusive_resource_type = f"Inclusive {resource_type}"
     # FIXME: Temporary hack so that we can use the SelectionRow class.
-    report_native.Stats.SortedStats = [inclusive_resource_type]
+    report_native.Stats.SortedStats = [inclusive_resource_type, f"Exclusive {resource_type}"]
     group_df: pl.DataFrame
     # Iterate over groups of traces belonging to individual functions from the lowest to the
     # highest function IDs.
@@ -1707,14 +1736,24 @@ def iterate_polars_tabular(
                 inclusive_resource_type,
                 # inclusive
                 r[2],
+                # exclusive
+                r[3],
                 # inclusive_target
                 r[4],
+                # exclusive_target
+                r[5],
                 # prop_diff_incl
                 r[6],
+                # prop_diff_excl
+                r[7],
                 # abs_diff_incl
                 r[8],
+                # abs_diff_excl
+                r[9],
                 # rel_diff_incl
                 r[10],
+                # rel_diff_excl
+                r[11],
                 # Full trace: 'firstID;...;lastID#base1;...;baseN#target1;...;targetN'
                 # FIXME: the part of the trace after the first '#' is not used, but the report
                 #  still expects it. We will remove it later.
@@ -1729,9 +1768,15 @@ def iterate_polars_tabular(
             # Function ID
             row[0],
             state,
-            # Function stats: resource type index, inclusive, inclusive_target, prop_diff_incl,
-            #  abs_diff_incl, rel_diff_incl
-            [(0, row[1], row[3], row[5], row[7], row[9])],
+            # Inclusive and exclusive function stats:
+            [
+                # resource type index, inclusive (baseline), inclusive_target,
+                #  prop_diff_incl, abs_diff_incl, rel_diff_incl
+                (0, row[1], row[3], row[5], row[7], row[9]),
+                # resource type index, exclusive (baseline), exclusive_target,
+                #  prop_diff_excl, abs_diff_excl, rel_diff_excl
+                (1, row[2], row[4], row[6], row[8], row[10]),
+            ],
             top_traces,
         )
 

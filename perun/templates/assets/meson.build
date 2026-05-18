@@ -20,7 +20,7 @@ perun_templates_assets_files = files(
     'speedometer.svg',
     'stats.svg',
     'stylus.svg',
-    'trace.svg',
+    'table_view.svg',
     'vulnerabilities.svg',
 )
 

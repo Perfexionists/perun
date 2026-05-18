@@ -70,12 +70,6 @@ class SelectionRow:
     :ivar index: index in the sorted list of data
     :ivar fresh: the state of the uid - 1) not in baseline (added in target),
         2) not in target (removed in target), or 3) possibly unchanged
-    :ivar main_stat: type of the data
-    :ivar baseline_abs: the absolute baseline value
-    :ivar target_abs: the absolute target value
-    :ivar proportional_rel_delta: the relative delta between total target and baseline value
-    :ivar abs_delta: absolute change between target and baseline
-    :ivar rel_delta: relative change between target and baseline
     :ivar stats: overview of all stat values
     :ivar trace_stats: a collection of stats for traces
     """
@@ -85,11 +79,6 @@ class SelectionRow:
         "index",
         "fresh",
         "main_stat",
-        "baseline_abs",
-        "target_abs",
-        "proportional_rel_delta",
-        "abs_delta",
-        "rel_delta",
         "stats",
         "trace_stats",
     ]
@@ -100,18 +89,16 @@ class SelectionRow:
         index: int,
         fresh: Literal["not in baseline", "not in target", "in both"],
         stats: list[tuple[int, float, float, float, float, float]],
-        trace_stats: list[tuple[str, str, float, float, float, float, float, str]],
+        trace_stats: list[
+            tuple[
+                str, str, float, float, float, float, float, float, float, float, float, float, str
+            ]
+        ],
     ) -> None:
         """Initializes the selection row"""
         self.uid: str = uid
         self.index: int = index
         self.fresh: Literal["not in baseline", "not in target", "in both"] = fresh
-        self.main_stat: int = stats[0][0]
-        self.baseline_abs: float = common_kit.to_compact_num(stats[0][1])
-        self.target_abs: float = common_kit.to_compact_num(stats[0][2])
-        self.proportional_rel_delta: float = common_kit.to_compact_num(stats[0][3])
-        self.abs_delta: float = common_kit.to_compact_num(stats[0][4])
-        self.rel_delta: float = common_kit.to_compact_num(stats[0][5])
         # stat_type, baseline_abs, target_abs, prop_rel_delta, abs_delta, rel_delta
         self.stats: list[tuple[int, float, float, float, float, float]] = [
             (
@@ -124,9 +111,18 @@ class SelectionRow:
             )
             for stat in stats
         ]
-        # trace, stat_t, baseline_abs, target_abs, prop_rel_delta, abs_delta, rel_delta, long_trace
+        if len(stats) < 2:
+            # Add dummy exclusive consumption when unavailable (native report).
+            self.stats.append((1, 0.0, 0.0, 0.0, 0.0, 0.0))
         all_stats = Stats.all_stats()
-        self.trace_stats: list[tuple[str, int, float, float, float, float, float, str]] = [
+        # trace, stat_t, baseline_abs_incl, baseline_abs_excl, target_abs_incl, target_abs_excl,
+        # prop_rel_delta_incl, prop_rel_delta_excl, abs_delta_incl, abs_delta_excl,
+        # rel_delta_incl, rel_delta_excl, long_trace
+        self.trace_stats: list[
+            tuple[
+                str, int, float, float, float, float, float, float, float, float, float, float, str
+            ]
+        ] = [
             (
                 t[0],
                 all_stats.index(t[1]),
@@ -135,7 +131,12 @@ class SelectionRow:
                 common_kit.to_compact_num(t[4]),
                 common_kit.to_compact_num(t[5]),
                 common_kit.to_compact_num(t[6]),
-                t[7],
+                common_kit.to_compact_num(t[7]),
+                common_kit.to_compact_num(t[8]),
+                common_kit.to_compact_num(t[9]),
+                common_kit.to_compact_num(t[10]),
+                common_kit.to_compact_num(t[11]),
+                t[12],
             )
             for t in trace_stats
         ]
@@ -625,7 +626,10 @@ def generate_selection(graph: Graph, trace_stats: dict[str, list[TraceStat]]) ->
     """
     selection = []
     log.minor_info("Generating selection table")
-    trace_stat_cache: dict[str, tuple[str, str, float, float, float, float, float, str]] = {}
+    trace_stat_cache: dict[
+        str,
+        tuple[str, str, float, float, float, float, float, float, float, float, float, float, str],
+    ] = {}
     stat_len = len(Stats.all_stats())
     baseline_max, target_max = _get_baseline_target_total()
     for uid, nodes in log.progress(
@@ -669,15 +673,22 @@ def generate_selection(graph: Graph, trace_stats: dict[str, list[TraceStat]]) ->
 def extract_stats_from_trace(
     graph: Graph,
     uid_stats: list[TraceStat],
-    cache: dict[str, tuple[str, str, float, float, float, float, float, str]],
-) -> list[tuple[str, str, float, float, float, float, float, str]]:
+    cache: dict[
+        str,
+        tuple[str, str, float, float, float, float, float, float, float, float, float, float, str],
+    ],
+) -> list[
+    tuple[str, str, float, float, float, float, float, float, float, float, float, float, str]
+]:
     """Extracts stats from trace
 
     :param graph: sankey graph
     :param uid_stats: stats for each uid in the graph
     :param cache: helper cache for reducing the statistics
     """
-    uid_trace_stats: list[tuple[str, str, float, float, float, float, float, str]] = []
+    uid_trace_stats: list[
+        tuple[str, str, float, float, float, float, float, float, float, float, float, float, str]
+    ] = []
     top_n_limit, sort_by_key, relative_thresh, threshold_idx = (
         Config().top_n_traces,
         4,
@@ -710,14 +721,20 @@ def extract_stats_from_trace(
                     common_kit.compact_convert_list_to_str(trace.target_partial_costs[i])
                 )
                 long_data = f"{long_trace}#{long_baseline_stats}#{long_target_stats}"
+                # FIXME: This uses dummy values for exclusive trace metrics.
                 cache[key] = (
                     short_id,
                     stat,
                     baseline_cost,
+                    0.0,
                     target_cost,
+                    0.0,
                     prop_diff,
+                    0.0,
                     abs_amount,
+                    0.0,
                     rel_amount,
+                    0.0,
                     long_data,
                 )
             if float(cache[key][threshold_idx]) >= relative_thresh:
