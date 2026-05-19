@@ -49,7 +49,11 @@
                         const textElement = node.querySelector("title");
 
                         if (textElement && textElement.innerHTML) {
-                            let searchTerm = cleanTitle(textElement.innerHTML);
+                            {% if use_perl %}
+                            let searchTerm = cleanTitlePerl(textElement.innerHTML);
+                            {% else %}
+                            let searchTerm = cleanTitlePython(textElement.innerHTML);
+                            {% endif %}
 
                             window[`lhs_{{index}}_search_hover`](searchTerm);
                             window[`rhs_{{index}}_search_hover`](searchTerm);
@@ -90,6 +94,28 @@
             {% endfor %}
         }
 
+        function toggleAllFlamegraphs() {
+            // Toggle only those flame graphs that are not already in the desired
+            // exclusive or inclusive view.
+            let switch_from = "Show exclusive";
+            if (toggleExclInclBtn.firstChild.nodeValue === "Show Exclusive Consumption") {
+                toggleExclInclBtn.firstChild.nodeValue = "Show Inclusive Consumption";
+            } else {
+                toggleExclInclBtn.firstChild.nodeValue = "Show Exclusive Consumption";
+                switch_from = "Show inclusive";
+            }
+
+            {% for index in range(0, flamegraphs|length) %}
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(variation => {
+                    const id_clickable = `${variation}_{{ index }}_excToggle`;
+                    const element = document.getElementById(id_clickable);
+                    if (element && element.firstChild.nodeValue === switch_from) {
+                        element.dispatchEvent(new Event("click", { bubbles: true }));
+                    }
+                });
+            {% endfor %}
+        }
+
         const resetSearchBtn = document.getElementById("flamegraph_search_reset_all");
         if (resetSearchBtn) {
             resetSearchBtn.addEventListener("click", () => resetFlamegraphAll("search"));
@@ -100,6 +126,10 @@
             resetZoomBtn.addEventListener("click", () => resetFlamegraphAll("unzoom"));
         }
 
+        const toggleExclInclBtn = document.getElementById("flamegraph_toggle_ie_all");
+        if (toggleExclInclBtn) {
+            toggleExclInclBtn.addEventListener("click", () => toggleAllFlamegraphs());
+        }
 
 
         // Different types of flamegraph ordering switch
@@ -122,12 +152,22 @@
             });
         });
 
-        function cleanTitle(title) {
-            // strips the number of samples from the function names. Keeps the opening parenthesis symbol '('
-            // to ensure exact match.
+        function cleanTitlePerl(title) {
+            // strips the number of samples from the function names. Keeps the opening
+            // parenthesis symbol '(' to ensure exact match.
             let index = title.search(/\(\d/);
             if (index !== -1) {
                 title = title.slice(0, index) + '(';
+            }
+            return title;
+        }
+
+        function cleanTitlePython(title) {
+            // strips the number of samples from the function names. Keeps the newline
+            // symbol to ensure exact match.
+            let index = title.search(/\n/);
+            if (index !== -1) {
+                title = title.slice(0, index) + '\n';
             }
             return title;
         }
