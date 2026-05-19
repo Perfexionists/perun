@@ -135,6 +135,10 @@
     white-space: nowrap;
 }
 
+.stat-item-aligned-end {
+    align-items: flex-end;
+}
+
 .stat-label {
     font-size: 1.3em;
     color: var(--color-primary-text);

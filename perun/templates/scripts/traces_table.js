@@ -205,7 +205,7 @@ class TracesTable {
             if (this.enableFilters && col.filterable !== false) {
                 if (col.type === 'select') {
                     const select = document.createElement('select');
-                    select.id = `filter-${col.data}`;
+                    select.id = `${this.container.id}-filter-${col.data}`;
 
                     const uniqueValues = [...new Set(this.data.map(item => item[col.data]))].sort();
 
@@ -234,7 +234,7 @@ class TracesTable {
                     const minInput = document.createElement('input');
                     minInput.type = 'text';
                     minInput.placeholder = 'Min';
-                    minInput.id = `filter-${col.data}-min`;
+                    minInput.id = `${this.container.id}-filter-${col.data}-min`;
                     minInput.value = (this.filters[col.data] && this.filters[col.data].min) || '';
                     minInput.addEventListener('input', (e) => {
                         this.handleRangeFilter(col.data, 'min', e.target.value);
@@ -244,7 +244,7 @@ class TracesTable {
                     const maxInput = document.createElement('input');
                     maxInput.type = 'text';
                     maxInput.placeholder = 'Max';
-                    maxInput.id = `filter-${col.data}-max`;
+                    maxInput.id = `${this.container.id}-filter-${col.data}-max`;
                     maxInput.value = (this.filters[col.data] && this.filters[col.data].max) || '';
                     maxInput.addEventListener('input', (e) => {
                         this.handleRangeFilter(col.data, 'max', e.target.value);
@@ -257,7 +257,7 @@ class TracesTable {
                 } else {
                     const input = document.createElement('input');
                     input.type = 'text';
-                    input.id = `filter-${col.data}`;
+                    input.id = `${this.container.id}-filter-${col.data}`;
                     input.value = this.filters[col.data] || '';
                     
                     if (col.data === 'uid') {
