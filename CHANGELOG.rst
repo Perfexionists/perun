@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+0.27.2 (2026-05-23)
+-------------------
+
+  - The flamegraphs are now by default generated using native Python scripts.
+  - Flamegraphs in reports now have an additional sub-root node that can be zoomed to unscale the graph w.r.t. the compared one.
+  - Flamegraphs in reports now support exclusive consumption view.
+  - Tabular view in reports now also renders a table with exclusive resource consumption.
+
+
 0.27.1 (2026-04-22)
 -------------------
 
