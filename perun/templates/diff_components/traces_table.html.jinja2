@@ -14,167 +14,165 @@
 
     {% include 'scripts/traces_table.js' %}
 
+    const rawData = [
+        {%- for val in selection_table %}
+        {
+            "uid": "{{ val.uid }}",
+            "index": "{{ val.index }}",
+            "fresh": "{{ val.fresh }}",
+            "type": "{{ val.stats[0][0] }}",
+            "baseline_abs_incl": "{{ val.stats[0][1] }}",
+            "target_abs_incl": "{{ val.stats[0][2] }}",
+            "prop_rel_delta_incl": "{{ val.stats[0][3] }}",
+            "abs_delta_incl": "{{ val.stats[0][4] }}",
+            "rel_delta_incl": "{{ val.stats[0][5] }}",
+            "baseline_abs_excl": "{{ val.stats[1][1] }}",
+            "target_abs_excl": "{{ val.stats[1][2] }}",
+            "prop_rel_delta_excl": "{{ val.stats[1][3] }}",
+            "abs_delta_excl": "{{ val.stats[1][4] }}",
+            "rel_delta_excl": "{{ val.stats[1][5] }}",
+            "trace_stats": {{ val.trace_stats|tojson }},
+        },
+        {%- endfor %}
+    ];
+
     (function () {
-        const rawData = [
-            {%- for val in selection_table %}
+        const columnsInclusive = [
             {
-                "uid": "{{ val.uid }}",
-                "index": "{{ val.index }}",
-                "fresh": "{{ val.fresh }}",
-                "type": "{{ val.stats[0][0] }}",
-                "baseline_abs_incl": "{{ val.stats[0][1] }}",
-                "target_abs_incl": "{{ val.stats[0][2] }}",
-                "prop_rel_delta_incl": "{{ val.stats[0][3] }}",
-                "abs_delta_incl": "{{ val.stats[0][4] }}",
-                "rel_delta_incl": "{{ val.stats[0][5] }}",
-                "baseline_abs_excl": "{{ val.stats[1][1] }}",
-                "target_abs_excl": "{{ val.stats[1][2] }}",
-                "prop_rel_delta_excl": "{{ val.stats[1][3] }}",
-                "abs_delta_excl": "{{ val.stats[1][4] }}",
-                "rel_delta_excl": "{{ val.stats[1][5] }}",
-                "trace_stats": {{ val.trace_stats|tojson }},
+                data: 'uid',
+                title: 'Unit',
+                filterable: true,
+                width: '250px',
+                tooltip: 'The unit name.'
             },
-            {%- endfor %}
+            {
+                data: 'fresh',
+                title: 'Occurrence',
+                filterable: true,
+                type: 'select',
+                render: (data) => {
+                    let color = getColorForFreshness(data);
+                    return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+                },
+                tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
+            },
+            {
+                data: 'baseline_abs_incl',
+                title: 'Baseline',
+                type: 'number',
+                render: (data) => formatBold(data),
+                tooltip: TRACES_TOOLTIPS.baseline
+            },
+            {
+                data: 'target_abs_incl',
+                title: 'Target',
+                type: 'number',
+                render: (data) => formatBold(data),
+                tooltip: TRACES_TOOLTIPS.target
+            },
+            {
+                data: 'prop_rel_delta_incl',
+                title: 'Proportional Δ [%]',
+                type: 'number',
+                render: (data) => formatDelta(data, '%'),
+                tooltip: TRACES_TOOLTIPS.prop_rel_delta
+            },
+            {
+                data: 'abs_delta_incl',
+                title: 'Absolute Δ',
+                type: 'number',
+                render: (data) => formatDelta(data),
+                tooltip: TRACES_TOOLTIPS.abs_delta
+            },
+            {
+                data: 'rel_delta_incl',
+                title: 'Relative Δ [%]',
+                type: 'number',
+                render: (data) => formatDelta(data, '%'),
+                tooltip: TRACES_TOOLTIPS.rel_delta
+            }
         ];
 
-
-
-    const columnsInclusive = [
-        {
-            data: 'uid',
-            title: 'Unit',
-            filterable: true,
-            width: '250px',
-            tooltip: 'The unit name.'
-        },
-        {
-            data: 'fresh',
-            title: 'Occurrence',
-            filterable: true,
-            type: 'select',
-            render: (data) => {
-                let color = getColorForFreshness(data);
-                return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+        const columnsExclusive = [
+            {
+                data: 'uid',
+                title: 'Unit',
+                filterable: true,
+                width: '250px',
+                tooltip: 'The unit name.'
             },
-            tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
-        },
-        {
-            data: 'baseline_abs_incl',
-            title: 'Baseline',
-            type: 'number',
-            render: (data) => formatBold(data),
-            tooltip: TRACES_TOOLTIPS.baseline
-        },
-        {
-            data: 'target_abs_incl',
-            title: 'Target',
-            type: 'number',
-            render: (data) => formatBold(data),
-            tooltip: TRACES_TOOLTIPS.target
-        },
-        {
-            data: 'prop_rel_delta_incl',
-            title: 'Proportional Δ [%]',
-            type: 'number',
-            render: (data) => formatDelta(data, '%'),
-            tooltip: TRACES_TOOLTIPS.prop_rel_delta
-        },
-        {
-            data: 'abs_delta_incl',
-            title: 'Absolute Δ',
-            type: 'number',
-            render: (data) => formatDelta(data),
-            tooltip: TRACES_TOOLTIPS.abs_delta
-        },
-        {
-            data: 'rel_delta_incl',
-            title: 'Relative Δ [%]',
-            type: 'number',
-            render: (data) => formatDelta(data, '%'),
-            tooltip: TRACES_TOOLTIPS.rel_delta
-        }
-    ];
-
-    const columnsExclusive = [
-        {
-            data: 'uid',
-            title: 'Unit',
-            filterable: true,
-            width: '250px',
-            tooltip: 'The unit name.'
-        },
-        {
-            data: 'fresh',
-            title: 'Occurrence',
-            filterable: true,
-            type: 'select',
-            render: (data) => {
-                let color = getColorForFreshness(data);
-                return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+            {
+                data: 'fresh',
+                title: 'Occurrence',
+                filterable: true,
+                type: 'select',
+                render: (data) => {
+                    let color = getColorForFreshness(data);
+                    return `<span style="font-weight: bold; color: ${color}">${data}</span>`;
+                },
+                tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
             },
-            tooltip: 'Describes whether the Unit is present in the baseline and/or target profiles.'
-        },
-        {
-            data: 'baseline_abs_excl',
-            title: 'Baseline',
-            type: 'number',
-            render: (data) => formatBold(data),
-            tooltip: TRACES_TOOLTIPS.baseline
-        },
-        {
-            data: 'target_abs_excl',
-            title: 'Target',
-            type: 'number',
-            render: (data) => formatBold(data),
-            tooltip: TRACES_TOOLTIPS.target
-        },
-        {
-            data: 'prop_rel_delta_excl',
-            title: 'Proportional Δ [%]',
-            type: 'number',
-            render: (data) => formatDelta(data, '%'),
-            tooltip: TRACES_TOOLTIPS.prop_rel_delta
-        },
-        {
-            data: 'abs_delta_excl',
-            title: 'Absolute Δ',
-            type: 'number',
-            render: (data) => formatDelta(data),
-            tooltip: TRACES_TOOLTIPS.abs_delta
-        },
-        {
-            data: 'rel_delta_excl',
-            title: 'Relative Δ [%]',
-            type: 'number',
-            render: (data) => formatDelta(data, '%'),
-            tooltip: TRACES_TOOLTIPS.rel_delta
-        }
-    ];
-
-    new TracesTable('traces-table-inclusive', {
-        data: rawData,
-        columns: columnsInclusive,
-        itemsPerPage: 10,
-        initialSortColumn: 'prop_rel_delta_incl',
-        initialSortDirection: 'desc',
-        onRowClick: (row) => {
-            if (window.openTracePopup) {
-                window.openTracePopup(row, false);
+            {
+                data: 'baseline_abs_excl',
+                title: 'Baseline',
+                type: 'number',
+                render: (data) => formatBold(data),
+                tooltip: TRACES_TOOLTIPS.baseline
+            },
+            {
+                data: 'target_abs_excl',
+                title: 'Target',
+                type: 'number',
+                render: (data) => formatBold(data),
+                tooltip: TRACES_TOOLTIPS.target
+            },
+            {
+                data: 'prop_rel_delta_excl',
+                title: 'Proportional Δ [%]',
+                type: 'number',
+                render: (data) => formatDelta(data, '%'),
+                tooltip: TRACES_TOOLTIPS.prop_rel_delta
+            },
+            {
+                data: 'abs_delta_excl',
+                title: 'Absolute Δ',
+                type: 'number',
+                render: (data) => formatDelta(data),
+                tooltip: TRACES_TOOLTIPS.abs_delta
+            },
+            {
+                data: 'rel_delta_excl',
+                title: 'Relative Δ [%]',
+                type: 'number',
+                render: (data) => formatDelta(data, '%'),
+                tooltip: TRACES_TOOLTIPS.rel_delta
             }
-        }
-    });
+        ];
 
-    new TracesTable('traces-table-exclusive', {
-        data: rawData,
-        columns: columnsExclusive,
-        itemsPerPage: 10,
-        initialSortColumn: 'prop_rel_delta_excl',
-        initialSortDirection: 'desc',
-        onRowClick: (row) => {
-            if (window.openTracePopup) {
-                window.openTracePopup(row, true);
+        new TracesTable('traces-table-inclusive', {
+            data: rawData,
+            columns: columnsInclusive,
+            itemsPerPage: 10,
+            initialSortColumn: 'prop_rel_delta_incl',
+            initialSortDirection: 'desc',
+            onRowClick: (row) => {
+                if (window.openTracePopup) {
+                    window.openTracePopup(row, false);
+                }
             }
-        }
-    });
+        });
+
+        new TracesTable('traces-table-exclusive', {
+            data: rawData,
+            columns: columnsExclusive,
+            itemsPerPage: 10,
+            initialSortColumn: 'prop_rel_delta_excl',
+            initialSortDirection: 'desc',
+            onRowClick: (row) => {
+                if (window.openTracePopup) {
+                    window.openTracePopup(row, true);
+                }
+            }
+        });
     }) ();
 </script>

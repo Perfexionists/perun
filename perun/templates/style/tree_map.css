@@ -1,0 +1,71 @@
+    .panel-drag-handle {
+        height: 12px;
+        border-bottom: 1px solid #bbb;
+        background: linear-gradient(#e8e8e8, #d0d0d0);
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        padding-top: 3px;
+    }
+    .panel-drag-handle::after {
+        content: "";
+        display: block;
+        width: 32px;
+        height: 4px;
+        margin: 0 auto;
+        border-radius: 2px;
+        background: radial-gradient(circle, #888 1px, transparent 1.5px);
+        background-size: 6px 4px;
+    }
+    .panel-drag-handle:active {
+        cursor: grabbing;
+    }
+    .treemap-svg-container.panel-dragging {
+        opacity: 0.55;
+    }
+    .treemap-svg-container.panel-drop-target {
+        outline: 2px solid rgb(0, 120, 200);
+        outline-offset: -2px;
+    }
+    #treemaps.panel-drag-active {
+        user-select: none;
+    }
+    #treemaps.panel-drag-active .treemap-svg-container svg {
+        pointer-events: none;
+    }
+    .treemap-svg-container svg {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    .treemap-svg-container text {
+        font-family: Verdana, sans-serif;
+        font-size: 12px;
+        fill: rgb(0, 0, 0);
+    }
+    .treemap-svg-container .panel-title {
+        text-anchor: middle;
+        font-size: 17px;
+    }
+    .treemap-svg-container .svg-btn {
+        opacity: 0.5;
+        cursor: pointer;
+    }
+    .treemap-svg-container .svg-btn:hover,
+    .treemap-svg-container .svg-btn.show {
+        opacity: 1;
+    }
+    .treemap-svg-container .frames *:hover {
+        stroke: black;
+        stroke-width: 0.5;
+        cursor: pointer;
+    }
+    .treemap-svg-container .frames .leaf text {
+        pointer-events: none;
+    }
+    .treemap-svg-container .status-hide {
+        display: none;
+    }
+    .treemap-svg-container .status-detail-name {
+        font-style: italic;
+    }

@@ -4,6 +4,7 @@ perun_templates_script_files = files(
     'division_anchor.js',
     'environment_sidepanel.js',
     'flame_graph_js.html.jinja2',
+    'graph_grids.js',
     'chatbot.html.jinja2',
     'navigation_sidepanel.js',
     'notes.js',
@@ -12,6 +13,7 @@ perun_templates_script_files = files(
     'themes_js.html.jinja2',
     'tooltip.js',
     'traces_table.js',
+    'tree_map.js',
     'value_formatters_js.html.jinja2',
 )
 

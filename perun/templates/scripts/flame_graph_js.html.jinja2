@@ -131,25 +131,9 @@
             toggleExclInclBtn.addEventListener("click", () => toggleAllFlamegraphs());
         }
 
-
         // Different types of flamegraph ordering switch
-        const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");
-        visualizationSwitch.addEventListener("click", function () {
-            const elements = document.querySelectorAll(".comparison_container_stacked");
-
-            elements.forEach(element => {
-                const currentDirection = window.getComputedStyle(element).flexDirection;
-                if (currentDirection === "row") {
-                    element.style.flexDirection = "column";
-                } else {
-                    element.style.flexDirection = "row";
-                }
-            });
-
-            visualizationSwitch.querySelectorAll(".svg_switch_container").forEach(svg => {
-                svg.classList.toggle("hidden");
-                svg.classList.toggle("visible");
-            });
+        document.getElementById("flamegraph_layout_switch").addEventListener("click", function () {
+            switchGridLayout("#flame");
         });
 
         function cleanTitlePerl(title) {

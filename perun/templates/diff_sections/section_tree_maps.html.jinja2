@@ -1,0 +1,60 @@
+{% import 'macros/section_title.html.jinja2' as m_title %}
+
+{% set treemaps_info = "TODO" %}
+
+<div id="treemaps" class="section">
+
+    {{ m_title.display_title("Tree Maps", "tree_maps", treemaps_info, notes_enabled=notes_enabled) }}
+
+    <div class="grid_search_box" style="gap: 70px; margin-top: 30px;">
+        <div class="grid_search_box">
+            <span>Layout: </span>
+            <span id="treemaps_layout_switch" class="grid_layout_switch">
+                <span class="svg_switch_container visible">
+                    {% include 'assets/grid_view.svg' %}
+                </span>
+                <span class="svg_switch_container hidden">
+                    {% include 'assets/row_view.svg' %}
+                </span>
+            </span>
+        </div>
+
+        <div class="grid_search_box">
+            <label for="treemap_search_all_input" class="grid_search_input_label">Global Search:</label>
+            <input id="treemap_search_all_input" class="dt-input" />
+            <button id="treemap_search_all" class="grid_btn">Search All</button>
+            <button id="treemap_search_reset_all" class="grid_btn">Reset Global Search</button>
+            <button id="treemap_toggle_ie_all" class="grid_btn">Show Exclusive Consumption</button>
+        </div>
+    </div>
+
+    <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+        <div class="left column column_non_scale column_extended">
+            <div class="treemap-svg-container" id="treemap-baseline">
+                <div class="panel-drag-handle" title="Drag to swap with another treemap"></div>
+                <svg preserveAspectRatio="xMinYMin meet" viewBox="0 0 800 500"></svg>
+            </div>
+        </div>
+        <div class="right column column_non_scale column_extended">
+            <div class="treemap-svg-container" id="treemap-target">
+                <div class="panel-drag-handle" title="Drag to swap with another treemap"></div>
+                <svg preserveAspectRatio="xMinYMin meet" viewBox="0 0 800 500"></svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
+        <div class="left column column_non_scale column_extended" style="margin-top: 1%">
+            <div class="treemap-svg-container" id="treemap-baseline-diff">
+                <div class="panel-drag-handle" title="Drag to swap with another treemap"></div>
+                <svg preserveAspectRatio="xMinYMin meet" viewBox="0 0 800 500"></svg>
+            </div>
+        </div>
+        <div class="right column column_non_scale column_extended" style="margin-top: 1%">
+            <div class="treemap-svg-container" id="treemap-target-diff">
+                <div class="panel-drag-handle" title="Drag to swap with another treemap"></div>
+                <svg preserveAspectRatio="xMinYMin meet" viewBox="0 0 800 500"></svg>
+            </div>
+        </div>
+    </div>
+</div>

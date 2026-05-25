@@ -10,10 +10,10 @@
 
     {{ m_title.display_title("Flame Graphs", "flame graphs", flame_graphs_info, notes_enabled=notes_enabled) }}
 
-    <div class="flamegraph_search_box" style="gap: 70px; margin-top: 30px;">
-        <div class="flamegraph_search_box">
+    <div class="grid_search_box" style="gap: 70px; margin-top: 30px;">
+        <div class="grid_search_box">
             <span>Layout: </span>
-            <span id="flamegraph_visualization_switch" class="visualization_icon">
+            <span id="flamegraph_layout_switch" class="grid_layout_switch">
                 <span class="svg_switch_container visible">
                     {% include 'assets/grid_view.svg' %}
                 </span>
@@ -23,12 +23,12 @@
             </span>
         </div>
 
-        <div class="flamegraph_search_box">
-            <label for="flamegraph_search_all" class="flamegraph_search_input_label">Global Search:</label>
+        <div class="grid_search_box">
+            <label for="flamegraph_search_all" class="grid_search_input_label">Global Search:</label>
             <input id="flamegraph_search_all" class="dt-input" />
-            <button id="flamegraph_search_reset_all" class="flamegraph-btn">Reset Global Search</button>
-            <button id="flamegraph_zoom_reset_all" class="flamegraph-btn">Unzoom All</button>
-            <button id="flamegraph_toggle_ie_all" class="flamegraph-btn">Show Exclusive Consumption</button>
+            <button id="flamegraph_search_reset_all" class="grid_btn">Reset Global Search</button>
+            <button id="flamegraph_zoom_reset_all" class="grid_btn">Unzoom All</button>
+            <button id="flamegraph_toggle_ie_all" class="grid_btn">Show Exclusive Consumption</button>
         </div>
     </div>
 
