@@ -14,6 +14,8 @@
 
     {% include 'scripts/traces_table.js' %}
 
+    const totalBaseline = {{ total_baseline }};
+    const totalTarget = {{ total_target }};
     const rawData = [
         {%- for val in selection_table %}
         {

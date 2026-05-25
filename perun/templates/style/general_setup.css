@@ -3,6 +3,11 @@
     padding: 0;
     box-sizing: border-box;
     scroll-behavior: smooth;
+}
+
+/* Flat 15px on HTML only (zero specificity via :where). Excludes SVG so treemap
+   tile font-size attributes are not overridden. Headings/buttons keep their rules. */
+*:where(:not(svg):not(svg *)) {
     font-size: 15px;
 }
 

@@ -207,7 +207,9 @@ function diffColorScale(value, maxDelta) {
     if (value > 0) {
         g = b = Math.floor(210 * (maxDelta - value) / maxDelta);
     } else if (value < 0) {
-        r = g = Math.floor(210 * (maxDelta + value) / maxDelta);
+        // Use a minimum value of 30 for Red and Green, otherwise the dark blue makes
+        // the text illegible.
+        r = g = Math.max(30, Math.floor(210 * (maxDelta + value) / maxDelta));
     }
     return `rgb(${r},${g},${b})`;
 }
@@ -235,8 +237,7 @@ function escapeSvgText(name) {
 }
 
 function totalFactorForMode(parsed, mode) {
-    const prefix = profilePrefix(mode);
-    return d3.sum(parsed, (row) => row[`${prefix}_abs_excl`]) || 1;
+    return profilePrefix(mode) === "baseline" ? totalBaseline : totalTarget;
 }
 
 function formatDeltaPct(pct) {
@@ -275,15 +276,93 @@ function fillColor(row, mode, metric, maxAbsDelta) {
     return hotColor(row.uid);
 }
 
-function truncateLabel(name, width, height) {
-    const maxChars = Math.floor((width - 6) / LABEL_CHAR_WIDTH);
-    if (maxChars < 3 || height < 14) {
+const TILE_TEXT_PAD = 12;
+const TILE_FONT_MIN = 10;
+const TILE_FONT_MAX = 14;
+const TILE_FONT_CHAR_RATIO = LABEL_CHAR_WIDTH / FONT_SIZE;
+
+
+function tileFontSizeFromArea(area, minArea, maxArea) {
+    if (maxArea <= minArea) {
+        return TILE_FONT_MAX;
+    }
+    const t = (area - minArea) / (maxArea - minArea);
+    return TILE_FONT_MIN + t * (TILE_FONT_MAX - TILE_FONT_MIN);
+}
+function tileLabelCharWidth(fontSize) {
+    return fontSize * TILE_FONT_CHAR_RATIO;
+}
+function tileLabelLineHeight(fontSize) {
+    return fontSize + 2;
+}
+function truncateLabel(name, width, height, fontSize) {
+    const charWidth = tileLabelCharWidth(fontSize);
+    const lineHeight = tileLabelLineHeight(fontSize);
+    const maxChars = Math.floor((width - TILE_TEXT_PAD) / charWidth);
+    if (maxChars < 3 || height < lineHeight) {
         return "";
     }
     if (name.length <= maxChars) {
         return name;
     }
     return name.slice(0, maxChars - 2) + "..";
+}
+
+function tilePercentText(row, mode, metric, total) {
+    if (isDiffMode(mode)) {
+        const raw = metric === "incl" ? row.prop_rel_delta_incl : row.prop_rel_delta_excl;
+        const n = Number(raw);
+        const sign = n > 0 ? "+" : "";
+        return Number.isFinite(n) ? `${sign}${n.toFixed(2)}%` : "";
+    }
+    const prefix = profilePrefix(mode);
+    const abs = row[`${prefix}_abs_${metric}`];
+    if (total <= 0) {
+        return "";
+    }
+    return `${((100 * abs) / total).toFixed(2)}%`;
+}
+
+function textFitsTileWidth(text, width, fontSize) {
+    return text.length * tileLabelCharWidth(fontSize) <= width - TILE_TEXT_PAD;
+}
+
+function buildTileLabelLines(nameLabel, pctText, width, height, fontSize) {
+    const lineHeight = tileLabelLineHeight(fontSize);
+    const lines = [];
+    if (nameLabel && textFitsTileWidth(nameLabel, width, fontSize)) {
+        lines.push(nameLabel);
+    }
+    if (pctText && textFitsTileWidth(pctText, width, fontSize)) {
+        const blockLines = lines.length + 1;
+        if (height >= blockLines * lineHeight) {
+            lines.push(pctText);
+        }
+    }
+    return lines;
+}
+
+function appendCenteredTileLabels(g, width, height, lines, fontSize) {
+    if (!lines.length) {
+        return;
+    }
+    const lineHeight = tileLabelLineHeight(fontSize);
+    const text = g.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .style("font-size", `${fontSize}px`)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "central");
+    lines.forEach((line, i) => {
+        const tspan = text.append("tspan").text(line);
+        if (i === 0) {
+            tspan
+                .attr("x", width / 2)
+                .attr("dy", -((lines.length - 1) * lineHeight) / 2);
+        } else {
+            tspan.attr("x", width / 2).attr("dy", lineHeight);
+        }
+    });
 }
 
 function filterRows(rows, mode, metric, minAreaPercent) {
@@ -762,18 +841,24 @@ function renderTreemapPanel(panelId, mode, parsed, metric, minAreaPercent) {
         .append("title")
         .text((d) => tooltipText(d.data, mode, totalFactor));
 
+    const leafAreas = root.leaves().map((d) => {
+        const lw = Math.max(0, d.x1 - d.x0);
+        const lh = Math.max(0, d.y1 - d.y0);
+        return lw * lh;
+    });
+    const minLeafArea = d3.min(leafAreas) ?? 0;
+    const maxLeafArea = d3.max(leafAreas) ?? 0;
+
     leaves.each(function (d) {
         const w = d.x1 - d.x0;
         const h = d.y1 - d.y0;
         const g = d3.select(this);
 
-        const label = truncateLabel(d.data.uid, w, h);
-        if (label) {
-            g.append("text")
-                .attr("x", 4)
-                .attr("y", 14)
-                .text(label);
-        }
+        const fontSize = tileFontSizeFromArea(w * h, minLeafArea, maxLeafArea);
+        const nameLabel = truncateLabel(d.data.uid, w, h, fontSize);
+        const pctText = tilePercentText(d.data, mode, metric, totalFactor);
+        const lines = buildTileLabelLines(nameLabel, pctText, w, h, fontSize);
+        appendCenteredTileLabels(g, w, h, lines, fontSize);
     });
 
     leaves.select("rect")
