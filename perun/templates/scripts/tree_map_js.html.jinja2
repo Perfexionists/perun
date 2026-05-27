@@ -516,43 +516,28 @@
         };
     }
 
-    function calculateTreemapMatched(leaves, matchFn) {
-        let totalArea = 0;
-        let matchedArea = 0;
-        let exclArea = 0;
-        let totalIncl = 0;
-        let totalExcl = 0;
+    function calculateTreemapMatched(leaves, totalConsumption, matchFn) {
+        let matchedIncl = 0;
+        let matchedExcl = 0;
         let count = 0;
 
         for (const leaf of leaves) {
-            totalArea += leaf.area;
             if (!matchFn(leaf.uid)) {
                 continue;
             }
             count += 1;
-            matchedArea += leaf.area;
-            totalIncl += leaf.inclAbs;
-            totalExcl += leaf.exclAbs;
-            const ratio = leaf.inclAbs > 0 ? leaf.exclAbs / leaf.inclAbs : 0;
-            exclArea += leaf.area * ratio;
+            matchedIncl += leaf.inclAbs;
+            matchedExcl += leaf.exclAbs;
         }
-
-        const denom = totalArea || 1;
-        let pct = (100 * matchedArea) / denom;
-        let pctExcl = (100 * exclArea) / denom;
-        if (pct !== 100) {
-            pct = pct.toFixed(2);
-        }
-        if (pctExcl !== 100) {
-            pctExcl = pctExcl.toFixed(2);
-        }
+        let pctIncl = (100 * matchedIncl) / totalConsumption;
+        let pctExcl = (100 * matchedExcl) / totalConsumption;
 
         return {
             count,
-            pct,
-            pct_excl: pctExcl,
-            totalInclSamples: formatWithSuffix(totalIncl),
-            totalExclSamples: formatWithSuffix(totalExcl),
+            pctIncl: pctIncl.toFixed(2),
+            pctExcl: pctExcl.toFixed(2),
+            totalInclSamples: formatWithSuffix(matchedIncl),
+            totalExclSamples: formatWithSuffix(matchedExcl),
         };
     }
 
@@ -600,10 +585,10 @@
         }
         status[`matched${kind}Count`].text(String(matched.count));
         status[`matched${kind}Incl`].text(
-            formatMatchedSamplesLine(matched.totalInclSamples, matched.pct)
+            formatMatchedSamplesLine(matched.totalInclSamples, matched.pctIncl)
         );
         status[`matched${kind}Excl`].text(
-            formatMatchedSamplesLine(matched.totalExclSamples, matched.pct_excl)
+            formatMatchedSamplesLine(matched.totalExclSamples, matched.pctExcl)
         );
     }
 
@@ -627,7 +612,10 @@
         if (!leaves) {
             return;
         }
-        const matched = calculateTreemapMatched(leaves, (uid) => re.test(uid));
+
+        const total = profilePrefix(GRID_PANELS[panelId]) === "baseline" ? totalBaseline : totalTarget;
+
+        const matched = calculateTreemapMatched(leaves, total, (uid) => re.test(uid));
         displayMatchedStats(panelId, "Search", matched, true);
     }
 
