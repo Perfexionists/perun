@@ -6,8 +6,10 @@
     {{ m_title.display_subtitle("Inclusive (Cumulative) Consumption", "traces-inclusive", "", notes_enabled) }}
     <div id="traces-table-inclusive" class="comparison_container"></div>
 
+{% if is_folded %}
     {{ m_title.display_subtitle("Exclusive (Self) Consumption", "traces-exclusive", "", notes_enabled) }}
     <div id="traces-table-exclusive" class="comparison_container"></div>
+{% endif %}
 </div>
 
 <script>
@@ -95,6 +97,7 @@
             }
         ];
 
+        {% if is_folded %}
         const columnsExclusive = [
             {
                 data: 'uid',
@@ -150,6 +153,7 @@
                 tooltip: TRACES_TOOLTIPS.rel_delta
             }
         ];
+        {% endif %}
 
         new TracesTable('traces-table-inclusive', {
             data: rawData,
@@ -164,6 +168,7 @@
             }
         });
 
+        {% if is_folded %}
         new TracesTable('traces-table-exclusive', {
             data: rawData,
             columns: columnsExclusive,
@@ -176,5 +181,6 @@
                 }
             }
         });
+        {% endif %}
     }) ();
 </script>

@@ -1213,6 +1213,7 @@ def generate_report_from_folded(
         top_diffs_func_exclusive=iterate_top_diffs(func_top_diffs[1]),
         total_baseline=pair_profile.baseline.features.total_resources,
         total_target=pair_profile.target.features.total_resources,
+        is_folded=True,
     )
     log.minor_success("HTML report", "rendered")
 

@@ -835,6 +835,7 @@ def generate_report_from_native(
             prompt_ctx = compose_chatbot_contexts(prompt_ctx_sources)
 
     template = templates.get_template("diff_views/report.html.jinja2")
+    baseline_total, target_total = _get_baseline_target_total()
     content = template.render(
         title="Perun Report - Profiles Comparison",
         perun_version=perun.__version__,
@@ -879,6 +880,9 @@ def generate_report_from_native(
         notes_enabled=True,
         links=list(kwargs.get("link", [])),
         default_theme=kwargs.get("default_theme", "dark"),
+        total_baseline=baseline_total[0],
+        total_target=target_total[0],
+        is_folded=False,
     )
     log.minor_success("HTML template", "rendered")
     output_file = diff_kit.save_diff_view(

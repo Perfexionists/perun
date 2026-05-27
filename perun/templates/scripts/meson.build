@@ -14,7 +14,7 @@ perun_templates_script_files = files(
     'themes_js.html.jinja2',
     'tooltip.js',
     'traces_table.js',
-    'tree_map.js',
+    'tree_map_js.html.jinja2',
     'value_formatters_js.html.jinja2',
 )
 
