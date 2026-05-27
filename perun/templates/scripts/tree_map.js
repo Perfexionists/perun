@@ -1055,111 +1055,6 @@ function handlePanelControlClick(targetId) {
     return false;
 }
 
-// --- Panel drag-and-drop (swap slots) ---
-let panelDrag = null;
-
-function getPanelElement(el) {
-    return el?.closest?.(".treemap-svg-container") ?? null;
-}
-
-function findPanelAtPoint(clientX, clientY) {
-    return getPanelElement(document.elementFromPoint(clientX, clientY));
-}
-
-function swapPanelElements(panelA, panelB) {
-    if (!panelA || !panelB || panelA === panelB) {
-        return;
-    }
-    const parentA = panelA.parentNode;
-    const parentB = panelB.parentNode;
-    const marker = document.createComment("swap");
-    parentA.insertBefore(marker, panelA);
-    parentB.insertBefore(panelA, panelB);
-    parentA.insertBefore(panelB, marker);
-    parentA.removeChild(marker);
-}
-
-function clearDropTargetHighlight() {
-    for (const panel of document.querySelectorAll(".treemap-svg-container.panel-drop-target")) {
-        panel.classList.remove("panel-drop-target");
-    }
-}
-
-function updateDropTargetHighlight(dropPanel) {
-    clearDropTargetHighlight();
-    if (dropPanel && panelDrag && dropPanel !== panelDrag.sourcePanel) {
-        dropPanel.classList.add("panel-drop-target");
-    }
-}
-
-function endPanelDrag(doSwap) {
-    if (!panelDrag) {
-        return;
-    }
-    const { sourcePanel, dropPanel } = panelDrag;
-    sourcePanel.classList.remove("panel-dragging");
-    clearDropTargetHighlight();
-    document.getElementById("treemaps").classList.remove("panel-drag-active");
-    if (doSwap && dropPanel) {
-        swapPanelElements(sourcePanel, dropPanel);
-    }
-    panelDrag = null;
-}
-
-function onPanelDragHandlePointerDown(e) {
-    if (e.button !== 0) {
-        return;
-    }
-    const sourcePanel = getPanelElement(e.currentTarget);
-    if (!sourcePanel) {
-        return;
-    }
-
-    e.preventDefault();
-    flushActiveHover();
-
-    const handle = e.currentTarget;
-    const pointerId = e.pointerId;
-    handle.setPointerCapture(pointerId);
-
-    panelDrag = { sourcePanel, dropPanel: null };
-    sourcePanel.classList.add("panel-dragging");
-    document.getElementById("treemaps").classList.add("panel-drag-active");
-
-    function onMove(ev) {
-        if (ev.pointerId !== pointerId) {
-            return;
-        }
-        panelDrag.dropPanel = findPanelAtPoint(ev.clientX, ev.clientY);
-        updateDropTargetHighlight(panelDrag.dropPanel);
-    }
-
-    function onEnd(ev) {
-        if (ev.pointerId !== pointerId) {
-            return;
-        }
-        handle.releasePointerCapture(pointerId);
-        handle.removeEventListener("pointermove", onMove);
-        handle.removeEventListener("pointerup", onEnd);
-        handle.removeEventListener("pointercancel", onEnd);
-
-        const dropPanel = findPanelAtPoint(ev.clientX, ev.clientY);
-        panelDrag.dropPanel = dropPanel;
-        const doSwap = dropPanel && dropPanel !== sourcePanel;
-        endPanelDrag(doSwap);
-    }
-
-    handle.addEventListener("pointermove", onMove);
-    handle.addEventListener("pointerup", onEnd);
-    handle.addEventListener("pointercancel", onEnd);
-}
-
-function initPanelDragDrop() {
-    for (const handle of document.querySelectorAll(".panel-drag-handle")) {
-        handle.addEventListener("pointerdown", onPanelDragHandlePointerDown);
-    }
-}
-
 function initControls() {
     const chartGrid = document.getElementById("treemaps");
 
@@ -1186,7 +1081,6 @@ function initControls() {
 
     renderTreemap();
     updateGlobalMetricButton();
-    initPanelDragDrop();
 
     const savedTheme = localStorage.getItem('theme') || default_theme_js;
     applyTheme(savedTheme);

@@ -52,12 +52,14 @@
 
         <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
             <div class="left column column_non_scale column_extended">
-                <div class='svg-container' id="flame_{{ loop.index0 }}_baseline">
+                <div class='grid-svg-container' id="flame_{{ loop.index0 }}_baseline">
+                    <div class="panel-drag-handle" title="Drag to swap with another flame graph"></div>
                 {{ lhs_flamegraph }}
                 </div>
             </div>
             <div class="right column column_non_scale column_extended">
-                <div class='svg-container' id="flame_{{ loop.index0 }}_target">
+                <div class='grid-svg-container' id="flame_{{ loop.index0 }}_target">
+                    <div class="panel-drag-handle" title="Drag to swap with another flame graph"></div>
                 {{ rhs_flamegraph }}
                 </div>
             </div>
@@ -65,12 +67,14 @@
 
         <div class="comparison_container comparison_container_non_scale comparison_container_stacked">
             <div class="left column column_non_scale column_extended" style="margin-top: 1%">
-                <div class='svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
+                <div class='grid-svg-container' id="flame_diff_{{ loop.index0 }}_baseline">
+                    <div class="panel-drag-handle" title="Drag to swap with another flame graph"></div>
                 {{ lhs_diff_flamegraph }}
                 </div>
             </div>
             <div class="right column column_non_scale column_extended" style="margin-top: 1%">
-                <div class='svg-container' id="flame_diff_{{ loop.index0 }}_target">
+                <div class='grid-svg-container' id="flame_diff_{{ loop.index0 }}_target">
+                    <div class="panel-drag-handle" title="Drag to swap with another flame graph"></div>
                 {{ rhs_diff_flamegraph }}
                 </div>
             </div>

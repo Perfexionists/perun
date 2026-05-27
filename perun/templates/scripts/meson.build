@@ -2,6 +2,7 @@ perun_templates_script_dir = perun_templates_dir / 'scripts'
 
 perun_templates_script_files = files(
     'division_anchor.js',
+    'drag_n_drop.js',
     'environment_sidepanel.js',
     'flame_graph_js.html.jinja2',
     'graph_grids.js',
