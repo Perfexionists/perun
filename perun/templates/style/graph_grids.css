@@ -63,6 +63,7 @@
     user-select: none;
     padding-top: 3px;
 }
+
 .panel-drag-handle::after {
     content: "";
     display: block;
@@ -73,19 +74,24 @@
     background: radial-gradient(circle, #888 1px, transparent 1.5px);
     background-size: 6px 4px;
 }
+
 .panel-drag-handle:active {
     cursor: grabbing;
 }
+
 .panel-dragging {
     opacity: 0.55;
 }
+
 .panel-drop-target {
-    outline: 2px solid rgb(0, 120, 200);
+    outline: 2px solid rgb(0 120 200);
     outline-offset: -2px;
 }
+
 .panel-drag-active {
     user-select: none;
 }
+
 .panel-drag-active .grid-svg-container svg {
     pointer-events: none;
 }

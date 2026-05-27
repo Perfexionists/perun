@@ -5,9 +5,9 @@
     scroll-behavior: smooth;
 }
 
-/* Flat 15px on HTML only (zero specificity via :where). Excludes SVG so treemap
-   tile font-size attributes are not overridden. Headings/buttons keep their rules. */
-*:where(:not(svg):not(svg *)) {
+/* Flat 15px on HTML only. Excludes SVG so treemap tile font-size attributes are not overridden.
+Headings/buttons keep their rules. */
+*:not(svg *) {
     font-size: 15px;
 }
 

@@ -38,7 +38,7 @@ function endPanelDrag(doSwap) {
     if (!panelDrag) {
         return;
     }
-    const { sourcePanel, dropPanel } = panelDrag;
+    const {sourcePanel, dropPanel} = panelDrag;
     sourcePanel.classList.remove("panel-dragging");
     clearDropTargetHighlight();
     getClosestParent(sourcePanel, ".section").classList.remove("panel-drag-active");

@@ -2,8 +2,10 @@ const anchorsBase = document.getElementById("division_anchor__baseline");
 const anchorTgt = document.getElementById("division_anchor__target");
 
 const hiddenSections = [
-    document.getElementById("traces"),
-    document.getElementById("overview")
+    document.getElementById("overview"),
+    document.getElementById("flame"),
+    document.getElementById("treemaps"),
+    document.getElementById("traces")
 ].filter(el => el !== null);
 
 document.addEventListener("scroll", () => {

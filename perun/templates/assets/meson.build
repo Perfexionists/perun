@@ -4,7 +4,7 @@ perun_templates_assets_files = files(
     'add.svg',
     'bin.svg',
     'close.svg',
-    'environment.svg',
+    'env.svg',
     'eye.svg',
     'fire.svg',
     'grid_view.svg',
