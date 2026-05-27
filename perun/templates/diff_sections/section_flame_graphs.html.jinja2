@@ -1,10 +1,26 @@
 {% import 'macros/section_title.html.jinja2' as m_title %}
 
-{% set flame_graphs_info = "Look for the topmost widest rectangle.
-                    Clicking on a node will zoom the flamegraph for easier exploration.
-                    Colours are picked randomly (but uniformly); they don't signal any scale.
-                    The bigger the rectangle the more often the UID was seen on the stack.
-                    The higher the flame the more nested calls were made in the context." %}
+{% set flame_graphs_info = "Flame graphs show consumption of functions aggregated by unique
+    calling-contexts (i.e., stack traces).
+
+    Flame graphs are interactive; clicking on a rectangle will zoom the flame graph.
+
+    Each rectangle represents a function in a specific calling-context: parent rectangles represent
+    caller functions and nested rectangles represent callees. The higher a particular tower is, the
+    more nested calls there are.
+
+    The rectangle width corresponds to its inclusive consumption. Rectangles that are too narrow to
+    properly render are filtered out.
+
+    In the exclusive view, a colored and scaled overlay rectangle contrasts the exclusive and
+    inclusive consumptions.
+
+    Colors in non-differential flame graphs are picked randomly but uniformly; they do not
+    represent any metric.
+
+    Difference flame graphs draw rectangles scaled w.r.t. to the absolute consumption in baseline
+    or target, respectively, and not the consumption delta which is instead represented using a
+    color hue." %}
 
 <div id="flame" class="section">
 

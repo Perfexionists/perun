@@ -1,10 +1,27 @@
 {% import 'macros/section_title.html.jinja2' as m_title %}
 
-{% set treemaps_info = "TODO" %}
+{% set tree_maps_info = "Tree Maps show consumption of functions aggregated across all
+    calling-contexts (i.e., stack traces). The maps avoid hierarchy; use flame graphs if you need
+    to see the calling-contexts of individual functions. Thus, compared to flame graphs, there is
+    no (un)zoom action on rectangles.
+
+    Each rectangle represents one function and its size is scaled w.r.t. to the absolute
+    consumption. Functions with areas that are too small (i.e., their consumption is too low) are
+    filtered out.
+
+    In the inclusive view, the percentages will generally add up to >= 100% in total, as multiple
+    functions may consume, e.g., > 90% of resources inclusively.
+
+    In the exclusive view, the percentages should add up to <= 100% in total, since some functions
+    are filtered out.
+
+    Difference tree maps draw rectangles scaled w.r.t. to the absolute consumption in baseline or
+    target, respectively, and not the consumption delta which is instead represented using a
+    color hue." %}
 
 <div id="treemaps" class="section">
 
-    {{ m_title.display_title("Tree Maps", "tree_maps", treemaps_info, notes_enabled=notes_enabled) }}
+    {{ m_title.display_title("Tree Maps", "tree_maps", tree_maps_info, notes_enabled=notes_enabled) }}
 
     <div class="grid_search_box" style="gap: 70px; margin-top: 30px;">
         <div class="grid_search_box">
