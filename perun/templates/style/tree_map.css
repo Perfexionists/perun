@@ -43,7 +43,7 @@
     font-style: italic;
 }
 
-.treemap-new-del .not-in-baseline, .treemap-new-del .not-in-target {
+.treemap-new-del .not-in-baseline rect, .treemap-new-del .not-in-target rect {
     stroke: var(--color-correct);
     stroke-width: 1px;
 }
@@ -56,7 +56,7 @@
     opacity: 0.3;
 }
 
-.treemap-common .in-both {
+.treemap-common .in-both rect {
     stroke: var(--color-correct);
     stroke-width: 1px;
 }

@@ -105,11 +105,20 @@
     }
 
     function anyPanelSearchActive() {
-        return GRID_PANELS.some(({ panelId }) => getPanel(panelId).search.active);
+        return GRID_PANELS.some(({ panelId }) => isPanelSearchActive(panelId));
     }
+
+    function anyPanelHighlightActive() {
+        return GRID_PANELS.some(({ panelId }) => isPanelHighlightActive(panelId));
+    }
+
 
     function isPanelSearchActive(panelId) {
         return getPanel(panelId).search.active;
+    }
+
+    function isPanelHighlightActive(panelId) {
+        return getPanel(panelId).highlight !== "none";
     }
 
     function exclusiveToggleLabel(metric) {
@@ -433,7 +442,7 @@
     }
 
     function onHoverEnd() {
-        if (!anyPanelSearchActive()) {
+        if (!anyPanelSearchActive() && !anyPanelHighlightActive()) {
             clearStatus();
             return;
         }
@@ -442,6 +451,9 @@
             getStatus(panelId)?.nameTypeLabel.classed("status-hide", true);
             if (isPanelSearchActive(panelId)) {
                 applyPanelSearch(panelId);
+            }
+            else if (!isPanelHighlightActive(panelId)) {
+                setStatusLabelsVisible(panelId, false);
             }
         });
     }
@@ -509,10 +521,6 @@
             rect.classed("search-match", false);
             rect.attr("fill", activeHoverUid === uid ? HOVER_COLOR : fill);
         }
-        clearPanelMatchedSearch(panelId);
-    }
-
-    function clearPanelMatchedSearch(panelId) {
         clearMatchedDisplay(panelId, "Search", true);
     }
 
@@ -531,7 +539,7 @@
         let count = 0;
 
         for (const leaf of leaves) {
-            if (!matchFn(leaf.uid)) {
+            if (!matchFn(leaf)) {
                 continue;
             }
             count += 1;
@@ -548,6 +556,19 @@
             totalInclSamples: formatWithSuffix(matchedIncl),
             totalExclSamples: formatWithSuffix(matchedExcl),
         };
+    }
+
+    function searchedOccurrence(panelMode, hlState) {
+        if (hlState === "none") {
+            return null;
+        }
+        if (hlState === "common") {
+            return "in both";
+        }
+        if (panelMode === "baseline" || panelMode === "baselineDiff") {
+            return "not in target";
+        }
+        return "not in baseline";
     }
 
     // --- Status bar ---
@@ -622,9 +643,8 @@
             return;
         }
 
-        const total = profilePrefix(GRID_PANELS[panelId]) === "baseline" ? totalBaseline : totalTarget;
-
-        const matched = calculateTreemapMatched(leaves, total, (uid) => re.test(uid));
+        const total = totalFactorForMode(getPanelConfig(panelId).mode)
+        const matched = calculateTreemapMatched(leaves, total, (leaf) => re.test(leaf.uid));
         displayMatchedStats(panelId, "Search", matched, true);
     }
 
@@ -700,6 +720,28 @@
             detailsExcl: svg.append("text")
                 .attr("id", `${panelId}-detailsExcl`)
                 .attr("x", XPAD1 + 75)
+                .attr("y", y2)
+                .text(" "),
+            matchedHighlightLabel: svg.append("text")
+                .attr("id", `${panelId}-matchedHighlightLabel`)
+                .attr("class", "status-label status-hide")
+                .attr("x", VIEW_WIDTH / 2 - 50)
+                .attr("y", y0)
+                .attr("font-weight", "bold")
+                .text("Matched (highlight):"),
+            matchedHighlightCount: svg.append("text")
+                .attr("id", `${panelId}-matchedHighlightCount`)
+                .attr("x", VIEW_WIDTH / 2 + 90)
+                .attr("y", y0)
+                .text(" "),
+            matchedHighlightIncl: svg.append("text")
+                .attr("id", `${panelId}-matchedHighlightIncl`)
+                .attr("x", VIEW_WIDTH / 2 - 50)
+                .attr("y", y1)
+                .text(" "),
+            matchedHighlightExcl: svg.append("text")
+                .attr("id", `${panelId}-matchedHighlightExcl`)
+                .attr("x", VIEW_WIDTH / 2 - 50)
                 .attr("y", y2)
                 .text(" "),
             matchedSearchLabel: svg.append("text")
@@ -828,7 +870,8 @@
         const leaves = frames.selectAll(".leaf")
             .data(root.leaves())
             .join("g")
-            .attr("class", "leaf")
+            .attr("class", (d) => d.data.occurrence.replaceAll(" ", "-"))
+            .classed("leaf", true)
             .attr(
                 "transform",
                 (d) => `translate(${d.x0 + TREEMAP_X_MARGIN},${d.y0 + Y_PAD1})`
@@ -841,7 +884,6 @@
             .attr("data-uid", (d) => d.data.uid)
             .attr("rx", 2)
             .attr("ry", 2)
-            .attr("class", (d) => d.data.occurrence.replaceAll(" ", "-"))
             .each(function (d) {
                 registerHoverRect(panelId, d.data.uid, d3.select(this), d.data.fill);
             })
@@ -995,14 +1037,11 @@
         const panel = getPanel(panelId);
         panel.metric = panel.metric === "incl" ? "excl" : "incl";
         renderPanel(panelId);
+        setHighlight(panelId, panel.highlight);
     }
 
     function setHighlight(panelId, hl) {
         const panel = getPanel(panelId);
-
-        if (panel.highlight === hl) {
-            return;
-        }
 
         const currState = HIGHLIGHT_STATES[panel.highlight];
         const newState = HIGHLIGHT_STATES[hl];
@@ -1017,6 +1056,17 @@
         }
         if (newState.cls) {
             panelDiv.classList.add(newState.cls);
+        }
+
+        // Calculate the highlighted consumption.
+        if (hl !== "none") {
+            const leaves = panelLeavesRegistry.get(panelId);
+            const total = totalFactorForMode(getPanelConfig(panelId).mode)
+            const occurrence = searchedOccurrence(getPanelConfig(panelId).mode, hl);
+            const matched = calculateTreemapMatched(leaves, total, (leaf) => leaf.occurrence === occurrence);
+            displayMatchedStats(panelId, "Highlight", matched, true);
+        } else {
+            clearMatchedDisplay(panelId, "Highlight", true);
         }
     }
 
@@ -1050,6 +1100,7 @@
             if (panel.metric !== target) {
                 panel.metric = target;
                 renderPanel(panelId);
+                setHighlight(panelId, panel.highlight);
             }
         });
         updateGlobalMetricButton();
