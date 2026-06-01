@@ -47,6 +47,12 @@
         "rel_delta_incl", "rel_delta_excl",
     ];
 
+    const HIGHLIGHT_STATES = {
+        "none": {btnLabel: "New/Del", gLabel: "Highlight New/Deleted", cls: null, nextState: "new_del"},
+        "new_del": {btnLabel: "Common", gLabel: "Highlight Common", cls: "treemap-new-del", nextState: "common"},
+        "common": {btnLabel: "Reset", gLabel: "Reset Highlight", cls: "treemap-common", nextState: "none"},
+    }
+
     // --- State ---
     const globalOptions = { minAreaPercent: 0.1 };
     const panelStates = Object.fromEntries(
@@ -55,6 +61,7 @@
             {
                 metric: "incl",
                 search: { active: false, term: null, ignorecase: false },
+                highlight: "none"
             },
         ])
     );
@@ -65,6 +72,7 @@
     let parsedDataCache = null;
     let activeHoverUid = null;
     let hoverClearFrame = null;
+    let globalHighlight = "none";
 
     // --- Shared helpers ---
     function getParsedData() {
@@ -153,6 +161,7 @@
         }
         parsed.prop_rel_delta_incl = row.prop_rel_delta_incl ?? "0";
         parsed.prop_rel_delta_excl = row.prop_rel_delta_excl ?? "0";
+        parsed.occurrence = row.fresh;
         return parsed;
     }
 
@@ -751,12 +760,19 @@
             .attr("y", FONT_SIZE * 2)
             .text(MODE_TITLES[mode]);
 
-        const panel = getPanel(panelId);
+        const panel = getPanel(panelId)
+        svg.append("text")
+            .attr("id", `${panelId}-highlight`)
+            .attr("class", "svg-btn")
+            .attr("x", VIEW_WIDTH - XPAD1 - 270)
+            .attr("y", FONT_SIZE * 2)
+            .text(HIGHLIGHT_STATES[panel.highlight].btnLabel);
+
         {% if is_folded %}
         svg.append("text")
             .attr("id", `${panelId}-excToggle`)
             .attr("class", "svg-btn")
-            .attr("x", VIEW_WIDTH - XPAD1 - 220)
+            .attr("x", VIEW_WIDTH - XPAD1 - 200)
             .attr("y", FONT_SIZE * 2)
             .text(exclusiveToggleLabel(panel.metric));
         {% endif %}
@@ -825,6 +841,7 @@
             .attr("data-uid", (d) => d.data.uid)
             .attr("rx", 2)
             .attr("ry", 2)
+            .attr("class", (d) => d.data.occurrence.replaceAll(" ", "-"))
             .each(function (d) {
                 registerHoverRect(panelId, d.data.uid, d3.select(this), d.data.fill);
             })
@@ -869,6 +886,7 @@
                     area: w * h,
                     inclAbs: d.data[`${prefix}_abs_incl`],
                     exclAbs: d.data[`${prefix}_abs_excl`],
+                    occurrence: d.data.occurrence,
                     titleText: tooltipText(d.data, mode, totalFactor),
                 };
             })
@@ -977,7 +995,42 @@
         const panel = getPanel(panelId);
         panel.metric = panel.metric === "incl" ? "excl" : "incl";
         renderPanel(panelId);
+    }
 
+    function setHighlight(panelId, hl) {
+        const panel = getPanel(panelId);
+
+        if (panel.highlight === hl) {
+            return;
+        }
+
+        const currState = HIGHLIGHT_STATES[panel.highlight];
+        const newState = HIGHLIGHT_STATES[hl];
+
+        const panelDiv = document.getElementById(panelId);
+        let highlightBtn = document.getElementById(`${panelId}-highlight`);
+
+        panel.highlight = hl;
+        highlightBtn.textContent = newState.btnLabel;
+        if (currState.cls) {
+            panelDiv.classList.remove(currState.cls);
+        }
+        if (newState.cls) {
+            panelDiv.classList.add(newState.cls);
+        }
+    }
+
+    function togglePanelHighlight(panelId) {
+        setHighlight(panelId, HIGHLIGHT_STATES[getPanel(panelId).highlight].nextState)
+    }
+
+    function globalHighlightToggle() {
+        globalHighlight = HIGHLIGHT_STATES[globalHighlight].nextState;
+
+        forEachPanel(({ panelId }) => {
+            setHighlight(panelId, globalHighlight);
+        });
+        document.getElementById("treemap_toggle_highlight_all").textContent = HIGHLIGHT_STATES[globalHighlight].gLabel;
     }
 
     function updateGlobalMetricButton() {
@@ -1033,6 +1086,7 @@
     const PANEL_SVG_CONTROLS = [
         { suffix: "-search", handler: panelSearchPrompt },
         { suffix: "-ignorecase", handler: togglePanelIgnorecase },
+        { suffix: "-highlight", handler: togglePanelHighlight },
         {% if is_folded %} { suffix: "-excToggle", handler: togglePanelExclusive }, {% endif %}
     ];
 
@@ -1072,6 +1126,7 @@
                 this.blur();
             }
         });
+        document.getElementById("treemap_toggle_highlight_all").addEventListener("click", globalHighlightToggle);
 
         renderTreemap();
         updateGlobalMetricButton();

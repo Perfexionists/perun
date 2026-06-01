@@ -42,3 +42,21 @@
 #treemaps .grid-svg-container .status-detail-name {
     font-style: italic;
 }
+
+.treemap-new-del .not-in-baseline, .treemap-new-del .not-in-target {
+    stroke: var(--color-correct);
+    stroke-width: 1px;
+}
+
+.treemap-common .not-in-baseline, .treemap-common .not-in-target {
+    opacity: 0.3;
+}
+
+.treemap-new-del .in-both {
+    opacity: 0.3;
+}
+
+.treemap-common .in-both {
+    stroke: var(--color-correct);
+    stroke-width: 1px;
+}
