@@ -287,9 +287,9 @@
         );
     }
 
-    function fillColor(row, mode, metric, maxAbsDelta) {
+    function fillColor(row, mode, metric, scale, maxScaledDelta) {
         if (isDiffMode(mode)) {
-            return diffColorScale(row[`abs_delta_${metric}`], maxAbsDelta);
+            return diffColorScale(row[`target_abs_${metric}`] - row[`baseline_abs_${metric}`] * scale, maxScaledDelta);
         }
         return hotColor(row.uid);
     }
@@ -889,12 +889,13 @@
         const filtered = filterRows(parsed, mode, metric, minAreaPercent);
         const totalFactor = totalFactorForMode(parsed, mode);
         const diff = isDiffMode(mode);
-        const maxAbsDelta = diff
-            ? d3.max(filtered, (d) => Math.abs(d[`abs_delta_${metric}`])) || 0
+        const scale = totalTarget / totalBaseline;
+        const maxScaledDelta = diff
+            ? d3.max(filtered, (d) => Math.abs(d[`target_abs_${metric}`] - d[`baseline_abs_${metric}`] * scale)) || 0
             : 0;
 
         for (const row of filtered) {
-            row.fill = fillColor(row, mode, metric, maxAbsDelta);
+            row.fill = fillColor(row, mode, metric, scale, maxScaledDelta);
         }
 
         const root = d3.hierarchy({ children: filtered })
