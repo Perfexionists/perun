@@ -95,3 +95,12 @@
 .panel-drag-active .grid-svg-container svg {
     pointer-events: none;
 }
+
+#flame,
+#flame .comparison_container,
+#flame .grid-svg-container,
+#treemaps,
+#treemaps .comparison_container,
+#treemaps .grid-svg-container {
+    overflow-anchor: none;
+}

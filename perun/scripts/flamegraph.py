@@ -1574,6 +1574,7 @@ def create_svg_js_css(
 </defs>
 <style type="text/css">
     text {{ font-family:{settings.font_type}; font-size:{settings.font_size}px; fill:{Colors.RGBblack}; }}
+    #frames > g > text {{ pointer-events:none; }}
     #search, #ignorecase, #excToggle {{ opacity:0.5; cursor:pointer; }}
     #search:hover, #search.show, #ignorecase:hover, #ignorecase.show, #excToggle:hover {{ opacity:1; }}
     #subtitle {{ text-anchor:middle; font-color:{Colors.RGBvdgrey}; }}
@@ -1592,6 +1593,7 @@ def create_svg_js_css(
     var nameTypeLabel, inclusiveLabel, exclusiveLabel;
     var detailsName, detailsExcl, detailsIncl;
     var exclusiveMode;
+    var detailsGroup = null;
     var isDiff = {'true' if is_diff else 'false'};
     function init(evt) {{
         nameTypeLabel = document.getElementById("nameTypeLabel");
@@ -1650,6 +1652,8 @@ def create_svg_js_css(
     window.addEventListener("mouseover", function(e) {{
         var target = find_group(e.target);
         if (!target) return;
+        if (target === detailsGroup) return;
+        detailsGroup = target;
 
         nameTypeLabel.classList.remove("hide");
         inclusiveLabel.classList.remove("hide");
@@ -1669,6 +1673,8 @@ def create_svg_js_css(
     window.addEventListener("mouseout", function(e) {{
         var target = find_group(e.target);
         if (!target) return;
+        if (is_event_still_in_group(e, target)) return;
+        detailsGroup = null;
 
         nameTypeLabel.classList.add("hide");
         if (!searching) {{
@@ -1691,6 +1697,56 @@ def create_svg_js_css(
         if (!parent) return;
         if (parent.id == "frames") return node;
         return find_group(parent);
+    }}
+    function is_event_still_in_group(evt, group) {{
+        var related = evt.relatedTarget;
+        if (!related) return false;
+        return group === related || group.contains(related);
+    }}
+    function is_hover_highlighted(rect, overlay) {{
+        if (rect.getAttribute("fill") == "{Colors.RGBhover}") return true;
+        if (!overlay) return false;
+        var fill = overlay.getAttribute("fill");
+        return fill == "{Colors.RGBhover}" || fill == "{Colors.RGBhoverOverlay}";
+    }}
+    function restore_frame_after_hover(frameEl) {{
+        var func = g_to_func(frameEl);
+        var {{ rect, overlay }} = getGroupRectangles(frameEl);
+        var re = currentSearchTerm ? new RegExp(currentSearchTerm, ignorecase ? 'i' : '') : null;
+        if (re && func.match(re)) {{
+            if (isDiff) {{
+                if (overlay) {{
+                    overlay.attributes.fill.value = "{Colors.RGBsearch}";
+                }} else {{
+                    rect.attributes.fill.value = "{Colors.RGBsearch}";
+                }}
+            }} else {{
+                rect.attributes.fill.value = "{Colors.RGBsearch}";
+                if (overlay) {{
+                    overlay.attributes.fill.value = "{Colors.RGBsearchOverlay}";
+                }}
+            }}
+        }} else {{
+            if (overlay) {{
+                orig_load(overlay, "fill");
+                if (!isDiff) {{
+                    rect.setAttribute("fill", "white");
+                }} else {{
+                    orig_load(rect, "fill");
+                }}
+            }} else {{
+                orig_load(rect, "fill");
+            }}
+        }}
+    }}
+    function clear_hover_highlights() {{
+        var el = document.getElementById("frames").children;
+        for (var i = 0; i < el.length; i++) {{
+            var {{ rect, overlay }} = getGroupRectangles(el[i]);
+            if (is_hover_highlighted(rect, overlay)) {{
+                restore_frame_after_hover(el[i]);
+            }}
+        }}
     }}
     function orig_save(e, attr, val) {{
         if (e.attributes["_orig_" + attr] != undefined) return;
@@ -1947,37 +2003,7 @@ def create_svg_js_css(
     }}
 
     function reset_search_hover() {{
-        var el = document.getElementById("frames").children;
-        var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
-        for (var i = 0; i < el.length; i++) {{
-            var func = g_to_func(el[i]);
-            var {{ rect, overlay }} = getGroupRectangles(el[i]);
-            if (rect.getAttribute("fill") != "{Colors.RGBhover}" && (!overlay || overlay.getAttribute("fill") != "{Colors.RGBhover}")) continue;
-
-            if (func.match(re)) {{
-                if (isDiff) {{
-                    if (overlay) {{
-                        overlay.attributes.fill.value = "{Colors.RGBsearch}";
-                    }} else {{
-                        rect.attributes.fill.value = "{Colors.RGBsearch}";
-                    }}
-                }} else {{
-                    rect.attributes.fill.value = "{Colors.RGBsearch}";
-                    if (overlay) {{
-                        overlay.attributes.fill.value = "{Colors.RGBsearchOverlay}";
-                    }}
-                }}
-            }} else {{
-                if (overlay) {{
-                    orig_load(overlay, "fill");
-                    if (!isDiff) {{
-                        rect.setAttribute("fill", "white");
-                    }}
-                }} else {{
-                    orig_load(rect, "fill");
-                }}
-            }}
-        }}
+        clear_hover_highlights();
         hoverSearchTerm = null;
         if (!searching) {{
             inclusiveLabel.classList.add("hide");
@@ -2019,12 +2045,12 @@ def create_svg_js_css(
         matchedSearchIncl.nodeValue = matched.totalInclSamples + " {settings.count_name}, " + matched.pct + "%";
         matchedSearchExcl.nodeValue = matched.totalExclSamples + " {settings.count_name}, " + matched.pct_excl + "%";
     }}
-    function search_hover(term) {{
+    function apply_hover_highlight(term) {{
         if (term) hoverSearchTerm = term;
-
-        var res = find_frames(term, true);
-
-        // display matched percent
+        return find_frames(term, true);
+    }}
+    function search_hover_show_stats(res) {{
+        if (!res) return;
         var matched = calculate_matched(res.matches, res.maxwidth);
         inclusiveLabel.classList.remove("hide");
         exclusiveLabel.classList.remove("hide");
@@ -2032,6 +2058,10 @@ def create_svg_js_css(
         matchedHoverCount.nodeValue = matched.count;
         matchedHoverIncl.nodeValue = matched.totalInclSamples + " {settings.count_name}, " + matched.pct + "%";
         matchedHoverExcl.nodeValue = matched.totalExclSamples + " {settings.count_name}, " + matched.pct_excl + "%";
+    }}
+    function search_hover(term) {{
+        clear_hover_highlights();
+        search_hover_show_stats(apply_hover_highlight(term));
     }}
     // The func_expr may be either a regex or a simple string
     function find_frames(func_expr, is_hover) {{

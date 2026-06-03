@@ -43,33 +43,140 @@
                     }});
             }
 
-            ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
-                document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
-                    node.addEventListener("mouseenter", function () {
-                        const textElement = node.querySelector("title");
+            const LINKED_FLAMEGRAPH_TYPES = ["lhs", "rhs", "lhs_diff", "rhs_diff"];
+            const linkedHoverState = {
+                term: null,
+                sourceType: null,
+                leaveTimer: null,
+            };
 
-                        if (textElement && textElement.innerHTML) {
-                            {% if use_perl %}
-                            let searchTerm = cleanTitlePerl(textElement.innerHTML);
-                            {% else %}
-                            let searchTerm = cleanTitlePython(textElement.innerHTML);
-                            {% endif %}
-
-                            window[`lhs_{{index}}_search_hover`](searchTerm);
-                            window[`rhs_{{index}}_search_hover`](searchTerm);
-                            window[`lhs_diff_{{index}}_search_hover`](searchTerm);
-                            window[`rhs_diff_{{index}}_search_hover`](searchTerm);
+            function findLinkedFlamegraphHit(target) {
+                let node = target;
+                while (node && node.parentElement) {
+                    for (const type of LINKED_FLAMEGRAPH_TYPES) {
+                        if (node.parentElement.id === `${type}_0_frames`) {
+                            const title = node.querySelector("title");
+                            if (!title || !title.innerHTML) {
+                                return null;
+                            }
+                            return { type, group: node, title };
                         }
-                    });
+                    }
+                    node = node.parentElement;
+                }
+                return null;
+            }
 
-                    node.addEventListener("mouseleave", function () {
-                        window[`lhs_{{index}}_reset_search_hover`]();
-                        window[`rhs_{{index}}_reset_search_hover`]();
-                        window[`lhs_diff_{{index}}_reset_search_hover`]();
-                        window[`rhs_diff_{{index}}_reset_search_hover`]();
+            function linkedResetSearchHoverAll() {
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const fn = window[`${type}_0_reset_search_hover`];
+                    if (typeof fn === "function") {
+                        fn();
+                    }
+                });
+                linkedHoverState.term = null;
+                linkedHoverState.sourceType = null;
+            }
+
+            function linkedApplyHover(searchTerm, sourceType) {
+                if (
+                    searchTerm === linkedHoverState.term &&
+                    sourceType === linkedHoverState.sourceType
+                ) {
+                    return;
+                }
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const fn = window[`${type}_0_reset_search_hover`];
+                    if (typeof fn === "function") {
+                        fn();
+                    }
+                });
+
+                if (!searchTerm) {
+                    linkedHoverState.term = null;
+                    linkedHoverState.sourceType = null;
+                    return;
+                }
+
+                linkedHoverState.term = searchTerm;
+                linkedHoverState.sourceType = sourceType;
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const highlightFn = window[`${type}_0_apply_hover_highlight`];
+                    const statsFn = window[`${type}_0_search_hover_show_stats`];
+                    if (typeof highlightFn !== "function") {
+                        return;
+                    }
+                    const res = highlightFn(searchTerm);
+                    if (typeof statsFn === "function") {
+                        statsFn(res);
+                    }
+                });
+            }
+
+            function cancelLinkedHoverLeave() {
+                if (linkedHoverState.leaveTimer !== null) {
+                    clearTimeout(linkedHoverState.leaveTimer);
+                    linkedHoverState.leaveTimer = null;
+                }
+            }
+
+            function isPointerOverLinkedFrame(clientX, clientY) {
+                const el = document.elementFromPoint(clientX, clientY);
+                if (!el) {
+                    return false;
+                }
+                return findLinkedFlamegraphHit(el) !== null;
+            }
+
+            function scheduleLinkedHoverLeave(clientX, clientY) {
+                cancelLinkedHoverLeave();
+                linkedHoverState.leaveTimer = setTimeout(function () {
+                    linkedHoverState.leaveTimer = null;
+                    if (!isPointerOverLinkedFrame(clientX, clientY)) {
+                        linkedResetSearchHoverAll();
+                    }
+                }, 0);
+            }
+
+            const flameSection = document.getElementById("flame");
+            if (flameSection) {
+                flameSection.addEventListener("mouseover", function (e) {
+                    const hit = findLinkedFlamegraphHit(e.target);
+                    cancelLinkedHoverLeave();
+                    if (!hit) {
+                        if (linkedHoverState.term !== null) {
+                            linkedResetSearchHoverAll();
+                        }
+                        return;
+                    }
+                    linkedApplyHover(
+                        cleanTitlePython(hit.title.innerHTML),
+                        hit.type
+                    );
+                });
+
+                flameSection.addEventListener("mouseout", function (e) {
+                    if (e.relatedTarget && flameSection.contains(e.relatedTarget)) {
+                        return;
+                    }
+                    scheduleLinkedHoverLeave(e.clientX, e.clientY);
+                });
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const framesEl = document.getElementById(`${type}_0_frames`);
+                    if (!framesEl) {
+                        return;
+                    }
+                    framesEl.addEventListener("mouseleave", function (e) {
+                        if (e.relatedTarget && framesEl.contains(e.relatedTarget)) {
+                            return;
+                        }
+                        scheduleLinkedHoverLeave(e.clientX, e.clientY);
                     });
                 });
-            });
+            }
 
         {% endfor%}
 

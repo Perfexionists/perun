@@ -85,6 +85,12 @@ def escape_content(tag: str, content: str) -> str:
         r"(?<!\w)(toggleExclusive)\(",
         r"(?<!\w)(removeExclusiveView)\(",
         r"(?<!\w)(updateExclusiveView)\(",
+        r"(?<!\w)(is_event_still_in_group)\(",
+        r"(?<!\w)(is_hover_highlighted)\(",
+        r"(?<!\w)(restore_frame_after_hover)\(",
+        r"(?<!\w)(clear_hover_highlights)\(",
+        r"(?<!\w)(apply_hover_highlight)\(",
+        r"(?<!\w)(search_hover_show_stats)\(",
     ]
     other = [
         (r"\"search\"", f'"{tag}_search"'),
