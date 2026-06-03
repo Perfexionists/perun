@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (target) {
             section_guide.innerHTML = target.getAttribute("data-tooltip")
                 .trim()
-                .split("\n")
+                .split("\n\n")
                 .map((line, index) => `[${index + 1}] ${line.trim()}`)
                 .join("<br><br>");
             section_guide.classList.add("visible");
