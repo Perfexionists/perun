@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+0.27.3 (2026-06-03)
+-------------------
+
+  - Perun reports now have a per-function tree map grid complementing the flame graph grid.
+  - Fixed flame graph and tree map flickering in Google Chrome.
+
+
 0.27.2 (2026-05-23)
 -------------------
 
