@@ -206,7 +206,7 @@
 }
 
 .trace-row--selected {
-  background-color: var(--color-target-transparent) !important;
+  background-color: var(--color-secondary) !important;
 }
 
 .trace-row--selected td {
