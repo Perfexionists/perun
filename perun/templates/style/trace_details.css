@@ -69,7 +69,8 @@
 }
 
 #trace-stats-container {
-  flex: 0 0 65%;
+  flex: 1;
+  min-width: 0;
   border: 2px solid var(--color-correct);
   border-radius: 8px;
   padding: 15px;
@@ -89,7 +90,8 @@
 }
 
 #trace-callstack-panel {
-  flex: 0 0 32%;
+  flex: 0 0 24%;
+  min-width: 0;
   border: 2px solid var(--color-target);
   border-radius: 8px;
   padding: 15px;
