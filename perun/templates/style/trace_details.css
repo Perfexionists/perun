@@ -198,12 +198,8 @@
   font-weight: bold;
   font-family: monospace;
   color: var(--color-primary-text);
-  transition: color 0.15s ease;
 }
 
-.trace-cell-clickable:hover {
-  color: var(--color-target);
-}
 
 .trace-row--selected {
   background-color: var(--color-secondary) !important;
