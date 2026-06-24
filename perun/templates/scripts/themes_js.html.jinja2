@@ -1,5 +1,5 @@
 <script>
-    const flamegraphBackgrounds = {
+    const SVGBackgrounds = {
         light:  { start: "#eeeeee", end: "#eeeeb0" },
         dark:   { start: "#8f8f8f", end: "#7a7a4f" },
         mono: { start: "#d9d9d9", end: "#b0b0b0" },
@@ -27,9 +27,22 @@
         themesSidepanel.setAttribute('data-theme', theme);
         updateIcons(theme);
 
+        // Update the tree map colors.
+        ["treemap-baseline", "treemap-target", "treemap-baseline-diff", "treemap-target-diff"].forEach(type => {
+            recolorSVGBackground(`${type}-background`, theme);
+            recolorSVGRectangles(`${type}-frames`, theme);
+        });
+
+        // Update the flame graph colors.
         {% if flamegraphs %}
-            applyThemeForFlamegraph(theme);
+            {% for index in range(0, flamegraphs|length) %}
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
+                    recolorSVGBackground(`${type}_{{ index }}_background`, theme);
+                    recolorSVGRectangles(`${type}_{{ index }}_frames`, theme);
+                });
+            {% endfor %}
         {% endif %}
+
     }
 
     function nextTheme(currentTheme) {
@@ -55,58 +68,49 @@
         });
     }
 
-    const savedTheme = localStorage.getItem('theme') || default_theme_js;
-    applyTheme(savedTheme);
+    function recolorSVGRectangles(framesGroupId, theme) {
+        const frames = document.getElementById(framesGroupId);
+        if (!frames) return;
 
-    {% if flamegraphs %}
+        const rects = frames.querySelectorAll("rect");
+        rects.forEach(rect => {
+            const fill = rect.getAttribute("fill");
+            if (!fill || fill.startsWith("url(")) return;
 
-        function rgbToMonoChromatic(rgbString) {
-            // converting color to monochromatic using luminosity method
-            const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-            if (!match) return rgbString;
-            const [_, r, g, b] = match.map(Number);
-            let gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-            const minGray = 100;
-            const maxGray = 220;
-            // this is done to get not as dark rectangles so that title is clear
-            gray = Math.round(minGray + (gray / 255) * (maxGray - minGray));
-            return `rgb(${gray}, ${gray}, ${gray})`;
+            if (!originalFills.has(rect)) {
+                originalFills.set(rect, fill);
+            }
+
+            if (theme === MONOCHROMATIC) {
+                rect.setAttribute("fill", rgbToMonoChromatic(fill));
+            } else {
+                const original = originalFills.get(rect);
+                if (original) rect.setAttribute("fill", original);
+            }
+        });
+    }
+
+    function recolorSVGBackground(gradientId, theme) {
+        const gradient = document.getElementById(gradientId);
+        if (gradient) {
+            const stops = gradient.querySelectorAll("stop");
+            if (stops.length >= 2) {
+                stops[0].setAttribute("stop-color", SVGBackgrounds[theme].start);
+                stops[1].setAttribute("stop-color", SVGBackgrounds[theme].end);
+            }
         }
+    }
 
-        function applyThemeForFlamegraph(theme) {
-            {% for index in range(0, flamegraphs|length) %}
-                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
-                    const gradient = document.getElementById(`${type}_{{ index }}_background`);
-                    if (gradient) {
-                        const stops = gradient.querySelectorAll("stop");
-                        if (stops.length >= 2) {
-                            stops[0].setAttribute("stop-color", flamegraphBackgrounds[theme].start);
-                            stops[1].setAttribute("stop-color", flamegraphBackgrounds[theme].end);
-                        }
-                    }
-
-                    const flamegraph_frames = document.getElementById(`${type}_{{ index }}_frames`);
-                    if (!flamegraph_frames) return;
-
-                    const rects = flamegraph_frames.querySelectorAll("rect");
-                    rects.forEach(rect => {
-                        const fill = rect.getAttribute("fill");
-                        if (!fill || fill.startsWith("url(")) return;
-
-                        if (!originalFills.has(rect)) {
-                            originalFills.set(rect, fill);
-                        }
-
-                        if (theme === MONOCHROMATIC) {
-                            rect.setAttribute("fill", rgbToMonoChromatic(fill));
-                        } else {
-                            const original = originalFills.get(rect);
-                            if (original) rect.setAttribute("fill", original);
-                        }
-                    });
-                });
-            {% endfor %}
-        }
-
-    {% endif %}
+    function rgbToMonoChromatic(rgbString) {
+        // converting color to monochromatic using luminosity method
+        const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (!match) return rgbString;
+        const [_, r, g, b] = match.map(Number);
+        let gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        const minGray = 100;
+        const maxGray = 220;
+        // this is done to get not as dark rectangles so that title is clear
+        gray = Math.round(minGray + (gray / 255) * (maxGray - minGray));
+        return `rgb(${gray}, ${gray}, ${gray})`;
+    }
 </script>

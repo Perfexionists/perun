@@ -80,6 +80,7 @@ def draw_differential_flame_graph(
     title: str,
     units: str = "samples",
     *fg_flags: str,
+    use_perl_scripts: bool = True,
     **fg_kwargs: Any,
 ) -> str:
     """Draws a lhs->rhs differential flame graph.
@@ -92,6 +93,7 @@ def draw_differential_flame_graph(
     :param title: title of the flame graph
     :param units: the units of the flame graph data
     :param fg_flags: additional flags to pass to the flamegraph.pl script
+    :param use_perl_scripts: invoke the original Perl flamegraph script
     :param fg_kwargs: additional parameters forwarded to the flamegraph.pl script
 
     :return: the lhs->rhs differential flame graph
@@ -100,15 +102,18 @@ def draw_differential_flame_graph(
         fg_optional_tempfile(lhs_flame_data) as lhs_flame,
         fg_optional_tempfile(rhs_flame_data) as rhs_flame,
     ):
+        suffix = ".pl" if use_perl_scripts else ".py"
         diff_cmd = " ".join(
             [
-                script_kit.get_script("difffolded.pl"),
+                script_kit.get_script(f"difffolded{suffix}"),
                 "-n",
                 str(lhs_flame),
                 str(rhs_flame),
             ]
         )
-        fg_cmd = build_flamegraph_command(None, title, units, *fg_flags, **fg_kwargs)
+        fg_cmd = build_flamegraph_command(
+            None, title, units, *fg_flags, use_perl_scripts=use_perl_scripts, **fg_kwargs
+        )
         out, _ = commands.run_safely_external_command(f"{diff_cmd} | {fg_cmd}")
     return out.decode("utf-8")
 
@@ -119,6 +124,7 @@ def build_flamegraph_command(
     units: str = "samples",
     *flags: str,
     total: int | None = None,
+    use_perl_scripts: bool = True,
     **kwargs: Any,
 ) -> str:
     """Creates the flamegraph.pl command that generates a (possibly differential) flame graph.
@@ -128,12 +134,14 @@ def build_flamegraph_command(
     :param units: the units of the flame graph data
     :param flags: additional flags to pass to the flamegraph.pl script
     :param total: the 'total' parameter of the flamegraph.pl script, if provided
+    :param use_perl_scripts: invoke the original Perl flamegraph script
     :param kwargs: additional parameters forwarded to the flamegraph.pl script
 
     :return: the resulting command for generating a flame graph
     """
+    suffix = ".pl" if use_perl_scripts else ".py"
     cmd = [
-        script_kit.get_script("flamegraph.pl"),
+        script_kit.get_script(f"flamegraph{suffix}"),
         str(input_path) if input_path is not None else "",
         "--title",
         f"'{title}'",

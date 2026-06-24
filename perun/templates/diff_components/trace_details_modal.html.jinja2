@@ -45,36 +45,42 @@
         }
     });
 
-    function openTracePopup(rowData) {
+    function openTracePopup(rowData, isExclusive) {
         document.getElementById('trace-popup-container').style.display = 'flex';
 
         // Populate Header
-        document.getElementById('trace-popup-title').textContent = `Unit: ${rowData.uid}`;
+        document.getElementById('trace-popup-title').innerHTML = `Unit: ${rowData.uid} <span style="font-weight: bold; color: ${getColorForFreshness(rowData.fresh)}">(${rowData.fresh})</span>`;
         document.getElementById('trace-info-text').innerHTML = `
             <div class="trace-header-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Occurrence:</span>
-                    <span class="stat-value" style="font-weight: bold; color: ${getColorForFreshness(rowData.fresh)}">${rowData.fresh}</span>
+                <div class="stat-item stat-item-aligned-end">
+                    <span class="stat-label">Total Unit Consumption</span>
+                    <span class="stat-value" id="stat-value-incl-label" style="font-weight: bold;">Inclusive: </span>
+                    <span class="stat-value" id="stat-value-excl-label" style="font-weight: bold;">Exclusive: </span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Baseline:</span>
-                    <span class="stat-value">${formatBold(rowData.baseline_abs)}</span>
+                    <span class="stat-value">${formatBold(rowData.baseline_abs_incl)}</span>
+                    <span class="stat-value">${formatBold(rowData.baseline_abs_excl)}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Target:</span>
-                    <span class="stat-value">${formatBold(rowData.target_abs)}</span>
+                    <span class="stat-value">${formatBold(rowData.target_abs_incl)}</span>
+                    <span class="stat-value">${formatBold(rowData.target_abs_excl)}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Prop Δ:</span>
-                    <span class="stat-value">${formatDelta(rowData.prop_rel_delta, '%')}</span>
+                    <span class="stat-value">${formatDelta(rowData.prop_rel_delta_incl, '%')}</span>
+                    <span class="stat-value">${formatDelta(rowData.prop_rel_delta_excl, '%')}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Abs Δ:</span>
-                    <span class="stat-value">${formatDelta(rowData.abs_delta)}</span>
+                    <span class="stat-value">${formatDelta(rowData.abs_delta_incl)}</span>
+                    <span class="stat-value">${formatDelta(rowData.abs_delta_excl)}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Rel Δ:</span>
-                    <span class="stat-value">${formatDelta(rowData.rel_delta, '%')}</span>
+                    <span class="stat-value">${formatDelta(rowData.rel_delta_incl, '%')}</span>
+                    <span class="stat-value">${formatDelta(rowData.rel_delta_excl, '%')}</span>
                 </div>
             </div>
         `;
@@ -82,8 +88,56 @@
         const containerId = 'trace-details-table-container';
         document.getElementById(containerId).innerHTML = '';
 
-        const titleForTraces = rowData.trace_stats && rowData.trace_stats.length > 0 ? `Top ${rowData.trace_stats.length} traces` : 'No traces available';
-        document.getElementById('trace-stats-heading').textContent = titleForTraces;
+        // Set context based on whether we are displaying inclusive or exclusive data.
+        let labelElement;
+        let tracesType;
+        // The trace_stats contain both inclusive and exclusive metrics. The exclusive counterpart
+        // for an inclusive metric is always at a +1 offset within the array.
+        let dataOffset;
+        if (isExclusive) {
+            labelElement = document.getElementById('stat-value-excl-label');
+            tracesType = "Exclusive";
+            dataOffset = 1;
+        } else {
+            labelElement = document.getElementById('stat-value-incl-label');
+            tracesType = "Inclusive";
+            dataOffset = 0;
+        }
+        // Emphasize the type of data this modal window is currently displaying.
+        labelElement.style.color = 'var(--color-info)';
+
+        let traceDetailTitle = '';
+        if (rowData.trace_stats && rowData.trace_stats.length > 0) {
+            traceDetailTitle = `Top ${Math.min(rowData.trace_stats.length, {{ max_traces_per_func }})} ${tracesType} Traces`;
+        } else {
+            traceDetailTitle = 'No traces available';
+
+        }
+        document.getElementById('trace-stats-heading').textContent = traceDetailTitle;
+
+        // Decodes and formats the stack trace string in a format 'id1;id2;id3;[...]#[...]'.
+        function decodeStackTrace(trace) {
+            if (!trace) return "";
+
+            // Ignore everything after the '#'
+            const funcIds = trace.split('#')[0];
+            const funcNames = funcIds
+                .split(';')
+                .map(id => Number(id))
+                .reverse()  // Reverse the order to be consistent with the flamegraph visualization.
+                .map(id => nodes[id] ?? `[unknown:${id}]`) // Map to names.
+            // Make the function at the top bold.
+            return funcNames
+                .map((name, index) => index === 0 ? `<b>${name}</b>` : name)
+                .join('\n');
+        }
+
+
+        // Sort the list of traces based on the initial sort column.
+        const initSortColumn = 6 + dataOffset;
+        rowData.trace_stats.sort((a, b) => {
+            return b[initSortColumn] - a[initSortColumn];
+        });
 
         // Decodes the stack trace string in a format 'id1;id2;id3;[...]#[...]'.
         // Returns an array of function name strings, from top-of-stack (callee) to bottom (root caller).
@@ -178,35 +232,35 @@
                     tooltip: TRACES_TOOLTIPS.trace
                 },
                 {
-                    data: 2,
+                    data: 2 + dataOffset,
                     title: 'Baseline',
                     type: 'number',
                     render: (data) => formatBold(data),
                     tooltip: TRACES_TOOLTIPS.baseline
                 },
                 {
-                    data: 3,
+                    data: 4 + dataOffset,
                     title: 'Target',
                     type: 'number',
                     render: (data) => formatBold(data),
                     tooltip: TRACES_TOOLTIPS.target
                 },
                 {
-                    data: 4,
+                    data: 6 + dataOffset,
                     title: 'Prop Δ [%]',
                     type: 'number',
                     render: (data) => formatDelta(data, '%'),
                     tooltip: TRACES_TOOLTIPS.prop_rel_delta
                 },
                 {
-                    data: 5,
+                    data: 8 + dataOffset,
                     title: 'Abs Δ',
                     type: 'number',
                     render: (data) => formatDelta(data),
                     tooltip: TRACES_TOOLTIPS.abs_delta
                 },
                 {
-                    data: 6,
+                    data: 10 + dataOffset,
                     title: 'Rel Δ [%]',
                     type: 'number',
                     render: (data) => formatDelta(data, '%'),

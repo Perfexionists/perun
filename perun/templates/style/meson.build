@@ -4,9 +4,9 @@ perun_templates_style_files = files(
     'colors_setup.css',
     'division_anchor.css',
     'environment_sidepanel.css',
-    'flame_graphs.css',
     'footer.css',
     'general_setup.css',
+    'graph_grids.css',
     'chatbot.css',
     'layout.css',
     'navigation_sidepanel.css',
@@ -19,6 +19,7 @@ perun_templates_style_files = files(
     'tooltip.css',
     'trace_details.css',
     'traces_table.css',
+    'tree_map.css',
 )
 
 py3.install_sources(

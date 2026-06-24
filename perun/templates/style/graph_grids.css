@@ -1,0 +1,106 @@
+.grid_search_box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    gap: 10px;
+    font-weight: bold;
+    color: var(--color-primary);
+    background-color: var(--color-secondary-hover);
+}
+
+.grid_search_input_label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.grid_layout_switch {
+    cursor: pointer;
+}
+
+.grid_layout_switch span svg {
+    fill: var(--color-primary-text);
+}
+
+.svg_switch_container {
+    display: none;
+}
+
+.svg_switch_container.visible {
+    display: inline-block;
+}
+
+.svg_switch_container.hidden {
+    display: none;
+}
+
+.grid_btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--color-white-tinted);
+    color: var(--color-gray-not-changing);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+}
+
+.grid_btn:hover {
+    background-color: var(--color-target-transparent);
+    color: var(--color-target);
+}
+
+.panel-drag-handle {
+    height: 12px;
+    border-bottom: 1px solid #bbb;
+    background: linear-gradient(#e8e8e8, #d0d0d0);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    padding-top: 3px;
+}
+
+.panel-drag-handle::after {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 4px;
+    margin: 0 auto;
+    border-radius: 2px;
+    background: radial-gradient(circle, #888 1px, transparent 1.5px);
+    background-size: 6px 4px;
+}
+
+.panel-drag-handle:active {
+    cursor: grabbing;
+}
+
+.panel-dragging {
+    opacity: 0.55;
+}
+
+.panel-drop-target {
+    outline: 2px solid rgb(0 120 200);
+    outline-offset: -2px;
+}
+
+.panel-drag-active {
+    user-select: none;
+}
+
+.panel-drag-active .grid-svg-container svg {
+    pointer-events: none;
+}
+
+#flame,
+#flame .comparison_container,
+#flame .grid-svg-container,
+#treemaps,
+#treemaps .comparison_container,
+#treemaps .grid-svg-container {
+    overflow-anchor: none;
+}

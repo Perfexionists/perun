@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import os
 import re
 import subprocess
@@ -20,8 +20,8 @@ PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 
 
-demangle_cache = {}
-address_to_line_cache = {}
+demangle_cache: dict[str, str] = {}
+address_to_line_cache: dict[str, tuple[str, str]] = {}
 
 
 def build_demangle_cache(names: set[str]) -> None:
@@ -63,17 +63,18 @@ def build_address_to_line_cache(addresses: set[tuple[str, str]], binary_name: st
 
     sys_call = ["addr2line", "-e", binary_name] + list_of_addresses
     output = subprocess.check_output(sys_call).decode("utf-8").strip()
-    address_to_line_cache = dict(
-        zip(list_of_addresses, map(lambda x: x.split(":"), output.split("\n")))
-    )
+
+    for addr, source_detail in zip(list_of_addresses, output.split("\n")):
+        src_file, src_line = source_detail.split(":", maxsplit=1)
+        address_to_line_cache[addr] = (src_file, src_line)
 
 
-def address_to_line(ip: str) -> list[Any]:
+def address_to_line(ip: str) -> tuple[str, str]:
     """
     :param ip: instruction pointer value
-    :return: list of two objects, 1st is the name of the source file, 2nd is the line number
+    :return: a pair of (source file, line number)
     """
-    return address_to_line_cache[ip][:]
+    return address_to_line_cache[ip]
 
 
 def run(executable: Executable) -> tuple[int, str]:

@@ -49,16 +49,16 @@ def parse_stack(stack: list[str]) -> list[dict[str, Any]]:
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
-        ip_info = syscalls.address_to_line(instruction_pointer)
-        if ip_info[0] in ["?", "??"]:
-            ip_info[0] = "unreachable"
-        if ip_info[1] in ["?", "??"]:
-            ip_info[1] = 0
+        src_file, src_line = syscalls.address_to_line(instruction_pointer)
+        if src_file in ["?", "??"]:
+            src_file = "unreachable"
+        if src_line in ["?", "??"]:
+            src_line = "0"
         else:
-            ip_info[1] = common_kit.safe_match(PATTERN_INT, ip_info[1], "<?>")
+            src_line = common_kit.safe_match(PATTERN_INT, src_line, "<?>")
 
-        call_data["source"] = ip_info[0]
-        call_data["line"] = int(ip_info[1])
+        call_data["source"] = src_file
+        call_data["line"] = int(src_line)
 
         data.append(call_data)
 

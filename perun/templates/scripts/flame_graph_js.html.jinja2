@@ -43,29 +43,140 @@
                     }});
             }
 
-            ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(type => {
-                document.querySelectorAll(`#${type}_{{ index }}_frames g`).forEach(node => {
-                    node.addEventListener("mouseenter", function () {
-                        const textElement = node.querySelector("title");
+            const LINKED_FLAMEGRAPH_TYPES = ["lhs", "rhs", "lhs_diff", "rhs_diff"];
+            const linkedHoverState = {
+                term: null,
+                sourceType: null,
+                leaveTimer: null,
+            };
 
-                        if (textElement && textElement.innerHTML) {
-                            let searchTerm = cleanTitle(textElement.innerHTML);
-
-                            window[`lhs_{{index}}_search_hover`](searchTerm);
-                            window[`rhs_{{index}}_search_hover`](searchTerm);
-                            window[`lhs_diff_{{index}}_search_hover`](searchTerm);
-                            window[`rhs_diff_{{index}}_search_hover`](searchTerm);
+            function findLinkedFlamegraphHit(target) {
+                let node = target;
+                while (node && node.parentElement) {
+                    for (const type of LINKED_FLAMEGRAPH_TYPES) {
+                        if (node.parentElement.id === `${type}_0_frames`) {
+                            const title = node.querySelector("title");
+                            if (!title || !title.innerHTML) {
+                                return null;
+                            }
+                            return { type, group: node, title };
                         }
-                    });
+                    }
+                    node = node.parentElement;
+                }
+                return null;
+            }
 
-                    node.addEventListener("mouseleave", function () {
-                        window[`lhs_{{index}}_reset_search_hover`]();
-                        window[`rhs_{{index}}_reset_search_hover`]();
-                        window[`lhs_diff_{{index}}_reset_search_hover`]();
-                        window[`rhs_diff_{{index}}_reset_search_hover`]();
+            function linkedResetSearchHoverAll() {
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const fn = window[`${type}_0_reset_search_hover`];
+                    if (typeof fn === "function") {
+                        fn();
+                    }
+                });
+                linkedHoverState.term = null;
+                linkedHoverState.sourceType = null;
+            }
+
+            function linkedApplyHover(searchTerm, sourceType) {
+                if (
+                    searchTerm === linkedHoverState.term &&
+                    sourceType === linkedHoverState.sourceType
+                ) {
+                    return;
+                }
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const fn = window[`${type}_0_reset_search_hover`];
+                    if (typeof fn === "function") {
+                        fn();
+                    }
+                });
+
+                if (!searchTerm) {
+                    linkedHoverState.term = null;
+                    linkedHoverState.sourceType = null;
+                    return;
+                }
+
+                linkedHoverState.term = searchTerm;
+                linkedHoverState.sourceType = sourceType;
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const highlightFn = window[`${type}_0_apply_hover_highlight`];
+                    const statsFn = window[`${type}_0_search_hover_show_stats`];
+                    if (typeof highlightFn !== "function") {
+                        return;
+                    }
+                    const res = highlightFn(searchTerm);
+                    if (typeof statsFn === "function") {
+                        statsFn(res);
+                    }
+                });
+            }
+
+            function cancelLinkedHoverLeave() {
+                if (linkedHoverState.leaveTimer !== null) {
+                    clearTimeout(linkedHoverState.leaveTimer);
+                    linkedHoverState.leaveTimer = null;
+                }
+            }
+
+            function isPointerOverLinkedFrame(clientX, clientY) {
+                const el = document.elementFromPoint(clientX, clientY);
+                if (!el) {
+                    return false;
+                }
+                return findLinkedFlamegraphHit(el) !== null;
+            }
+
+            function scheduleLinkedHoverLeave(clientX, clientY) {
+                cancelLinkedHoverLeave();
+                linkedHoverState.leaveTimer = setTimeout(function () {
+                    linkedHoverState.leaveTimer = null;
+                    if (!isPointerOverLinkedFrame(clientX, clientY)) {
+                        linkedResetSearchHoverAll();
+                    }
+                }, 0);
+            }
+
+            const flameSection = document.getElementById("flame");
+            if (flameSection) {
+                flameSection.addEventListener("mouseover", function (e) {
+                    const hit = findLinkedFlamegraphHit(e.target);
+                    cancelLinkedHoverLeave();
+                    if (!hit) {
+                        if (linkedHoverState.term !== null) {
+                            linkedResetSearchHoverAll();
+                        }
+                        return;
+                    }
+                    linkedApplyHover(
+                        cleanTitlePython(hit.title.innerHTML),
+                        hit.type
+                    );
+                });
+
+                flameSection.addEventListener("mouseout", function (e) {
+                    if (e.relatedTarget && flameSection.contains(e.relatedTarget)) {
+                        return;
+                    }
+                    scheduleLinkedHoverLeave(e.clientX, e.clientY);
+                });
+
+                LINKED_FLAMEGRAPH_TYPES.forEach(function (type) {
+                    const framesEl = document.getElementById(`${type}_0_frames`);
+                    if (!framesEl) {
+                        return;
+                    }
+                    framesEl.addEventListener("mouseleave", function (e) {
+                        if (e.relatedTarget && framesEl.contains(e.relatedTarget)) {
+                            return;
+                        }
+                        scheduleLinkedHoverLeave(e.clientX, e.clientY);
                     });
                 });
-            });
+            }
 
         {% endfor%}
 
@@ -90,6 +201,28 @@
             {% endfor %}
         }
 
+        function toggleAllFlamegraphs() {
+            // Toggle only those flame graphs that are not already in the desired
+            // exclusive or inclusive view.
+            let switch_from = "Show exclusive";
+            if (toggleExclInclBtn.firstChild.nodeValue === "Show Exclusive Consumption") {
+                toggleExclInclBtn.firstChild.nodeValue = "Show Inclusive Consumption";
+            } else {
+                toggleExclInclBtn.firstChild.nodeValue = "Show Exclusive Consumption";
+                switch_from = "Show inclusive";
+            }
+
+            {% for index in range(0, flamegraphs|length) %}
+                ["lhs", "rhs", "lhs_diff", "rhs_diff"].forEach(variation => {
+                    const id_clickable = `${variation}_{{ index }}_excToggle`;
+                    const element = document.getElementById(id_clickable);
+                    if (element && element.firstChild.nodeValue === switch_from) {
+                        element.dispatchEvent(new Event("click", { bubbles: true }));
+                    }
+                });
+            {% endfor %}
+        }
+
         const resetSearchBtn = document.getElementById("flamegraph_search_reset_all");
         if (resetSearchBtn) {
             resetSearchBtn.addEventListener("click", () => resetFlamegraphAll("search"));
@@ -100,34 +233,32 @@
             resetZoomBtn.addEventListener("click", () => resetFlamegraphAll("unzoom"));
         }
 
-
+        const toggleExclInclBtn = document.getElementById("flamegraph_toggle_ie_all");
+        if (toggleExclInclBtn) {
+            toggleExclInclBtn.addEventListener("click", () => toggleAllFlamegraphs());
+        }
 
         // Different types of flamegraph ordering switch
-        const visualizationSwitch = document.getElementById("flamegraph_visualization_switch");
-        visualizationSwitch.addEventListener("click", function () {
-            const elements = document.querySelectorAll(".comparison_container_stacked");
-
-            elements.forEach(element => {
-                const currentDirection = window.getComputedStyle(element).flexDirection;
-                if (currentDirection === "row") {
-                    element.style.flexDirection = "column";
-                } else {
-                    element.style.flexDirection = "row";
-                }
-            });
-
-            visualizationSwitch.querySelectorAll(".svg_switch_container").forEach(svg => {
-                svg.classList.toggle("hidden");
-                svg.classList.toggle("visible");
-            });
+        document.getElementById("flamegraph_layout_switch").addEventListener("click", function () {
+            switchGridLayout("#flame");
         });
 
-        function cleanTitle(title) {
-            // strips the number of samples from the function names. Keeps the opening parenthesis symbol '('
-            // to ensure exact match.
+        function cleanTitlePerl(title) {
+            // strips the number of samples from the function names. Keeps the opening
+            // parenthesis symbol '(' to ensure exact match.
             let index = title.search(/\(\d/);
             if (index !== -1) {
                 title = title.slice(0, index) + '(';
+            }
+            return title;
+        }
+
+        function cleanTitlePython(title) {
+            // strips the number of samples from the function names. Keeps the newline
+            // symbol to ensure exact match.
+            let index = title.search(/\n/);
+            if (index !== -1) {
+                title = title.slice(0, index) + '\n';
             }
             return title;
         }

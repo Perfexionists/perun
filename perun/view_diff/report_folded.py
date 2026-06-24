@@ -393,11 +393,12 @@ class PolarsTabularTraceProfiles:
     'trace' column. See the module docstring for description of the difference metrics.
 
     *Filtered*: The trace profile will have only up to top 'max_traces_per_func' traces per each
-    function w.r.t. the 'prop_diff_incl' metric.
+    function w.r.t. the 'prop_diff_incl' and 'prop_diff_excl' metric. Note that the traces are
+    deduplicated; for example, if `max_traces_per_func` = 10 and some function has a total of 15
+    traces, but only 13 of them appear in both top selections, the resulting table will keep only
+    the 13 traces instead of 20 (7 of which would be duplicated).
 
-    *Sorted*: Both profiles are sorted by the function IDs in the ascending order. Additionally,
-    the trace profile also contains traces within each function sorted w.r.t. the 'prop_diff_incl'
-    metric in the descending order.
+    *Sorted*: Both profiles are sorted by the function IDs in the ascending order.
 
     For example, the tabular traces and function DataFrames might look like this:
 
@@ -500,10 +501,14 @@ class FlameGraphSettings:
     :ivar bgcolors: the image background color
     :ivar inverted: whether an icicle graph should be rendered instead
     :ivar rootnode: the root node name
+    :ivar subrootnode: the sub-root node name
     :ivar total: the total amount of consumed resources
+    :ivar normalize: normalize the sample counts in differential graphs
+    :ivar parallelize: parallelize the creation of flamegraph grids
+    :ivar use_perl: use the Perl variants of flame graph scripts
     :ivar fg_script_path: the path to the flamegraph script
     :ivar difffolded_path: the path to the difffolded script
-    :ivar parallelize: parallelize the creation of flamegraph grids
+    :ivar difffolded_path: the path to the diff_flamegraph script
     """
 
     __slots__ = (
@@ -518,10 +523,14 @@ class FlameGraphSettings:
         "bgcolors",
         "inverted",
         "rootnode",
+        "subrootnode",
         "total",
+        "normalize",
+        "parallelize",
+        "use_perl",
         "fg_script_path",
         "difffolded_path",
-        "parallelize",
+        "diff_fg_path",
     )
 
     # Default flamegraph parameters reconstructed from the flamegraph.pl script.
@@ -536,6 +545,7 @@ class FlameGraphSettings:
     DefaultBgColors: ClassVar[str] = ""
     DefaultInverted: ClassVar[bool] = False
     DefaultRootNode: ClassVar[str] = "all"
+    DefaultSubRootNode: ClassVar[str] = "subtotal"
     DefaultTotal: ClassVar[int] = 0
 
     # The map links the attribute names and their default values for easier iteration over the
@@ -551,6 +561,7 @@ class FlameGraphSettings:
         "colors": DefaultColors,
         "bgcolors": DefaultBgColors,
         "rootnode": DefaultRootNode,
+        "subrootnode": DefaultSubRootNode,
         "total": DefaultTotal,
     }
 
@@ -567,8 +578,11 @@ class FlameGraphSettings:
         bgcolors: str = DefaultBgColors,
         inverted: bool = DefaultInverted,
         rootnode: str = DefaultRootNode,
+        subrootnode: str = DefaultSubRootNode,
         total: int = DefaultTotal,
+        normalize: bool = False,
         parallelize: bool = True,
+        use_perl_scripts: bool = False,
         **_: Any,
     ) -> None:
         """
@@ -583,8 +597,10 @@ class FlameGraphSettings:
         :param bgcolors: the image background color
         :param inverted: whether an icicle graph should be rendered instead
         :param rootnode: the root node name
+        :param subrootnode: the sub-root node name
         :param total: the total amount of consumed resources
         :param parallelize: parallelize the creation of flamegraph grids
+        :param use_perl_scripts: use the Perl variants of flame graph scripts
         """
         # We call the type conversion functions since the parameters may be supplied from CLI
         # where the types do not necessarily have to match.
@@ -599,11 +615,16 @@ class FlameGraphSettings:
         self.bgcolors: str = str(bgcolors)
         self.inverted: bool = bool(inverted)
         self.rootnode: str = str(rootnode)
+        self.subrootnode: str = str(subrootnode)
         self.total: int = int(total)
+        self.normalize: bool = bool(normalize)
 
-        self.fg_script_path: Path = Path(script_kit.get_script("flamegraph.pl"))
-        self.difffolded_path: Path = Path(script_kit.get_script("difffolded.pl"))
         self.parallelize: bool = parallelize
+        self.use_perl = use_perl_scripts
+        suffix: str = ".pl" if use_perl_scripts else ".py"
+        self.fg_script_path: Path = Path(script_kit.get_script(f"flamegraph{suffix}"))
+        self.difffolded_path: Path = Path(script_kit.get_script("difffolded.pl"))
+        self.diff_fg_path: Path = Path(script_kit.get_script("diff_flamegraph.py"))
 
     @classmethod
     def from_cli(cls, **cli_kwargs: Any) -> FlameGraphSettings:
@@ -678,8 +699,8 @@ class FlameGraphGrid:
     DefaultTitles: ClassVar[tuple[str, str, str, str]] = (
         "Baseline Flamegraph",
         "Target Flamegraph",
-        "Baseline-Target Diff Flamegraph",
-        "Target-Baseline Diff Flamegraph",
+        "Baseline > Target Diff Flamegraph",
+        "Target > Baseline Diff Flamegraph",
     )
     # The tags used for escaping flamegraphs in the grid.
     EscapeTags: ClassVar[tuple[str, str, str, str]] = ("lhs_0", "rhs_0", "lhs_diff_0", "rhs_diff_0")
@@ -836,8 +857,9 @@ class FlameGraphGridParallelBuilder(contextlib.ExitStack):
     :ivar fg_handles: handles to temporary output files for the created flamegraphs; pipes have
           limited buffer sizes and we do not want to periodically scan for output or use blocking
           methods for reading the output
-    :ivar diff_processes: handles of difffolded.pl processes that generate data for diff flamegraphs
-    :ivar fg_processes: handles of flamegraph.pl processes
+    :ivar diff_processes: handles of difffolded.pl (.py) processes that generate data for diff
+          flamegraphs
+    :ivar fg_processes: handles of flamegraph.pl (.py) processes
     :ivar grid: a reference to the grid object for the generated flamegraphs; context managers
           cannot explicitly return values, hence we use an output parameter
     """
@@ -867,21 +889,28 @@ class FlameGraphGridParallelBuilder(contextlib.ExitStack):
             self.enter_context(tempfile.NamedTemporaryFile(mode="w+")) for _ in range(4)
         ]
         # Spawn two difffolded processes: one for each diff flamegraph.
-        # Note: PyCharm incorrectly shows typing errors related to the context manager return types.
-        #  However, everything is typed correctly according to mypy.
-        self.diff_processes = [
-            self.enter_context(
-                processes.nonblocking_subprocess(
-                    grid_commands.baseline_target_difffolded, {"stdout": PIPE}
-                )
-            ),
-            self.enter_context(
-                processes.nonblocking_subprocess(
-                    grid_commands.target_baseline_difffolded, {"stdout": PIPE}
-                )
-            ),
-        ]
-        # Spawn four flamegraph.pl processes: one for each flamegraph in the grid.
+        # The processes should be spawned only if we are using the original Perl scripts and not
+        # the optimized Python ones, which is indicated by empty difffolded commands.
+        if grid_commands.baseline_target_difffolded:
+            self.diff_processes = [
+                self.enter_context(
+                    processes.nonblocking_subprocess(
+                        grid_commands.baseline_target_difffolded, {"stdout": PIPE}
+                    )
+                ),
+                self.enter_context(
+                    processes.nonblocking_subprocess(
+                        grid_commands.target_baseline_difffolded, {"stdout": PIPE}
+                    )
+                ),
+            ]
+        # Spawn four flamegraph processes: one for each flamegraph in the grid.
+        base_tar_kwargs: dict[str, Any] = {"stdout": self.fg_handles[2]}
+        tar_base_kwargs: dict[str, Any] = {"stdout": self.fg_handles[3]}
+        # Handle both Perl and Python versions.
+        if grid_commands.baseline_target_difffolded:
+            base_tar_kwargs["stdin"] = self.diff_processes[0].stdout
+            tar_base_kwargs["stdin"] = self.diff_processes[1].stdout
         self.fg_processes = [
             self.enter_context(
                 processes.nonblocking_subprocess(
@@ -896,13 +925,13 @@ class FlameGraphGridParallelBuilder(contextlib.ExitStack):
             self.enter_context(
                 processes.nonblocking_subprocess(
                     grid_commands.baseline_target_fg_diff,
-                    {"stdin": self.diff_processes[0].stdout, "stdout": self.fg_handles[2]},
+                    base_tar_kwargs,
                 )
             ),
             self.enter_context(
                 processes.nonblocking_subprocess(
                     grid_commands.target_baseline_fg_diff,
-                    {"stdin": self.diff_processes[1].stdout, "stdout": self.fg_handles[3]},
+                    tar_base_kwargs,
                 )
             ),
         ]
@@ -1002,6 +1031,7 @@ def generate_report_from_folded(
         **cli_kwargs,
         countname=cli_kwargs["profiled_resource"],
         rootnode="Maximum (Baseline, Target)",
+        subrootnode="Profile Total",
     )
 
     # Parse the input profiles and create their Polars representation.
@@ -1164,6 +1194,7 @@ def generate_report_from_folded(
         stat_list=[flamegraphs[0][0]],
         units=[fg_settings.countname],
         nodes=iter(pair_profile.baseline.maps.func_id_reverse_map.values()),
+        use_perl=fg_settings.use_perl,
         flamegraphs=flamegraphs,
         selection_table=iterate_polars_tabular(
             tabular_profile,
@@ -1171,6 +1202,7 @@ def generate_report_from_folded(
             pair_profile.baseline.maps.func_id_reverse_map,
             fg_settings.countname,
         ),
+        max_traces_per_func=filter_params.max_function_traces,
         offline=is_report_offline,
         notes_enabled=True,
         links=report_links,
@@ -1179,6 +1211,9 @@ def generate_report_from_folded(
         top_diffs_trace_exclusive=iterate_top_diffs(trace_top_diffs[1]),
         top_diffs_func_inclusive=iterate_top_diffs(func_top_diffs[0]),
         top_diffs_func_exclusive=iterate_top_diffs(func_top_diffs[1]),
+        total_baseline=pair_profile.baseline.features.total_resources,
+        total_target=pair_profile.target.features.total_resources,
+        is_folded=True,
     )
     log.minor_success("HTML report", "rendered")
 
@@ -1577,20 +1612,46 @@ def polars_merged_to_tabular_profiles(
     )
 
     # Build merged trace profile with additional absolute and relative diff metrics, where each
-    # function keeps only up to top 'max_traces_per_func' traces w.r.t. the inclusive proportional
-    # diff metric.
-    # TODO: Eventually, we will want to keep top 'max_traces_per_func' for more than one difference
-    #  metric. However, we first need to update the report table such that it allows the user to
-    #  switch between the per-metric sets of top traces.
-    table_traces_lf = (
+    # function keeps only up to top 'max_traces_per_func' traces w.r.t. both inclusive and
+    # exclusive proportional diff metric.
+    # TODO: calculate the top traces also for other metrics, e.g., absolute delta or relative
+    #  delta. This will, however, require some hook on sort operation in our trace tables to
+    #  always retrieve the correct set of functions.
+    top_incl_traces = (
+        # This groups traces on a per-function basis and then filters up to top N rows (traces)
+        # for each function w.r.t. the inclusive proportional delta.
         merged.traces.lazy()
-        # This sorts the DataFrame rows first by function IDs, and then the traces for each
-        # individual function by the diff value in descending order.
-        .sort(["func", "prop_diff_incl"], descending=[False, True])
-        .group_by("func", maintain_order=True)
-        # We keep only up to 'max_traces_per_func' top number of traces per each function.
-        .head(max_traces_per_func)
+        .group_by("func")
+        .agg(
+            pl.struct(pl.exclude("func"))
+            .top_k_by("prop_diff_incl", k=max_traces_per_func)
+            .alias("rows")
+        )
+        .explode("rows")
+        .unnest("rows")
+    )
+
+    top_excl_traces = (
+        # Similar to the previous step, but filters based on th exclusive proportional delta.
+        merged.traces.lazy()
+        .group_by("func")
+        .agg(
+            pl.struct(pl.exclude("func"))
+            .top_k_by("prop_diff_excl", k=max_traces_per_func)
+            .alias("rows")
+        )
+        .explode("rows")
+        .unnest("rows")
+    )
+
+    # Concatenate and deduplicate both tables. For example, if `max_traces_per_func` = 10 and some
+    # function has a total of 15 traces, but only 13 of them appear in both top selections, the
+    # resulting table will keep only the 13 traces instead of 20 (7 of which would be duplicated).
+    table_traces_lf = (
+        pl.concat([top_incl_traces, top_excl_traces])
+        .unique(subset=["func", "trace"])
         .with_columns(*abs_rel_diff_expressions)
+        .sort("func", descending=False)
     )
 
     return PolarsTabularTraceProfiles(*pl.collect_all([table_traces_lf, table_funcs_lf]))
@@ -1639,14 +1700,15 @@ def iterate_polars_tabular(
     tabular_funcs = tabular_profile.funcs
     df_row = pl.DataFrame.row
     df_iter_rows = pl.DataFrame.iter_rows
+    # FIXME: Remove the dependency on SelectRow. We should ideally pass the records as tuples
+    #  directly to improve performance.
     SelectRow = report_native.SelectionRow
 
     common_funcs: set[int] = set(common_functions["func"].to_list())
 
-    # TODO: We want to support both inclusive and exclusive traces later on.
     inclusive_resource_type = f"Inclusive {resource_type}"
     # FIXME: Temporary hack so that we can use the SelectionRow class.
-    report_native.Stats.SortedStats = [inclusive_resource_type]
+    report_native.Stats.SortedStats = [inclusive_resource_type, f"Exclusive {resource_type}"]
     group_df: pl.DataFrame
     # Iterate over groups of traces belonging to individual functions from the lowest to the
     # highest function IDs.
@@ -1678,14 +1740,24 @@ def iterate_polars_tabular(
                 inclusive_resource_type,
                 # inclusive
                 r[2],
+                # exclusive
+                r[3],
                 # inclusive_target
                 r[4],
+                # exclusive_target
+                r[5],
                 # prop_diff_incl
                 r[6],
+                # prop_diff_excl
+                r[7],
                 # abs_diff_incl
                 r[8],
+                # abs_diff_excl
+                r[9],
                 # rel_diff_incl
                 r[10],
+                # rel_diff_excl
+                r[11],
                 # Full trace: 'firstID;...;lastID#base1;...;baseN#target1;...;targetN'
                 # FIXME: the part of the trace after the first '#' is not used, but the report
                 #  still expects it. We will remove it later.
@@ -1700,9 +1772,15 @@ def iterate_polars_tabular(
             # Function ID
             row[0],
             state,
-            # Function stats: resource type index, inclusive, inclusive_target, prop_diff_incl,
-            #  abs_diff_incl, rel_diff_incl
-            [(0, row[1], row[3], row[5], row[7], row[9])],
+            # Inclusive and exclusive function stats:
+            [
+                # resource type index, inclusive (baseline), inclusive_target,
+                #  prop_diff_incl, abs_diff_incl, rel_diff_incl
+                (0, row[1], row[3], row[5], row[7], row[9]),
+                # resource type index, exclusive (baseline), exclusive_target,
+                #  prop_diff_excl, abs_diff_excl, rel_diff_excl
+                (1, row[2], row[4], row[6], row[8], row[10]),
+            ],
             top_traces,
         )
 
@@ -1714,13 +1792,13 @@ def build_flamegraph_command(
     *new_flags: str,
     **override_kwargs: Any,
 ) -> str:
-    """Create a flamegraph.pl command to generate a flame graph.
+    """Create a command to generate a flame graph.
 
     :param input_path: a path to the file with folded flame graph data; may be omitted in which case
-           the input data should be supplied to the flamegraph.pl process via stdin
+           the input data should be supplied to the flamegraph process via stdin
     :param settings: flamegraph configuration parameters and flags
     :param title: the title of the flame graph
-    :param new_flags: additional flags that should be passed to the flamegraph.pl script
+    :param new_flags: additional flags that should be passed to the flamegraph script
     :param override_kwargs: additional parameters that should extend or override the parameter
            values stored in the settings object
 
@@ -1732,11 +1810,63 @@ def build_flamegraph_command(
         "--title",
         f"'{title}'",
     ]
+    # Extend the command with parameters.
+    cmd.extend(_add_flamegraph_params(settings, *new_flags, **override_kwargs))
+    return " ".join(cmd)
+
+
+def build_diff_flamegraph_py_command(
+    baseline_path: Path,
+    target_path: Path,
+    settings: FlameGraphSettings,
+    title: str,
+    *new_flags: str,
+    **override_kwargs: Any,
+) -> str:
+    """Create a command to generate a diff flame graph using our helper script.
+
+    :param baseline_path: a path to the file with baseline folded flame graph data
+    :param target_path: a path to the file with target folded flame graph data
+    :param settings: flamegraph configuration parameters and flags
+    :param title: the title of the flame graph
+    :param new_flags: additional flags that should be passed to the flamegraph script
+    :param override_kwargs: additional parameters that should extend or override the parameter
+           values stored in the settings object
+
+    :return: the command for generating a flame graph
+    """
+    cmd = [
+        str(settings.diff_fg_path),
+        str(baseline_path),
+        str(target_path),
+        "--title",
+        f"'{title}'",
+    ]
+    # Extend the command with parameters.
+    cmd.extend(_add_flamegraph_params(settings, *new_flags, **override_kwargs))
+    return " ".join(cmd)
+
+
+def _add_flamegraph_params(
+    settings: FlameGraphSettings,
+    *new_flags: str,
+    **override_kwargs: Any,
+) -> list[str]:
+    """Construct a collection of flags and keyword arguments for a flamegraph script.
+
+    :param settings: flamegraph configuration parameters and flags
+    :param new_flags: additional flags that should be passed to the flamegraph script
+    :param override_kwargs: additional parameters that should extend or override the parameter
+           values stored in the settings object
+
+    :return: a list of flags and parameters
+    """
+    params: list[str] = []
     # Extend the command with flags.
     flags: set[str] = set(new_flags)
     if settings.inverted and "inverted" not in new_flags:
         flags.add("inverted")
-    cmd.extend(f"--{flag}" for flag in flags)
+    params.extend(f"--{flag}" for flag in flags)
 
     # Extend the command with flamegraph parameters that have non-default values.
     # Although we could supply the parameters with default values as well, it would needlessly
@@ -1744,11 +1874,14 @@ def build_flamegraph_command(
     kw_params: dict[str, str | int] = settings.get_nondefault_kw_attributes()
     # The parameters may be overridden and extended by the caller.
     kw_params.update(override_kwargs)
+    if settings.use_perl:
+        # Sub-root is unsupported by Perl.
+        del kw_params["subrootnode"]
     for key, val in kw_params.items():
         if val is not None:
-            cmd.append(f"--{key}")
-            cmd.append(f"'{val}'")
-    return " ".join(cmd)
+            params.append(f"--{key}")
+            params.append(f"'{val}'")
+    return params
 
 
 def build_differential_flamegraph_commands(
@@ -1759,20 +1892,32 @@ def build_differential_flamegraph_commands(
     *new_flags: str,
     **override_kwargs: Any,
 ) -> tuple[str, str]:
-    """Create difffolded.pl and flamegraph.pl commands to generate a differential flame graph.
+    """Create diffing and flamegraph commands to generate a differential flame graph.
 
     :param baseline: a path to the file with baseline folded flame graph data
     :param target: a path to the file with target folded flame graph data
     :param settings: flamegraph configuration parameters and flags
     :param title: the title of the flame graph
-    :param new_flags: additional flags that should be passed to the flamegraph.pl script
+    :param new_flags: additional flags that should be passed to the flamegraph script
     :param override_kwargs: additional parameters that should extend or override the parameter
            values stored in the settings object
 
-    :return: the difffolded.pl and flamegraph.pl commands for generating a differential flame graph
+    :return: the difffolded and flamegraph commands for generating a differential flame graph
     """
-    diff_cmd = f"{settings.difffolded_path} -n {baseline} {target}"
-    fg_cmd = build_flamegraph_command(None, settings, title, *new_flags, **override_kwargs)
+    if settings.use_perl:
+        normalize_flag = ""
+        if settings.normalize or "normalize" in new_flags:
+            normalize_flag = "-n"
+        diff_cmd = f"{settings.difffolded_path} {normalize_flag} {baseline} {target}"
+        fg_cmd = build_flamegraph_command(None, settings, title, *new_flags, **override_kwargs)
+    else:
+        diff_cmd = ""
+        extended_flags = list(new_flags)
+        if settings.normalize and "normalize" not in new_flags:
+            extended_flags.append("normalize")
+        fg_cmd = build_diff_flamegraph_py_command(
+            baseline, target, settings, title, *extended_flags, **override_kwargs
+        )
     return diff_cmd, fg_cmd
 
 
@@ -1789,7 +1934,7 @@ def build_flamegraph_grid_commands(
     :param baseline: a path to the file with baseline folded flame graph data
     :param target: a path to the file with target folded flame graph data
     :param settings: flamegraph configuration parameters and flags
-    :param new_flags: additional flags that should be passed to the flamegraph.pl script
+    :param new_flags: additional flags that should be passed to the flamegraph script
     :param titles: the titles of the respective flamegraphs
     :param override_kwargs: additional parameters that should extend or override the parameter
            values stored in the settings object
@@ -1800,30 +1945,40 @@ def build_flamegraph_grid_commands(
         build_flamegraph_command(baseline, settings, titles[0], *new_flags, **override_kwargs),
         build_flamegraph_command(target, settings, titles[1], *new_flags, **override_kwargs),
         *build_differential_flamegraph_commands(
-            baseline, target, settings, titles[2], *new_flags, **override_kwargs
+            target, baseline, settings, titles[2], "negate", *new_flags, **override_kwargs
         ),
         *build_differential_flamegraph_commands(
-            target, baseline, settings, titles[3], "negate", *new_flags, **override_kwargs
+            baseline, target, settings, titles[3], *new_flags, **override_kwargs
         ),
     )
 
 
-def build_flamegraph_grid_serially(grid_commands: FlameGraphGridCommands) -> FlameGraphGrid:
+def build_flamegraph_grid_serially(grid_cmds: FlameGraphGridCommands) -> FlameGraphGrid:
     """Create a flamegraph grid serially in this process.
 
-    :param grid_commands: the commands for generating a flamegraph grid
+    :param grid_cmds: the commands for generating a flamegraph grid
 
     :return: the generated flamegraph grid
     """
     log.major_info("Creating Flame Graph Grid (Serially)")
 
     # Transform the commands into a tuple that we can index in a loop.
-    cmds: tuple[str, str, str, str] = (
-        grid_commands.baseline,
-        grid_commands.target,
-        f"{grid_commands.baseline_target_difffolded} | {grid_commands.baseline_target_fg_diff}",
-        f"{grid_commands.target_baseline_difffolded} | {grid_commands.target_baseline_fg_diff}",
-    )
+    if grid_cmds.baseline_target_difffolded:
+        # Perl variant.
+        cmds: tuple[str, str, str, str] = (
+            grid_cmds.baseline,
+            grid_cmds.target,
+            f"{grid_cmds.baseline_target_difffolded} | {grid_cmds.baseline_target_fg_diff}",
+            f"{grid_cmds.target_baseline_difffolded} | {grid_cmds.target_baseline_fg_diff}",
+        )
+    else:
+        # Python variant.
+        cmds = (
+            grid_cmds.baseline,
+            grid_cmds.target,
+            grid_cmds.baseline_target_fg_diff,
+            grid_cmds.target_baseline_fg_diff,
+        )
 
     grid: FlameGraphGrid = FlameGraphGrid()
     for idx, (fg_cmd, tag) in enumerate(zip(cmds, FlameGraphGrid.EscapeTags)):

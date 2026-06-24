@@ -1,0 +1,62 @@
+#treemaps .grid-svg-container svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#treemaps .grid-svg-container text {
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    fill: rgb(0 0 0);
+}
+
+#treemaps .grid-svg-container .panel-title {
+    text-anchor: middle;
+    font-size: 17px;
+}
+
+#treemaps .grid-svg-container .svg-btn {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#treemaps .grid-svg-container .svg-btn:hover,
+#treemaps .grid-svg-container .svg-btn.show {
+    opacity: 1;
+}
+
+#treemaps .grid-svg-container .frames *:hover {
+    stroke: black;
+    stroke-width: 0.5;
+    cursor: pointer;
+}
+
+#treemaps .grid-svg-container .frames .leaf text {
+    pointer-events: none;
+}
+
+#treemaps .grid-svg-container .status-hide {
+    display: none;
+}
+
+#treemaps .grid-svg-container .status-detail-name {
+    font-style: italic;
+}
+
+.treemap-new-del .not-in-baseline rect, .treemap-new-del .not-in-target rect {
+    stroke: var(--color-correct);
+    stroke-width: 1px;
+}
+
+.treemap-common .not-in-baseline, .treemap-common .not-in-target {
+    opacity: 0.3;
+}
+
+.treemap-new-del .in-both {
+    opacity: 0.3;
+}
+
+.treemap-common .in-both rect {
+    stroke: var(--color-correct);
+    stroke-width: 1px;
+}
