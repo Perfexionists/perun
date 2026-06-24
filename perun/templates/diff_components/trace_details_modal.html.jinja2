@@ -166,8 +166,8 @@
                 selectedTr = tr;
             }
 
-            // row[7] is the full encoded call chain (e.g. "12;178;2#0;0;0#0;0;0").
-            const names = decodeStackTraceNames(row[7]);
+            // row[12] is the full encoded call chain (e.g. "12;178;2#0;0;0#0;0;0").
+            const names = decodeStackTraceNames(row[12]);
             const panel = document.getElementById('trace-callstack-content');
             const hint = document.getElementById('trace-callstack-hint');
             hint.style.display = 'none';
@@ -225,7 +225,7 @@
                     title: 'Trace',
                     filterable: false,
                     render: (data, row) => {
-                        const topName = getTopFunctionName(row[7]);  // row[7] = full encoded call chain
+                        const topName = getTopFunctionName(row[12]);  // row[12] = full encoded call chain
                         return `<div class="trace-cell-compact trace-cell-clickable" title="Click to view call chain">${topName}</div>`;
                     },
                     width: '220px',
