@@ -219,17 +219,22 @@
         let selectedTr = null;
 
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
+
+            // Assign index to each trace row (1-based) for rendering and sorting
+            rowData.trace_stats.forEach((row, i) => {
+                row[13] = i + 1;
+            });
+
             const columns = [
                 {
-                    data: 0,
-                    title: 'Trace',
+                    data: 13,
+                    title: 'Idx',
                     filterable: false,
-                    render: (data, row) => {
-                        const topName = getTopFunctionName(row[12]);  // row[12] = full encoded call chain
-                        return `<div class="trace-cell-compact trace-cell-clickable" title="Click to view call chain">${topName}</div>`;
+                    render: (data) => {
+                        return `<div class="trace-cell-compact trace-cell-clickable" title="Click to view call chain">${data}</div>`;
                     },
-                    width: '220px',
-                    tooltip: TRACES_TOOLTIPS.trace
+                    width: '90px',
+                    tooltip: TRACES_TOOLTIPS.index
                 },
                 {
                     data: 2 + dataOffset,
@@ -273,7 +278,7 @@
                 columns: columns,
                 enablePagination: false,
                 enableFilters: false,
-                initialSortColumn: 4,
+                initialSortColumn: initSortColumn,
                 initialSortDirection: 'desc',
                 onRowClick: (row, tr) => {
                     renderCallStack(row, tr);
