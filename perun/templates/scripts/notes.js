@@ -41,6 +41,12 @@ function closeNotePopupAndClear() {
     popupContainer.style.display = "none";
 }
 
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeNotePopupAndClear();
+    }
+});
+
 function saveNotePopup() {
     const currentId = popup.dataset.currentId;
     const noteItem = document.getElementById(currentId + NOTE_SUFFIX);
