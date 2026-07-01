@@ -90,7 +90,7 @@ def compute_window_stats(
         y_array = reshape_array(y_array)
         x_array = reshape_array(x_array)
         # obtain the first and last point from the sub-intervals - edges of the intervals
-        x_edges = np.delete(x_array, range(1, x_array[0].size - 1), 1)
+        x_edges: npt.NDArray[np.float64] = np.delete(x_array, range(1, x_array[0].size - 1), 1)
         # replace the right edge of the last sub-interval with the saved maximum of whole interval:
         # - (10, NaN) -> (10, 10)
         x_edges[np.isnan(np.delete(x_array, range(1, x_array[0].size - 1), 1))] = max_x
