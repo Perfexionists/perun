@@ -2,12 +2,13 @@
 /* exported TRACES_TOOLTIPS, TracesTable */
 
 const TRACES_TOOLTIPS = {
-    trace: 'The function name. Click the name in the row to view the call chain which shows how execution reached this function from the root caller.',
+    index: 'The trace index.',
     baseline: 'The amount of resources consumed by the Unit/Trace in the baseline profile.',
     target: 'The amount of resources consumed by the Unit/Trace in the target profile.',
     prop_rel_delta: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.',
     abs_delta: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.',
-    rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
+    rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.',
+    depth: 'Number of frames in the call stack for this trace.'
 };
 
 class TracesTable {

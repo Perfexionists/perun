@@ -142,17 +142,15 @@
   border-radius: 6px;
   background-color: var(--color-secondary-hover);
   border: 1px solid var(--color-light-gray);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: font-weight 0s;
   cursor: default;
 }
 
-.callstack-frame:hover {
-  background-color: var(--color-target-transparent);
-  border-color: var(--color-target);
+.callstack-frame:not(.callstack-frame--focus):not(.callstack-frame--root):hover .callstack-funcname {
+  font-weight: bold;
 }
 
 .callstack-frame--focus {
-  background-color: var(--color-target-transparent);
   border: 2px solid var(--color-target);
 }
 
@@ -180,6 +178,11 @@
   background-color: var(--color-bs-secondary);
 }
 
+.callstack-frame:not(.callstack-frame--focus):not(.callstack-frame--root) .callstack-depth {
+  background-color: var(--color-bs-secondary);
+  opacity: 0.7;
+}
+
 .callstack-funcname {
   font-family: monospace;
   font-size: 0.88em;
@@ -193,6 +196,38 @@
 
 .callstack-frame--focus .callstack-funcname {
   font-weight: bold;
+}
+
+.callstack-copy-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 5px;
+  cursor: pointer;
+  color: var(--color-bs-secondary);
+  line-height: 1;
+}
+
+.callstack-copy-btn svg {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+
+.callstack-copy-btn:hover {
+  background-color: var(--color-secondary-hover);
+  border-color: var(--color-light-gray);
+  color: var(--color-primary-text);
+}
+
+.callstack-copy-btn--copied {
+  color: var(--color-success, #22c55e) !important;
+  border-color: transparent !important;
 }
 
 .trace-cell-clickable {
@@ -274,7 +309,7 @@
 }
 
 .stat-item-aligned-end {
-    align-items: flex-end;
+  align-items: flex-end;
 }
 
 .stat-label {
