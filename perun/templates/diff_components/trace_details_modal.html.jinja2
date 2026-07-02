@@ -189,7 +189,9 @@
 
                 const depthLabel = document.createElement('span');
                 depthLabel.className = 'callstack-depth';
-                if (isRoot && totalDepth > 1) {
+                if (isFocus) {
+                    depthLabel.textContent = "LEAF";
+                } else if (isRoot) {
                     depthLabel.textContent = 'ROOT';
                 } else {
                     depthLabel.textContent = `${i}`;
@@ -200,6 +202,40 @@
                 funcName.className = 'callstack-funcname';
                 funcName.textContent = name;
                 frame.appendChild(funcName);
+
+                // Copy button — fades in on hover, out on leave
+                const COPY_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+                const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'callstack-copy-btn';
+                copyBtn.title = 'Copy function name';
+                copyBtn.innerHTML = COPY_SVG;
+
+                // Per-frame hover state tracked via closure
+                let frameHovered = false;
+                const setIconVisible = (visible) => {
+                    const svg = copyBtn.querySelector('svg');
+                    if (svg) svg.style.opacity = visible ? '1' : '0';
+                };
+
+                frame.addEventListener('mouseenter', () => { frameHovered = true;  setIconVisible(true);  });
+                frame.addEventListener('mouseleave', () => { frameHovered = false; setIconVisible(false); });
+
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(name).then(() => {
+                        copyBtn.classList.add('callstack-copy-btn--copied');
+                        copyBtn.innerHTML = CHECK_SVG;
+                        setIconVisible(frameHovered); // new SVG — re-apply current hover state
+                        setTimeout(() => {
+                            copyBtn.classList.remove('callstack-copy-btn--copied');
+                            copyBtn.innerHTML = COPY_SVG;
+                            setIconVisible(frameHovered); // new SVG again — re-apply
+                        }, 1500);
+                    });
+                });
+                frame.appendChild(copyBtn);
 
                 panel.appendChild(frame);
 
@@ -220,9 +256,11 @@
 
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
 
-            // Assign index to each trace row (1-based) for rendering and sorting
+            // Assign index (1-based) and trace depth (number of frames) to each row
             rowData.trace_stats.forEach((row, i) => {
                 row[13] = i + 1;
+                const traceStr = row[12];
+                row[14] = traceStr ? traceStr.split('#')[0].split(';').length : 0;
             });
 
             const columns = [
@@ -235,6 +273,15 @@
                     },
                     width: '90px',
                     tooltip: TRACES_TOOLTIPS.index
+                },
+                {
+                    data: 14,
+                    title: 'Depth',
+                    type: 'number',
+                    filterable: false,
+                    render: (data) => `<div class="trace-cell-compact">${data}</div>`,
+                    width: '90px',
+                    tooltip: TRACES_TOOLTIPS.depth
                 },
                 {
                     data: 2 + dataOffset,
