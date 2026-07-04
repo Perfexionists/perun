@@ -183,7 +183,7 @@
 #note-popup-close {
     position: absolute;
     top: 15px;
-    right: 15px;
+    left: 15px;
     cursor: pointer;
 }
 
@@ -213,9 +213,9 @@
     white-space: pre-wrap;
 }
 
-    #note-popup-content-textarea:focus {
-        outline: none;
-    }
+#note-popup-content-textarea:focus {
+    outline: none;
+}
 
 .note-popup-buttons {
     width: 100%;

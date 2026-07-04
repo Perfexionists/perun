@@ -96,6 +96,7 @@
                 tooltip: TRACES_TOOLTIPS.rel_delta
             }
         ];
+        window.tracesData = rawData;
 
         {% if is_folded %}
         const columnsExclusive = [
@@ -155,7 +156,7 @@
         ];
         {% endif %}
 
-        new TracesTable('traces-table-inclusive', {
+        window.tracesTable = new TracesTable('traces-table-inclusive', {
             data: rawData,
             columns: columnsInclusive,
             itemsPerPage: 10,

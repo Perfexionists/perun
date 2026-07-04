@@ -2,11 +2,13 @@
 /* exported TRACES_TOOLTIPS, TracesTable */
 
 const TRACES_TOOLTIPS = {
+    index: 'The trace index.',
     baseline: 'The amount of resources consumed by the Unit/Trace in the baseline profile.',
     target: 'The amount of resources consumed by the Unit/Trace in the target profile.',
     prop_rel_delta: 'The difference between the relative resource consumption proportionally to the total baseline and target consumption change. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K cycles in both cases, the proportional difference is +5% as \'foo\' now consumes 10% total resources up from 5%.',
     abs_delta: 'The difference of Target - Baseline resource consumption. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 75K cycles in baseline, resp. target, the absolute difference is -25K.',
-    rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.'
+    rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.',
+    depth: 'Number of frames in the call stack for this trace.'
 };
 
 class TracesTable {
@@ -86,7 +88,7 @@ class TracesTable {
                     }
 
                     const strCellValue = String(cellValue || '').toLowerCase();
-                    
+
                     if (this.regexModes[colKey]) {
                         try {
                             const regex = new RegExp(filterValue, 'i');
@@ -142,7 +144,7 @@ class TracesTable {
 
         const scrollContainer = document.createElement('div');
         scrollContainer.className = 'traces-table-scroll';
-        
+
         const table = document.createElement('table');
         table.className = 'traces-table';
 
@@ -151,7 +153,7 @@ class TracesTable {
 
         scrollContainer.appendChild(table);
         this.container.appendChild(scrollContainer);
-        
+
         if (this.enablePagination) {
             this.container.appendChild(this.createPagination());
         }
@@ -180,7 +182,7 @@ class TracesTable {
         this.columns.forEach((col, index) => {
             const th = document.createElement('th');
             th.innerText = col.title || col.data;
-            
+
             if (col.tooltip) {
                 const iconSpan = document.createElement('span');
                 iconSpan.className = 'header-info-icon';
@@ -259,13 +261,13 @@ class TracesTable {
                     input.type = 'text';
                     input.id = `${this.container.id}-filter-${col.data}`;
                     input.value = this.filters[col.data] || '';
-                    
+
                     if (col.data === 'uid') {
                         const wrapper = document.createElement('div');
                         wrapper.className = 'regex-filter-wrapper';
-                        
+
                         input.placeholder = this.regexModes[col.data] ? 'Regex...' : 'Filter...';
-                        
+
                         const toggleBtn = document.createElement('button');
                         toggleBtn.className = 'regex-toggle-btn';
                         toggleBtn.innerHTML = '.*';
@@ -273,7 +275,7 @@ class TracesTable {
                         if (this.regexModes[col.data]) {
                             toggleBtn.classList.add('active');
                         }
-                        
+
                         toggleBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
                             this.regexModes[col.data] = !this.regexModes[col.data];
@@ -313,7 +315,7 @@ class TracesTable {
         const tbody = document.createElement('tbody');
         let pageData;
         let start = 0;
-        
+
         if (this.enablePagination) {
             start = (this.currentPage - 1) * this.itemsPerPage;
             const end = start + this.itemsPerPage;
@@ -360,11 +362,11 @@ class TracesTable {
 
                 tr.appendChild(td);
             });
-            
+
             if (this.onRowClick) {
                 tr.style.cursor = 'pointer';
                 tr.addEventListener('click', () => {
-                    this.onRowClick(row);
+                    this.onRowClick(row, tr);
                 });
             }
 
@@ -410,7 +412,7 @@ class TracesTable {
                 this.changePage(1);
                 this.render();
             }, false, this.currentPage === 1));
-            
+
             if (rangeStart > 2) {
                 const ellipsis = document.createElement('span');
                 ellipsis.innerText = '...';
@@ -421,7 +423,7 @@ class TracesTable {
 
         for (let i = rangeStart; i <= rangeEnd; i++) {
             if (i === 1 && rangeStart > 1) continue;
-            
+
             buttonContainer.appendChild(createBtn(i.toString(), () => {
                 this.changePage(i);
                 this.render();
@@ -466,15 +468,15 @@ class TracesTable {
         jumpInput.max = totalPages;
         jumpInput.placeholder = 'Go to page';
         jumpInput.className = 'page-input';
-        
+
         jumpInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 let page = parseInt(e.target.value, 10);
                 if (isNaN(page)) return;
-                
+
                 if (page < 1) page = 1;
                 if (page > totalPages) page = totalPages;
-                
+
                 this.changePage(page);
                 this.render();
             }

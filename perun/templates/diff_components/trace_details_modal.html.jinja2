@@ -21,6 +21,14 @@
                     <div id="trace-details-table-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;"></div>
                 </div>
 
+                <!-- Right: Call Stack Visualization -->
+                <div id="trace-callstack-panel">
+                    <div id="trace-callstack-header">
+                        <h3 id="trace-callstack-title">Call Stack</h3>
+                    </div>
+                    <p id="trace-callstack-hint">Click on a trace row to inspect its call chain</p>
+                    <div id="trace-callstack-content"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -30,6 +38,12 @@
     function closeTracePopup() {
         document.getElementById('trace-popup-container').style.display = 'none';
     }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeTracePopup();
+        }
+    });
 
     function openTracePopup(rowData, isExclusive) {
         document.getElementById('trace-popup-container').style.display = 'flex';
@@ -125,18 +139,149 @@
             return b[initSortColumn] - a[initSortColumn];
         });
 
+        // Decodes the stack trace string in a format 'id1;id2;id3;[...]#[...]'.
+        // Returns an array of function name strings, from top-of-stack (callee) to bottom (root caller).
+        function decodeStackTraceNames(trace) {
+            if (!trace) return [];
+            const funcIds = trace.split('#')[0];
+            return funcIds
+                .split(';')
+                .map(id => Number(id))
+                .reverse()  // Reverse so index 0 = top of stack (the target function).
+                .map(id => nodes[id] ?? `[unknown:${id}]`);
+        }
+
+        // Returns the function name at index 0 of the decoded call chain (the profiled/observed function).
+        function getTopFunctionName(trace) {
+            const names = decodeStackTraceNames(trace);
+            return names.length > 0 ? names[0] : '';
+        }
+
+        // Renders the call-stack panel on the right for a given trace row and marks its tr as selected.
+        function renderCallStack(row, tr) {
+            // Update selected row highlight
+            if (selectedTr) selectedTr.classList.remove('trace-row--selected');
+            if (tr) {
+                tr.classList.add('trace-row--selected');
+                selectedTr = tr;
+            }
+
+            // row[12] is the full encoded call chain (e.g. "12;178;2#0;0;0#0;0;0").
+            const names = decodeStackTraceNames(row[12]);
+            const panel = document.getElementById('trace-callstack-content');
+            const hint = document.getElementById('trace-callstack-hint');
+            hint.style.display = 'none';
+
+            if (!names.length) {
+                panel.innerHTML = '<p style="color: var(--color-bs-secondary); font-style: italic;">No call stack available.</p>';
+                return;
+            }
+
+            const totalDepth = names.length;
+            panel.innerHTML = '';
+
+            names.forEach((name, i) => {
+                const isFocus = i === 0;  // The observed/profiled function in this trace scope
+                const isRoot = i === totalDepth - 1;  // The root caller within this scope
+
+                const frame = document.createElement('div');
+                frame.className = 'callstack-frame' + (isFocus ? ' callstack-frame--focus' : '') + (isRoot ? ' callstack-frame--root' : '');
+
+                const depthLabel = document.createElement('span');
+                depthLabel.className = 'callstack-depth';
+                if (isFocus) {
+                    depthLabel.textContent = "LEAF";
+                } else if (isRoot) {
+                    depthLabel.textContent = 'ROOT';
+                } else {
+                    depthLabel.textContent = `${i}`;
+                }
+                frame.appendChild(depthLabel);
+
+                const funcName = document.createElement('span');
+                funcName.className = 'callstack-funcname';
+                funcName.textContent = name;
+                frame.appendChild(funcName);
+
+                // Copy button — fades in on hover, out on leave
+                const COPY_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+                const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'callstack-copy-btn';
+                copyBtn.title = 'Copy function name';
+                copyBtn.innerHTML = COPY_SVG;
+
+                // Per-frame hover state tracked via closure
+                let frameHovered = false;
+                const setIconVisible = (visible) => {
+                    const svg = copyBtn.querySelector('svg');
+                    if (svg) svg.style.opacity = visible ? '1' : '0';
+                };
+
+                frame.addEventListener('mouseenter', () => { frameHovered = true;  setIconVisible(true);  });
+                frame.addEventListener('mouseleave', () => { frameHovered = false; setIconVisible(false); });
+
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(name).then(() => {
+                        copyBtn.classList.add('callstack-copy-btn--copied');
+                        copyBtn.innerHTML = CHECK_SVG;
+                        setIconVisible(frameHovered); // new SVG — re-apply current hover state
+                        setTimeout(() => {
+                            copyBtn.classList.remove('callstack-copy-btn--copied');
+                            copyBtn.innerHTML = COPY_SVG;
+                            setIconVisible(frameHovered); // new SVG again — re-apply
+                        }, 1500);
+                    });
+                });
+                frame.appendChild(copyBtn);
+
+                panel.appendChild(frame);
+
+                // Arrow connector between frames (not after the last one)
+                if (i < totalDepth - 1) {
+                    const connector = document.createElement('div');
+                    connector.className = 'callstack-connector';
+                    connector.innerHTML = '<span class="callstack-arrow">&#8595;</span>';
+                    panel.appendChild(connector);
+                }
+            });
+        }
+
+        // Reset the callstack panel and selected row tracking
+        document.getElementById('trace-callstack-content').innerHTML = '';
+        document.getElementById('trace-callstack-hint').style.display = '';
+        let selectedTr = null;
+
         if (rowData.trace_stats && rowData.trace_stats.length > 0) {
+
+            // Assign index (1-based) and trace depth (number of frames) to each row
+            rowData.trace_stats.forEach((row, i) => {
+                row[13] = i + 1;
+                const traceStr = row[12];
+                row[14] = traceStr ? traceStr.split('#')[0].split(';').length : 0;
+            });
+
             const columns = [
                 {
-                    data: 0,
-                    title: 'Trace',
+                    data: 13,
+                    title: 'Idx',
                     filterable: false,
-                    render: (data, row) => {
-                        const longTrace = decodeStackTrace(row[12] || data);
-                        return `<div class="trace-cell" title="${longTrace}">${longTrace}</div>`;
+                    render: (data) => {
+                        return `<div class="trace-cell-compact trace-cell-clickable" title="Click to view call chain">${data}</div>`;
                     },
-                    width: '500px',
-                    tooltip: 'The trace stack.'
+                    width: '90px',
+                    tooltip: TRACES_TOOLTIPS.index
+                },
+                {
+                    data: 14,
+                    title: 'Depth',
+                    type: 'number',
+                    filterable: false,
+                    render: (data) => `<div class="trace-cell-compact">${data}</div>`,
+                    width: '90px',
+                    tooltip: TRACES_TOOLTIPS.depth
                 },
                 {
                     data: 2 + dataOffset,
@@ -175,15 +320,23 @@
                 }
             ];
 
-            new TracesTable(containerId, {
-                // Show only a limited number of traces.
-                data: rowData.trace_stats.slice(0, {{ max_traces_per_func }}),
+            const tracesTableInstance = new TracesTable(containerId, {
+                data: rowData.trace_stats,
                 columns: columns,
                 enablePagination: false,
                 enableFilters: false,
                 initialSortColumn: initSortColumn,
-                initialSortDirection: 'desc'
+                initialSortDirection: 'desc',
+                onRowClick: (row, tr) => {
+                    renderCallStack(row, tr);
+                }
             });
+
+            // Auto-select the first displayed row
+            if (tracesTableInstance.processedData.length > 0) {
+                const firstTr = document.querySelector(`#${containerId} tbody tr`);
+                renderCallStack(tracesTableInstance.processedData[0], firstTr);
+            }
         } else {
             document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';
         }
