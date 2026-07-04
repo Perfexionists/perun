@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+0.27.4 (2026-07-04)
+-------------------
+
+  - Added a static favicon to HTML reports.
+  - The traces detail pop-up now visualizes the call stack.
+  - The top function names in overview are now clickable and show a traces detail.
+
+
 0.27.3 (2026-06-03)
 -------------------
 
