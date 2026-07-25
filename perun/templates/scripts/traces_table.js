@@ -1,5 +1,5 @@
 /* global formatNumber */
-/* exported TRACES_TOOLTIPS, TracesTable */
+/* exported TRACES_TOOLTIPS, TracesTable, createCopyButton */
 
 const TRACES_TOOLTIPS = {
     index: 'The trace index.',
@@ -10,6 +10,31 @@ const TRACES_TOOLTIPS = {
     rel_delta: 'The difference of Target - Baseline resource consumption in relative terms. For example, if the baseline and target consumed 2M and 1M CPU cycles in total, respectively, and a function \'foo\' consumed 100K and 80K cycles in baseline, resp. target, the relative difference is -20%.',
     depth: 'Number of frames in the call stack for this trace.'
 };
+
+const COPY_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function createCopyButton(textToCopy, extraClass = '') {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn' + (extraClass ? ' ' + extraClass : '');
+    copyBtn.title = 'Copy to clipboard';
+    copyBtn.innerHTML = COPY_SVG;
+
+    copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!textToCopy) return;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            copyBtn.classList.add('copy-btn--copied', 'copied');
+            copyBtn.innerHTML = CHECK_SVG;
+            setTimeout(() => {
+                copyBtn.classList.remove('copy-btn--copied', 'copied');
+                copyBtn.innerHTML = COPY_SVG;
+            }, 1500);
+        });
+    });
+
+    return copyBtn;
+}
 
 class TracesTable {
     constructor(containerId, options = {}) {
@@ -350,7 +375,21 @@ class TracesTable {
                         content = formatNumber(content);
                     }
                     if (col.data === 'uid') {
-                        td.innerHTML = `<span class="trace-uid" style="display: block; width: 100%; height: 100%;" title="Click to view more details about the trace">${content !== undefined ? content : ''}</span>`;
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'trace-uid-wrapper';
+
+                        const span = document.createElement('span');
+                        span.className = 'trace-uid';
+                        span.title = 'Click to view more details about the trace';
+                        span.textContent = content !== undefined ? content : '';
+                        wrapper.appendChild(span);
+
+                        if (content) {
+                            const copyBtn = createCopyButton(content, 'trace-uid-copy-btn');
+                            copyBtn.title = 'Copy function name';
+                            wrapper.appendChild(copyBtn);
+                        }
+                        td.appendChild(wrapper);
                     } else {
                         td.innerText = content !== undefined ? content : '';
                     }

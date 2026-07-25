@@ -330,3 +330,51 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+.trace-uid-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 6px;
+}
+
+.trace-uid-wrapper .trace-uid {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trace-uid-copy-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 3px 5px;
+    cursor: pointer;
+    color: var(--color-bs-secondary);
+    line-height: 1;
+    opacity: 0;
+    transition: all 0.15s ease;
+}
+
+.traces-table tbody tr:hover .trace-uid-copy-btn {
+    opacity: 1;
+}
+
+.trace-uid-copy-btn:hover {
+    background-color: var(--color-secondary-hover);
+    border-color: var(--color-light-gray);
+    color: var(--color-primary-text);
+}
+
+.trace-uid-copy-btn.copied {
+    color: var(--color-correct) !important;
+    border-color: transparent !important;
+    opacity: 1 !important;
+}
