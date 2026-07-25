@@ -90,7 +90,7 @@
 }
 
 #trace-callstack-panel {
-  flex: 0 0 24%;
+  flex: 0 0 35%;
   min-width: 0;
   border: 2px solid var(--color-target);
   border-radius: 8px;
