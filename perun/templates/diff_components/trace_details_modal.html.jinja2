@@ -243,7 +243,7 @@
                 if (i < totalDepth - 1) {
                     const connector = document.createElement('div');
                     connector.className = 'callstack-connector';
-                    connector.innerHTML = '<span class="callstack-arrow">&#8595;</span>';
+                    connector.innerHTML = '<span class="callstack-arrow">&#8593;</span>';
                     panel.appendChild(connector);
                 }
             });
@@ -280,7 +280,7 @@
                     type: 'number',
                     filterable: false,
                     render: (data) => `<div class="trace-cell-compact">${data}</div>`,
-                    width: '65px',
+                    width: '85px',
                     tooltip: TRACES_TOOLTIPS.depth
                 },
                 {

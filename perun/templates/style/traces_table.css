@@ -24,7 +24,7 @@
 
 .traces-table th,
 .traces-table td {
-    padding: 12px 15px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid var(--color-light-gray);
     white-space: nowrap;
@@ -48,7 +48,7 @@
 }
 
 .traces-table th.sortable {
-    padding-right: 30px;
+    padding-right: 20px;
 }
 
 .traces-table th.asc::after {
@@ -56,9 +56,10 @@
     font-size: 0.8em;
     color: var(--color-target);
     position: absolute;
-    right: 15px;
+    right: 3px;
     top: 50%;
     transform: translateY(-50%);
+    transition: opacity 0.2s;
 }
 
 .traces-table th.desc::after {
@@ -66,21 +67,29 @@
     font-size: 0.8em;
     color: var(--color-target);
     position: absolute;
-    right: 15px;
+    right: 3px;
     top: 50%;
     transform: translateY(-50%);
+    transition: opacity 0.2s;
+}
+
+.traces-table th.sortable:hover::after {
+    opacity: 0;
 }
 
 .header-info-icon {
+    position: absolute;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-left: 6px;
+    margin-left: 2px;
     opacity: 0;
     transition: opacity 0.2s;
-    width: 15px;
-    height: 15px;
-    vertical-align: middle;
+    width: 14px;
+    height: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: auto;
 }
 
 .traces-table th.sortable:hover .header-info-icon {
