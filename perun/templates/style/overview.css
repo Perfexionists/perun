@@ -221,3 +221,100 @@ body.mono-theme .top-traces-column:hover {
         font-size: 1rem;
     }
 }
+
+/* ── Inclusive / Exclusive toggle ─────────────────────────────── */
+
+.top-funcs-header {
+    margin-top: 40px;
+}
+
+.top-funcs-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.incl-excl-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--color-primary-transparent);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.incl-excl-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-primary-text);
+    transition: color 0.2s, opacity 0.2s;
+    opacity: 0.9;
+    letter-spacing: 0.03em;
+}
+
+.incl-excl-label--active {
+    color: var(--color-primary);
+    opacity: 1;
+}
+
+/* The hidden native checkbox */
+.ios-toggle input[type="checkbox"] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ios-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ios-toggle-track {
+    display: flex;
+    align-items: center;
+    width: 40px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--color-light-gray, #d1d5db);
+    transition: all 0.25s ease;
+    position: relative;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+.ios-toggle-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s;
+    flex-shrink: 0;
+}
+
+.ios-toggle input:checked+.ios-toggle-track {
+    background: var(--color-primary);
+}
+
+.ios-toggle input:checked+.ios-toggle-track .ios-toggle-thumb {
+    transform: translateX(18px);
+}
+
+body.dark-theme .incl-excl-toggle-wrapper {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+body.mono-theme .incl-excl-toggle-wrapper {
+    background: var(--color-bg-btn-tinted);
+}
+
+body.mono-theme .ios-toggle input:checked+.ios-toggle-track {
+    background: var(--color-primary);
+}

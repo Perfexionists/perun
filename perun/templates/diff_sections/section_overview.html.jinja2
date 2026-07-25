@@ -4,6 +4,7 @@
 {% import 'macros/rating_slider.html.jinja2' as summary_tools %}
 {% import 'macros/traces_selection.html.jinja2' as traces_selection %}
 {% import 'macros/section_title.html.jinja2' as m_title %}
+{% import 'macros/pin.html.jinja2' as m_pin %}
 
 {% set STATS_NOTE_TITLE = "overview" %}
 
@@ -93,7 +94,19 @@
     </div>
 #}
 
-    {{ m_title.display_subtitle("Top Functions", "top-functions") }}
+    <div class="section_header top-funcs-header">
+        <span class="top-funcs-title">Top Functions</span>
+        <div class="incl-excl-toggle-wrapper" title="Switch between inclusive (cumulative) and exclusive (self-only) samples">
+            <span class="incl-excl-label" id="incl-excl-label-left">Inclusive</span>
+            <label class="ios-toggle">
+                <input type="checkbox" id="top-funcs-incl-excl-toggle" onchange="onInclExclToggle()">
+                <span class="ios-toggle-track">
+                    <span class="ios-toggle-thumb"></span>
+                </span>
+            </label>
+            <span class="incl-excl-label" id="incl-excl-label-right">Exclusive</span>
+        </div>
+    </div>
     <div class="comparison_container">
         {{ traces_selection.empty_table('Baseline-Only', 'top-funcs-baseline') }}
         {{ traces_selection.empty_table_switchable('Common', 'top-funcs-common') }}
@@ -194,7 +207,7 @@
             const value = row[1];
             const percentage = value.toFixed(2);
             const sign = value > 0 ? '+' : '';
-            const colorClass = value >= 0 ? 'diff-plus' : 'diff-minus';
+            const colorClass = value >= 0 ? 'diff-minus' : 'diff-plus';
             
             valDiv.innerHTML = `<span class="${colorClass}" style="margin-left: 8px; font-weight: bold;">${sign}${percentage}%</span>`;
 
@@ -205,49 +218,58 @@
     }
 
 
-    function updateTables() {
-        /*
-        // Traces - Currently commented out, update logic to new toggle if re-enabled
-        renderTable('top-traces-baseline', topTraceDiffs[0][0]);
-        renderTable('top-traces-target', topTraceDiffs[0][1]);
-        
-        const tracesToggle = document.getElementById('top-traces-common-sort-toggle');
-        if (tracesToggle) {
-            const isDescending = tracesToggle.getAttribute('data-sort') === 'desc';
-            const tracesCommonData = isDescending ? topTraceDiffs[0][2] : topTraceDiffs[0][3];
-            renderTable('top-traces-common', tracesCommonData);
-        }
-        */
+    function getInclExclIndex() {
+        const toggle = document.getElementById('top-funcs-incl-excl-toggle');
+        return toggle && toggle.checked ? 1 : 0;
+    }
 
-        // Functions
-        renderTable('top-funcs-baseline', topFunctionDiffs[0][0]);
-        renderTable('top-funcs-target', topFunctionDiffs[0][1]);
-        
+    function updateTables() {
+        const idx = getInclExclIndex();
+
+        renderTable('top-funcs-baseline', topFunctionDiffs[idx][0]);
+        renderTable('top-funcs-target', topFunctionDiffs[idx][1]);
+
         const funcsToggle = document.getElementById('top-funcs-common-sort-toggle');
         if (funcsToggle) {
             const isDescending = funcsToggle.getAttribute('data-sort') === 'desc';
-            const funcsCommonData = isDescending ? topFunctionDiffs[0][2] : topFunctionDiffs[0][3];
+            const funcsCommonData = isDescending ? topFunctionDiffs[idx][2] : topFunctionDiffs[idx][3];
             renderTable('top-funcs-common', funcsCommonData);
         }
+    }
+
+    function onInclExclToggle() {
+        const isExcl = document.getElementById('top-funcs-incl-excl-toggle').checked;
+        const leftLabel = document.getElementById('incl-excl-label-left');
+        const rightLabel = document.getElementById('incl-excl-label-right');
+        if (leftLabel)  leftLabel.classList.toggle('incl-excl-label--active', !isExcl);
+        if (rightLabel) rightLabel.classList.toggle('incl-excl-label--active', isExcl);
+        updateTables();
     }
 
     function toggleTable(id) {
         const toggle = document.getElementById(id + '-sort-toggle');
         if (!toggle) return;
-        
+
         const currentSort = toggle.getAttribute('data-sort');
         const newSort = currentSort === 'desc' ? 'asc' : 'desc';
-        
+
         toggle.setAttribute('data-sort', newSort);
         document.getElementById(id + '-sort-label').textContent = newSort === 'desc' ? 'Descending' : 'Ascending';
         document.getElementById(id + '-sort-arrow').textContent = newSort === 'desc' ? '▼' : '▲';
-        
+
         updateTables();
     }
 
     // Execute immediately after DOM is loaded or script runs
-    document.addEventListener("DOMContentLoaded", updateTables);
+    document.addEventListener("DOMContentLoaded", () => {
+        updateTables();
+        // Set initial active state on Incl. label
+        const leftLabel = document.getElementById('incl-excl-label-left');
+        if (leftLabel) leftLabel.classList.add('incl-excl-label--active');
+    });
     if (document.readyState === "complete" || document.readyState === "interactive") {
         updateTables();
+        const leftLabel = document.getElementById('incl-excl-label-left');
+        if (leftLabel) leftLabel.classList.add('incl-excl-label--active');
     }
 </script>
