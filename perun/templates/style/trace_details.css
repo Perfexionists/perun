@@ -45,31 +45,6 @@
   font-size: 1em;
 }
 
-.trace-popup-title-copy-btn {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--color-light-gray);
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-  color: var(--color-bs-secondary);
-  line-height: 1;
-  transition: all 0.15s ease;
-}
-
-.trace-popup-title-copy-btn:hover {
-  background-color: var(--color-secondary-hover);
-  border-color: var(--color-target);
-  color: var(--color-primary-text);
-}
-
-.trace-popup-title-copy-btn.copied {
-  color: var(--color-correct) !important;
-  border-color: var(--color-correct) !important;
-}
 
 #trace-popup-content-wrapper {
   display: flex;
@@ -234,41 +209,6 @@
   font-weight: bold;
 }
 
-.callstack-copy-btn {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 3px 5px;
-  cursor: pointer;
-  color: var(--color-bs-secondary);
-  line-height: 1;
-}
-
-.callstack-copy-btn svg {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.callstack-frame:hover .callstack-copy-btn svg {
-  opacity: 1;
-}
-
-
-.callstack-copy-btn:hover {
-  background-color: var(--color-secondary-hover);
-  border-color: var(--color-light-gray);
-  color: var(--color-primary-text);
-}
-
-.callstack-copy-btn--copied {
-  color: var(--color-correct) !important;
-  border-color: transparent !important;
-}
 
 .trace-cell-clickable {
   cursor: pointer;

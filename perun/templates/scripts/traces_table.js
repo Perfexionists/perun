@@ -23,14 +23,20 @@ function createCopyButton(textToCopy, extraClass = '') {
     copyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (!textToCopy) return;
-        navigator.clipboard.writeText(textToCopy).then(() => {
+        const markCopied = () => {
             copyBtn.classList.add('copy-btn--copied', 'copied');
             copyBtn.innerHTML = CHECK_SVG;
             setTimeout(() => {
                 copyBtn.classList.remove('copy-btn--copied', 'copied');
                 copyBtn.innerHTML = COPY_SVG;
             }, 1500);
-        });
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(markCopied).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
     });
 
     return copyBtn;

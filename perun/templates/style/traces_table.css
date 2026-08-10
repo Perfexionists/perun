@@ -347,9 +347,9 @@
     white-space: nowrap;
 }
 
-.trace-uid-copy-btn {
+.copy-btn {
     flex-shrink: 0;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     background: none;
@@ -363,17 +363,21 @@
     transition: all 0.15s ease;
 }
 
-.traces-table tbody tr:hover .trace-uid-copy-btn {
+.traces-table tbody tr:hover .copy-btn,
+.callstack-frame:hover .copy-btn,
+#trace-popup-title:hover .copy-btn,
+.copy-btn:hover {
     opacity: 1;
 }
 
-.trace-uid-copy-btn:hover {
+.copy-btn:hover {
     background-color: var(--color-secondary-hover);
     border-color: var(--color-light-gray);
     color: var(--color-primary-text);
 }
 
-.trace-uid-copy-btn.copied {
+.copy-btn.copied,
+.copy-btn.copy-btn--copied {
     color: var(--color-correct) !important;
     border-color: transparent !important;
     opacity: 1 !important;
