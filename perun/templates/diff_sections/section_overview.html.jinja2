@@ -169,10 +169,17 @@
             container.innerHTML = '<div style="font-style: italic; color: #888; padding: 10px;">No data</div>';
             return;
         }
-        dataArray.forEach(row => {
+        dataArray.forEach((row, index) => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'data-row';
-            
+
+            const keyWrapper = document.createElement('div');
+            keyWrapper.className = 'data-key-wrapper';
+
+            const idxSpan = document.createElement('span');
+            idxSpan.className = 'data-idx';
+            idxSpan.textContent = `${index + 1}.`;
+
             const keyDiv = document.createElement('div');
             keyDiv.className = 'data-key';
             const functionName = nodes[row[0]] || row[0];
@@ -201,6 +208,9 @@
                 }
             };
 
+            keyWrapper.appendChild(idxSpan);
+            keyWrapper.appendChild(keyDiv);
+
             const valDiv = document.createElement('div');
             valDiv.className = 'data-value';
             
@@ -211,7 +221,7 @@
             
             valDiv.innerHTML = `<span class="${colorClass}" style="margin-left: 8px; font-weight: bold;">${sign}${percentage}%</span>`;
 
-            rowDiv.appendChild(keyDiv);
+            rowDiv.appendChild(keyWrapper);
             rowDiv.appendChild(valDiv);
             container.appendChild(rowDiv);
         });
