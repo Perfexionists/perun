@@ -31,7 +31,7 @@ from typing import Any, TYPE_CHECKING, Union
 
 # Perun Imports
 from perun.logic import commands, config, index, pcs, store
-from perun import profile as profiles
+from perun.profiles import native as profiles
 from perun.utils import log as perun_log, streams
 from perun.utils.common import common_kit
 from perun.utils.external import environment, commands as external_commands

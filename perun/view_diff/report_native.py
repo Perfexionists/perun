@@ -23,7 +23,7 @@ from typing import Any, Literal
 
 # Perun Imports
 import perun
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.logic import config
 from perun.templates import factory as templates
 from perun.utils import log, mapping, streams

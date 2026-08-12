@@ -9,9 +9,9 @@ from typing import Any
 import click
 
 # Perun Imports
-from perun.profile import convert
+from perun.profiles.native import convert
 import perun.view.flamegraph.flamegraph as flame
-import perun.profile.factory as profile_factory
+from perun.profiles import native as profile_factory
 
 
 def save_flamegraph(profile: profile_factory.Profile, filename: str) -> None:

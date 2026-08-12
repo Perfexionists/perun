@@ -15,7 +15,7 @@ import pytest
 from perun.cli_groups import collect_cli
 from perun.collect.complexity import makefiles, symbols, run as complexity, configurator
 from perun.logic import pcs, runner as run
-from perun.profile.factory import Profile
+from perun.profiles.native import Profile
 from perun.testing import asserts, utils as test_utils
 from perun.utils import log
 from perun.utils.common import common_kit

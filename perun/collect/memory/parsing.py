@@ -12,7 +12,7 @@ import re
 
 # Perun Imports
 from perun.collect.memory import syscalls
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.utils.common import common_kit
 
 if TYPE_CHECKING:

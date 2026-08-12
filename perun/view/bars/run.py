@@ -10,7 +10,7 @@ import click
 
 # Perun Imports
 import perun.view.bars.factory as bars_factory
-import perun.profile.factory as profile_factory
+from perun.profiles import native as profile_factory
 from perun.utils import log
 from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException

@@ -49,9 +49,11 @@ import polars as pl
 
 # Perun Imports
 import perun
-from perun import profile  # TODO: restructure so that we do not fetch pandas, numpy, etc.
+
+# TODO: restructure so that we do not fetch pandas, numpy, etc.
+from perun.profiles import native as profile
 from perun.logic import config
-from perun.profile import imports
+from perun.profiles.native import imports
 from perun.templates import factory as templates
 from perun.utils import log, streams
 from perun.utils.common import common_kit, diff_kit, script_kit

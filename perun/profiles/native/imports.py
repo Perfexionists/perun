@@ -17,7 +17,7 @@ from typing import Any, Sequence
 import polars as pl
 
 # Perun Imports
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.collect.kperf import parser
 from perun.logic import config, pcs
 from perun.utils import log, streams

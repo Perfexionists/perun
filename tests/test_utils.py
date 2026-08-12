@@ -20,7 +20,7 @@ from perun import collect, postprocess, view
 from perun.collect.trace.optimizations.structs import Complexity
 from perun.fuzz import filetype
 from perun.logic import commands, config, locks
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.testing import asserts
 from perun.utils import log, mapping
 from perun.utils.common import common_kit, cli_kit, traces_kit, view_kit

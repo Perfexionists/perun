@@ -4,7 +4,7 @@ from __future__ import annotations
 
 # Standard Imports
 from itertools import groupby
-from typing import Callable, Any
+from typing import Callable, Any, TYPE_CHECKING
 import operator
 import os
 
@@ -15,8 +15,10 @@ import tabulate
 
 # Perun Imports
 from perun.utils import log
-from perun.profile import convert, query, helpers
-from perun.profile.factory import Profile
+from perun.profiles.native import query, helpers, convert
+
+if TYPE_CHECKING:
+    from perun.profiles.native import Profile
 
 
 def get_headers(ctx: click.Context) -> list[str]:

@@ -9,10 +9,10 @@ from typing import Iterator, Any, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
-from perun.profile import convert
+from perun.profiles.native import convert
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 def resource_sort_key(resource: dict[str, Any]) -> str:

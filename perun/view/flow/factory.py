@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING, Hashable, cast, Protocol
 import holoviews as hv
 
 # Perun Imports
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
     import pandas as pd
 
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 class IntTableLike(Protocol):

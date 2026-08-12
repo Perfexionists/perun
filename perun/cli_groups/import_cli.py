@@ -10,7 +10,7 @@ import click
 
 # Perun Imports
 from perun.logic import commands, config
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.utils.common import cli_kit
 
 

@@ -10,7 +10,7 @@ import pytest
 
 # Perun Imports
 from perun.logic import pcs
-from perun.profile import helpers as profile_helpers
+from perun.profiles.native import helpers as profile_helpers
 from perun.select.abstract_base_selection import AbstractBaseSelection
 from perun.select.whole_repository_selection import WholeRepositorySelection
 

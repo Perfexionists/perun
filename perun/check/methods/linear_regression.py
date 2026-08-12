@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     import numpy
     import numpy.typing as npt
 
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 class LinearRegression(AbstractBaseChecker):

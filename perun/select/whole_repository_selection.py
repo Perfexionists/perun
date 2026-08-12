@@ -7,17 +7,18 @@ In particular:
 """
 
 # Standard Imports
-from typing import Iterator
+from typing import Iterator, TYPE_CHECKING
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.logic import pcs
-from perun.profile import helpers as profile_helpers
-from perun.profile.factory import Profile
-from perun.profile.helpers import ProfileInfo
+from perun.profiles.native import helpers as profile_helpers
 from perun.select.abstract_base_selection import AbstractBaseSelection
 from perun.utils.structs.common_structs import MinorVersion
+
+if TYPE_CHECKING:
+    from perun.profiles.native import Profile, ProfileInfo
 
 
 class WholeRepositorySelection(AbstractBaseSelection):

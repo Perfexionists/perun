@@ -14,14 +14,14 @@ import numpy as np
 
 # Perun Imports
 from perun.postprocess.regression_analysis import data_provider
-from perun.profile import query, convert
+from perun.profiles.native import query, convert
 from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
     import numpy.typing as npt
     import pandas as pd
 
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 ProfileModel = dict[str, Any]

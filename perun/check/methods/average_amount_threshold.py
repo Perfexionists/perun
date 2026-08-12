@@ -44,12 +44,12 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.utils.common import common_kit
 from perun.utils.structs.common_structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5

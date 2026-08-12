@@ -24,7 +24,7 @@ import pandas
 import tabulate
 
 # Perun Imports
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.utils import log
 
 PRECISION: int = 2
@@ -81,7 +81,7 @@ def print_header(lhs_profile: profile.Profile, rhs_profile: profile.Profile) -> 
         ["command", command],
         ["collector command", log.collector_to_command(lhs_profile.get("collector_info", {}))],
     ]
-    print(tabulate.tabulate(data))  # type: ignore
+    print(tabulate.tabulate(data))
 
 
 def get_top_n_records(

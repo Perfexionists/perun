@@ -78,11 +78,11 @@ from scipy import stats
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.logic import config
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.utils.structs.common_structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 OldLocMap = dict[str, str]
 NewLocMap = dict[str, str]

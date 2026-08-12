@@ -16,7 +16,7 @@ import pytest
 
 # Perun Imports
 from perun.logic import commands, config
-from perun.profile.helpers import ProfileInfo
+from perun.profiles.native import ProfileInfo
 from perun.utils import decorators
 from perun.utils.common import common_kit
 from perun.utils.exceptions import (

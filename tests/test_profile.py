@@ -10,8 +10,8 @@ import git
 
 # Perun Imports
 from perun.logic import commands, config
-from perun.profile.factory import Profile
-import perun.profile.helpers as profiles
+from perun.profiles.native import Profile
+import perun.profiles.native as profiles
 import perun.testing.utils as test_utils
 
 

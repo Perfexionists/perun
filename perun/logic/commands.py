@@ -46,11 +46,11 @@ from perun.utils.common.common_kit import (
 from perun.utils.structs.common_structs import ProfileListConfig, MinorVersion
 from perun.vcs import vcs_kit
 from perun.vcs.git_repository import GitRepository
-import perun.profile.helpers as profile
+import perun.profiles.native.helpers as profile
 
 if TYPE_CHECKING:
-    from perun.profile.helpers import ProfileInfo
-    from perun.profile.factory import Profile
+    from perun.profiles.native.helpers import ProfileInfo
+    from perun.profiles.native import Profile
 
 UNTRACKED_REGEX: re.Pattern[str] = re.compile(
     r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf"

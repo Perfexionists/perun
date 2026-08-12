@@ -15,7 +15,7 @@ from perun.utils import exceptions
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-    import perun.profile.factory as profiles
+    import perun.profiles.native as profiles
 
 
 # Minimum points count to perform the regression

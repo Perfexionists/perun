@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 
 # Perun Imports
-from perun.profile import convert
+from perun.profiles.native import convert
 from perun.utils import exceptions
 import perun.testing.utils as test_utils
 

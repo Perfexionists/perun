@@ -12,7 +12,7 @@ import click
 from perun.utils import log
 from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException
-import perun.profile.factory as profile_factory
+from perun.profiles import native as profile_factory
 import perun.view.flow.factory as flow_factory
 
 

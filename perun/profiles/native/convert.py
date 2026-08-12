@@ -6,7 +6,7 @@ conversion of profiles from :ref:`profile-spec` to other formats.
 Run the following in the Python interpreter to extend the capabilities of
 Python to different formats of profiles::
 
-    import perun.profile.convert
+    import perun.profiles.convert
 
 Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.
 `pandas`_ library one can obtain efficient interpreter for executing more
@@ -26,12 +26,12 @@ import pandas
 
 # Perun Imports
 from perun.postprocess.regression_analysis import transform
-from perun.profile import query
+from perun.profiles.native import query
 from perun.utils import log
 from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
@@ -126,7 +126,7 @@ def to_flame_graph_format(
 
     Example of format is as follows::
 
-        >>> print(''.join(convert.to_flame_graph_format(memprof)))
+        >>> print(''.join(convert.to_folded_format(memprof)))
         malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4
         valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8
         main()~/home/user/dev/test02.c~79 156

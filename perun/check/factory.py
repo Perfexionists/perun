@@ -36,12 +36,12 @@ from perun.utils.structs.common_structs import (
 )
 from perun.utils.common import common_kit
 from perun.utils.exceptions import UnsupportedModuleException
-import perun.profile.helpers as profiles
+from perun.profiles.native import helpers as profil_helpers
 import perun.select.factory as select
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
-    from perun.profile.helpers import ProfileInfo
+    from perun.profiles.native import Profile
+    from perun.profiles.native.helpers import ProfileInfo
 
 # Minimal confidence rate from both models to perform the detection
 _MIN_CONFIDENCE_RATE = 0.15
@@ -71,7 +71,7 @@ def profiles_to_queue(
     :param minor_version: minor version for which we are retrieving the profile queue
     :returns: dictionary mapping configurations of profiles to the actual profiles
     """
-    minor_version_profiles = profiles.load_list_for_minor_version(minor_version)
+    minor_version_profiles = profil_helpers.load_list_for_minor_version(minor_version)
     return {profile.config_tuple: profile for profile in minor_version_profiles}
 
 
@@ -133,7 +133,7 @@ def degradation_in_minor(
     for target_config, target_profile_info in profile_queue.items():
         # Iterate through the profiles and check degradation between those of same configuration
         target_prof = store.load_profile_from_file(target_profile_info.realpath, False, True)
-        cmdstr = profiles.config_tuple_to_cmdstr(target_config)
+        cmdstr = profil_helpers.config_tuple_to_cmdstr(target_config)
 
         for baseline_info, baseline_profile_info in selection.get_profiles(
             minor_version_info, target_prof
@@ -262,8 +262,8 @@ def degradation_between_files(
     """
     log.major_info("Checking two compatible profiles")
     # First check if the configurations are compatible
-    baseline_config = profiles.to_config_tuple(baseline_file)
-    target_config = profiles.to_config_tuple(target_file)
+    baseline_config = profil_helpers.to_config_tuple(baseline_file)
+    target_config = profil_helpers.to_config_tuple(target_file)
     target_minor_version = target_file.get("origin", minor_version)
     if not force:
         if baseline_config != target_config:
@@ -276,7 +276,7 @@ def degradation_between_files(
     for deg in degradation_between_profiles(baseline_file, target_file, models_strategy):
         if deg.result != PerformanceChange.NoChange:
             detected_changes.append(
-                (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version)
+                (deg, profil_helpers.config_tuple_to_cmdstr(baseline_config), target_minor_version)
             )
 
     # Store the detected changes for given minor version

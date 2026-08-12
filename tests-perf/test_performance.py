@@ -14,7 +14,7 @@ import sys
 import tabulate
 import perun.logic.store as store
 from perun.utils.common import common_kit
-import perun.profile.convert as convert
+from perun.profiles.native import convert
 import perun.utils.log as log
 import perun.utils.streams as streams
 

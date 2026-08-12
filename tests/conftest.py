@@ -23,7 +23,7 @@ import perun.testing.utils as test_utils
 from perun.view_diff import report_native
 
 if TYPE_CHECKING:
-    from perun import profile
+    from perun.profiles.native import Profile
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -184,7 +184,7 @@ def memory_profiles():
 
 def load_all_profiles_in(
     directory: str, prof_filter: Optional[Callable[[str], bool]] = None
-) -> Iterable[tuple[str, profile.Profile]]:
+) -> Iterable[tuple[str, Profile]]:
     """Generates stream of loaded (i.e. dictionaries) profiles in the specified directory.
 
     :param directory: the name (not path!) of the profile directory

@@ -10,7 +10,7 @@ from typing import Type, Any, Callable, TYPE_CHECKING
 # Perun Imports
 
 if TYPE_CHECKING:
-    from perun import profile
+    from perun.profiles.native import ProfileStat
 
 
 DEFAULT_AGGREGATE_FUNC: str = "median"
@@ -83,7 +83,7 @@ class Config:
         self.max_seen_trace: int = 0
         self.max_per_resource: dict[str, float] = defaultdict(float)
         self.minimize: bool = False
-        self.profile_stats: dict[str, list[profile.ProfileStat]] = {
+        self.profile_stats: dict[str, list[ProfileStat]] = {
             "baseline": [],
             "target": [],
         }

@@ -6,7 +6,7 @@ queries over the profiles w.r.t :ref:`profile-spec`.
 Run the following in the Python interpreter to extend the capabilities of
 profile to query over profiles, iterate over resources or models, etc.::
 
-    import perun.profile.query
+    import perun.profiles.query
 
 Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.
 `Pandas library`_ one can obtain efficient interpreter for executing more

@@ -20,7 +20,7 @@ from perun.utils.common import common_kit
 from perun.utils.structs.common_structs import DegradationInfo, ModelRecord, DetectionChangeResult
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state

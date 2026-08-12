@@ -1,6 +1,6 @@
-perun_profile_dir = perun_dir / 'profile'
+perun_native_profile_dir = perun_profiles_dir / 'native'
 
-perun_profile_files = files(
+perun_native_profile_files = files(
     '__init__.py',
     '__init__.pyi',
     'convert.py',
@@ -12,6 +12,6 @@ perun_profile_files = files(
 )
 
 py3.install_sources(
-    perun_profile_files,
-    subdir: perun_profile_dir
+    perun_native_profile_files,
+    subdir: perun_native_profile_dir
 )

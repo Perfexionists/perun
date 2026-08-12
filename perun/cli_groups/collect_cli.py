@@ -7,7 +7,7 @@ import click
 # Perun Imports
 from perun.utils.structs import collect_structs
 from perun.utils.common import cli_kit
-from perun import profile
+from perun.profiles.native import helpers as profile_helpers
 from perun.logic import commands, config as perun_config
 
 
@@ -208,7 +208,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
     ``perun run job --help``.
     """
     commands.try_init()
-    kwargs["profile_path"] = profile.ProfilePath(
+    kwargs["profile_path"] = profile_helpers.ProfilePath(
         kwargs.get("profile_name"), kwargs.get("profile_dir")
     )
     ctx.obj = kwargs

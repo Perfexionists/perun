@@ -21,7 +21,7 @@ import click
 # Perun Imports
 from perun import check as check
 from perun.logic import config
-from perun.profile import convert, query, stats, helpers
+from perun.profiles.native import query, helpers, convert, stats
 from perun.utils import log
 from perun.utils.structs import postprocess_structs
 from perun.utils.common import common_kit

@@ -25,7 +25,7 @@ import jinja2
 
 # Perun Imports
 import perun
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.logic import commands, store, stats, config, pcs
 from perun.utils import exceptions, streams, timestamps, log, metrics
 from perun.utils.common import common_kit

@@ -27,7 +27,7 @@ from perun.utils.structs.diff_structs import (
 )
 
 if TYPE_CHECKING:
-    from perun import profile
+    from perun.profiles.native import Profile
 
 
 def perun_profile_list_options(command: Callable[..., Any]) -> Callable[..., Any]:
@@ -244,7 +244,7 @@ def showdiff_group(**_: Any) -> None:
     type=click.STRING,
     help="Names the each profile by its particular option (default=origin).",
 )
-def short(profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwargs: Any) -> None:
+def short(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: Any) -> None:
     """Creates a difference table of profiles in the terminal.
 
     Supports only perun-native profiles.
@@ -274,9 +274,7 @@ def short(profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwar
 )
 @common_html_options
 @common_flamegraph_options
-def flamegraph(
-    profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwargs: Any
-) -> None:
+def flamegraph(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: Any) -> None:
     """Creates a flame graph (or icicle graph) difference grid from perun-native profiles.
 
     The grid consists of baseline, target, baseline-target diff, and target-baseline diff flame
@@ -437,7 +435,7 @@ def report_group(ctx: click.Context, **kwargs: Any) -> None:
 @click.pass_context
 def native(
     ctx: click.Context,
-    profile_list: tuple[profile.Profile, profile.Profile],
+    profile_list: tuple[Profile, Profile],
     *_: Any,
     **kwargs: Any,
 ) -> None:
