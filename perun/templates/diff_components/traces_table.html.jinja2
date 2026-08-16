@@ -162,9 +162,16 @@
             itemsPerPage: 10,
             initialSortColumn: 'prop_rel_delta_incl',
             initialSortDirection: 'desc',
-            onRowClick: (row) => {
+            onRowClick: (row, tr, tableInstance) => {
                 if (window.openTracePopup) {
-                    window.openTracePopup(row, false);
+                    const items = (tableInstance && tableInstance.processedData) ? tableInstance.processedData : rawData;
+                    const index = items.findIndex(r => r.index === row.index || r.uid === row.uid);
+                    const navContext = {
+                        items: items,
+                        currentIndex: index !== -1 ? index : 0,
+                        isExclusive: false
+                    };
+                    window.openTracePopup(row, false, navContext);
                 }
             }
         });
@@ -176,9 +183,16 @@
             itemsPerPage: 10,
             initialSortColumn: 'prop_rel_delta_excl',
             initialSortDirection: 'desc',
-            onRowClick: (row) => {
+            onRowClick: (row, tr, tableInstance) => {
                 if (window.openTracePopup) {
-                    window.openTracePopup(row, true);
+                    const items = (tableInstance && tableInstance.processedData) ? tableInstance.processedData : rawData;
+                    const index = items.findIndex(r => r.index === row.index || r.uid === row.uid);
+                    const navContext = {
+                        items: items,
+                        currentIndex: index !== -1 ? index : 0,
+                        isExclusive: true
+                    };
+                    window.openTracePopup(row, true, navContext);
                 }
             }
         });

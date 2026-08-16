@@ -81,6 +81,7 @@ body.dark-theme {
     --color-primary: rgba(255 255 255);
     --color-primary-transparent: rgba(255 255 255 / 30%);
     --color-primary-hover: rgba(234 234 234);
+    --color-bs-secondary: rgba(160 174 192);
 
     --color-secondary: rgba(51 51 51);
     --color-secondary-hover: rgba(41 41 41);
