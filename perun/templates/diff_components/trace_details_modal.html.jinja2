@@ -1,13 +1,26 @@
 <div id="trace-popup-container" style="display: none">
     <div class="note-overlay" onclick="closeTracePopup()"></div>
 
+    <button id="trace-popup-prev" class="trace-popup-nav-btn trace-popup-nav-btn--prev" onclick="navigatePopup(-1)" title="Previous function (Left Arrow)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <button id="trace-popup-next" class="trace-popup-nav-btn trace-popup-nav-btn--next" onclick="navigatePopup(1)" title="Next function (Right Arrow)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
     <div class="note-popup" id="trace-popup">
 
         <span id="trace-popup-close" onclick="closeTracePopup()">
             {% include 'assets/close.svg' %}
         </span>
 
-        <h2 id="trace-popup-title">Trace Details</h2>
+        <div id="trace-popup-title-bar">
+            <h2 id="trace-popup-title">Trace Details</h2>
+            <div id="trace-popup-nav-badge" class="trace-popup-nav-badge" style="display: none;">
+                <span id="trace-popup-nav-counter">1 / 20</span>
+            </div>
+        </div>
 
         <div id="trace-popup-content-wrapper">
             <div id="trace-popup-header">
@@ -35,18 +48,87 @@
 </div>
 
 <script>
+    let currentPopupNavContext = null;
+
     function closeTracePopup() {
         document.getElementById('trace-popup-container').style.display = 'none';
+        currentPopupNavContext = null;
+    }
+
+    function getRowDataFromNavContextItem(item) {
+        if (!item) return null;
+        if (item.uid && item.index) {
+            return item;
+        }
+        if (Array.isArray(item) && window.tracesData) {
+            const nodeIdStr = item[0].toString();
+            return window.tracesData.find(r => r.index === nodeIdStr) || null;
+        }
+        return null;
+    }
+
+    function navigatePopup(direction) {
+        if (!currentPopupNavContext || !currentPopupNavContext.items) return;
+
+        const newIndex = currentPopupNavContext.currentIndex + direction;
+        if (newIndex < 0 || newIndex >= currentPopupNavContext.items.length) return;
+
+        const item = currentPopupNavContext.items[newIndex];
+        const rowData = getRowDataFromNavContextItem(item);
+        if (rowData) {
+            openTracePopup(rowData, currentPopupNavContext.isExclusive, {
+                ...currentPopupNavContext,
+                currentIndex: newIndex
+            });
+        }
     }
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            closeTracePopup();
+        const container = document.getElementById('trace-popup-container');
+        if (container && container.style.display !== 'none') {
+            if (event.key === 'Escape') {
+                closeTracePopup();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                navigatePopup(-1);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                navigatePopup(1);
+            }
         }
     });
 
-    function openTracePopup(rowData, isExclusive) {
+    function openTracePopup(rowData, isExclusive, navContext) {
         document.getElementById('trace-popup-container').style.display = 'flex';
+
+        currentPopupNavContext = navContext || null;
+
+        const prevBtn = document.getElementById('trace-popup-prev');
+        const nextBtn = document.getElementById('trace-popup-next');
+        const navBadge = document.getElementById('trace-popup-nav-badge');
+        const counterSpan = document.getElementById('trace-popup-nav-counter');
+
+        if (currentPopupNavContext && currentPopupNavContext.items && currentPopupNavContext.items.length > 1) {
+            const total = currentPopupNavContext.items.length;
+            const curIdx = currentPopupNavContext.currentIndex;
+
+            if (prevBtn) {
+                prevBtn.style.display = 'flex';
+                prevBtn.disabled = curIdx <= 0;
+            }
+            if (nextBtn) {
+                nextBtn.style.display = 'flex';
+                nextBtn.disabled = curIdx >= total - 1;
+            }
+            if (navBadge) {
+                navBadge.style.display = 'inline-flex';
+                if (counterSpan) counterSpan.textContent = `${curIdx + 1} / ${total}`;
+            }
+        } else {
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+            if (navBadge) navBadge.style.display = 'none';
+        }
 
         // Populate Header
         const popupTitle = document.getElementById('trace-popup-title');

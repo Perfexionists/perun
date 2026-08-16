@@ -411,7 +411,7 @@ class TracesTable {
             if (this.onRowClick) {
                 tr.style.cursor = 'pointer';
                 tr.addEventListener('click', () => {
-                    this.onRowClick(row, tr);
+                    this.onRowClick(row, tr, this);
                 });
             }
 

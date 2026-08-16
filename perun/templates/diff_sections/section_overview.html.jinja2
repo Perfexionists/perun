@@ -187,21 +187,13 @@
                 if (window.tracesData) {
                     const rowData = window.tracesData.find(r => r.index === row[0].toString());
                     if (rowData && window.openTracePopup) {
-                        window.openTracePopup(rowData);
-
-                        if (window.tracesTable) {
-                            const indexInProcessed = window.tracesTable.processedData.findIndex(r => r.index === rowData.index);
-                            if (indexInProcessed !== -1) {
-                                const page = Math.floor(indexInProcessed / window.tracesTable.itemsPerPage) + 1;
-                                window.tracesTable.changePage(page);
-                                window.tracesTable.render();
-                            }
-                        }
-
-                        const tracesSection = document.getElementById('traces');
-                        if (tracesSection) {
-                            tracesSection.scrollIntoView({ behavior: 'smooth' });
-                        }
+                        const isExcl = getInclExclIndex() === 1;
+                        const navContext = {
+                            items: dataArray,
+                            currentIndex: index,
+                            isExclusive: isExcl
+                        };
+                        window.openTracePopup(rowData, isExcl, navContext);
                     }
                 }
             };
