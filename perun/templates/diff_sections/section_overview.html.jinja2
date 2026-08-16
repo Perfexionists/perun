@@ -96,15 +96,13 @@
 
     <div class="section_header top-funcs-header">
         <span class="top-funcs-title">Top Functions</span>
-        <div class="incl-excl-toggle-wrapper" title="Switch between inclusive (cumulative) and exclusive (self-only) samples">
-            <span class="incl-excl-label" id="incl-excl-label-left">Inclusive</span>
-            <label class="ios-toggle">
-                <input type="checkbox" id="top-funcs-incl-excl-toggle" onchange="onInclExclToggle()">
-                <span class="ios-toggle-track">
-                    <span class="ios-toggle-thumb"></span>
-                </span>
+        <div class="segmented-toggle" title="Switch between inclusive (cumulative) and exclusive (self-only) samples">
+            <input type="checkbox" id="top-funcs-incl-excl-toggle" onchange="onInclExclToggle()">
+            <label for="top-funcs-incl-excl-toggle" class="segmented-toggle-label">
+                <span class="segmented-slider"></span>
+                <span class="segmented-option seg-incl">Inclusive</span>
+                <span class="segmented-option seg-excl">Exclusive</span>
             </label>
-            <span class="incl-excl-label" id="incl-excl-label-right">Exclusive</span>
         </div>
     </div>
     <div class="comparison_container">
@@ -248,11 +246,6 @@
     }
 
     function onInclExclToggle() {
-        const isExcl = document.getElementById('top-funcs-incl-excl-toggle').checked;
-        const leftLabel = document.getElementById('incl-excl-label-left');
-        const rightLabel = document.getElementById('incl-excl-label-right');
-        if (leftLabel)  leftLabel.classList.toggle('incl-excl-label--active', !isExcl);
-        if (rightLabel) rightLabel.classList.toggle('incl-excl-label--active', isExcl);
         updateTables();
     }
 
@@ -273,13 +266,8 @@
     // Execute immediately after DOM is loaded or script runs
     document.addEventListener("DOMContentLoaded", () => {
         updateTables();
-        // Set initial active state on Incl. label
-        const leftLabel = document.getElementById('incl-excl-label-left');
-        if (leftLabel) leftLabel.classList.add('incl-excl-label--active');
     });
     if (document.readyState === "complete" || document.readyState === "interactive") {
         updateTables();
-        const leftLabel = document.getElementById('incl-excl-label-left');
-        if (leftLabel) leftLabel.classList.add('incl-excl-label--active');
     }
 </script>

@@ -222,7 +222,7 @@ body.mono-theme .top-traces-column:hover {
     }
 }
 
-/* ── Inclusive / Exclusive toggle ─────────────────────────────── */
+/* ── Segmented Inclusive / Exclusive Pill Toggle ─────────────────────────────── */
 
 .top-funcs-header {
     margin-top: 40px;
@@ -235,33 +235,14 @@ body.mono-theme .top-traces-column:hover {
     white-space: nowrap;
 }
 
-.incl-excl-toggle-wrapper {
+.segmented-toggle {
     display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--color-primary-transparent);
+    position: relative;
     user-select: none;
     flex-shrink: 0;
 }
 
-.incl-excl-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--color-primary-text);
-    transition: color 0.2s, opacity 0.2s;
-    opacity: 0.9;
-    letter-spacing: 0.03em;
-}
-
-.incl-excl-label--active {
-    color: var(--color-primary);
-    opacity: 1;
-}
-
-/* The hidden native checkbox */
-.ios-toggle input[type="checkbox"] {
+.segmented-toggle input[type="checkbox"] {
     position: absolute;
     width: 0;
     height: 0;
@@ -269,52 +250,72 @@ body.mono-theme .top-traces-column:hover {
     pointer-events: none;
 }
 
-.ios-toggle {
-    position: relative;
+.segmented-toggle-label {
     display: inline-flex;
     align-items: center;
-    cursor: pointer;
-}
-
-.ios-toggle-track {
-    display: flex;
-    align-items: center;
-    width: 40px;
-    height: 22px;
-    border-radius: 999px;
-    background: var(--color-light-gray, #d1d5db);
-    transition: all 0.25s ease;
     position: relative;
-    padding: 2px;
-    box-sizing: border-box;
+    background-color: var(--color-primary-transparent);
+    border-radius: 999px;
+    padding: 3px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.25s ease;
 }
 
-.ios-toggle-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s;
-    flex-shrink: 0;
+.segmented-slider {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    background-color: var(--color-target);
+    border-radius: 999px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1;
 }
 
-.ios-toggle input:checked+.ios-toggle-track {
-    background: var(--color-primary);
+.segmented-toggle input:checked + .segmented-toggle-label .segmented-slider {
+    transform: translateX(100%);
 }
 
-.ios-toggle input:checked+.ios-toggle-track .ios-toggle-thumb {
-    transform: translateX(18px);
+.segmented-option {
+    position: relative;
+    z-index: 2;
+    padding: 5px 14px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--color-primary-text);
+    transition: color 0.25s ease;
+    text-align: center;
+    white-space: nowrap;
+    width: 90px;
 }
 
-body.dark-theme .incl-excl-toggle-wrapper {
-    background: rgba(255, 255, 255, 0.07);
+.segmented-option.seg-incl {
+    color: var(--color-white-not-changing);
 }
 
-body.mono-theme .incl-excl-toggle-wrapper {
-    background: var(--color-bg-btn-tinted);
+.segmented-option.seg-excl {
+    color: var(--color-primary-text);
 }
 
-body.mono-theme .ios-toggle input:checked+.ios-toggle-track {
-    background: var(--color-primary);
+.segmented-toggle input:checked + .segmented-toggle-label .segmented-option.seg-incl {
+    color: var(--color-primary-text);
+}
+
+.segmented-toggle input:checked + .segmented-toggle-label .segmented-option.seg-excl {
+    color: var(--color-white-not-changing);
+}
+
+body.dark-theme .segmented-toggle-label {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.mono-theme .segmented-toggle-label {
+    background-color: var(--color-bg-btn-tinted);
+}
+
+body.mono-theme .segmented-slider {
+    background-color: var(--color-primary);
 }
