@@ -867,7 +867,7 @@ def progress(collection: Iterable[T], description: str = "") -> Iterable[T]:
     :param collection: any iterable
     :param description: tag on the left side of the output of the bar
     """
-    widgets = [
+    widgets: list[progressbar.widgets.WidgetBase | str] = [
         (description + ": ") if description else "",
         progressbar.Percentage(),
         " ",
