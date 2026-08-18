@@ -275,6 +275,12 @@ def configure_local_perun(perun_path: str) -> None:
         " configurations."
     ),
 )
+@click.option(
+    "--allow-unsafe-options",
+    is_flag=True,
+    default=False,
+    help="Allow unsafe init options, e.g., ``--separate-git-dir``.",
+)
 def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None:
     """Initializes performance versioning system at the destination path.
 

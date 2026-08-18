@@ -1334,6 +1334,7 @@ def test_init_correct_with_params_and_flags():
             "--vcs-param",
             "separate-git-dir",
             "sepdir",
+            "--allow-unsafe-options",
         ],
     )
     asserts.predicate_from_cli(result, result.exit_code == 0)
