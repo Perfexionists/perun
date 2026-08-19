@@ -1,13 +1,26 @@
 <div id="trace-popup-container" style="display: none">
     <div class="note-overlay" onclick="closeTracePopup()"></div>
 
+    <button id="trace-popup-prev" class="trace-popup-nav-btn trace-popup-nav-btn--prev" onclick="navigatePopup(-1)" title="Previous function (Left Arrow)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <button id="trace-popup-next" class="trace-popup-nav-btn trace-popup-nav-btn--next" onclick="navigatePopup(1)" title="Next function (Right Arrow)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
     <div class="note-popup" id="trace-popup">
 
         <span id="trace-popup-close" onclick="closeTracePopup()">
             {% include 'assets/close.svg' %}
         </span>
 
-        <h2 id="trace-popup-title">Trace Details</h2>
+        <div id="trace-popup-title-bar">
+            <h2 id="trace-popup-title">Trace Details</h2>
+            <div id="trace-popup-nav-badge" class="trace-popup-nav-badge" style="display: none;">
+                <span id="trace-popup-nav-counter">1 / 20</span>
+            </div>
+        </div>
 
         <div id="trace-popup-content-wrapper">
             <div id="trace-popup-header">
@@ -35,21 +48,102 @@
 </div>
 
 <script>
+    let currentPopupNavContext = null;
+
     function closeTracePopup() {
         document.getElementById('trace-popup-container').style.display = 'none';
+        currentPopupNavContext = null;
+    }
+
+    function getRowDataFromNavContextItem(item) {
+        if (!item) return null;
+        if (item.uid && item.index) {
+            return item;
+        }
+        if (Array.isArray(item) && window.tracesData) {
+            const nodeIdStr = item[0].toString();
+            return window.tracesData.find(r => r.index === nodeIdStr) || null;
+        }
+        return null;
+    }
+
+    function navigatePopup(direction) {
+        if (!currentPopupNavContext || !currentPopupNavContext.items) return;
+
+        const newIndex = currentPopupNavContext.currentIndex + direction;
+        if (newIndex < 0 || newIndex >= currentPopupNavContext.items.length) return;
+
+        const item = currentPopupNavContext.items[newIndex];
+        const rowData = getRowDataFromNavContextItem(item);
+        if (rowData) {
+            openTracePopup(rowData, currentPopupNavContext.isExclusive, {
+                ...currentPopupNavContext,
+                currentIndex: newIndex
+            });
+        }
     }
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            closeTracePopup();
+        const container = document.getElementById('trace-popup-container');
+        if (container && container.style.display !== 'none') {
+            if (event.key === 'Escape') {
+                closeTracePopup();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                navigatePopup(-1);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                navigatePopup(1);
+            }
         }
     });
 
-    function openTracePopup(rowData, isExclusive) {
+    function openTracePopup(rowData, isExclusive, navContext) {
         document.getElementById('trace-popup-container').style.display = 'flex';
 
+        currentPopupNavContext = navContext || null;
+
+        const prevBtn = document.getElementById('trace-popup-prev');
+        const nextBtn = document.getElementById('trace-popup-next');
+        const navBadge = document.getElementById('trace-popup-nav-badge');
+        const counterSpan = document.getElementById('trace-popup-nav-counter');
+
+        if (currentPopupNavContext && currentPopupNavContext.items && currentPopupNavContext.items.length > 1) {
+            const total = currentPopupNavContext.items.length;
+            const curIdx = currentPopupNavContext.currentIndex;
+
+            if (prevBtn) {
+                prevBtn.style.display = 'flex';
+                prevBtn.disabled = curIdx <= 0;
+            }
+            if (nextBtn) {
+                nextBtn.style.display = 'flex';
+                nextBtn.disabled = curIdx >= total - 1;
+            }
+            if (navBadge) {
+                navBadge.style.display = 'inline-flex';
+                if (counterSpan) counterSpan.textContent = `${curIdx + 1} / ${total}`;
+            }
+        } else {
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
+            if (navBadge) navBadge.style.display = 'none';
+        }
+
         // Populate Header
-        document.getElementById('trace-popup-title').innerHTML = `Unit: ${rowData.uid} <span style="font-weight: bold; color: ${getColorForFreshness(rowData.fresh)}">(${rowData.fresh})</span>`;
+        const popupTitle = document.getElementById('trace-popup-title');
+        popupTitle.innerHTML = '';
+
+        const titleText = document.createElement('span');
+        titleText.className = 'trace-popup-title-text';
+        titleText.innerHTML = `Unit: ${rowData.uid} <span style="font-weight: bold; color: ${getColorForFreshness(rowData.fresh)}">(${rowData.fresh})</span>`;
+        popupTitle.appendChild(titleText);
+
+        if (rowData.uid) {
+            const copyTitleBtn = createCopyButton(rowData.uid, 'trace-popup-title-copy-btn');
+            copyTitleBtn.title = 'Copy function name';
+            popupTitle.appendChild(copyTitleBtn);
+        }
         document.getElementById('trace-info-text').innerHTML = `
             <div class="trace-header-stats">
                 <div class="stat-item stat-item-aligned-end">
@@ -203,38 +297,8 @@
                 funcName.textContent = name;
                 frame.appendChild(funcName);
 
-                // Copy button — fades in on hover, out on leave
-                const COPY_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-                const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'callstack-copy-btn';
+                const copyBtn = createCopyButton(name, 'callstack-copy-btn');
                 copyBtn.title = 'Copy function name';
-                copyBtn.innerHTML = COPY_SVG;
-
-                // Per-frame hover state tracked via closure
-                let frameHovered = false;
-                const setIconVisible = (visible) => {
-                    const svg = copyBtn.querySelector('svg');
-                    if (svg) svg.style.opacity = visible ? '1' : '0';
-                };
-
-                frame.addEventListener('mouseenter', () => { frameHovered = true;  setIconVisible(true);  });
-                frame.addEventListener('mouseleave', () => { frameHovered = false; setIconVisible(false); });
-
-                copyBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(name).then(() => {
-                        copyBtn.classList.add('callstack-copy-btn--copied');
-                        copyBtn.innerHTML = CHECK_SVG;
-                        setIconVisible(frameHovered); // new SVG — re-apply current hover state
-                        setTimeout(() => {
-                            copyBtn.classList.remove('callstack-copy-btn--copied');
-                            copyBtn.innerHTML = COPY_SVG;
-                            setIconVisible(frameHovered); // new SVG again — re-apply
-                        }, 1500);
-                    });
-                });
                 frame.appendChild(copyBtn);
 
                 panel.appendChild(frame);
@@ -243,7 +307,7 @@
                 if (i < totalDepth - 1) {
                     const connector = document.createElement('div');
                     connector.className = 'callstack-connector';
-                    connector.innerHTML = '<span class="callstack-arrow">&#8595;</span>';
+                    connector.innerHTML = '<span class="callstack-arrow">&#8593;</span>';
                     panel.appendChild(connector);
                 }
             });
@@ -271,7 +335,7 @@
                     render: (data) => {
                         return `<div class="trace-cell-compact trace-cell-clickable" title="Click to view call chain">${data}</div>`;
                     },
-                    width: '90px',
+                    width: '60px',
                     tooltip: TRACES_TOOLTIPS.index
                 },
                 {
@@ -280,7 +344,7 @@
                     type: 'number',
                     filterable: false,
                     render: (data) => `<div class="trace-cell-compact">${data}</div>`,
-                    width: '90px',
+                    width: '85px',
                     tooltip: TRACES_TOOLTIPS.depth
                 },
                 {
