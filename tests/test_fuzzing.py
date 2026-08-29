@@ -29,7 +29,7 @@ def test_fuzzing_coverage(capsys):
     examples = os.path.join(os.path.dirname(__file__), "sources", "fuzz_examples")
     gcno_files_path = os.path.join(examples, "hang-test")
     hang_test = os.path.join(gcno_files_path, "hang")
-    hang_source = os.path.join(gcno_files_path, "main.c")
+    hang_source = os.path.join(gcno_files_path, "hang.c")
     num_workload = os.path.join(examples, "samples", "txt", "number.txt")
     coverage_config = CoverageConfiguration(
         **{"gcno_path": gcno_files_path, "source_path": gcno_files_path}

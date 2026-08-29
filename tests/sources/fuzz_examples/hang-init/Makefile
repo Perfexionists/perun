@@ -3,7 +3,7 @@ PROG=hang
 
 all: $(PROG)
 
-hang: main.c
+hang: hang.c
 	$(CC) $< -g --coverage -o $@
 
 clean:
