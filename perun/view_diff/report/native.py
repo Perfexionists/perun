@@ -135,7 +135,7 @@ def generate_report_from_native_profiles(
     )
     log.minor_success("Parsing Input Perun Profiles")
 
-    diff_html, creation_time = core.generate_report_view(
+    diff_html, _ = core.generate_report_view(
         pair_profile,
         baseline,
         target,

@@ -197,6 +197,7 @@ nitpick_ignore = [
     ("py:class", "perun.utils.common.common_kit.Aggregations"),
     ("py:class", "TempTextIO"),
     ("py:class", "polars.lazyframe.frame.LazyFrame"),
+    ("py:class", "pandas.core.frame.DataFrame"), # Needed only for Python 3.10
 ]
 
 

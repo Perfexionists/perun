@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import asdict
 import os
 from pathlib import Path
-import subprocess
+from subprocess import CalledProcessError
 import sys
 from typing import Any
 
@@ -61,7 +61,7 @@ def import_perf_from_record(
             log.minor_success(
                 f"Raw data from {log.path_style(str(imported_file.path))}", "collected"
             )
-        except subprocess.CalledProcessError as err:
+        except CalledProcessError as err:
             log.minor_fail(
                 f"Raw data from {log.path_style(str(imported_file.path))}", "not collected"
             )
@@ -171,7 +171,7 @@ def _import_perf_profile(
                 "exitcode": [p.exit_code for p in profiles],
                 "workload": kwargs.get("workload", ""),
                 "label": kwargs.get("profile_label", ""),
-                "units": {"time": "sample"},
+                "units": {"time": "samples"},
             },
             "collector_info": {
                 "name": "kperf",

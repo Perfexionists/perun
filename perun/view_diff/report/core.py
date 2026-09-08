@@ -150,6 +150,7 @@ def generate_report_view(
     )
     minwidth_threshold = fg_settings.compute_minwidth_threshold()
 
+    log.minor_info(f"Units: {fg_settings.countname}")
     # Dump the profiles back into a folded format for flamegraph scripts.
     grid = fg_grid.FlameGraphGrid()
     log.minor_info("Saving post-processed profiles in temporary files.")
@@ -289,7 +290,6 @@ def generate_report_view(
         top_diffs_func_exclusive=diffs.iterate_top_diffs(func_top_diffs[1]),
         total_baseline=pair_profile.baseline.features.total_resources,
         total_target=pair_profile.target.features.total_resources,
-        is_folded=True,
     )
     log.minor_success("HTML report", "rendered")
     return content, utc_time_now
