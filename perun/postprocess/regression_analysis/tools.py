@@ -4,14 +4,15 @@ from __future__ import annotations
 
 # Standard Imports
 from operator import itemgetter
-from typing import Any, Iterable, TYPE_CHECKING
 import random
+from typing import Any, Iterable, TYPE_CHECKING
 
 # Third-Party Imports
 import numpy as np
 
 # Perun Imports
 from perun.utils import exceptions
+from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -22,8 +23,6 @@ if TYPE_CHECKING:
 MIN_POINTS_COUNT: int = 3
 # R^2 value if computation failed
 R_SQUARE_DEFAULT: float = 0.0
-# Zero approximation to avoid zero division etc.
-APPROX_ZERO: float = 0.000001
 
 
 def validate_dictionary_keys(
@@ -133,7 +132,7 @@ def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.flo
     x_pts = np.linspace(start, end, steps)
     # Replace all zeros by zero approximation to prevent zero division errors
     # Result of linspace is array, not tuple, with these arguments
-    x_pts[np.abs(x_pts) < APPROX_ZERO] = APPROX_ZERO
+    x_pts[np.abs(x_pts) < common_kit.APPROX_ZERO] = common_kit.APPROX_ZERO
     return x_pts
 
 

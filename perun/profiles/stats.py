@@ -23,12 +23,15 @@ import dataclasses
 import enum
 import math
 import statistics
-from typing import Any, Protocol, Iterable, ClassVar, Union, cast
+from typing import Any, Protocol, Iterable, ClassVar, Union, cast, TYPE_CHECKING
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.utils import log as perun_log
+
+if TYPE_CHECKING:
+    from perun.profiles.structs import ProfileFeatures
 
 
 class ProfileStatComparison(str, enum.Enum):
@@ -526,3 +529,81 @@ def compare_stats(
             if comparison == ProfileStatComparison.LOWER
             else StatComparisonResult.TARGET_BETTER
         )
+
+
+def merge_stats(new_stat: ProfileStat, into_stats: list[ProfileStat]) -> None:
+    """Merge a new profile stat values into the current profile stats.
+
+    If an existing stat with the same name exists, the values of both stats are merged. If no such
+    stat is found, the new stat is added to the collection of current stats.
+
+    :param new_stat: the new profile stat to merge.
+    :param into_stats: the current collection of profile stats.
+    """
+    for stat in into_stats:
+        if new_stat.name == stat.name:
+            # We found a stat with a matching name, merge
+            stat.merge_with(new_stat)
+            return
+    # There is no stat to merge with, extend the current collection of stats
+    into_stats.append(new_stat)
+
+
+def features_to_stats(features: ProfileFeatures, resource_name: str) -> list[ProfileStat]:
+    """Transform profile features into profile stats.
+
+    :param features: profile features
+    :param resource_name: profile resource name
+
+    :return: a collection of profile stats derived from the features
+    """
+    return [
+        ProfileStat(
+            f"Total {resource_name}",
+            ProfileStatComparison.LOWER,
+            "#",
+            description=f"The total amount of {resource_name} accounted for in the profile.",
+            value=[features.total_resources],
+        ),
+        ProfileStat(
+            "Unique Functions",
+            ProfileStatComparison.LOWER,
+            "#",
+            description="The number of unique function symbols seen in the profile. This includes "
+            "functions that have no measured exclusive resource consumption but were "
+            "seen in traces.",
+            value=[features.seen_functions_count],
+        ),
+        ProfileStat(
+            "Unique Traces",
+            ProfileStatComparison.LOWER,
+            "#",
+            description="The number of unique traces seen in the profile. This includes traces "
+            "that have no measured exclusive resource consumption but were seen in the "
+            "profile.",
+            value=[features.seen_traces_count],
+        ),
+        ProfileStat(
+            "Measured Functions",
+            ProfileStatComparison.LOWER,
+            "#",
+            description="The number of unique function symbols that have exclusive resource "
+            "consumption recorded in the profile.",
+            value=[features.measured_functions_count],
+        ),
+        ProfileStat(
+            "Measured Traces",
+            ProfileStatComparison.LOWER,
+            "#",
+            description="The number of unique traces that have exclusive resource consumption "
+            "recorded in the profile.",
+            value=[features.measured_traces_count],
+        ),
+        ProfileStat(
+            "Longest Profile Trace",
+            ProfileStatComparison.LOWER,
+            "#",
+            description="The longest trace recorded in the profile.",
+            value=[features.max_trace_len],
+        ),
+    ]

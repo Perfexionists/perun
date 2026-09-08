@@ -7,6 +7,7 @@ perun_cli_groups_files = files(
     'config_cli.py',
     'import_cli.py',
     'run_cli.py',
+    'shared_options.py',
     'showdiff_cli.py',
     'utils_cli.py',
 )

@@ -2,7 +2,9 @@ perun_view_flamegraph_dir = perun_view_dir / 'flamegraph'
 
 perun_view_flamegraph_files = files(
     '__init__.py',
-    'flamegraph.py',
+    '__init__.pyi',
+    'core.py',
+    'grid.py',
     'run.py',
 )
 

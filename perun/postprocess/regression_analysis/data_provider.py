@@ -9,7 +9,7 @@ from typing import Iterator, Any, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
-from perun.profiles.native import convert
+from perun.profiles.native import helpers
 
 if TYPE_CHECKING:
     from perun.profiles.native import Profile
@@ -21,7 +21,7 @@ def resource_sort_key(resource: dict[str, Any]) -> str:
     :param resource: profiling resource
     :return: key used for sorting
     """
-    return convert.flatten(resource["uid"])
+    return helpers.flatten(resource["uid"])
 
 
 def generic_profile_provider(
@@ -43,16 +43,16 @@ def generic_profile_provider(
     resources = sorted(resources, key=resource_sort_key)
     x_points_list: list[float] = []
     y_points_list: list[float] = []
-    function_name = convert.flatten(resources[0]["uid"])
+    function_name = helpers.flatten(resources[0]["uid"])
     # Store all the points until the function name changes
     for resource in resources:
-        if convert.flatten(resource["uid"]) != function_name:
+        if helpers.flatten(resource["uid"]) != function_name:
             if x_points_list:
                 # Function name changed, yield the list of data points
                 yield x_points_list, y_points_list, function_name
                 x_points_list = [resource[per_key]]
                 y_points_list = [resource[of_key]]
-                function_name = convert.flatten(resource["uid"])
+                function_name = helpers.flatten(resource["uid"])
         else:
             # Add the data points
             x_points_list.append(resource[per_key])

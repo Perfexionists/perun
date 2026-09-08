@@ -1,4 +1,4 @@
-perun_select_dir = perun_dir / 'select'
+perun_select_dir = perun_dir / 'selection'
 
 perun_select_files = files(
     '__init__.py',

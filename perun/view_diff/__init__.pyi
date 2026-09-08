@@ -1,11 +1,7 @@
-from .flamegraph import (
-    generate_flamegraphs as generate_flamegraphs,
-    process_flamegraph_stats as process_flamegraph_stats,
-    generate_flamegraph_difference as generate_flamegraph_difference,
-)
+from . import report as report
 
-from .report_folded import generate_report_from_folded as generate_report_from_folded
+from .chatbot import generate_initial_prompt as generate_initial_prompt
 
-from .report_native import generate_report_from_native as generate_report_from_native
+from .flamegraph import generate_flamegraph_difference as generate_flamegraph_difference
 
 from .short import compare_profiles as compare_profiles

@@ -9,11 +9,11 @@ from typing import Any
 import click
 
 # Perun Imports
-import perun.view.bars.factory as bars_factory
 from perun.profiles import native as profile_factory
 from perun.utils import log
 from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException
+import perun.view.bars.factory as bars_factory
 
 
 def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
@@ -43,9 +43,9 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 @click.argument(
     "func",
     required=False,
-    default="sum",
+    default=common_kit.Aggregations.SUM.value,
     metavar="<aggregation_function>",
-    type=click.Choice(common_kit.AGGREGATIONS),
+    type=click.Choice(common_kit.Aggregations.supported()),
 )
 @click.option(
     "--of",

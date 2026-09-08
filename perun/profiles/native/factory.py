@@ -9,22 +9,23 @@ regions and flatten the format.
 from __future__ import annotations
 
 # Standard Imports
-from collections.abc import MutableMapping
-from typing import Any, Iterator, Iterable, TYPE_CHECKING, Literal
 import collections
+from collections.abc import MutableMapping
 import itertools
 import operator
+from typing import Any, Iterable, Iterator, TYPE_CHECKING
 
 # Third-Party Imports
 import click
 
 # Perun Imports
-from perun import check as check
+from perun import check
 from perun.logic import config
-from perun.profiles.native import query, helpers, convert, stats
+from perun.profiles import stats, structs
+from perun.profiles.native import helpers, query
 from perun.utils import log
-from perun.utils.structs import postprocess_structs
 from perun.utils.common import common_kit
+from perun.utils.structs import postprocess_structs
 
 if TYPE_CHECKING:
     from perun.utils.structs.common_structs import ModelRecord
@@ -96,14 +97,15 @@ class Profile(MutableMapping[str, Any]):
                 self._storage[key] = value
         config.runtime().append("context.profiles", self)
 
-    def apply(self, agg: Literal["sum", "min", "max", "avg", "mean", "med", "median"]) -> None:
+    def apply(self, agg: common_kit.Aggregations) -> None:
         """Applies aggregation function to each counted resource
 
-        :param agg: name of the aggreagation function
+        :param agg: the aggregation function to use
         """
+        aggregation: common_kit.AggregationFunc = common_kit.get_aggregation_callable(agg)
         for res in self._storage["resources"].values():
             for item, val in res.items():
-                res[item] = [common_kit.aggregate_list(val, agg)]
+                res[item] = [aggregation(val)]
 
     def update_resources(
         self,
@@ -193,8 +195,8 @@ class Profile(MutableMapping[str, Any]):
         :param persistent_properties: tuple of persistent properties
         :return: uid corresponding to the tuple of persistent properties
         """
-        property_key = str(convert.flatten(persistent_properties))
-        uid_key = convert.flatten(uid)
+        property_key = str(helpers.flatten(persistent_properties))
+        uid_key = helpers.flatten(uid)
         if property_key not in self._tuple_to_resource_type_map.keys():
             new_type = f"{uid_key}#{self._uid_counter[uid_key]}"
             self._tuple_to_resource_type_map[property_key] = new_type
@@ -326,6 +328,19 @@ class Profile(MutableMapping[str, Any]):
             else:
                 # In case we have only persistent properties
                 yield persistent_properties.get("snapshot", 0), persistent_properties
+
+    def get_kperf_resources(self) -> Iterable[dict[str, Any]]:
+        """A generator of kperf resources.
+
+        A simplified version of `all_resources` which does not aggregates amounts for later
+        custom aggregation.
+
+        :return: a generator of kperf resources.
+        """
+        for resource_type, resources in self._storage["resources"].items():
+            persistent_properties = self._storage["resource_type_map"][resource_type]
+            persistent_properties.update(resources)
+            yield persistent_properties
 
     def all_resource_fields(self) -> set[str]:
         """Generator for iterating through all the fields (both flattened and
@@ -462,13 +477,13 @@ class Profile(MutableMapping[str, Any]):
         for stat in self._storage.get("stats", {}):
             yield stats.ProfileStat.from_profile(stat)
 
-    def all_metadata(self) -> Iterable[helpers.ProfileHeaderEntry]:
+    def all_metadata(self) -> Iterable[structs.ProfileMetadataEntry]:
         """Iterates through all the metadata records in the profile.
 
         :return: iterable of all metadata records
         """
         for entry in self._storage.get("metadata", {}):
-            yield helpers.ProfileHeaderEntry.from_profile(entry)
+            yield structs.ProfileMetadataEntry.from_profile(entry)
 
     # TODO: discuss the intent of __len__ and possibly merge?
     def resources_size(self) -> int:

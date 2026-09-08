@@ -14,8 +14,6 @@ from typing import Any, Iterable, Protocol, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
-from perun.logic import config, pcs, runner, store
-from perun.select.abstract_base_selection import AbstractBaseSelection
 from perun.check.methods import (
     average_amount_threshold,
     best_model_order_equality,
@@ -26,7 +24,13 @@ from perun.check.methods import (
     local_statistics,
     polynomial_regression,
 )
+from perun.logic import config, pcs, runner, store
+from perun.profiles.native import helpers as profile_helpers
+from perun.selection.abstract_base_selection import AbstractBaseSelection
+import perun.selection.factory as select
 from perun.utils import decorators, log
+from perun.utils.common import common_kit
+from perun.utils.exceptions import UnsupportedModuleException
 from perun.utils.structs.common_structs import (
     DetectionChangeResult,
     DegradationInfo,
@@ -34,10 +38,6 @@ from perun.utils.structs.common_structs import (
     MinorVersion,
     ModelRecord,
 )
-from perun.utils.common import common_kit
-from perun.utils.exceptions import UnsupportedModuleException
-from perun.profiles.native import helpers as profil_helpers
-import perun.select.factory as select
 
 if TYPE_CHECKING:
     from perun.profiles.native import Profile
@@ -71,7 +71,7 @@ def profiles_to_queue(
     :param minor_version: minor version for which we are retrieving the profile queue
     :returns: dictionary mapping configurations of profiles to the actual profiles
     """
-    minor_version_profiles = profil_helpers.load_list_for_minor_version(minor_version)
+    minor_version_profiles = profile_helpers.load_list_for_minor_version(minor_version)
     return {profile.config_tuple: profile for profile in minor_version_profiles}
 
 
@@ -133,7 +133,7 @@ def degradation_in_minor(
     for target_config, target_profile_info in profile_queue.items():
         # Iterate through the profiles and check degradation between those of same configuration
         target_prof = store.load_profile_from_file(target_profile_info.realpath, False, True)
-        cmdstr = profil_helpers.config_tuple_to_cmdstr(target_config)
+        cmdstr = profile_helpers.config_tuple_to_cmdstr(target_config)
 
         for baseline_info, baseline_profile_info in selection.get_profiles(
             minor_version_info, target_prof
@@ -262,8 +262,8 @@ def degradation_between_files(
     """
     log.major_info("Checking two compatible profiles")
     # First check if the configurations are compatible
-    baseline_config = profil_helpers.to_config_tuple(baseline_file)
-    target_config = profil_helpers.to_config_tuple(target_file)
+    baseline_config = profile_helpers.to_config_tuple(baseline_file)
+    target_config = profile_helpers.to_config_tuple(target_file)
     target_minor_version = target_file.get("origin", minor_version)
     if not force:
         if baseline_config != target_config:
@@ -276,7 +276,7 @@ def degradation_between_files(
     for deg in degradation_between_profiles(baseline_file, target_file, models_strategy):
         if deg.result != PerformanceChange.NoChange:
             detected_changes.append(
-                (deg, profil_helpers.config_tuple_to_cmdstr(baseline_config), target_minor_version)
+                (deg, profile_helpers.config_tuple_to_cmdstr(baseline_config), target_minor_version)
             )
 
     # Store the detected changes for given minor version

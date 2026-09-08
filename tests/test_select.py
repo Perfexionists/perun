@@ -1,4 +1,4 @@
-"""Collections of test for perun.select package"""
+"""Collections of test for perun.selection package"""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ import pytest
 # Perun Imports
 from perun.logic import pcs
 from perun.profiles.native import helpers as profile_helpers
-from perun.select.abstract_base_selection import AbstractBaseSelection
-from perun.select.whole_repository_selection import WholeRepositorySelection
+from perun.selection.abstract_base_selection import AbstractBaseSelection
+from perun.selection.whole_repository_selection import WholeRepositorySelection
 
 
 def test_base_select():

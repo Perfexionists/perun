@@ -5,7 +5,7 @@ from __future__ import annotations
 # Standard Imports
 from collections.abc import Iterator
 from operator import itemgetter
-from typing import TYPE_CHECKING, Any
+from typing import Any, TYPE_CHECKING
 
 # Third-Party Imports
 from bokeh import palettes
@@ -13,8 +13,9 @@ import holoviews as hv
 import numpy as np
 
 # Perun Imports
-from perun.postprocess.regression_analysis import data_provider
-from perun.profiles.native import query, convert
+from perun.postprocess.regression_analysis import data_provider, transform
+from perun.profiles.conversions import native_pandas
+from perun.profiles.native import helpers, query
 from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
@@ -100,10 +101,10 @@ def _generate_plot_data_slices(
     :returns: slices of resources (per UID) and models (per UID and interval).
     """
     # Get resources for scatter plot points and models for curves
-    resource_table = convert.resources_to_pandas_dataframe(profile)
+    resource_table = native_pandas.resources_to_pandas_dataframe(profile)
     models = list(map(itemgetter(1), profile.all_models()))
     # Get unique uids from profile, each uid (and optionally interval) will have separate graph
-    uids = map(convert.flatten, query.unique_resource_values_of(profile, "uid"))
+    uids = map(helpers.flatten, query.unique_resource_values_of(profile, "uid"))
 
     # Process each uid data
     for uid_slice, uid_models in _slice_resources_by_uid(resource_table, models, uids):
@@ -188,9 +189,9 @@ def _create_parametric_model(model: ProfileModel) -> hv.Curve:
     :returns: a Curve plot element that represents the model.
     """
     # First transform the model type and coefficients into X and Y points that can be plotted
-    model_conv = convert.plot_data_from_coefficients_of(model)
+    model.update(transform.coefficients_to_points(**model))
     # Create a Curve plot element that represents the model
-    return hv.Curve((model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model))
+    return hv.Curve((model["plot_x"], model["plot_y"]), label=_build_model_legend(model))
 
 
 def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[hv.Curve]:

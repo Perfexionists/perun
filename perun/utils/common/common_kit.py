@@ -3,9 +3,19 @@
 from __future__ import annotations
 
 # Standard Imports
+import array
+import contextlib
+import enum
+import importlib
+import itertools
+import operator
+import os
+import re
+import signal
 from typing import (
     Any,
     Callable,
+    cast,
     Iterable,
     Literal,
     Optional,
@@ -13,21 +23,11 @@ from typing import (
     TypeVar,
     TYPE_CHECKING,
 )
-import array
-import contextlib
-import importlib
-import itertools
-import operator
-import os
-import re
-import signal
-import statistics
 
 # Third-Party Imports
 import click
 
 # Perun Imports
-from perun.postprocess.regression_analysis import tools
 from perun.utils.exceptions import NotPerunRepositoryException, SignalReceivedException
 
 if TYPE_CHECKING:
@@ -70,7 +70,6 @@ AttrChoiceType = Iterable[Literal["bold", "dark", "underline", "blink", "reverse
 TEXT_ATTRS: Optional[AttrChoiceType] = None
 TEXT_EMPH_COLOUR: ColorChoiceType = "green"
 TEXT_WARN_COLOUR: ColorChoiceType = "red"
-AGGREGATIONS: tuple[str, ...] = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Profile specific stuff
 SUPPORTED_PROFILE_TYPES: list[str] = ["memory", "mixed", "time"]
@@ -120,6 +119,147 @@ LINE_PARSING_REGEX: re.Pattern[Any] = re.compile(
 
 ALWAYS_CONFIRM: bool = False
 DEFAULT_CONFIRMATION: bool = True
+
+# Zero approximation to avoid zero division etc.
+APPROX_ZERO: float = 0.000001
+
+
+class Aggregations(enum.Enum):
+    """Supported aggregation functions."""
+
+    SUM = "sum"
+    MIN = "min"
+    MAX = "max"
+    COUNT = "count"
+    NUNIQUE = "nunique"
+    MEAN = ("mean", "avg", "average")
+    MEDIAN = ("median", "med")
+
+    @staticmethod
+    def supported() -> list[str]:
+        """Obtain the collection of supported aggregation functions.
+
+        :return: the collection of supported aggregation functions
+        """
+        return (
+            [
+                Aggregations.SUM.value,
+                Aggregations.MIN.value,
+                Aggregations.MAX.value,
+                Aggregations.COUNT.value,
+                Aggregations.NUNIQUE.value,
+            ]
+            + list(Aggregations.MEAN.value)
+            + list(Aggregations.MEDIAN.value)
+        )
+
+    @staticmethod
+    def default_name() -> str:
+        """Provide the default aggregation function name.
+
+        :return: the default aggregation function name
+        """
+        return Aggregations.MEDIAN.value[0]
+
+    @staticmethod
+    def default() -> Aggregations:
+        """Provide the default aggregation function.
+
+        :return: the default aggregation function
+        """
+        return Aggregations.MEDIAN
+
+    @classmethod
+    def from_string(cls, agg_name: str, default: Aggregations | None = None) -> Aggregations:
+        """Translate a string name to an enum member.
+
+        :param agg_name: the name of the aggregation function.
+        :param default: the default aggregation to use if the string is not recognized.
+               If set to `None`, a `KeyError` is raised if the name is not recognized.
+
+        :return: an enum member corresponding to the name.
+        """
+        try:
+            return cls(agg_name)
+        except ValueError:
+            # Handle the aliases.
+            if agg_name in Aggregations.MEAN.value:
+                return Aggregations.MEAN
+            elif agg_name in Aggregations.MEDIAN.value:
+                return Aggregations.MEDIAN
+            if default is not None:
+                return default
+            raise
+
+
+# Python-native aggregation functions.
+AggregationFunc = Callable[[list[float]], float]
+
+
+def mean_agg(data: list[float]) -> float:
+    """Computes the average value of a collection of numbers.
+
+    :param data: the list to aggregate
+
+    :return: the average value of the `data` elements
+    """
+    try:
+        return sum(data) / len(data)
+    except ZeroDivisionError:
+        # Makes sure empty lists are handled correctly.
+        return 0.0
+
+
+def median_agg(data: list[float]) -> float:
+    """Selects or computes the median value of a collection of numbers.
+
+    The implementation is inspired by the `statistics` standard library, but avoids a lot of
+    checks that are unnecessary for our use-case.
+
+    :param data: the list to aggregate
+
+    :return: the (possibly interpolated) median value
+    """
+    data.sort()
+    data_len = len(data)
+    midpoint = data_len // 2
+    try:
+        if len(data) & 1 == 1:
+            return data[midpoint]
+        else:
+            return (data[midpoint - 1] + data[midpoint]) / 2
+    except IndexError:
+        # Makes sure empty lists are handled correctly.
+        return 0.0
+
+
+def nunique_agg(data: list[float]) -> float:
+    """Counts the number of unique elements in a list.
+
+    :param data: the list to aggregate
+
+    :return: the number of unique elements in `data`
+    """
+    return len(set(data))
+
+
+def get_aggregation_callable(agg_func: Aggregations) -> AggregationFunc:
+    """Maps aggregation function to a python-native callable.
+
+    :param agg_func: the aggregation function
+    :return: a python-native callable
+    """
+    # The built-in methods have complex type signatures. The cast narrows it down to our
+    # use-case to avoid type hint errors
+    return {
+        Aggregations.SUM: cast(AggregationFunc, sum),
+        Aggregations.MIN: cast(AggregationFunc, min),
+        Aggregations.MAX: cast(AggregationFunc, max),
+        Aggregations.COUNT: cast(AggregationFunc, len),
+        Aggregations.NUNIQUE: nunique_agg,
+        Aggregations.MEAN: mean_agg,
+        Aggregations.MEDIAN: median_agg,
+    }[agg_func]
 
 
 def perun_confirm(confirm_message: str) -> bool:
@@ -418,7 +558,7 @@ def safe_division(dividend: float, divisor: float) -> float:
     try:
         return dividend / divisor
     except (ZeroDivisionError, ValueError):
-        return dividend / tools.APPROX_ZERO
+        return dividend / APPROX_ZERO
 
 
 def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
@@ -636,26 +776,6 @@ def add_to_sorted(
         values.pop(0)
 
 
-def hide_generics(uid: str) -> str:
-    """Hides the generics in the uid
-
-    This transforms std::<std::<type>> into std::<*>
-
-    :param uid: uid with generics
-    :return: uid without generics
-    """
-    nesting = 0
-    chars = []
-    for c in uid:
-        if c == "<":
-            nesting += 1
-        elif c == ">":
-            nesting -= 1
-        if nesting == 0 or (c == "<" and nesting == 1):
-            chars.append(c)
-    return "".join(chars)
-
-
 def ensure_type(obj: Any, target_type: Type[T]) -> T:
     """Ensures that object is of target type
 
@@ -666,29 +786,6 @@ def ensure_type(obj: Any, target_type: Type[T]) -> T:
     if isinstance(obj, target_type):
         return obj
     return target_type(obj)  # type: ignore
-
-
-def aggregate_list(
-    input_list: list[float],
-    aggregation: Literal["sum", "min", "max", "avg", "mean", "med", "median"],
-) -> float:
-    """Aggregates list of values according to the given function
-
-    :param input_list: list of input values
-    :param aggregation: named aggregation function
-    :return: aggregation of the function
-    """
-    if aggregation == "sum":
-        return sum(input_list)
-    elif aggregation == "min":
-        return min(input_list)
-    elif aggregation == "max":
-        return max(input_list)
-    elif aggregation in ("avg", "mean"):
-        return statistics.mean(input_list)
-    elif aggregation in ("med", "median"):
-        return statistics.median(input_list)
-    assert False, f"Unknown aggregation {aggregation}"
 
 
 MODULE_CACHE: dict[str, types.ModuleType] = {}

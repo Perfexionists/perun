@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Hashable, cast, Protocol
 import holoviews as hv
 
 # Perun Imports
-from perun.profiles.native import convert
+from perun.profiles.conversions import native_pandas
 from perun.utils.common import view_kit
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ def create_from_params(
     view_kit.lazy_init_holoviews()
 
     # Convert profile to pandas data grid
-    data_frame = convert.resources_to_pandas_dataframe(profile)
+    data_frame = native_pandas.resources_to_pandas_dataframe(profile)
     data_source = construct_data_source_from(
         data_frame, func, of_key, by_key, through_key, accumulate
     )

@@ -12,7 +12,7 @@ from typing import Optional
 # Perun Imports
 from perun.logic import config
 from perun.utils import decorators
-from perun.select import whole_repository_selection, abstract_base_selection
+from perun.selection import whole_repository_selection, abstract_base_selection
 from perun.utils.exceptions import UnsupportedModuleException
 
 

@@ -1,4 +1,4 @@
-"""``perun.profile.query`` is a module which specifies interface for issuing
+"""``perun.profiles.native.query`` is a module which specifies interface for issuing
 queries over the profiles w.r.t :ref:`profile-spec`.
 
 .. _Pandas library: https://docs.python.org/3.7/library/json.html
@@ -6,9 +6,9 @@ queries over the profiles w.r.t :ref:`profile-spec`.
 Run the following in the Python interpreter to extend the capabilities of
 profile to query over profiles, iterate over resources or models, etc.::
 
-    import perun.profiles.query
+    import perun.profiles.native.query
 
-Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.
+Combined with ``perun.profiles.native.factory``, ``perun.profile.conversions`` and e.g.
 `Pandas library`_ one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.
 """
@@ -16,9 +16,9 @@ complex queries and statistical tests over the profiles.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any, TYPE_CHECKING, Iterable
 import numbers
 import operator
+from typing import Any, Iterable, TYPE_CHECKING
 
 # Third-Party Imports
 
@@ -26,7 +26,7 @@ import operator
 from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
-    from perun.profile import Profile
+    from perun.profiles.native import Profile
 
 
 def flattened_values(root_key: Any, root_value: Any) -> Iterable[tuple[str, str | float]]:

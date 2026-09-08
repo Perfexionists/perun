@@ -14,7 +14,7 @@ from typing import Iterator, TYPE_CHECKING
 # Perun Imports
 from perun.logic import pcs
 from perun.profiles.native import helpers as profile_helpers
-from perun.select.abstract_base_selection import AbstractBaseSelection
+from perun.selection.abstract_base_selection import AbstractBaseSelection
 from perun.utils.structs.common_structs import MinorVersion
 
 if TYPE_CHECKING:

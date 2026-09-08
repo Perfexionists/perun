@@ -20,7 +20,6 @@ from perun.logic import commands, pcs, store
 from perun.utils import decorators, log, metrics, streams
 from perun.utils.common import common_kit
 import perun.testing.utils as test_utils
-from perun.view_diff import report_native
 
 if TYPE_CHECKING:
     from perun.profiles.native import Profile
@@ -554,6 +553,4 @@ def setup():
 
     # We disable the metrics by default, since they might slow down tests
     metrics.Metrics.enabled = False
-    report_native.Stats.KnownStatsSet.clear()
-    report_native.Stats.SortedStats = []
     yield

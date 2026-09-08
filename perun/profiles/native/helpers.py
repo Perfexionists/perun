@@ -1,52 +1,40 @@
-"""``perun.profile.factory`` specifies collective interface for basic
-manipulation with profiles.
-
-The format of profiles is w.r.t. :ref:`profile-spec`. This module contains
-helper functions for loading and storing of the profiles either in the
-persistent memory or in filesystem (in this case, the profile is in
-uncompressed format).
+"""This module contains helper functions for loading and storing of native profiles.
 
 .. _Python JSON library: https://docs.python.org/3.7/library/json.html
 
-For further manipulations refer either to :ref:`profile-conversion-api`
-(implemented in ``perun.profile.convert`` module) or :ref:`profile-query-api`
-(implemented in ``perun.profile.query module``). For full specification how to
-handle the JSON objects in Python refer to `Python JSON library`_.
+For full specification how to handle the JSON objects in Python refer to `Python JSON library`_.
 """
 
 from __future__ import annotations
 
 # Standard Imports
 import contextlib
-import dataclasses
 import json
 import operator
 import os
 from pathlib import Path
 import re
 import time
-from typing import Any, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.logic import commands, config, index, pcs, store
 from perun.profiles import native as profiles
+from perun.profiles.native import query
 from perun.utils import log as perun_log, streams
 from perun.utils.common import common_kit
-from perun.utils.external import environment, commands as external_commands
 from perun.utils.exceptions import (
     InvalidParameterException,
     TagOutOfRangeException,
 )
-from perun.utils.structs.common_structs import Unit, Executable, Job, SortOrder, MinorVersion
+from perun.utils.external import commands as external_commands, environment
+from perun.utils.structs.common_structs import Executable, Job, MinorVersion, SortOrder, Unit
 from perun.vcs import vcs_kit
 
 if TYPE_CHECKING:
     import types
-
-# A tuple representation of the ProfileHeaderEntry object
-ProfileHeaderTuple = tuple[str, Union[str, float], str, dict[str, Union[str, float]]]
 
 
 PROFILE_COUNTER: int = 0
@@ -148,6 +136,37 @@ class ProfilePath:
                 if p.stem == self.stem:
                     self.copy = max(self.copy, p.copy + 1)
         return self
+
+
+def flatten(flattened_value: Any) -> Any:
+    """Converts the value to something that can be used as one value.
+
+    Flattens the value to single level, lists are processed to comma separated representation and
+    rest is left as it is.
+    TODO: Add caching
+
+    :param flattened_value: value that is flattened
+    :returns: either decimal, string, or something else
+    """
+    # Dictionary is processed recursively according to the all items that are nested
+    if isinstance(flattened_value, dict):
+        nested_values = []
+        for key, value in query.all_items_of(flattened_value):
+            # Add one level of hierarchy with ':'
+            nested_values.append((key, value))
+        # Return the overall key as joined values of its nested stuff,
+        # only if root is not a list (i.e. root key is not int = index)!
+        nested_values.sort(key=common_kit.uid_getter)
+        return ":".join(map(str, map(operator.itemgetter(1), nested_values)))
+    # Lists are merged as comma separated keys
+    elif isinstance(flattened_value, list):
+        return ",".join(
+            ":".join(str(nested_value[1]) for nested_value in query.flattened_values(i, lv))
+            for (i, lv) in enumerate(flattened_value)
+        )
+    # Rest of the values are left as they are
+    else:
+        return flattened_value
 
 
 def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
@@ -764,54 +783,3 @@ class ProfileInfo:
         "checksum",
         "source",
     ]
-
-
-@dataclasses.dataclass
-class ProfileHeaderEntry:
-    """A representation of a single profile header entry.
-
-    :ivar name: the name (key) of the header entry
-    :ivar value: the value of the header entry
-    :ivar description: detailed description of the header entry
-    :ivar details: nested key: value data
-    """
-
-    name: str
-    value: str | float
-    description: str = ""
-    details: dict[str, str | float] = dataclasses.field(default_factory=dict)
-
-    @classmethod
-    def from_string(cls, header: str) -> ProfileHeaderEntry:
-        """Constructs a `ProfileHeaderRecord` object from a string representation.
-
-        :param header: the string representation of a header entry
-
-        :return: the constructed ProfileHeaderRecord object
-        """
-        split = header.split("|")
-        name = split[0]
-        value = common_kit.try_convert(split[1] if len(split) > 1 else "[empty]", [float, str])
-        desc = split[2] if len(split) > 2 else ProfileHeaderEntry.description
-        details: dict[str, str | float] = {}
-        for detail in split[4:]:
-            detail_key, detail_value = detail.split(maxsplit=1)
-            details[detail_key] = common_kit.try_convert(detail_value, [float, str])
-        return cls(name, value, desc, details)
-
-    @classmethod
-    def from_profile(cls, header: dict[str, Any]) -> ProfileHeaderEntry:
-        """Constructs a ProfileHeaderEntry object from a dictionary representation used in Profile.
-
-        :param header: the dictionary representation of a header entry
-
-        :return: the constructed ProfileHeaderEntry object
-        """
-        return cls(**header)
-
-    def as_tuple(self) -> ProfileHeaderTuple:
-        """Converts the header object into a tuple.
-
-        :return: the tuple representation of a header entry
-        """
-        return self.name, self.value, self.description, self.details

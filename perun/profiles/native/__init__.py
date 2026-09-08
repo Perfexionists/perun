@@ -1,7 +1,7 @@
 """A package for Perun-native profile.
 
-Contains queries over profiles, storage and loading of the profile in the filesystem, transforming
-the profiles, and converting profiles to different formats.
+Contains queries over profiles, storage and loading of the profile in the filesystem,
+and transforming the profiles.
 """
 
 import lazy_loader as lazy

@@ -5,49 +5,52 @@ from __future__ import annotations
 # Standard Imports
 import dataclasses
 import difflib
-import os
-from typing import Any, Optional, Iterable, Literal, cast, Union
+from pathlib import Path
+from typing import Any, cast, Iterable, Literal, Optional, TYPE_CHECKING, Union
 
 # Third-Party Imports
 
 # Perun Imports
-from perun.profiles import native as profile
 from perun.logic import config
-from perun.utils import log
+from perun.profiles import native as profile, stats, structs
 from perun.utils.common import common_kit
 from perun.utils.common.common_kit import ColorVariableType
 from perun.utils.structs.diff_structs import HeaderDisplayStyle
 
+if TYPE_CHECKING:
+    from perun.profiles.native import Profile
 
-def save_diff_view(
-    output_file: Optional[str],
-    content: str,
-    output_type: str,
-    lhs_profile: profile.Profile,
-    rhs_profile: profile.Profile,
-) -> str:
-    """Saves the content to the output file; if no output file is stated, then it is automatically
-    generated.
 
-    :param output_file: file, where the content will be stored
-    :param content: content of the output file
-    :param output_type: type of the output
-    :param lhs_profile: baseline profile
-    :param rhs_profile: target profile
-    :return: name of the output file
+def save_diff_view(output_path: Path, content: str) -> None:
+    """Saves the content of a diff view to an output file.
+
+    :param output_path: path to the output file.
+    :param content: the diff view content to save.
     """
-    if output_file is None:
-        lhs_name = os.path.splitext(profile.generate_profile_name(lhs_profile))[0]
-        rhs_name = os.path.splitext(profile.generate_profile_name(rhs_profile))[0]
-        output_file = f"{output_type}-diff-of-{lhs_name}-and-{rhs_name}" + ".html"
+    if output_path.suffix != ".html":
+        output_path = Path(f"{output_path}.html")
 
-    if not output_file.endswith("html"):
-        output_file += ".html"
-
-    with open(output_file, "w", encoding="utf-8") as template_out:
+    with open(output_path, "w", encoding="utf-8") as template_out:
         template_out.write(content)
 
-    return output_file
+
+def generate_output_filepath(
+    output_path: Optional[str], output_type: str, lhs_profile: Profile, rhs_profile: Profile
+) -> Path:
+    """Generates a path to the output file using the baseline and target profiles.
+
+    :param output_path: an optional user-specified output path.
+    :param output_type: type of the output.
+    :param lhs_profile: baseline profile.
+    :param rhs_profile: target profile.
+
+    :return: path to the output file.
+    """
+    if output_path is None:
+        lhs_name = Path(profile.generate_profile_name(lhs_profile)).stem
+        rhs_name = Path(profile.generate_profile_name(rhs_profile)).stem
+        return Path(f"{output_type}-diff-of-{lhs_name}-and-{rhs_name}.html")
+    return Path(output_path)
 
 
 def get_candidate_keys(candidate_keys: Iterable[str]) -> list[str]:
@@ -75,85 +78,10 @@ def get_candidate_keys(candidate_keys: Iterable[str]) -> list[str]:
     return sorted([candidate for candidate in candidate_keys if candidate in allowed_keys])
 
 
-def generate_vulnerabilities(prof: profile.Profile) -> list[profile.ProfileHeaderEntry]:
-    """Generates vulnerabilities from the given profile
-
-    :param prof: profile for which we are generating the specification
-    :return: vulnerabilities as an entry
-    """
-    machine_info = prof.get("machine", {})
-    return [
-        profile.ProfileHeaderEntry(
-            "vulnerabilities",
-            "?" if "cpu_vulnerabilities" not in machine_info else "",
-            "CPU vulnerabilities summary.",
-            machine_info.get("cpu_vulnerabilities", {}),
-        )
-    ]
-
-
-def generate_specification(prof: profile.Profile) -> list[profile.ProfileHeaderEntry]:
-    """Generates profile specification from the given profile
-
-    :param prof: profile for which we are generating the specification
-
-    :return: the profile specification as a list of entries
-    """
-    command = " ".join([prof["header"]["cmd"], prof["header"]["workload"]]).strip()
-    exitcode = format_exit_codes(prof["header"].get("exitcode", "?"))
-    machine_info = prof.get("machine", {})
-    return [
-        profile.ProfileHeaderEntry(
-            "origin",
-            prof.get("origin", "?"),
-            "The version control version, for which the profile was measured.",
-        ),
-        profile.ProfileHeaderEntry(
-            "profile label",
-            prof["header"].get("label", "-"),
-            "A label associated with this profile, if any.",
-        ),
-        profile.ProfileHeaderEntry(
-            "command", command, "The workload / command, for which the profile was measured."
-        ),
-        profile.ProfileHeaderEntry(
-            "exitcode", exitcode, "The exit code that was returned by the underlying command."
-        ),
-        profile.ProfileHeaderEntry(
-            "collector command",
-            log.collector_to_command(prof.get("collector_info", {})),
-            "The collector / profiler, which collected the data.",
-        ),
-        profile.ProfileHeaderEntry(
-            "kernel",
-            machine_info.get("release", "?"),
-            "The underlying kernel version, where the results were measured.",
-        ),
-        profile.ProfileHeaderEntry(
-            "boot info",
-            machine_info.get("boot_info", "?"),
-            "The contents of `/proc/cmdline` containing boot information about kernel",
-        ),
-        profile.ProfileHeaderEntry(
-            "host", machine_info["host"], "The hostname, where the results were measured."
-        ),
-        profile.ProfileHeaderEntry(
-            "cpu (total)",
-            machine_info.get("cpu", {"total": "?"}).get("total", "?"),
-            "The total number (physical and virtual) of CPUs available on the host.",
-        ),
-        profile.ProfileHeaderEntry(
-            "memory (total)",
-            machine_info.get("memory", {"total_ram": "?"}).get("total_ram", "?"),
-            "The total number of RAM available on the host.",
-        ),
-    ]
-
-
 def generate_diff_of_headers(
-    lhs_headers: Iterable[profile.ProfileHeaderEntry],
-    rhs_headers: Iterable[profile.ProfileHeaderEntry],
-) -> tuple[list[profile.ProfileHeaderTuple], list[profile.ProfileHeaderTuple]]:
+    lhs_headers: Iterable[structs.ProfileMetadataEntry],
+    rhs_headers: Iterable[structs.ProfileMetadataEntry],
+) -> tuple[list[structs.ProfileHeaderTuple], list[structs.ProfileHeaderTuple]]:
     """Generates diffed headers for lhs (baseline) and rhs (target) profiles.
 
     Based on the configuration parameter 'display_style', either all or only different header
@@ -200,7 +128,7 @@ def generate_diff_of_headers(
 
 
 def generate_diff_of_stats(
-    lhs_stats: Iterable[profile.ProfileStat], rhs_stats: Iterable[profile.ProfileStat]
+    lhs_stats: Iterable[stats.ProfileStat], rhs_stats: Iterable[stats.ProfileStat]
 ) -> tuple[list[tuple[str, str, str, dict[str, Any]]], list[tuple[str, str, str, dict[str, Any]]]]:
     """Generates the profile stats with HTML diff styles suitable for an output.
 
@@ -211,13 +139,13 @@ def generate_diff_of_stats(
     """
     # Get all the stats that occur in either lhs or rhs and match those that exist in both
     stats_map = common_kit.match_dicts_by_keys(
-        {stats.name: stats for stats in lhs_stats}, {stats.name: stats for stats in rhs_stats}
+        {stat.name: stat for stat in lhs_stats}, {stat.name: stat for stat in rhs_stats}
     )
     # Iterate the stats and format them according to their diffs
     lhs_diff, rhs_diff = [], []
     for stat_key in sorted(stats_map.keys()):
-        lhs_stat: profile.ProfileStat | None
-        rhs_stat: profile.ProfileStat | None
+        lhs_stat: stats.ProfileStat | None
+        rhs_stat: stats.ProfileStat | None
         lhs_stat, rhs_stat = stats_map[stat_key]
         lhs_info, rhs_info = _generate_diff_of_stats_record(lhs_stat, rhs_stat)
         lhs_diff.append(lhs_info)
@@ -226,8 +154,8 @@ def generate_diff_of_stats(
 
 
 def _generate_missing_entry(
-    lhs_data: profile.ProfileHeaderEntry | None, rhs_data: profile.ProfileHeaderEntry | None
-) -> tuple[profile.ProfileHeaderEntry, profile.ProfileHeaderEntry]:
+    lhs_data: structs.ProfileMetadataEntry | None, rhs_data: structs.ProfileMetadataEntry | None
+) -> tuple[structs.ProfileMetadataEntry, structs.ProfileMetadataEntry]:
     """Check if both header entries exist and if not, generate the missing one.
 
     The missing header entry is generated using the values from the existing one.
@@ -243,11 +171,11 @@ def _generate_missing_entry(
         return lhs_data, rhs_data
     if lhs_data is not None:
         # Note: rhs data must be None
-        return lhs_data, profile.ProfileHeaderEntry(lhs_data.name, "-", "missing header info", {})
+        return lhs_data, structs.ProfileMetadataEntry(lhs_data.name, "-", "missing header info", {})
     else:
         # Note: lhs data must be None
         assert rhs_data is not None
-        return profile.ProfileHeaderEntry(rhs_data.name, "-", "missing header info", {}), rhs_data
+        return structs.ProfileMetadataEntry(rhs_data.name, "-", "missing header info", {}), rhs_data
 
 
 def _generate_diff_of_details(
@@ -304,7 +232,7 @@ def _generate_diff_of_values(
 
 
 def _generate_diff_of_stats_record(
-    lhs_stat: profile.ProfileStat | None, rhs_stat: profile.ProfileStat | None
+    lhs_stat: stats.ProfileStat | None, rhs_stat: stats.ProfileStat | None
 ) -> tuple[tuple[str, str, str, dict[str, Any]], tuple[str, str, str, dict[str, Any]]]:
     """Generates a single diffed LHS and RHS profile stats entry.
 
@@ -328,7 +256,7 @@ def _generate_diff_of_stats_record(
 
 
 def _diff_to_html(diff: list[str], start_tag: Literal["+", "-"]) -> str:
-    """Create a html tag with differences for either + or - changes
+    """Create an HTML tag with differences for either + or - changes
 
     :param diff: diff computed by difflib.ndiff
     :param start_tag: starting point of the tag
@@ -346,9 +274,7 @@ def _diff_to_html(diff: list[str], start_tag: Literal["+", "-"]) -> str:
     return " ".join(result)
 
 
-def _stat_description_to_tooltip(
-    description: str, comparison: profile.ProfileStatComparison
-) -> str:
+def _stat_description_to_tooltip(description: str, comparison: stats.ProfileStatComparison) -> str:
     """Transform a stat description into a tooltip by including the comparison type as well.
 
     :param description: the original stat description
@@ -361,7 +287,7 @@ def _stat_description_to_tooltip(
 
 
 def _emphasize(value: str, color: ColorVariableType) -> str:
-    """Emphasize a string with a HTML color.
+    """Emphasize a string with an HTML color.
 
     :param value: the string to emphasize
     :param color: the color to use
@@ -391,11 +317,11 @@ def format_exit_codes(exit_code: str | list[str] | list[int]) -> str:
 
 
 def _color_stat_record_diff(
-    lhs_stat_agg: profile.ProfileStatAggregation,
-    rhs_stat_agg: profile.ProfileStatAggregation,
+    lhs_stat_agg: stats.ProfileStatAggregation,
+    rhs_stat_agg: stats.ProfileStatAggregation,
     stats_unit: str,
     compare_key: str,
-    comparison: profile.ProfileStatComparison,
+    comparison: stats.ProfileStatComparison,
 ) -> tuple[str, str]:
     """Color the stats values on the LHS and RHS according to their difference.
 
@@ -410,17 +336,17 @@ def _color_stat_record_diff(
     :return: colored LHS and RHS stat values
     """
     # Build a color map for different comparison results
-    color_map: dict[profile.StatComparisonResult, tuple[ColorVariableType, ColorVariableType]] = {
-        profile.StatComparisonResult.INVALID: ("wrong", "wrong"),
-        profile.StatComparisonResult.UNEQUAL: ("wrong", "wrong"),
-        profile.StatComparisonResult.EQUAL: ("primary", "primary"),
-        profile.StatComparisonResult.BASELINE_BETTER: ("correct", "wrong"),
-        profile.StatComparisonResult.TARGET_BETTER: ("wrong", "correct"),
+    color_map: dict[stats.StatComparisonResult, tuple[ColorVariableType, ColorVariableType]] = {
+        stats.StatComparisonResult.INVALID: ("wrong", "wrong"),
+        stats.StatComparisonResult.UNEQUAL: ("wrong", "wrong"),
+        stats.StatComparisonResult.EQUAL: ("primary", "primary"),
+        stats.StatComparisonResult.BASELINE_BETTER: ("correct", "wrong"),
+        stats.StatComparisonResult.TARGET_BETTER: ("wrong", "correct"),
     }
     # Compare and color the stat entry
-    comparison_result = profile.compare_stats(lhs_stat_agg, rhs_stat_agg, compare_key, comparison)
+    comparison_result = stats.compare_stats(lhs_stat_agg, rhs_stat_agg, compare_key, comparison)
     baseline_color, target_color = color_map[comparison_result]
-    if comparison_result == profile.StatComparisonResult.INVALID:
+    if comparison_result == stats.StatComparisonResult.INVALID:
         baseline_value, target_value = "invalid comparison", "invalid comparison"
     else:
         baseline_value = _format_stat_value(lhs_stat_agg.as_table(compare_key)[0], stats_unit)
@@ -471,12 +397,12 @@ class _StatsDiffRecord:
     name: str = ""
     value: str = "-"
     tooltip: str = "missing stat info"
-    stat_agg: profile.ProfileStatAggregation | None = None
+    stat_agg: stats.ProfileStatAggregation | None = None
     details: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     @classmethod
     def from_stat(
-        cls, stat: profile.ProfileStat | None, other_stat: profile.ProfileStat | None
+        cls, stat: stats.ProfileStat | None, other_stat: stats.ProfileStat | None
     ) -> _StatsDiffRecord:
         """Construct a difference record from a baseline/target profile stat.
 
@@ -494,7 +420,7 @@ class _StatsDiffRecord:
             unit = f" [{other_stat.unit}]" if other_stat.unit else ""
             return cls(f"{other_stat.name}{unit}")
         # The standard construction
-        stat_agg = profile.aggregate_stats(stat)
+        stat_agg = stats.aggregate_stats(stat)
         unit = f" [{stat.unit}]" if stat.unit else ""
         agg_key = stat_agg.normalize_aggregate_key(stat.aggregate_by)
         name = f"{stat.name}{unit} " f"({agg_key})"
