@@ -41,7 +41,14 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.intersphinx",
     "sphinx_click.ext",
+    "sphinx_autodoc_typehints",
 ]
+
+# Add intersphinx mappings for libraries.
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "pandas": ("https://pandas.pydata.org/docs", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -185,7 +192,12 @@ texinfo_documents = [
     ),
 ]
 
-nitpick_ignore = [("py:class", "ModelRecord"), ("py:class", "pandas.DataFrame")]
+nitpick_ignore = [
+    ("py:class", "perun.utils.structs.common_structs.ModelRecord"),
+    ("py:class", "perun.utils.common.common_kit.Aggregations"),
+    ("py:class", "TempTextIO"),
+    ("py:class", "polars.lazyframe.frame.LazyFrame"),
+]
 
 
 def doctree_read_handler(_, doctree):

@@ -1,4 +1,7 @@
-"""Functions for converting native profiles to Pandas representations."""
+"""Functions for converting native profiles to Pandas representations.
+
+.. _pandas: https://pandas.pydata.org/
+"""
 
 from __future__ import annotations
 

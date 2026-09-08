@@ -11,8 +11,8 @@ from click.testing import CliRunner
 
 # Perun Imports
 from perun import cli
+from perun.profiles import structs
 from perun.profiles.conversions import native_folded
-from perun.profiles.folded import postprocess
 from perun.testing import asserts
 import perun.testing.utils as test_utils
 from perun.view.flamegraph import core
@@ -33,7 +33,7 @@ def test_flame_graph(pcs_with_root, valid_profile_pool):
         pathlib.Path("flame2.svg"),
         "Test flame graph",
         core.FlameGraphSettings(),
-        postprocess.PostprocessParameters(hide_generics=True, squash=True),
+        structs.PostprocessParameters(hide_generics=True, squash=True),
     )
     assert "flame2.svg" in os.listdir(os.getcwd())
 

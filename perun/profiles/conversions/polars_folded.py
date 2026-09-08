@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import TextIO, TYPE_CHECKING
+from typing import TextIO
 
 # Third-Party Imports
 
 # Perun Imports
-
-if TYPE_CHECKING:
-    from perun.profiles.polars import structs
-    from perun.utils.type_hints import TempTextIO
+from perun.profiles.polars import structs
+from perun.utils.type_hints import TempTextIO
 
 
 def store_polars_as_folded_profile(
