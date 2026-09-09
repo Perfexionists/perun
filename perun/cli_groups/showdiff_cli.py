@@ -21,8 +21,8 @@ from perun.utils.structs.diff_structs import (
     DEFAULT_TRACE_THRESHOLD,
     HeaderDisplayStyle,
 )
-from perun.view_diff import flamegraph, short
-from perun.view_diff.report import native, folded
+from perun import view_diff
+from perun.view_diff import report
 
 if TYPE_CHECKING:
     from perun.profiles.native import Profile
@@ -178,7 +178,7 @@ def short_diff(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: Any) ->
 
     Supports only perun-native profiles.
     """
-    short.compare_profiles(*profile_list, **kwargs)
+    view_diff.short.compare_profiles(*profile_list, **kwargs)
 
 
 @showdiff_group.command("flamegraph")
@@ -221,7 +221,7 @@ def flamegraph_diff(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: An
 
     Supports only perun-native profiles.
     """
-    flamegraph.generate_flamegraph_difference(*profile_list, **kwargs)
+    view_diff.flamegraph.generate_flamegraph_difference(*profile_list, **kwargs)
 
 
 @showdiff_group.group("report")
@@ -327,7 +327,7 @@ def report_native(
         perun showdiff report native -m HEAD~1 0@i 1@i
     """
     kwargs.update(ctx.obj)
-    native.generate_report_from_native_profiles(*profile_list, **kwargs)
+    report.native.generate_report_from_native_profiles(*profile_list, **kwargs)
 
 
 @report_group.command("folded")
@@ -507,4 +507,4 @@ def report_folded(ctx: click.Context, baseline: str, target: str, **kwargs: Any)
 
     """
     kwargs.update(ctx.obj)
-    folded.generate_report_from_folded_profiles(baseline, target, **kwargs)
+    report.folded.generate_report_from_folded_profiles(baseline, target, **kwargs)

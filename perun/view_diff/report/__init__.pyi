@@ -1,3 +1,6 @@
+from . import folded as folded
+from . import native as native
+
 from .core import (
     ProfileMisc as ProfileMisc,
     SelectionRow as SelectionRow,
