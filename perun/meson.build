@@ -1,7 +1,6 @@
 perun_files = files(
     'cli.py',
     '__init__.py',
-    '__init__.pyi',
     'py.typed',
 )
 

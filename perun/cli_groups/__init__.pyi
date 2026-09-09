@@ -1,3 +1,12 @@
+from . import check_cli as check_cli
+from . import collect_cli as collect_cli
+from . import config_cli as config_cli
+from . import import_cli as import_cli
+from . import run_cli as run_cli
+from . import shared_options as shared_options
+from . import showdiff_cli as showdiff_cli
+from . import utils_cli as utils_cli
+
 from .check_cli import (
     check_group as check_group,
     check_head as check_head,
