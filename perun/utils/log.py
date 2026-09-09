@@ -17,8 +17,6 @@ import time
 import traceback
 
 # Third-Party Imports
-import numpy as np
-import progressbar
 import termcolor
 
 # Perun Imports
@@ -713,6 +711,8 @@ def aggregate_intervals(
     :return: list of the aggregated partial intervals to print
     """
     # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
+    import numpy as np
+
     intervals = np.array(input_intervals) if isinstance(input_intervals, list) else input_intervals
 
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
@@ -867,6 +867,8 @@ def progress(collection: Iterable[T], description: str = "") -> Iterable[T]:
     :param collection: any iterable
     :param description: tag on the left side of the output of the bar
     """
+    import progressbar
+
     widgets: list[progressbar.widgets.WidgetBase | str] = [
         (description + ": ") if description else "",
         progressbar.Percentage(),
