@@ -25,6 +25,62 @@ if TYPE_CHECKING:
     from types import TracebackType
 
 
+# SVG-escaping patterns.
+# Function patterns.
+_FUNC_PATTERN = re.compile(
+    r"(?<!\w)"
+    r"(apply_hover_highlight|clear_hover_highlights|clearzoom"
+    r"|find_child|find_frames|find_group"
+    r"|get_params|g_to_func|g_to_text"
+    r"|init|is_event_still_in_group|is_hover_highlighted"
+    r"|orig_load|orig_save|parse_params"
+    r"|removeExclusiveView|reset_search_hover|reset_search"
+    r"|restore_frame_after_hover"
+    r"|searchout|searchover|search_hover_show_stats|search_hover"
+    r"|search_prompt|search"
+    r"|toggleExclusive|unzoom|updateExclusiveView|update_text"
+    r"|zoom_child|zoom_parent|zoom_reset|zoom"
+    r"|c|s)\("
+)
+
+# Literal patterns.
+_LITERAL_KEYS = [
+    '"search"',
+    "#search",
+    '"background"',
+    "#background",
+    '"frames"',
+    "#frames",
+    "#excToggle",
+    '"excToggle"',
+    "#unzoom",
+    '"unzoom"',
+    '"matched"',
+    '"matchedhover"',
+    "details",
+    "nameTypeLabel",
+    "inclusiveLabel",
+    "exclusiveLabel",
+    "searchbtn",
+    "unzoombtn",
+    "currentSearchTerm",
+    "hoverSearchTerm",
+    "ignorecase",
+    "searching",
+    "exclusiveMode",
+    "isDiff",
+]
+_LITERAL_PATTERN = re.compile(
+    "|".join(re.escape(k) for k in sorted(_LITERAL_KEYS, key=len, reverse=True))
+)
+
+# Misc patterns.
+_SVG_VAR_PATTERN = re.compile(r"svg(\.| =|,)")
+_WS_PATTERN = re.compile(r">\s*\n<")
+_GET_ELEMENTS_PATTERN = re.compile(r'getElementsByTagName\("svg"\)\[0\]')
+_SVG_TAG_PATTERN = re.compile(r'<svg version="1.1" width="[0-9]+" height="[0-9]+"')
+
+
 @dataclasses.dataclass
 class FlameGraphGrid:
     """A collection of flamegraphs that form a 2x2 grid of baseline, target and their diffs.
@@ -460,96 +516,46 @@ def escape_flamegraph_svg(tag: str, content: str, _tag_to_index: dict[str, int] 
     :return: the escaped content
     """
     tag_index = _tag_to_index.setdefault(tag, len(_tag_to_index))
-    functions = [
-        r"(?<!\w)(c)\(",
-        r"(?<!\w)(get_params)\(",
-        r"(?<!\w)(parse_params)\(",
-        r"(?<!\w)(find_child)\(",
-        r"(?<!\w)(find_group)\(",
-        r"(?<!\w)(g_to_func)\(",
-        r"(?<!\w)(g_to_text)\(",
-        r"(?<!\w)(init)\(",
-        r"(?<!\w)(orig_load)\(",
-        r"(?<!\w)(orig_save)\(",
-        r"(?<!\w)(reset_search)\(",
-        r"(?<!\w)(reset_search_hover)\(",
-        r"(?<!\w)(s)\(",
-        r"(?<!\w)(search)\(",
-        r"(?<!\w)(search_hover)\(",
-        r"(?<!\w)(search_prompt)\(",
-        r"(?<!\w)(find_frames)\(",
-        r"(?<!\w)(searchout)\(",
-        r"(?<!\w)(searchover)\(",
-        r"(?<!\w)(clearzoom)\(",
-        r"(?<!\w)(unzoom)\(",
-        r"(?<!\w)(update_text)\(",
-        r"(?<!\w)(zoom)\(",
-        r"(?<!\w)(zoom_child)\(",
-        r"(?<!\w)(zoom_parent)\(",
-        r"(?<!\w)(zoom_reset)\(",
-        r"(?<!\w)(toggleExclusive)\(",
-        r"(?<!\w)(removeExclusiveView)\(",
-        r"(?<!\w)(updateExclusiveView)\(",
-        r"(?<!\w)(is_event_still_in_group)\(",
-        r"(?<!\w)(is_hover_highlighted)\(",
-        r"(?<!\w)(restore_frame_after_hover)\(",
-        r"(?<!\w)(clear_hover_highlights)\(",
-        r"(?<!\w)(apply_hover_highlight)\(",
-        r"(?<!\w)(search_hover_show_stats)\(",
-    ]
-    other = [
-        (r"\"search\"", f'"{tag}_search"'),
-        (r"#search", f"#{tag}_search"),
-        (r"\"background\"", f'"{tag}_background"'),
-        (r"#background", f"#{tag}_background"),
-        (r"\"frames\"", f'"{tag}_frames"'),
-        (r"#frames", f"#{tag}_frames"),
-        (r"#excToggle", f"#{tag}_excToggle"),
-        (r"\"excToggle\"", f'"{tag}_excToggle"'),
-        (r"#unzoom", f"#{tag}_unzoom"),
-        (r"\"unzoom\"", f'"{tag}_unzoom"'),
-        (r"\"matched\"", f'"{tag}_matched"'),
-        (r"\"matchedhover\"", f'"{tag}_matchedhover"'),
-        (r"details", f"{tag}_details"),
-        (r"nameTypeLabel", f"{tag}_nameTypeLabel"),
-        (r"inclusiveLabel", f"{tag}_inclusiveLabel"),
-        (r"exclusiveLabel", f"{tag}_exclusiveLabel"),
-        (r"matched", f"{tag}_matched"),
-        (r"searchbtn", f"{tag}_searchbtn"),
-        (r"unzoombtn", f"{tag}_unzoombtn"),
-        (r"currentSearchTerm", f"{tag}_currentSearchTerm"),
-        (r"hoverSearchTerm", f"{tag}_hoverSearchTerm"),
-        (r"ignorecase", f"{tag}_ignorecase"),
-        (r"ignorecaseBtn", f"{tag}_ignorecaseBtn"),
-        (r"searching", f"{tag}_searching"),
-        (r"matchedtxt", f"{tag}_matchedtxt"),
-        (r"matchedHoverTxt", f"{tag}_matchedHoverTxt"),
-        (r"exclusiveMode", f"{tag}_exclusiveMode"),
-        (r"isDiff", f"{tag}_isDiff"),
-        (r"svg\.", f"{tag}_svg."),
-        (r"svg =", f"{tag}_svg ="),
-        (r"svg,", f"{tag}_svg,"),
-        (r">\s*\n<", r"><"),
-        (
-            r"getElementsByTagName\(\"svg\"\)\[0\]",
-            f'getElementsByClassName("svg-content")[{tag_index}]',
-        ),
-        (r"document.", f"{tag}_svg."),
-        (f"{tag}_svg.createElementNS", "document.createElementNS"),
-        (
-            f"({tag}_(svg|details|detailsName|detailsIncl|detailsExcl|matchedHoverCount|matchedHoverIncl|matchedHoverExcl|matchedSearchCount|matchedSearchIncl|matchedSearchExcl|nameTypeLabel|inclusiveLabel|exclusiveLabel|matchedHoverLabel|matchedSearchLabel|searchbtn|matchedtxt|matchedHoverTxt|ignorecaseBtn|unzoombtn)) = {tag}_svg.",
-            "\\1 = document.",
-        ),
-        # Huge thanks to following article:
-        # https://chartio.com/resources/tutorials/how-to-resize-an-svg-when-the-window-is-resized-in-d3-js/
-        # Which helped to solve the issue with non-resizable flamegraphs
-        (
-            '<svg version="1.1" width="[0-9]+" height="[0-9]+"',
-            '<svg version="1.1" preserveAspectRatio="xMinYMin meet" class="svg-content"',
-        ),
-    ]
-    for func in functions:
-        content = re.sub(func, f"{tag}_\\1(", content)
-    for unit, sub in other:
-        content = re.sub(unit, sub, content)
+
+    content = _FUNC_PATTERN.sub(rf"{tag}_\1(", content)
+
+    def _literal_repl(m: re.Match[str]) -> str:
+        s = m.group(0)
+        if s[0] == '"':
+            return f'"{tag}_' + s[1:]
+        if s[0] == "#":
+            return f"#{tag}_" + s[1:]
+        return f"{tag}_" + s
+
+    content = _LITERAL_PATTERN.sub(_literal_repl, content)
+
+    content = re.sub(r"matched", f"{tag}_matched", content)
+
+    content = _SVG_VAR_PATTERN.sub(rf"{tag}_svg\1", content)
+    content = _WS_PATTERN.sub("><", content)
+    content = _GET_ELEMENTS_PATTERN.sub(
+        f'getElementsByClassName("svg-content")[{tag_index}]', content
+    )
+
+    # Replace 'document.' references, then revert specific cases.
+    content = re.sub(r"document.", f"{tag}_svg.", content)
+    content = content.replace(f"{tag}_svg.createElementNS", "document.createElementNS")
+    content = re.sub(
+        f"({tag}_(svg|details|detailsName|detailsIncl|detailsExcl"
+        f"|matchedHoverCount|matchedHoverIncl|matchedHoverExcl"
+        f"|matchedSearchCount|matchedSearchIncl|matchedSearchExcl"
+        f"|nameTypeLabel|inclusiveLabel|exclusiveLabel"
+        f"|matchedHoverLabel|matchedSearchLabel"
+        f"|searchbtn|matchedtxt|matchedHoverTxt"
+        f"|ignorecaseBtn|unzoombtn)) = {tag}_svg.",
+        r"\1 = document.",
+        content,
+    )
+    # Huge thanks to following article:
+    # https://chartio.com/resources/tutorials/how-to-resize-an-svg-when-the-window-is-resized-in-d3-js/
+    # Which helped to solve the issue with non-resizable flamegraphs
+    content = _SVG_TAG_PATTERN.sub(
+        '<svg version="1.1" preserveAspectRatio="xMinYMin meet" class="svg-content"',
+        content,
+    )
     return content
