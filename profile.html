@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun’s Profile Format &#8212; Perun 0.27.4 documentation</title>
+    <title>Perun’s Profile Format &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -57,12 +57,12 @@ for list of visualization techniques).</p>
 <span id="profile-spec"></span><h2>Specification of Profile Format<a class="headerlink" href="#specification-of-profile-format" title="Link to this heading">¶</a></h2>
 <p>The generic scheme of the format can be simplified in the following regions.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">    </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">    </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">    </span><span class="nt">&quot;snapshots&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">    </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">"snapshots"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">"chunks"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -77,7 +77,7 @@ present in non-assigned profiles. In the following we will decribe the regions i
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;f7f3dcea69b97f2b03c421a223a770917149cfae&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"f7f3dcea69b97f2b03c421a223a770917149cfae"</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -94,14 +94,14 @@ thus links the resources to the changes of this commit.</p>
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s&quot;</span>
+<span class="w">    </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"s"</span>
 <span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;perun&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;--short&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"perun"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="s2">"status"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">"--short"</span><span class="p">,</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -166,27 +166,27 @@ optional, can be empty string.</p>
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;complexity&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"complexity"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                </span><span class="p">{</span>
-<span class="w">                    </span><span class="nt">&quot;func&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;sample&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                    </span><span class="nt">"func"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"sample"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">                </span><span class="p">},</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;internal_direct_output&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;internal_storage_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20000</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;files&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;../example_sources/simple_sll_cpp/main.cpp&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;../example_sources/simple_sll_cpp/SLList.h&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;../example_sources/simple_sll_cpp/SLListcls.h&quot;</span>
+<span class="w">            </span><span class="nt">"internal_direct_output"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"internal_storage_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">20000</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">"../example_sources/simple_sll_cpp/main.cpp"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"../example_sources/simple_sll_cpp/SLList.h"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"../example_sources/simple_sll_cpp/SLListcls.h"</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;target_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./target&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;rules&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;SLList_init&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;SLList_search&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"target_dir"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./target"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"rules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">"SLList_init"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"SLList_search"</span><span class="p">,</span>
 <span class="w">            </span><span class="p">]</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">    </span><span class="p">}</span>
@@ -220,15 +220,15 @@ function specified by <cite>rules</cite> w.r.t specified <cite>sampling</cite>.<
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;regression_analysis&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                    </span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="s2">&quot;quadratic&quot;</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"regression_analysis"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                    </span><span class="s2">"constant"</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">"linear"</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">"quadratic"</span>
 <span class="w">                </span><span class="p">]</span>
 <span class="w">            </span><span class="p">},</span>
 <span class="w">        </span><span class="p">}</span>
@@ -248,53 +248,53 @@ using full <cite>method</cite> fully computed models for constant, linear and qu
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;snapshots&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"snapshots"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.025000&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.025000"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                </span><span class="p">{</span>
-<span class="w">                    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;malloc&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">19284560</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"malloc"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"address"</span><span class="p">:</span><span class="w"> </span><span class="mi">19284560</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"trace"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                        </span><span class="p">{</span>
-<span class="w">                            </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
+<span class="w">                            </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span><span class="p">,</span>
+<span class="w">                            </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">                            </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
 <span class="w">                        </span><span class="p">},</span>
 <span class="w">                    </span><span class="p">],</span>
-<span class="w">                    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
+<span class="w">                    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
 <span class="w">                    </span><span class="p">}</span>
 <span class="w">                </span><span class="p">},</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">            </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">        </span><span class="p">},</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.050000&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.050000"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                </span><span class="p">{</span>
-<span class="w">                    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;free&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">19284560</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"free"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"address"</span><span class="p">:</span><span class="w"> </span><span class="mi">19284560</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"trace"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">                        </span><span class="p">{</span>
-<span class="w">                            </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
+<span class="w">                            </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span><span class="p">,</span>
+<span class="w">                            </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">                            </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
 <span class="w">                        </span><span class="p">},</span>
 <span class="w">                    </span><span class="p">],</span>
-<span class="w">                    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">                        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
+<span class="w">                    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">                        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
 <span class="w">                    </span><span class="p">}</span>
 <span class="w">                </span><span class="p">},</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">            </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
@@ -326,20 +326,20 @@ The first snapshot contains one resources corresponding ot <cite>4B</cite> of me
 function <cite>main</cite> on line <cite>22</cite> in <cite>memory_collect_test.c</cite> file. The other snapshots contains record
 of deallocation of the given resource by <cite>free</cite>.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.59</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sys&quot;</span>
+<span class="w">    </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.59</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sys"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>These resources were collected by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>, where <cite>amount</cite> specifies the sys time of
 the profile application (as obtained by <code class="docutils literal notranslate"><span class="pre">time</span></code> utility).</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_init(SLList*)&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_init(SLList*)"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -353,22 +353,22 @@ given by <cite>structure-unit-size</cite>. Note that these resources are suitabl
 <dd></dd></dl>
 
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0017560012128507133</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0017560012128507133</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.505375215875552</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+<span class="w">            </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.505375215875552</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.935159839322705e-06</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+<span class="w">            </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">9.935159839322705e-06</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;x_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">11892</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">11892</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"linear"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -388,39 +388,31 @@ identifiers to a larger portions of <a class="reference external" href="https://
 the profile (e.g. the <cite>traces</cite> in <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>), replacing such regions with reference
 to the look-up table should greatly reduce the size of profiles.</p>
 </section>
-<section id="module-perun.profile.helpers">
-<span id="id1"></span><span id="profile-api"></span><h2>Profile API<a class="headerlink" href="#module-perun.profile.helpers" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">perun.profile.factory</span></code> specifies collective interface for basic
-manipulation with profiles.</p>
-<p>The format of profiles is w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>. This module contains
-helper functions for loading and storing of the profiles either in the
-persistent memory or in filesystem (in this case, the profile is in
-uncompressed format).</p>
-<p>For further manipulations refer either to <a class="reference internal" href="#profile-conversion-api"><span class="std std-ref">Profile Conversions API</span></a>
-(implemented in <code class="docutils literal notranslate"><span class="pre">perun.profile.convert</span></code> module) or <a class="reference internal" href="#profile-query-api"><span class="std std-ref">Profile Query API</span></a>
-(implemented in <code class="docutils literal notranslate"><span class="pre">perun.profile.query</span> <span class="pre">module</span></code>). For full specification how to
-handle the JSON objects in Python refer to <a class="reference external" href="https://docs.python.org/3.7/library/json.html">Python JSON library</a>.</p>
-<p id="module-perun.profile.factory">Profile factory optimizes the previous profile format</p>
+<section id="module-perun.profiles.native.helpers">
+<span id="id1"></span><span id="profile-api"></span><h2>Profile API<a class="headerlink" href="#module-perun.profiles.native.helpers" title="Link to this heading">¶</a></h2>
+<p>This module contains helper functions for loading and storing of native profiles.</p>
+<p>For full specification how to handle the JSON objects in Python refer to <a class="reference external" href="https://docs.python.org/3.7/library/json.html">Python JSON library</a>.</p>
+<p id="module-perun.profiles.native.factory">Profile factory optimizes the previous profile format</p>
 <p>In particular, in the new format we propose to merge some regions into
 so-called resource types, which are dictionaries of persistent less
 frequently changed aspects of resources. Moreover, we optimize other
 regions and flatten the format.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="perun.profile.factory.Profile">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profile.factory.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profile/factory.html#Profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.factory.Profile" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.factory.Profile">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profiles.native.factory.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/factory.html#Profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.factory.Profile" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>_storage</strong> – internal storage of the profile</p></li>
-<li><p><strong>_tuple_to_resource_type_map</strong> – map of tuple of persistent records of resources to
+<li><p><strong>_storage</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – internal storage of the profile</p></li>
+<li><p><strong>_tuple_to_resource_type_map</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – map of tuple of persistent records of resources to
 unique identifier of those resources</p></li>
-<li><p><strong>_uid_counter</strong> – counter of how many resources type uid has</p></li>
+<li><p><strong>_uid_counter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.Counter" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – counter of how many resources type uid has</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="perun.profile.factory.Profile.all_filtered_models">
-<span class="sig-name descname"><span class="pre">all_filtered_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models_strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ModelRecord</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/factory.html#Profile.all_filtered_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.factory.Profile.all_filtered_models" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.factory.Profile.all_filtered_models">
+<span class="sig-name descname"><span class="pre">all_filtered_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models_strategy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/factory.html#Profile.all_filtered_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.factory.Profile.all_filtered_models" title="Link to this definition">¶</a></dt>
 <dd><p>The function obtains models according to the given strategy.</p>
 <p>This function according to the given strategy and group derived from it
 obtains the models from the current profile. The function creates the
@@ -428,17 +420,20 @@ relevant dictionary with required models or calls the responded functions,
 that returns the models according to the specifications.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>models_strategy</strong> – name of detection models strategy to obtains relevant models</p>
+<dd class="field-odd"><p><strong>models_strategy</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of detection models strategy to obtains relevant models</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>required models</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ModelRecord</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>required models</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="perun.profile.factory.Profile.all_models">
-<span class="sig-name descname"><span class="pre">all_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'model'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/factory.html#Profile.all_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.factory.Profile.all_models" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.factory.Profile.all_models">
+<span class="sig-name descname"><span class="pre">all_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/factory.html#Profile.all_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.factory.Profile.all_models" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of all ‘models’ records from the performance profile w.r.t.
 <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p>
 <p>Form a profile, postprocessed by e.g. <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>
@@ -448,23 +443,26 @@ to <a class="reference internal" href="#perfkey-models"><em class="xref std std-
 models as follows:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gen</span> <span class="o">=</span> <span class="n">complexity_prof</span><span class="o">.</span><span class="n">all_models</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gen</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
-<span class="go">(0, {&#39;x_start&#39;: 0, &#39;model&#39;: &#39;constant&#39;, &#39;method&#39;: &#39;full&#39;,</span>
-<span class="go">&#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.5644496762801648}, {&#39;name&#39;: &#39;b1&#39;,</span>
-<span class="go">&#39;value&#39;: 0.0}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;, &#39;r_square&#39;: 0.0,</span>
-<span class="go">&#39;x_end&#39;: 11892})</span>
+<span class="go">(0, {'x_start': 0, 'model': 'constant', 'method': 'full',</span>
+<span class="go">'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',</span>
+<span class="go">'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,</span>
+<span class="go">'x_end': 11892})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gen</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
-<span class="go">(1, {&#39;x_start&#39;: 0, &#39;model&#39;: &#39;exponential&#39;, &#39;method&#39;: &#39;full&#39;,</span>
-<span class="go">&#39;coeffs&#39;: [{&#39;name&#39;: &#39;b0&#39;, &#39;value&#39;: 0.9909792049684152}, {&#39;name&#39;: &#39;b1&#39;,</span>
-<span class="go">&#39;value&#39;: 1.000004056250301}], &#39;uid&#39;: &#39;SLList_insert(SLList*, int)&#39;,</span>
-<span class="go">&#39;r_square&#39;: 0.007076437903106431, &#39;x_end&#39;: 11892})</span>
+<span class="go">(1, {'x_start': 0, 'model': 'exponential', 'method': 'full',</span>
+<span class="go">'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',</span>
+<span class="go">'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',</span>
+<span class="go">'r_square': 0.007076437903106431, 'x_end': 11892})</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>group</strong> – the kind of requested models to return</p>
+<dd class="field-odd"><p><strong>group</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the kind of requested models to return</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of <code class="docutils literal notranslate"><span class="pre">(int,</span> <span class="pre">dict)</span></code> pairs, where first yields the
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of <code class="docutils literal notranslate"><span class="pre">(int,</span> <span class="pre">dict)</span></code> pairs, where first yields the
 positional number of model and latter correponds to one ‘models’
 record (for more details about models refer to <a class="reference internal" href="#perfkey-models"><em class="xref std std-pkey">models</em></a> or
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>)</p>
@@ -473,8 +471,8 @@ record (for more details about models refer to <a class="reference internal" hre
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="perun.profile.factory.Profile.all_resources">
-<span class="sig-name descname"><span class="pre">all_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flatten_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/factory.html#Profile.all_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.factory.Profile.all_resources" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.factory.Profile.all_resources">
+<span class="sig-name descname"><span class="pre">all_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flatten_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/factory.html#Profile.all_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.factory.Profile.all_resources" title="Link to this definition">¶</a></dt>
 <dd><p>Generator for iterating through all the resources contained in the
 performance profile.</p>
 <p>Generator iterates through all the snapshots, and subsequently yields
@@ -483,11 +481,14 @@ refer to <a class="reference internal" href="#perfkey-resources"><em class="xref
 contain nested dictionaries (e.g. for <cite>traces</cite> or <cite>uids</cite>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>flatten_values</strong> – if set to true, then the persistent values will
+<dd class="field-odd"><p><strong>flatten_values</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if set to true, then the persistent values will
 be flattened to one level.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of resources represented as pair <code class="docutils literal notranslate"><span class="pre">(int,</span> <span class="pre">dict)</span></code>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of resources represented as pair <code class="docutils literal notranslate"><span class="pre">(int,</span> <span class="pre">dict)</span></code>
 of snapshot number and the resources w.r.t. the specification of the
 <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a></p>
 </dd>
@@ -495,14 +496,17 @@ of snapshot number and the resources w.r.t. the specification of the
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="perun.profile.factory.Profile.all_snapshots">
-<span class="sig-name descname"><span class="pre">all_snapshots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/factory.html#Profile.all_snapshots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.factory.Profile.all_snapshots" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.factory.Profile.all_snapshots">
+<span class="sig-name descname"><span class="pre">all_snapshots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/factory.html#Profile.all_snapshots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.factory.Profile.all_snapshots" title="Link to this definition">¶</a></dt>
 <dd><p>Iterates through all the snapshots in resources</p>
 <p>Note this is required e.g. for heap map, which needs to group the resources by
 snapshots.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable of snapshot numbers and snapshot resources</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]]]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>iterable of snapshot numbers and snapshot resources</p>
 </dd>
 </dl>
 </dd></dl>
@@ -510,21 +514,89 @@ snapshots.</p>
 </dd></dl>
 
 </section>
-<section id="module-perun.profile.convert">
-<span id="profile-conversions-api"></span><span id="profile-conversion-api"></span><h2>Profile Conversions API<a class="headerlink" href="#module-perun.profile.convert" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">perun.profile.convert</span></code> is a module which specifies interface for
-conversion of profiles from <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> to other formats.</p>
-<p>Run the following in the Python interpreter to extend the capabilities of
-Python to different formats of profiles:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">perun.profile.convert</span>
+<section id="module-perun.profiles.conversions.elk_native">
+<span id="profile-conversions-api"></span><span id="profile-conversion-api"></span><h2>Profile Conversions API<a class="headerlink" href="#module-perun.profiles.conversions.elk_native" title="Link to this heading">¶</a></h2>
+<p>Functions for importing ELK profiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.elk_native.import_elk_from_json">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.elk_native.</span></span><span class="sig-name descname"><span class="pre">import_elk_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.profiles.conversions.elk_native.import_elk_from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Inner wrapper of the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.folded_polars">Functions for converting folded profiles into Polars profiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.folded_polars.folded_profiles_to_polars_lf">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.folded_polars.</span></span><span class="sig-name descname"><span class="pre">folded_profiles_to_polars_lf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folded_profiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">postprocess_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/folded_polars.html#folded_profiles_to_polars_lf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.folded_polars.folded_profiles_to_polars_lf" title="Link to this definition">¶</a></dt>
+<dd><p>Load folded profile(s) into a Polars LazyFrame according to the parse parameters.</p>
+<p>If multiple folded profiles are given, we aggregate them into a single LazyFrame according to
+the aggregation function specified in the parse parameters.</p>
+<p>Note that the returned profile features contain only those features that can be computed
+cheaply during the parsing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folded_profiles</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span>) – possibly a collection of folded profile paths</p></li>
+<li><p><strong>postprocess_params</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.structs.PostprocessParameters" title="perun.profiles.structs.PostprocessParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostprocessParameters</span></code></a></span>) – parsing parameters and configuration</p></li>
+<li><p><strong>maps</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.polars.structs.FunctionMaps" title="perun.profiles.polars.structs.FunctionMaps"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMaps</span></code></a></span>) – function maps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">LazyFrame</span></code>, <a class="reference internal" href="#perun.profiles.structs.ProfileFeatures" title="perun.profiles.structs.ProfileFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProfileFeatures</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a (possibly aggregated) LazyFrame and incomplete profile features</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.native_folded">Functions for converting native profiles to folded profiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.native_folded.native_to_folded">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.native_folded.</span></span><span class="sig-name descname"><span class="pre">native_to_folded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'amount'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Aggregations.MEDIAN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/native_folded.html#native_to_folded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.native_folded.native_to_folded" title="Link to this definition">¶</a></dt>
+<dd><p>Transforms the <strong>memory</strong> or <strong>time</strong> profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> into the
+folded format used, e.g., by flame graph scripts.</p>
+<p><a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> can be used to visualize the inclusive consumption
+of resources w.r.t. the call trace of the resource. It is useful for fast
+detection, which point at the trace is the hotspot (or bottleneck) in the
+computation. Refer to <a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> for full capabilities of our
+Wrapper. For more information about flame graphs itself, please check
+<a class="reference external" href="https://www.brendangregg.com/index.html">Brendan Gregg’s homepage</a>.</p>
+<p>Example of format is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">native_to_folded</span><span class="p">(</span><span class="n">memprof</span><span class="p">)))</span>
+<span class="go">malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4</span>
+<span class="go">valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8</span>
+<span class="go">main()~/home/user/dev/test02.c~79 156</span>
 </pre></div>
 </div>
-<p>Combined with <code class="docutils literal notranslate"><span class="pre">perun.profile.factory</span></code>, <code class="docutils literal notranslate"><span class="pre">perun.profile.query</span></code> and e.g.
-<a class="reference external" href="https://pandas.pydata.org/">pandas</a> library one can obtain efficient interpreter for executing more
-complex queries and statistical tests over the profiles.</p>
+<p>Each line corresponds to some collected resource (in this case amount of
+allocated memory) preceded by its trace (i.e. functions or other unique
+identifiers joined using <code class="docutils literal notranslate"><span class="pre">;</span></code> character).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – the memory/time profile</p></li>
+<li><p><strong>profile_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the key under which the measured consumption is stored</p></li>
+<li><p><strong>agg_func</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Aggregations</span></code></span>) – an aggregation to use when multiple measurements are present in time profiles</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an iterator over folded profile records of (stack_trace, consumption)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.native_pandas">Functions for converting native profiles to Pandas representations.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.convert.resources_to_pandas_dataframe">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.convert.</span></span><span class="sig-name descname"><span class="pre">resources_to_pandas_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#perun.profile.factory.Profile" title="perun.profile.factory.Profile"><span class="pre">Profile</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/perun/profile/convert.html#resources_to_pandas_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.convert.resources_to_pandas_dataframe" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.conversions.native_pandas.resources_to_pandas_dataframe">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.native_pandas.</span></span><span class="sig-name descname"><span class="pre">resources_to_pandas_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/native_pandas.html#resources_to_pandas_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.native_pandas.resources_to_pandas_dataframe" title="Link to this definition">¶</a></dt>
 <dd><p>Converts the profile (w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>) to format supported by
 <a class="reference external" href="https://pandas.pydata.org/">pandas</a> library.</p>
 <p>Queries through the resources in the <cite>profile</cite>, and flattens each
@@ -551,86 +623,139 @@ respectively, one can obtain the following formats:</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>profile</strong> – dictionary with profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
+<dd class="field-odd"><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – dictionary with profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>converted profile to <code class="docutils literal notranslate"><span class="pre">pandas.DataFramelist</span></code> with resources
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>converted profile to <code class="docutils literal notranslate"><span class="pre">pandas.DataFramelist</span></code> with resources
 flattened as a pandas dataframe</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.convert.to_flame_graph_format">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.convert.</span></span><span class="sig-name descname"><span class="pre">to_flame_graph_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#perun.profile.factory.Profile" title="perun.profile.factory.Profile"><span class="pre">Profile</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'amount'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squash_unknown</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/convert.html#to_flame_graph_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.convert.to_flame_graph_format" title="Link to this definition">¶</a></dt>
-<dd><p>Transforms the <strong>memory</strong> profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> into the
-format supported by perl script of Brendan Gregg.</p>
-<p><a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> can be used to visualize the inclusive consumption
-of resources w.r.t. the call trace of the resource. It is useful for fast
-detection, which point at the trace is the hotspot (or bottleneck) in the
-computation. Refer to <a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> for full capabilities of our
-Wrapper. For more information about flame graphs itself, please check
-<a class="reference external" href="https://www.brendangregg.com/index.html">Brendan Gregg’s homepage</a>.</p>
-<p>Example of format is as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="n">to_flame_graph_format</span><span class="p">(</span><span class="n">memprof</span><span class="p">)))</span>
-<span class="go">malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4</span>
-<span class="go">valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8</span>
-<span class="go">main()~/home/user/dev/test02.c~79 156</span>
-</pre></div>
-</div>
-<p>Each line corresponds to some collected resource (in this case amount of
-allocated memory) preceeded by its trace (i.e. functions or other unique
-identifiers joined using <code class="docutils literal notranslate"><span class="pre">;</span></code> character).</p>
+<dt class="sig sig-object py" id="perun.profiles.conversions.native_pandas.models_to_pandas_dataframe">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.native_pandas.</span></span><span class="sig-name descname"><span class="pre">models_to_pandas_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/native_pandas.html#models_to_pandas_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.native_pandas.models_to_pandas_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the models of profile (w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>) to format
+supported by <a class="reference external" href="https://pandas.pydata.org/">pandas</a> library.</p>
+<p>Queries through all the models in the <cite>profile</cite>, and flattens each
+key and value to the tabular representation. Refer to <a class="reference external" href="https://pandas.pydata.org/">pandas</a> library for
+more possibilities how to work with the tabular representation of models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – dictionary with profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>converted models of profile to <code class="docutils literal notranslate"><span class="pre">pandas.DataFramelist</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.native_polars">Functions for converting native profiles to Polars representations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.native_polars.native_to_polars_lf">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.native_polars.</span></span><span class="sig-name descname"><span class="pre">native_to_polars_lf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">native_profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">postprocess_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/native_polars.html#native_to_polars_lf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.native_polars.native_to_polars_lf" title="Link to this definition">¶</a></dt>
+<dd><p>Load and postprocess a Perun profile into a Polars LazyFrame.</p>
+<p>The resource consumption for each UID are aggregated into a single value according to the
+aggregation function specified in the postprocessing parameters.</p>
+<p>Note that the returned profile features contain only those features that can be computed
+cheaply during the parsing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>profile</strong> – the memory profile</p></li>
-<li><p><strong>profile_key</strong> – key that is used to obtain the data</p></li>
-<li><p><strong>minimize</strong> – minimizes the uids</p></li>
-<li><p><strong>squash_unknown</strong> – whether recursive [unknown] frames should be squashed into a single one</p></li>
+<li><p><strong>native_profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – the Perun profile to convert to Polars</p></li>
+<li><p><strong>postprocess_params</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.structs.PostprocessParameters" title="perun.profiles.structs.PostprocessParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostprocessParameters</span></code></a></span>) – postprocessing parameters and configuration</p></li>
+<li><p><strong>maps</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.polars.structs.FunctionMaps" title="perun.profiles.polars.structs.FunctionMaps"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMaps</span></code></a></span>) – function maps</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of lines, each representing one allocation call stack</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">LazyFrame</span></code>, <a class="reference internal" href="#perun.profiles.structs.ProfileFeatures" title="perun.profiles.structs.ProfileFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProfileFeatures</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a LazyFrame and incomplete profile features structure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.perf_native">Functions for importing Perf profiles as native profiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.perf_native.import_perf_from_record">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.perf_native.</span></span><span class="sig-name descname"><span class="pre">import_perf_from_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.profiles.conversions.perf_native.import_perf_from_record" title="Link to this definition">¶</a></dt>
+<dd><p>Inner wrapper of the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.convert.plot_data_from_coefficients_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.convert.</span></span><span class="sig-name descname"><span class="pre">plot_data_from_coefficients_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/convert.html#plot_data_from_coefficients_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.convert.plot_data_from_coefficients_of" title="Link to this definition">¶</a></dt>
-<dd><p>Transform coefficients computed by
-<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> into dictionary of points,
-plotable as a function or curve. This function serves as a public wrapper
-over regression analysis transformation function.</p>
+<dt class="sig sig-object py" id="perun.profiles.conversions.perf_native.import_perf_from_script">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.perf_native.</span></span><span class="sig-name descname"><span class="pre">import_perf_from_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.profiles.conversions.perf_native.import_perf_from_script" title="Link to this definition">¶</a></dt>
+<dd><p>Inner wrapper of the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.perf_native.import_perf_from_stack">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.perf_native.</span></span><span class="sig-name descname"><span class="pre">import_perf_from_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.profiles.conversions.perf_native.import_perf_from_stack" title="Link to this definition">¶</a></dt>
+<dd><p>Inner wrapper of the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.conversions.polars_folded">Functions for converting Polars profiles to folded profiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="perun.profiles.conversions.polars_folded.store_polars_as_folded_profile">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.conversions.polars_folded.</span></span><span class="sig-name descname"><span class="pre">store_polars_as_folded_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace_profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folded_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_width_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/conversions/polars_folded.html#store_polars_as_folded_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.conversions.polars_folded.store_polars_as_folded_profile" title="Link to this definition">¶</a></dt>
+<dd><p>Store a Polars trace profile into a folded profile.</p>
+<p>As a by-product, we also compute the maximum length of traces that will be rendered in
+flamegraphs of this profile given the input width threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model</strong> – the models dictionary from profile (refer to
-<a class="reference internal" href="#perfkey-models"><em class="xref std std-pkey">models</em></a>)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trace_profile</strong> (<span class="sphinx_autodoc_typehints-type">structs.PolarsTraceProfile</span>) – a Polars trace profile</p></li>
+<li><p><strong>folded_file</strong> (<span class="sphinx_autodoc_typehints-type">TextIO | TempTextIO</span>) – a handle to the output file</p></li>
+<li><p><strong>min_width_threshold</strong> (<span class="sphinx_autodoc_typehints-type">float</span>) – the rendering threshold for flamegraphs</p></li>
+</ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>updated models dictionary extended with <cite>plot_x</cite> and
-<cite>plot_y</cite> lists</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type">int</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the maximum trace length w.r.t. the filtering threshold</p>
 </dd>
 </dl>
 </dd></dl>
 
 </section>
-<section id="module-perun.profile.query">
-<span id="id2"></span><span id="profile-query-api"></span><h2>Profile Query API<a class="headerlink" href="#module-perun.profile.query" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">perun.profile.query</span></code> is a module which specifies interface for issuing
+<section id="module-perun.profiles.native.query">
+<span id="id2"></span><span id="profile-query-api"></span><h2>Profile Query API<a class="headerlink" href="#module-perun.profiles.native.query" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">perun.profiles.native.query</span></code> is a module which specifies interface for issuing
 queries over the profiles w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p>
 <p>Run the following in the Python interpreter to extend the capabilities of
 profile to query over profiles, iterate over resources or models, etc.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">perun.profile.query</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">perun.profiles.native.query</span>
 </pre></div>
 </div>
-<p>Combined with <code class="docutils literal notranslate"><span class="pre">perun.profile.factory</span></code>, <code class="docutils literal notranslate"><span class="pre">perun.profile.convert</span></code> and e.g.
+<p>Combined with <code class="docutils literal notranslate"><span class="pre">perun.profiles.native.factory</span></code>, <code class="docutils literal notranslate"><span class="pre">perun.profile.conversions</span></code> and e.g.
 <a class="reference external" href="https://docs.python.org/3.7/library/json.html">Pandas library</a> one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.query.all_items_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.query.</span></span><span class="sig-name descname"><span class="pre">all_items_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/query.html#all_items_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.query.all_items_of" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.query.all_items_of">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.native.query.</span></span><span class="sig-name descname"><span class="pre">all_items_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/query.html#all_items_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.query.all_items_of" title="Link to this definition">¶</a></dt>
 <dd><p>Generator for iterating through the flattened items contained
 inside the resource w.r.t <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a> specification.</p>
 <p>Generator iterates through the items contained in the <cite>resource</cite> in
@@ -638,32 +763,35 @@ flattened form (i.e. it does not contain nested dictionaries). Resources
 should be w.r.t <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a> specification.</p>
 <p>E.g. the following resource:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>yields the following stream of resources:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;memory&quot;</span><span class="p">)</span>
-<span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="p">(</span><span class="s2">&quot;uid&quot;</span><span class="p">,</span> <span class="s2">&quot;../memory_collect_test.c:main:22&quot;</span><span class="p">)</span>
-<span class="p">(</span><span class="s2">&quot;uid:source&quot;</span><span class="p">,</span> <span class="s2">&quot;../memory_collect_test.c&quot;</span><span class="p">)</span>
-<span class="p">(</span><span class="s2">&quot;uid:function&quot;</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
-<span class="p">(</span><span class="s2">&quot;uid:line&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"memory"</span><span class="p">)</span>
+<span class="p">(</span><span class="s2">"amount"</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="p">(</span><span class="s2">"uid"</span><span class="p">,</span> <span class="s2">"../memory_collect_test.c:main:22"</span><span class="p">)</span>
+<span class="p">(</span><span class="s2">"uid:source"</span><span class="p">,</span> <span class="s2">"../memory_collect_test.c"</span><span class="p">)</span>
+<span class="p">(</span><span class="s2">"uid:function"</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
+<span class="p">(</span><span class="s2">"uid:line"</span><span class="p">:</span> <span class="mi">22</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>resource</strong> – dictionary representing one resource
+<dd class="field-odd"><p><strong>resource</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – dictionary representing one resource
 w.r.t <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of <code class="docutils literal notranslate"><span class="pre">(str,</span> <span class="pre">value)</span></code> pairs, where the <code class="docutils literal notranslate"><span class="pre">value</span></code> is
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of <code class="docutils literal notranslate"><span class="pre">(str,</span> <span class="pre">value)</span></code> pairs, where the <code class="docutils literal notranslate"><span class="pre">value</span></code> is
 flattened to either a <cite>string</cite>, or <cite>decimal</cite> representation and <code class="docutils literal notranslate"><span class="pre">str</span></code>
 corresponds to the key of the item</p>
 </dd>
@@ -671,8 +799,8 @@ corresponds to the key of the item</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.query.all_numerical_resource_fields_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.query.</span></span><span class="sig-name descname"><span class="pre">all_numerical_resource_fields_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#perun.profile.factory.Profile" title="perun.profile.factory.Profile"><span class="pre">Profile</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/query.html#all_numerical_resource_fields_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.query.all_numerical_resource_fields_of" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.query.all_numerical_resource_fields_of">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.native.query.</span></span><span class="sig-name descname"><span class="pre">all_numerical_resource_fields_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/query.html#all_numerical_resource_fields_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.query.all_numerical_resource_fields_of" title="Link to this definition">¶</a></dt>
 <dd><p>Generator for iterating through all the fields (both flattened and
 original) that are occurring in the resources and takes as domain integer
 values.</p>
@@ -682,24 +810,27 @@ of the key does not contain integer values, it is skipped.</p>
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a>, the function
 yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>trace</cite> profiles
 respectively (considering we convert the stream to list):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">memory_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="s1">&#39;uid:line&#39;</span><span class="p">]</span>
-<span class="n">time_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
-<span class="n">complexity_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="s1">&#39;structure-unit-size&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">memory_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'address'</span><span class="p">,</span> <span class="s1">'amount'</span><span class="p">,</span> <span class="s1">'uid:line'</span><span class="p">]</span>
+<span class="n">time_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'amount'</span><span class="p">]</span>
+<span class="n">complexity_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'amount'</span><span class="p">,</span> <span class="s1">'structure-unit-size'</span><span class="p">]</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>profile</strong> – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
+<dd class="field-odd"><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of resource fields key as <cite>str</cite>, that takes integer values</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of resource fields key as <cite>str</cite>, that takes integer values</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.query.unique_resource_values_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.query.</span></span><span class="sig-name descname"><span class="pre">unique_resource_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#perun.profile.factory.Profile" title="perun.profile.factory.Profile"><span class="pre">Profile</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/query.html#unique_resource_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.query.unique_resource_values_of" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.query.unique_resource_values_of">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.native.query.</span></span><span class="sig-name descname"><span class="pre">unique_resource_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/query.html#unique_resource_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.query.unique_resource_values_of" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of all unique key values occurring in the resources, w.r.t.
 <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a> specification of resources.</p>
 <p>Iterates through all the values of given <code class="docutils literal notranslate"><span class="pre">resource_keys</span></code> and yields
@@ -709,32 +840,35 @@ or set level, e.g. in case of <cite>traces</cite> one uses <code class="docutils
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a>, the function
 yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>trace</cite> profiles stored
 in variables <code class="docutils literal notranslate"><span class="pre">mprof</span></code>, <code class="docutils literal notranslate"><span class="pre">tprof</span></code> and <code class="docutils literal notranslate"><span class="pre">cprof</span></code> respectively:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">mprof</span><span class="p">,</span> <span class="s1">&#39;subtype&#39;</span><span class="p">)</span>
-<span class="go">[&#39;malloc&#39;, &#39;free&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">tprof</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">mprof</span><span class="p">,</span> <span class="s1">'subtype'</span><span class="p">)</span>
+<span class="go">['malloc', 'free']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">tprof</span><span class="p">,</span> <span class="s1">'amount'</span><span class="p">)</span>
 <span class="go">[0.616, 0.500, 0.125]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">cprof</span><span class="p">,</span> <span class="s1">&#39;uid&#39;</span><span class="p">)</span>
-<span class="go">[&#39;SLList_init(SLList*)&#39;, &#39;SLList_search(SLList*, int)&#39;,</span>
-<span class="go"> &#39;SLList_insert(SLList*, int)&#39;, &#39;SLList_destroy(SLList*)&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">cprof</span><span class="p">,</span> <span class="s1">'uid'</span><span class="p">)</span>
+<span class="go">['SLList_init(SLList*)', 'SLList_search(SLList*, int)',</span>
+<span class="go"> 'SLList_insert(SLList*, int)', 'SLList_destroy(SLList*)']</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>profile</strong> – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p></li>
-<li><p><strong>resource_key</strong> – the resources key identifier whose unique values
+<li><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p></li>
+<li><p><strong>resource_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the resources key identifier whose unique values
 will be iterated</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of unique resource key values</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of unique resource key values</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.query.all_key_values_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.query.</span></span><span class="sig-name descname"><span class="pre">all_key_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/query.html#all_key_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.query.all_key_values_of" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.query.all_key_values_of">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.native.query.</span></span><span class="sig-name descname"><span class="pre">all_key_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/query.html#all_key_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.query.all_key_values_of" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of all (not essentially unique) key values in resource, w.r.t
 <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a> specification of resources.</p>
 <p>Iterates through the values of given <code class="docutils literal notranslate"><span class="pre">resource_key</span></code> and yields
@@ -744,8 +878,8 @@ or set level, e.g. in case of <cite>traces</cite> one uses <code class="docutils
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a> and the
 resources <code class="docutils literal notranslate"><span class="pre">mres</span></code> from the profile of <cite>memory</cite> type, we can obtain
 the values of <code class="docutils literal notranslate"><span class="pre">trace::function</span></code> key as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">query</span><span class="o">.</span><span class="n">all_key_values_of</span><span class="p">(</span><span class="n">mres</span><span class="p">,</span> <span class="s1">&#39;trace::function&#39;</span><span class="p">)</span>
-<span class="go">[&#39;free&#39;, &#39;main&#39;, &#39;__libc_start_main&#39;, &#39;_start&#39;]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">query</span><span class="o">.</span><span class="n">all_key_values_of</span><span class="p">(</span><span class="n">mres</span><span class="p">,</span> <span class="s1">'trace::function'</span><span class="p">)</span>
+<span class="go">['free', 'main', '__libc_start_main', '_start']</span>
 </pre></div>
 </div>
 <p>Note that this is mostly useful for iterating through list or nested
@@ -753,21 +887,24 @@ dictionaries.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>resource</strong> – dictionary representing one resource
+<li><p><strong>resource</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – dictionary representing one resource
 w.r.t <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a></p></li>
-<li><p><strong>resource_key</strong> – the resources key identifier whose unique values
+<li><p><strong>resource_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the resources key identifier whose unique values
 will be iterated</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of all resource key values</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of all resource key values</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="perun.profile.query.unique_model_values_of">
-<span class="sig-prename descclassname"><span class="pre">perun.profile.query.</span></span><span class="sig-name descname"><span class="pre">unique_model_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#perun.profile.factory.Profile" title="perun.profile.factory.Profile"><span class="pre">Profile</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/perun/profile/query.html#unique_model_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profile.query.unique_model_values_of" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.query.unique_model_values_of">
+<span class="sig-prename descclassname"><span class="pre">perun.profiles.native.query.</span></span><span class="sig-name descname"><span class="pre">unique_model_values_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/native/query.html#unique_model_values_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.native.query.unique_model_values_of" title="Link to this definition">¶</a></dt>
 <dd><p>Generator of all unique key values occurring in the models in the
 resources of given performance profile w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p>
 <p>Iterates through the values of given <code class="docutils literal notranslate"><span class="pre">resource_keys</span></code> and yields
@@ -778,9 +915,9 @@ more details about the specification of models refer to <a class="reference inte
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
 <p>E.g. given some trace profile <code class="docutils literal notranslate"><span class="pre">complexity_prof</span></code>, we can obtain
 unique values of keys from <cite>models</cite> as follows:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_model_values_of</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">))</span>
-<span class="go">[&#39;constant&#39;, &#39;exponential&#39;, &#39;linear&#39;, &#39;logarithmic&#39;, &#39;quadratic&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_model_values_of</span><span class="p">(</span><span class="s1">&#39;r_square&#39;</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_model_values_of</span><span class="p">(</span><span class="s1">'model'</span><span class="p">))</span>
+<span class="go">['constant', 'exponential', 'linear', 'logarithmic', 'quadratic']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_model_values_of</span><span class="p">(</span><span class="s1">'r_square'</span><span class="p">))</span>
 <span class="go">[0.0, 0.007076437903106431, 0.0017560012128507133,</span>
 <span class="go"> 0.0008704119815403224, 0.003480627284909902, 0.001977866710139782,</span>
 <span class="go"> 0.8391363620083871, 0.9840099999298596, 0.7283427343995424,</span>
@@ -790,13 +927,117 @@ unique values of keys from <cite>models</cite> as follows:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>profile</strong> – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p></li>
-<li><p><strong>model_key</strong> – key identifier from <cite>models</cite> for which we query
+<li><p><strong>profile</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#perun.profiles.native.factory.Profile" title="perun.profiles.native.factory.Profile"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile</span></code></a></span>) – performance profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p></li>
+<li><p><strong>model_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – key identifier from <cite>models</cite> for which we query
 its unique values</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>iterable stream of unique model key values</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable stream of unique model key values</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-perun.profiles.structs">
+<span id="helper-structures"></span><h2>Helper Structures<a class="headerlink" href="#module-perun.profiles.structs" title="Link to this heading">¶</a></h2>
+<p>Helper structures for parsing, postprocessing, or describing profiles.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.profiles.structs.PostprocessParameters">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profiles.structs.</span></span><span class="sig-name descname"><span class="pre">PostprocessParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hide_generics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squash</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squash_regex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.*'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/structs.html#PostprocessParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.structs.PostprocessParameters" title="Link to this definition">¶</a></dt>
+<dd><p>Profile postprocessing parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hide_generics</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – hide type generics in function names.</p></li>
+<li><p><strong>squash_recursion</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – squash recursive calls into a single function record.</p></li>
+<li><p><strong>squash_pattern</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/re.html#re.Pattern" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Pattern</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span>) – a regex pattern to filter functions to squash.</p></li>
+<li><p><strong>agg_func</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Aggregations</span></code></span>) – the aggregation function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.profiles.structs.ProfileFeatures">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profiles.structs.</span></span><span class="sig-name descname"><span class="pre">ProfileFeatures</span></span><a class="reference internal" href="_modules/perun/profiles/structs.html#ProfileFeatures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.structs.ProfileFeatures" title="Link to this definition">¶</a></dt>
+<dd><p>A collection of profile features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_resources</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the total number of consumed resources.</p></li>
+<li><p><strong>max_trace_len</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the longest seen trace.</p></li>
+<li><p><strong>measured_traces_count</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the number of unique traces that have been measured; this does not
+include traces that have no measured resource consumption, e.g., sub-traces of recorded
+traces.</p></li>
+<li><p><strong>measured_functions_count</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the number of unique functions that have been measured in any
+calling context; this does not include functions that have no measured resource
+consumption, e.g., functions seen in traces but with no measured consumption.</p></li>
+<li><p><strong>seen_traces_count</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the number of all traces seen in a profile, including those that have
+no recorded exclusive resource consumption.</p></li>
+<li><p><strong>seen_functions_count</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – the number of all functions seen in a profile, including those that
+have no recorded exclusive resource consumption.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-perun.profiles.polars.structs">A collection of Polars profile representations and helper structures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.profiles.polars.structs.FunctionMaps">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profiles.polars.structs.</span></span><span class="sig-name descname"><span class="pre">FunctionMaps</span></span><a class="reference internal" href="_modules/perun/profiles/polars/structs.html#FunctionMaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.polars.structs.FunctionMaps" title="Link to this definition">¶</a></dt>
+<dd><p>A collection of mappings between function names and IDs created during parsing of profiles.</p>
+<p>The mappings are used to map function names to their IDs and back, which optimizes both memory
+and time of profile representation and manipulation.</p>
+<p>The maps may be reused when parsing multiple profiles (e.g., multiple baseline and target
+profiles), which leads to faster and easier matching when merging the profiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func_id_map</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.defaultdict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">defaultdict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – a mapping of function name -&gt; function ID</p></li>
+<li><p><strong>func_id_reverse_map</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – a mapping of function ID -&gt; function name; sorted by function ID</p></li>
+<li><p><strong>squashed_id_map</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – a mapping of squashed function ID -&gt; function ID; squashed functions
+refer to artificial function names representing merged recursive calls, e.g. ‘func{x5}’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="perun.profiles.polars.structs.PolarsTraceProfile">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">perun.profiles.polars.structs.</span></span><span class="sig-name descname"><span class="pre">PolarsTraceProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profiles/polars/structs.html#PolarsTraceProfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#perun.profiles.polars.structs.PolarsTraceProfile" title="Link to this definition">¶</a></dt>
+<dd><p>A Polars DataFrame representation of a single profile containing traces (e.g., perf folded).</p>
+<p>The profile DataFrame has the following columns: ‘func’, ‘trace’, ‘inclusive’, ‘exclusive’
+where ‘func’ is the ID of the last function the trace, ‘trace’ is a semicolon-delimited string
+of function IDs representing the trace, and ‘inclusive’ and ‘exclusive’ store the resource
+consumption of the trace.</p>
+<p>For example, the profile DataFrame might look like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">shape:</span> <span class="pre">(369_033,</span> <span class="pre">4)</span>
+<span class="pre">┌──────┬─────────────────────────────────┬───────────┬───────────┐</span>
+<span class="pre">│</span> <span class="pre">func</span> <span class="pre">┆</span> <span class="pre">trace</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">inclusive</span> <span class="pre">┆</span> <span class="pre">exclusive</span> <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">---</span>&#160; <span class="pre">┆</span> <span class="pre">---</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">---</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">---</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">u32</span>&#160; <span class="pre">┆</span> <span class="pre">str</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">i64</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">i64</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">╞══════╪═════════════════════════════════╪═══════════╪═══════════╡</span>
+<span class="pre">│</span> <span class="pre">8</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">0;3;2;4;5;6;7;8</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">657306</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">657306</span>&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">15</span>&#160;&#160; <span class="pre">┆</span> <span class="pre">0;9;2;4;5;6;10;11;12;13;14;15</span>&#160;&#160; <span class="pre">┆</span> <span class="pre">475601</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">475601</span>&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">27</span>&#160;&#160; <span class="pre">┆</span> <span class="pre">0;17;16;4;5;18;19;20;21;22;23;…</span> <span class="pre">┆</span> <span class="pre">683530</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">683530</span>&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">…</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">…</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">…</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">…</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">6201</span> <span class="pre">┆</span> <span class="pre">6202;657;658;6186;6187;6200;62…</span> <span class="pre">┆</span> <span class="pre">1360700</span>&#160;&#160; <span class="pre">┆</span> <span class="pre">1360700</span>&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">453</span>&#160; <span class="pre">┆</span> <span class="pre">6202;657;658;6186;6187;6203;29…</span> <span class="pre">┆</span> <span class="pre">78594</span>&#160;&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">78594</span>&#160;&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">│</span> <span class="pre">106</span>&#160; <span class="pre">┆</span> <span class="pre">6202;657;658;6186;6187;6203;29…</span> <span class="pre">┆</span> <span class="pre">271800</span>&#160;&#160;&#160; <span class="pre">┆</span> <span class="pre">271800</span>&#160;&#160;&#160; <span class="pre">│</span>
+<span class="pre">└──────┴─────────────────────────────────┴───────────┴───────────┘</span>
+<span class="pre">`</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> – a DataFrame representation of a trace profile</p></li>
+<li><p><strong>features</strong> – a set of features describing and summarizing the profile</p></li>
+<li><p><strong>maps</strong> – function maps created during the parsing of the profile</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -820,28 +1061,42 @@ its unique values</p></li>
     <ul>
 <li><a class="reference internal" href="#">Perun’s Profile Format</a><ul>
 <li><a class="reference internal" href="#specification-of-profile-format">Specification of Profile Format</a></li>
-<li><a class="reference internal" href="#module-perun.profile.helpers">Profile API</a><ul>
-<li><a class="reference internal" href="#perun.profile.factory.Profile"><code class="docutils literal notranslate"><span class="pre">Profile</span></code></a><ul>
-<li><a class="reference internal" href="#perun.profile.factory.Profile.all_filtered_models"><code class="docutils literal notranslate"><span class="pre">Profile.all_filtered_models()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.factory.Profile.all_models"><code class="docutils literal notranslate"><span class="pre">Profile.all_models()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.factory.Profile.all_resources"><code class="docutils literal notranslate"><span class="pre">Profile.all_resources()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.factory.Profile.all_snapshots"><code class="docutils literal notranslate"><span class="pre">Profile.all_snapshots()</span></code></a></li>
+<li><a class="reference internal" href="#module-perun.profiles.native.helpers">Profile API</a><ul>
+<li><a class="reference internal" href="#perun.profiles.native.factory.Profile"><code class="docutils literal notranslate"><span class="pre">Profile</span></code></a><ul>
+<li><a class="reference internal" href="#perun.profiles.native.factory.Profile.all_filtered_models"><code class="docutils literal notranslate"><span class="pre">Profile.all_filtered_models()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.factory.Profile.all_models"><code class="docutils literal notranslate"><span class="pre">Profile.all_models()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.factory.Profile.all_resources"><code class="docutils literal notranslate"><span class="pre">Profile.all_resources()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.factory.Profile.all_snapshots"><code class="docutils literal notranslate"><span class="pre">Profile.all_snapshots()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.profile.convert">Profile Conversions API</a><ul>
-<li><a class="reference internal" href="#perun.profile.convert.resources_to_pandas_dataframe"><code class="docutils literal notranslate"><span class="pre">resources_to_pandas_dataframe()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.convert.to_flame_graph_format"><code class="docutils literal notranslate"><span class="pre">to_flame_graph_format()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.convert.plot_data_from_coefficients_of"><code class="docutils literal notranslate"><span class="pre">plot_data_from_coefficients_of()</span></code></a></li>
+<li><a class="reference internal" href="#module-perun.profiles.conversions.elk_native">Profile Conversions API</a><ul>
+<li><a class="reference internal" href="#perun.profiles.conversions.elk_native.import_elk_from_json"><code class="docutils literal notranslate"><span class="pre">import_elk_from_json()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.folded_polars.folded_profiles_to_polars_lf"><code class="docutils literal notranslate"><span class="pre">folded_profiles_to_polars_lf()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.native_folded.native_to_folded"><code class="docutils literal notranslate"><span class="pre">native_to_folded()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.native_pandas.resources_to_pandas_dataframe"><code class="docutils literal notranslate"><span class="pre">resources_to_pandas_dataframe()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.native_pandas.models_to_pandas_dataframe"><code class="docutils literal notranslate"><span class="pre">models_to_pandas_dataframe()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.native_polars.native_to_polars_lf"><code class="docutils literal notranslate"><span class="pre">native_to_polars_lf()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.perf_native.import_perf_from_record"><code class="docutils literal notranslate"><span class="pre">import_perf_from_record()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.perf_native.import_perf_from_script"><code class="docutils literal notranslate"><span class="pre">import_perf_from_script()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.perf_native.import_perf_from_stack"><code class="docutils literal notranslate"><span class="pre">import_perf_from_stack()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.conversions.polars_folded.store_polars_as_folded_profile"><code class="docutils literal notranslate"><span class="pre">store_polars_as_folded_profile()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-perun.profile.query">Profile Query API</a><ul>
-<li><a class="reference internal" href="#perun.profile.query.all_items_of"><code class="docutils literal notranslate"><span class="pre">all_items_of()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.query.all_numerical_resource_fields_of"><code class="docutils literal notranslate"><span class="pre">all_numerical_resource_fields_of()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.query.unique_resource_values_of"><code class="docutils literal notranslate"><span class="pre">unique_resource_values_of()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.query.all_key_values_of"><code class="docutils literal notranslate"><span class="pre">all_key_values_of()</span></code></a></li>
-<li><a class="reference internal" href="#perun.profile.query.unique_model_values_of"><code class="docutils literal notranslate"><span class="pre">unique_model_values_of()</span></code></a></li>
+<li><a class="reference internal" href="#module-perun.profiles.native.query">Profile Query API</a><ul>
+<li><a class="reference internal" href="#perun.profiles.native.query.all_items_of"><code class="docutils literal notranslate"><span class="pre">all_items_of()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.query.all_numerical_resource_fields_of"><code class="docutils literal notranslate"><span class="pre">all_numerical_resource_fields_of()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.query.unique_resource_values_of"><code class="docutils literal notranslate"><span class="pre">unique_resource_values_of()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.query.all_key_values_of"><code class="docutils literal notranslate"><span class="pre">all_key_values_of()</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.query.unique_model_values_of"><code class="docutils literal notranslate"><span class="pre">unique_model_values_of()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-perun.profiles.structs">Helper Structures</a><ul>
+<li><a class="reference internal" href="#perun.profiles.structs.PostprocessParameters"><code class="docutils literal notranslate"><span class="pre">PostprocessParameters</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.structs.ProfileFeatures"><code class="docutils literal notranslate"><span class="pre">ProfileFeatures</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.polars.structs.FunctionMaps"><code class="docutils literal notranslate"><span class="pre">FunctionMaps</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.polars.structs.PolarsTraceProfile"><code class="docutils literal notranslate"><span class="pre">PolarsTraceProfile</span></code></a></li>
 </ul>
 </li>
 </ul>

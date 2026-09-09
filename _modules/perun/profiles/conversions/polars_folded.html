@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.conversions.polars_folded &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.conversions.polars_folded</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for converting Polars profiles to folded profiles."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextIO</span>
+
+<span class="c1"># Third-Party Imports</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.polars</span><span class="w"> </span><span class="kn">import</span> <span class="n">structs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.type_hints</span><span class="w"> </span><span class="kn">import</span> <span class="n">TempTextIO</span>
+
+
+<div class="viewcode-block" id="store_polars_as_folded_profile">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.polars_folded.store_polars_as_folded_profile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_polars_as_folded_profile</span><span class="p">(</span>
+    <span class="n">trace_profile</span><span class="p">:</span> <span class="n">structs</span><span class="o">.</span><span class="n">PolarsTraceProfile</span><span class="p">,</span>
+    <span class="n">folded_file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="n">TempTextIO</span><span class="p">,</span>
+    <span class="n">min_width_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Store a Polars trace profile into a folded profile.</span>
+
+<span class="sd">    As a by-product, we also compute the maximum length of traces that will be rendered in</span>
+<span class="sd">    flamegraphs of this profile given the input width threshold.</span>
+
+<span class="sd">    :param trace_profile: a Polars trace profile</span>
+<span class="sd">    :param folded_file: a handle to the output file</span>
+<span class="sd">    :param min_width_threshold: the rendering threshold for flamegraphs</span>
+
+<span class="sd">    :return: the maximum trace length w.r.t. the filtering threshold</span>
+<span class="sd">    """</span>
+    <span class="c1"># Optimize dot operator access</span>
+    <span class="n">str_split</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">split</span>
+    <span class="n">str_join</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">join</span>
+    <span class="n">func_id_reverse_map</span> <span class="o">=</span> <span class="n">trace_profile</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">func_id_reverse_map</span>
+
+    <span class="n">max_filtered_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Only keep the relevant columns</span>
+    <span class="k">for</span> <span class="n">trace_str</span><span class="p">,</span> <span class="n">exclusive</span><span class="p">,</span> <span class="n">inclusive</span> <span class="ow">in</span> <span class="n">trace_profile</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">"trace"</span><span class="p">,</span> <span class="s2">"exclusive"</span><span class="p">,</span> <span class="s2">"inclusive"</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">iter_rows</span><span class="p">():</span>
+        <span class="n">trace_parts</span> <span class="o">=</span> <span class="n">str_split</span><span class="p">(</span><span class="n">trace_str</span><span class="p">,</span> <span class="s2">";"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exclusive</span><span class="p">:</span>
+            <span class="c1"># Translate compact trace format to the verbose one, e.g., "1;2;10" -&gt; "main;foo;bar"</span>
+            <span class="n">translated</span> <span class="o">=</span> <span class="n">str_join</span><span class="p">(</span>
+                <span class="s2">";"</span><span class="p">,</span> <span class="p">(</span><span class="n">func_id_reverse_map</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">func_id</span><span class="p">)]</span> <span class="k">for</span> <span class="n">func_id</span> <span class="ow">in</span> <span class="n">trace_parts</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">folded_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">translated</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">exclusive</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="c1"># Update the maximum trace length</span>
+        <span class="k">if</span> <span class="n">inclusive</span> <span class="o">&gt;=</span> <span class="n">min_width_threshold</span><span class="p">:</span>
+            <span class="n">max_filtered_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_filtered_len</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace_parts</span><span class="p">))</span>
+    <span class="n">folded_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">max_filtered_len</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

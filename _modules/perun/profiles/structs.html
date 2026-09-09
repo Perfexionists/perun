@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.structs &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.structs</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Helper structures for parsing, postprocessing, or describing profiles."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="c1"># Third-Party Imports</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">common_kit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.structs.view_structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_SQUASH_RE</span>
+
+
+<div class="viewcode-block" id="PostprocessParameters">
+<a class="viewcode-back" href="../../../profile.html#perun.profiles.structs.PostprocessParameters">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PostprocessParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Profile postprocessing parameters.</span>
+
+<span class="sd">    :ivar hide_generics: hide type generics in function names.</span>
+<span class="sd">    :ivar squash_recursion: squash recursive calls into a single function record.</span>
+<span class="sd">    :ivar squash_pattern: a regex pattern to filter functions to squash.</span>
+<span class="sd">    :ivar agg_func: the aggregation function.</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"hide_generics"</span><span class="p">,</span>
+        <span class="s2">"squash_recursion"</span><span class="p">,</span>
+        <span class="s2">"squash_pattern"</span><span class="p">,</span>
+        <span class="s2">"agg_func"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">hide_generics</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">squash</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">squash_regex</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_SQUASH_RE</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param hide_generics: a flag indicating whether to hide type generics in function names.</span>
+<span class="sd">        :param squash: squash recursive calls into a single function record.</span>
+<span class="sd">        :param squash_regex: a regex pattern to filter functions to squash.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hide_generics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">hide_generics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">squash_recursion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">squash</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">squash_pattern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Pre-compile non-default squash patterns. The default squash pattern matches everything</span>
+        <span class="c1"># so there is no need to do regex matching at all.</span>
+        <span class="k">if</span> <span class="n">squash</span> <span class="ow">and</span> <span class="n">squash_regex</span> <span class="o">!=</span> <span class="n">DEFAULT_SQUASH_RE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">squash_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">squash_regex</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agg_func</span><span class="p">:</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">Aggregations</span> <span class="o">=</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">Aggregations</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">lookup_key_recursively</span><span class="p">(</span>
+                <span class="s2">"profile.aggregation"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">common_kit</span><span class="o">.</span><span class="n">Aggregations</span><span class="o">.</span><span class="n">default_name</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FilterParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Performance data filtering parameters.</span>
+
+<span class="sd">    Large profiles contain too much data to efficiently process and visualize. We thus allow the</span>
+<span class="sd">    users to exclude data based on several thresholds and limits. The assumption is that if certain</span>
+<span class="sd">    functions and traces take very little total resources (time, samples, etc.), then they are</span>
+<span class="sd">    likely not the culprit of possible performance degradations.</span>
+
+<span class="sd">    :ivar function_threshold: exclude functions that consumed less than the threshold ratio of the</span>
+<span class="sd">          total resources in *both* baseline and target.</span>
+<span class="sd">    :ivar traces_threshold: exclude traces that consumed less than the threshold ratio of the</span>
+<span class="sd">          total resources in *both* baseline and target.</span>
+<span class="sd">    :ivar max_function_traces: limit the number of most expensive traces stored per function.</span>
+<span class="sd">    :ivar top_diffs: limit the number of overall most expensive traces and function diffs.</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"function_threshold"</span><span class="p">,</span> <span class="s2">"traces_threshold"</span><span class="p">,</span> <span class="s2">"max_function_traces"</span><span class="p">,</span> <span class="s2">"top_diffs"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">function_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">traces_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">max_function_traces</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">top_diffs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param function_threshold: the % threshold for function total resource consumption.</span>
+<span class="sd">        :param traces_threshold: the % threshold for trace resource consumption.</span>
+<span class="sd">        :param max_function_traces: the maximum number of most expensive traces to keep per</span>
+<span class="sd">               function.</span>
+<span class="sd">        :param top_diffs: the number of overall most expensive traces and function diffs.</span>
+<span class="sd">        """</span>
+        <span class="c1"># The thresholds are given as percentages, adjust to [0, 1] ratio.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">function_threshold</span> <span class="o">*</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traces_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">traces_threshold</span> <span class="o">*</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_function_traces</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">max_function_traces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_diffs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">top_diffs</span>
+
+
+<div class="viewcode-block" id="ProfileFeatures">
+<a class="viewcode-back" href="../../../profile.html#perun.profiles.structs.ProfileFeatures">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProfileFeatures</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A collection of profile features.</span>
+
+<span class="sd">    :ivar total_resources: the total number of consumed resources.</span>
+<span class="sd">    :ivar max_trace_len: the longest seen trace.</span>
+<span class="sd">    :ivar measured_traces_count: the number of unique traces that have been measured; this does not</span>
+<span class="sd">          include traces that have no measured resource consumption, e.g., sub-traces of recorded</span>
+<span class="sd">          traces.</span>
+<span class="sd">    :ivar measured_functions_count: the number of unique functions that have been measured in any</span>
+<span class="sd">          calling context; this does not include functions that have no measured resource</span>
+<span class="sd">          consumption, e.g., functions seen in traces but with no measured consumption.</span>
+<span class="sd">    :ivar seen_traces_count: the number of all traces seen in a profile, including those that have</span>
+<span class="sd">          no recorded exclusive resource consumption.</span>
+<span class="sd">    :ivar seen_functions_count: the number of all functions seen in a profile, including those that</span>
+<span class="sd">          have no recorded exclusive resource consumption.</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"total_resources"</span><span class="p">,</span>
+        <span class="s2">"max_trace_len"</span><span class="p">,</span>
+        <span class="s2">"measured_traces_count"</span><span class="p">,</span>
+        <span class="s2">"measured_functions_count"</span><span class="p">,</span>
+        <span class="s2">"seen_traces_count"</span><span class="p">,</span>
+        <span class="s2">"seen_functions_count"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_resources</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_trace_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measured_traces_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measured_functions_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen_traces_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen_functions_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+
+<span class="c1"># A tuple representation of the ProfileMetadataEntry object</span>
+<span class="n">ProfileHeaderTuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProfileMetadataEntry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A representation of a single profile header entry.</span>
+
+<span class="sd">    :ivar name: the name (key) of the header entry.</span>
+<span class="sd">    :ivar value: the value of the header entry.</span>
+<span class="sd">    :ivar description: detailed description of the header entry.</span>
+<span class="sd">    :ivar details: nested key: value data.</span>
+<span class="sd">    """</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">details</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_string</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileMetadataEntry</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Constructs a `ProfileHeaderRecord` object from a string representation.</span>
+
+<span class="sd">        :param header: the string representation of a header entry.</span>
+
+<span class="sd">        :return: the constructed ProfileHeaderRecord object.</span>
+<span class="sd">        """</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"|"</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">try_convert</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"[empty]"</span><span class="p">,</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">ProfileMetadataEntry</span><span class="o">.</span><span class="n">description</span>
+        <span class="n">details</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">detail</span> <span class="ow">in</span> <span class="n">split</span><span class="p">[</span><span class="mi">4</span><span class="p">:]:</span>
+            <span class="n">detail_key</span><span class="p">,</span> <span class="n">detail_value</span> <span class="o">=</span> <span class="n">detail</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">details</span><span class="p">[</span><span class="n">detail_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">try_convert</span><span class="p">(</span><span class="n">detail_value</span><span class="p">,</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_profile</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ProfileMetadataEntry</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Constructs a ProfileMetadataEntry object from native Profile header.</span>
+
+<span class="sd">        :param header: the dictionary representation of a header entry.</span>
+
+<span class="sd">        :return: the constructed ProfileMetadataEntry object.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">header</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileHeaderTuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Converts the header object into a tuple.</span>
+
+<span class="sd">        :return: the tuple representation of a header entry.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

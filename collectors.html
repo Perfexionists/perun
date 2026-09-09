@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Collectors Overview &#8212; Perun 0.27.4 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -344,101 +344,101 @@ examples of <cite>trace</cite> collector.</p>
 <section id="examples">
 <span id="collectors-trace-examples"></span><h4>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h4>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="p">{</span>
-<span class="hll"><span class="linenos"> 2</span><span class="w">  </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="linenos"> 3</span><span class="w">    </span><span class="nt">&quot;SLList_insert(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 4</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="hll"><span class="linenos"> 2</span><span class="w">  </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="linenos"> 3</span><span class="w">    </span><span class="nt">"SLList_insert(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 4</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 5</span><span class="w">        </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos"> 6</span><span class="w">      </span><span class="p">],</span>
-<span class="hll"><span class="linenos"> 7</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="hll"><span class="linenos"> 7</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="linenos"> 8</span><span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
 <span class="linenos"> 9</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos">10</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">11</span><span class="w">    </span><span class="nt">&quot;SLList_destroy(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="hll"><span class="linenos">12</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">11</span><span class="w">    </span><span class="nt">"SLList_destroy(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="linenos">12</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="linenos">13</span><span class="w">        </span><span class="mi">1</span>
 <span class="linenos">14</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">15</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">15</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">16</span><span class="w">        </span><span class="mi">4</span>
 <span class="linenos">17</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos">18</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">19</span><span class="w">    </span><span class="nt">&quot;SLList_init(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">20</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">19</span><span class="w">    </span><span class="nt">"SLList_init(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">20</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">21</span><span class="w">        </span><span class="mi">6</span>
 <span class="linenos">22</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">23</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">23</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">24</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos">25</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos">26</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">27</span><span class="w">    </span><span class="nt">&quot;SLList_search(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">28</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">27</span><span class="w">    </span><span class="nt">"SLList_search(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">28</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">29</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos">30</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">31</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">31</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">32</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos">33</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos">34</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos">35</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">36</span><span class="w">  </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">37</span><span class="w">    </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos">38</span><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
-<span class="linenos">39</span><span class="w">    </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">40</span><span class="w">      </span><span class="nt">&quot;mixed(time delta)&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;us&quot;</span>
+<span class="linenos">36</span><span class="w">  </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">37</span><span class="w">    </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos">38</span><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span><span class="p">,</span>
+<span class="linenos">39</span><span class="w">    </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">40</span><span class="w">      </span><span class="nt">"mixed(time delta)"</span><span class="p">:</span><span class="w"> </span><span class="s2">"us"</span>
 <span class="linenos">41</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">42</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="hll"><span class="linenos">43</span><span class="w">    </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../stap-collector/tst&quot;</span>
+<span class="linenos">42</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="hll"><span class="linenos">43</span><span class="w">    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../stap-collector/tst"</span>
 </span><span class="linenos">44</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">45</span><span class="w">  </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">46</span><span class="w">  </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="hll"><span class="linenos">47</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">48</span><span class="w">      </span><span class="nt">&quot;global_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">49</span><span class="w">      </span><span class="nt">&quot;sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">45</span><span class="w">  </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">46</span><span class="w">  </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="linenos">47</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos">48</span><span class="w">      </span><span class="nt">"global_sampling"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">49</span><span class="w">      </span><span class="nt">"sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos">50</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">51</span><span class="w">          </span><span class="nt">&quot;func&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-</span><span class="linenos">52</span><span class="w">          </span><span class="nt">&quot;sample&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span class="hll"><span class="linenos">51</span><span class="w">          </span><span class="nt">"func"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+</span><span class="linenos">52</span><span class="w">          </span><span class="nt">"sample"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos">53</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos">54</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos">55</span><span class="w">          </span><span class="nt">&quot;func&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;func1&quot;</span><span class="p">,</span>
-<span class="linenos">56</span><span class="w">          </span><span class="nt">&quot;sample&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="linenos">55</span><span class="w">          </span><span class="nt">"func"</span><span class="p">:</span><span class="w"> </span><span class="s2">"func1"</span><span class="p">,</span>
+<span class="linenos">56</span><span class="w">          </span><span class="nt">"sample"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos">57</span><span class="w">        </span><span class="p">}</span>
 <span class="linenos">58</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">59</span><span class="w">      </span><span class="nt">&quot;rules&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos">60</span><span class="w">        </span><span class="s2">&quot;SLList_init&quot;</span><span class="p">,</span>
-<span class="linenos">61</span><span class="w">        </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-<span class="linenos">62</span><span class="w">        </span><span class="s2">&quot;SLList_search&quot;</span><span class="p">,</span>
-<span class="linenos">63</span><span class="w">        </span><span class="s2">&quot;SLList_destroy&quot;</span>
+<span class="linenos">59</span><span class="w">      </span><span class="nt">"rules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">60</span><span class="w">        </span><span class="s2">"SLList_init"</span><span class="p">,</span>
+<span class="linenos">61</span><span class="w">        </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+<span class="linenos">62</span><span class="w">        </span><span class="s2">"SLList_search"</span><span class="p">,</span>
+<span class="linenos">63</span><span class="w">        </span><span class="s2">"SLList_destroy"</span>
 <span class="linenos">64</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">65</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span>
+<span class="linenos">65</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom"</span>
 <span class="linenos">66</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">67</span><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;complexity&quot;</span>
+<span class="linenos">67</span><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"complexity"</span>
 <span class="linenos">68</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">69</span><span class="w">  </span><span class="nt">&quot;resource_type_map&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">70</span><span class="w">    </span><span class="nt">&quot;SLList_insert(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">71</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">72</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-<span class="linenos">73</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">74</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">69</span><span class="w">  </span><span class="nt">"resource_type_map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">70</span><span class="w">    </span><span class="nt">"SLList_insert(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">71</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">72</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+<span class="linenos">73</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">74</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">75</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">76</span><span class="w">    </span><span class="nt">&quot;SLList_destroy(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">77</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">78</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_destroy(SLList*)&quot;</span><span class="p">,</span>
-<span class="linenos">79</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">80</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">76</span><span class="w">    </span><span class="nt">"SLList_destroy(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">77</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">78</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_destroy(SLList*)"</span><span class="p">,</span>
+<span class="linenos">79</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">80</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">81</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">82</span><span class="w">    </span><span class="nt">&quot;SLList_init(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">83</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">84</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_init(SLList*)&quot;</span><span class="p">,</span>
-<span class="linenos">85</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">86</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">82</span><span class="w">    </span><span class="nt">"SLList_init(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">83</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">84</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_init(SLList*)"</span><span class="p">,</span>
+<span class="linenos">85</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">86</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">87</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">88</span><span class="w">    </span><span class="nt">&quot;SLList_search(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">89</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">90</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_search(SLList*, int)&quot;</span><span class="p">,</span>
-<span class="linenos">91</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">92</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">88</span><span class="w">    </span><span class="nt">"SLList_search(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">89</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">90</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_search(SLList*, int)"</span><span class="p">,</span>
+<span class="linenos">91</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">92</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">93</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos">94</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">95</span><span class="w">  </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">96</span><span class="w">  </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;f7f3dcea69b97f2b03c421a223a770917149cfae&quot;</span>
+<span class="linenos">95</span><span class="w">  </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">96</span><span class="w">  </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"f7f3dcea69b97f2b03c421a223a770917149cfae"</span>
 <span class="linenos">97</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -536,113 +536,113 @@ examples of <cite>memory</cite> collector.</p>
 <section id="collectors-memory-examples">
 <span id="id3"></span><h4>Examples<a class="headerlink" href="#collectors-memory-examples" title="Link to this heading">¶</a></h4>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="p">{</span>
-<span class="hll"><span class="linenos">  2</span><span class="w">  </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="linenos">  3</span><span class="w">    </span><span class="nt">&quot;../memory_collect_test.c:main:22#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">  4</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="hll"><span class="linenos">  2</span><span class="w">  </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="linenos">  3</span><span class="w">    </span><span class="nt">"../memory_collect_test.c:main:22#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">  4</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">  5</span><span class="w">        </span><span class="mi">4</span>
 <span class="linenos">  6</span><span class="w">      </span><span class="p">],</span>
-<span class="hll"><span class="linenos">  7</span><span class="w">      </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="hll"><span class="linenos">  7</span><span class="w">      </span><span class="nt">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="linenos">  8</span><span class="w">        </span><span class="mi">19284560</span>
 <span class="linenos">  9</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 10</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 11</span><span class="w">    </span><span class="nt">&quot;../memory_collect_test.c:main:27#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="hll"><span class="linenos"> 12</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 11</span><span class="w">    </span><span class="nt">"../memory_collect_test.c:main:27#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="linenos"> 12</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="linenos"> 13</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos"> 14</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 15</span><span class="w">      </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 15</span><span class="w">      </span><span class="nt">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 16</span><span class="w">        </span><span class="mi">19284560</span>
 <span class="linenos"> 17</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 18</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos"> 19</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos"> 20</span><span class="w">  </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 21</span><span class="w">    </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="hll"><span class="linenos"> 22</span><span class="w">      </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;B&quot;</span>
+<span class="linenos"> 20</span><span class="w">  </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 21</span><span class="w">    </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="linenos"> 22</span><span class="w">      </span><span class="nt">"memory"</span><span class="p">:</span><span class="w"> </span><span class="s2">"B"</span>
 </span><span class="linenos"> 23</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 24</span><span class="w">    </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./mct&quot;</span><span class="p">,</span>
-<span class="linenos"> 25</span><span class="w">    </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="hll"><span class="linenos"> 26</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 27</span><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span>
+<span class="linenos"> 24</span><span class="w">    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./mct"</span><span class="p">,</span>
+<span class="linenos"> 25</span><span class="w">    </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="hll"><span class="linenos"> 26</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 27</span><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span>
 </span><span class="hll"><span class="linenos"> 28</span><span class="w">  </span><span class="p">},</span>
-</span><span class="hll"><span class="linenos"> 29</span><span class="w">  </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-</span><span class="hll"><span class="linenos"> 30</span><span class="w">  </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 31</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 32</span><span class="w">      </span><span class="nt">&quot;all&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 33</span><span class="w">      </span><span class="nt">&quot;sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.025</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 34</span><span class="w">      </span><span class="nt">&quot;no_func&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 35</span><span class="w">      </span><span class="nt">&quot;no_source&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+</span><span class="hll"><span class="linenos"> 29</span><span class="w">  </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+</span><span class="hll"><span class="linenos"> 30</span><span class="w">  </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos"> 31</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos"> 32</span><span class="w">      </span><span class="nt">"all"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 33</span><span class="w">      </span><span class="nt">"sampling"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.025</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 34</span><span class="w">      </span><span class="nt">"no_func"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 35</span><span class="w">      </span><span class="nt">"no_source"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 </span><span class="hll"><span class="linenos"> 36</span><span class="w">    </span><span class="p">},</span>
-</span><span class="hll"><span class="linenos"> 37</span><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span>
+</span><span class="hll"><span class="linenos"> 37</span><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span>
 </span><span class="hll"><span class="linenos"> 38</span><span class="w">  </span><span class="p">},</span>
-</span><span class="hll"><span class="linenos"> 39</span><span class="w">  </span><span class="nt">&quot;resource_type_map&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 40</span><span class="w">    </span><span class="nt">&quot;../memory_collect_test.c:main:22#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 41</span><span class="w">      </span><span class="nt">&quot;snapshot&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 42</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.025000&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 43</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 44</span><span class="w">      </span><span class="nt">&quot;trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos"> 39</span><span class="w">  </span><span class="nt">"resource_type_map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos"> 40</span><span class="w">    </span><span class="nt">"../memory_collect_test.c:main:22#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos"> 41</span><span class="w">      </span><span class="nt">"snapshot"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 42</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.025000"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 43</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 44</span><span class="w">      </span><span class="nt">"trace"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos"> 45</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 46</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;malloc&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 47</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 48</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+</span><span class="hll"><span class="linenos"> 46</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"malloc"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 47</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 48</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 </span><span class="hll"><span class="linenos"> 49</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 50</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 51</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 52</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 53</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span>
+</span><span class="hll"><span class="linenos"> 51</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 52</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 53</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span>
 </span><span class="hll"><span class="linenos"> 54</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 55</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 56</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;__libc_start_main&quot;</span><span class="p">,</span>
-</span><span class="linenos"> 57</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 58</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+</span><span class="hll"><span class="linenos"> 56</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"__libc_start_main"</span><span class="p">,</span>
+</span><span class="linenos"> 57</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 58</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 <span class="linenos"> 59</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos"> 60</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 61</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;_start&quot;</span><span class="p">,</span>
-<span class="linenos"> 62</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 63</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+<span class="linenos"> 61</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_start"</span><span class="p">,</span>
+<span class="linenos"> 62</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 63</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 <span class="linenos"> 64</span><span class="w">        </span><span class="p">}</span>
 <span class="linenos"> 65</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 66</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;malloc&quot;</span><span class="p">,</span>
-<span class="linenos"> 67</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 68</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="linenos"> 69</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span>
-<span class="linenos"> 70</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span>
+<span class="linenos"> 66</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"malloc"</span><span class="p">,</span>
+<span class="linenos"> 67</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 68</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="linenos"> 69</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span>
+<span class="linenos"> 70</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span>
 <span class="linenos"> 71</span><span class="w">      </span><span class="p">}</span>
 <span class="linenos"> 72</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 73</span><span class="w">    </span><span class="nt">&quot;../memory_collect_test.c:main:27#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 74</span><span class="w">      </span><span class="nt">&quot;snapshot&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 75</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.025000&quot;</span><span class="p">,</span>
-<span class="linenos"> 76</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory&quot;</span><span class="p">,</span>
-<span class="linenos"> 77</span><span class="w">      </span><span class="nt">&quot;trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 73</span><span class="w">    </span><span class="nt">"../memory_collect_test.c:main:27#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 74</span><span class="w">      </span><span class="nt">"snapshot"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 75</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.025000"</span><span class="p">,</span>
+<span class="linenos"> 76</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"memory"</span><span class="p">,</span>
+<span class="linenos"> 77</span><span class="w">      </span><span class="nt">"trace"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 78</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 79</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;free&quot;</span><span class="p">,</span>
-<span class="linenos"> 80</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 81</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+<span class="linenos"> 79</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"free"</span><span class="p">,</span>
+<span class="linenos"> 80</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 81</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 <span class="linenos"> 82</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos"> 83</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 84</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="linenos"> 85</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span>
-<span class="linenos"> 86</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span>
+<span class="linenos"> 84</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="linenos"> 85</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span>
+<span class="linenos"> 86</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span>
 <span class="linenos"> 87</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos"> 88</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 89</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;__libc_start_main&quot;</span><span class="p">,</span>
-<span class="linenos"> 90</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 91</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+<span class="linenos"> 89</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"__libc_start_main"</span><span class="p">,</span>
+<span class="linenos"> 90</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 91</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 <span class="linenos"> 92</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos"> 93</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos"> 94</span><span class="w">          </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;_start&quot;</span><span class="p">,</span>
-<span class="linenos"> 95</span><span class="w">          </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 96</span><span class="w">          </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span>
+<span class="linenos"> 94</span><span class="w">          </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_start"</span><span class="p">,</span>
+<span class="linenos"> 95</span><span class="w">          </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 96</span><span class="w">          </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unreachable"</span>
 <span class="linenos"> 97</span><span class="w">        </span><span class="p">}</span>
 <span class="linenos"> 98</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 99</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;free&quot;</span><span class="p">,</span>
-<span class="linenos">100</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">101</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
-<span class="linenos">102</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span>
-<span class="linenos">103</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../memory_collect_test.c&quot;</span>
+<span class="linenos"> 99</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"free"</span><span class="p">,</span>
+<span class="linenos">100</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">101</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"main"</span><span class="p">,</span>
+<span class="linenos">102</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span>
+<span class="linenos">103</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../memory_collect_test.c"</span>
 <span class="linenos">104</span><span class="w">      </span><span class="p">}</span>
 <span class="linenos">105</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos">106</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">107</span><span class="w">  </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">108</span><span class="w">  </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;74288675e4074f1ad5bbb0d3b3253911ab42267a&quot;</span>
+<span class="linenos">107</span><span class="w">  </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">108</span><span class="w">  </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"74288675e4074f1ad5bbb0d3b3253911ab42267a"</span>
 <span class="linenos">109</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -709,68 +709,68 @@ of <cite>trace</cite> collector.</p>
 <section id="collectors-time-examples">
 <span id="id5"></span><h4>Examples<a class="headerlink" href="#collectors-time-examples" title="Link to this heading">¶</a></h4>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="p">{</span>
-<span class="hll"><span class="linenos"> 2</span><span class="w">  </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8de6cd99e4dc36cd73a2af906cde12456e96d9f1&quot;</span><span class="p">,</span>
-</span><span class="linenos"> 3</span><span class="w">  </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 4</span><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos"> 5</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos"> 6</span><span class="w">    </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="hll"><span class="linenos"> 7</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s&quot;</span>
+<span class="hll"><span class="linenos"> 2</span><span class="w">  </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"8de6cd99e4dc36cd73a2af906cde12456e96d9f1"</span><span class="p">,</span>
+</span><span class="linenos"> 3</span><span class="w">  </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="linenos"> 7</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"s"</span>
 </span><span class="linenos"> 8</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 9</span><span class="w">    </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">10</span><span class="w">    </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;100000&quot;</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">10</span><span class="w">    </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">"100000"</span>
 <span class="linenos">11</span><span class="w">  </span><span class="p">},</span>
-<span class="hll"><span class="linenos">12</span><span class="w">  </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">13</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">14</span><span class="w">      </span><span class="nt">&quot;repeat&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">15</span><span class="w">      </span><span class="nt">&quot;warmup&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="hll"><span class="linenos">12</span><span class="w">  </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos">13</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="linenos">14</span><span class="w">      </span><span class="nt">"repeat"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">15</span><span class="w">      </span><span class="nt">"warmup"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
 </span><span class="hll"><span class="linenos">16</span><span class="w">    </span><span class="p">},</span>
-</span><span class="hll"><span class="linenos">17</span><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span>
+</span><span class="hll"><span class="linenos">17</span><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span>
 </span><span class="hll"><span class="linenos">18</span><span class="w">  </span><span class="p">},</span>
-</span><span class="linenos">19</span><span class="w">  </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">20</span><span class="w">  </span><span class="nt">&quot;global&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">21</span><span class="w">    </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.565476655960083</span><span class="p">,</span>
-<span class="linenos">22</span><span class="w">    </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="linenos">19</span><span class="w">  </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">20</span><span class="w">  </span><span class="nt">"global"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">21</span><span class="w">    </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.565476655960083</span><span class="p">,</span>
+<span class="linenos">22</span><span class="w">    </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">23</span><span class="w">      </span><span class="p">{</span>
-<span class="hll"><span class="linenos">24</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;real&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">25</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">26</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">27</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">28</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.26</span>
+<span class="hll"><span class="linenos">24</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"real"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">25</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">26</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">27</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">28</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.26</span>
 </span><span class="linenos">29</span><span class="w">      </span><span class="p">},</span>
 <span class="linenos">30</span><span class="w">      </span><span class="p">{</span>
-<span class="linenos">31</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
-<span class="linenos">32</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">33</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="linenos">34</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos">35</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.25</span>
+<span class="linenos">31</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
+<span class="linenos">32</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">33</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">34</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos">35</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.25</span>
 <span class="linenos">36</span><span class="w">      </span><span class="p">},</span>
 <span class="linenos">37</span><span class="w">      </span><span class="p">{</span>
-<span class="linenos">38</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sys&quot;</span><span class="p">,</span>
-<span class="linenos">39</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">40</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="linenos">41</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos">42</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
+<span class="linenos">38</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sys"</span><span class="p">,</span>
+<span class="linenos">39</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">40</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">41</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos">42</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
 <span class="linenos">43</span><span class="w">      </span><span class="p">},</span>
 <span class="linenos">44</span><span class="w">      </span><span class="p">{</span>
-<span class="linenos">45</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;real&quot;</span><span class="p">,</span>
-<span class="linenos">46</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">47</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="linenos">48</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos">49</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.27</span>
+<span class="linenos">45</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"real"</span><span class="p">,</span>
+<span class="linenos">46</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">47</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">48</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos">49</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.27</span>
 <span class="linenos">50</span><span class="w">      </span><span class="p">},</span>
 <span class="linenos">51</span><span class="w">      </span><span class="p">{</span>
-<span class="linenos">52</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
-<span class="linenos">53</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">54</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="linenos">55</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos">56</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.28</span>
+<span class="linenos">52</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
+<span class="linenos">53</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">54</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">55</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos">56</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.28</span>
 <span class="linenos">57</span><span class="w">      </span><span class="p">},</span>
 <span class="linenos">58</span><span class="w">      </span><span class="p">{</span>
-<span class="linenos">59</span><span class="w">        </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sys&quot;</span><span class="p">,</span>
-<span class="linenos">60</span><span class="w">        </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./list_search&quot;</span><span class="p">,</span>
-<span class="linenos">61</span><span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="linenos">62</span><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
-<span class="linenos">63</span><span class="w">        </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
+<span class="linenos">59</span><span class="w">        </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sys"</span><span class="p">,</span>
+<span class="linenos">60</span><span class="w">        </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./list_search"</span><span class="p">,</span>
+<span class="linenos">61</span><span class="w">        </span><span class="nt">"order"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">62</span><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time"</span><span class="p">,</span>
+<span class="linenos">63</span><span class="w">        </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
 <span class="linenos">64</span><span class="w">      </span><span class="p">}</span>
 <span class="linenos">65</span><span class="w">    </span><span class="p">]</span>
 <span class="linenos">66</span><span class="w">  </span><span class="p">},</span>
@@ -844,98 +844,98 @@ examples of `bounds` collector.</pre>
 <section id="collectors-bounds-examples">
 <span id="id7"></span><h4>Examples<a class="headerlink" href="#collectors-bounds-examples" title="Link to this heading">¶</a></h4>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="p">{</span>
-<span class="linenos"> 2</span><span class="w">  </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;409dd7468a328038c9a1ea5a6a0f7baa89f8997a&quot;</span><span class="p">,</span>
-<span class="linenos"> 3</span><span class="w">  </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 4</span><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bound&quot;</span><span class="p">,</span>
-<span class="linenos"> 5</span><span class="w">    </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos"> 6</span><span class="w">    </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos"> 7</span><span class="w">    </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 8</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;iterations&quot;</span>
+<span class="linenos"> 2</span><span class="w">  </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"409dd7468a328038c9a1ea5a6a0f7baa89f8997a"</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="w">  </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bound"</span><span class="p">,</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 8</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iterations"</span>
 <span class="linenos"> 9</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">10</span><span class="w">    </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">10</span><span class="w">    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">11</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">12</span><span class="w">  </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">13</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:34:42#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="linenos">14</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:49:60#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="linenos">15</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:64:69#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="linenos">16</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:18:4#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="linenos">17</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:55:58#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="linenos">12</span><span class="w">  </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">13</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:34:42#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="linenos">14</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:49:60#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="linenos">15</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:64:69#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="linenos">16</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:18:4#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="linenos">17</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:55:58#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="linenos">18</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">19</span><span class="w">  </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">20</span><span class="w">  </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">21</span><span class="w">  </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">22</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">23</span><span class="w">      </span><span class="nt">&quot;sources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos">24</span><span class="w">        </span><span class="s2">&quot;int_partitioning.c&quot;</span>
+<span class="linenos">19</span><span class="w">  </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">20</span><span class="w">  </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">21</span><span class="w">  </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">22</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">23</span><span class="w">      </span><span class="nt">"sources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">24</span><span class="w">        </span><span class="s2">"int_partitioning.c"</span>
 <span class="linenos">25</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">26</span><span class="w">      </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos">27</span><span class="w">      </span><span class="nt">&quot;source_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">28</span><span class="w">      </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos">29</span><span class="w">        </span><span class="s2">&quot;int_partitioning.c&quot;</span>
+<span class="linenos">26</span><span class="w">      </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos">27</span><span class="w">      </span><span class="nt">"source_dir"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">28</span><span class="w">      </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">29</span><span class="w">        </span><span class="s2">"int_partitioning.c"</span>
 <span class="linenos">30</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos">31</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">32</span><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bounds&quot;</span>
+<span class="linenos">32</span><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"bounds"</span>
 <span class="linenos">33</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">34</span><span class="w">  </span><span class="nt">&quot;resource_type_map&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">35</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:34:42#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">36</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">37</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span>
-<span class="linenos">38</span><span class="w">        </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
-<span class="linenos">39</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int_partitioning.c&quot;</span><span class="p">,</span>
-<span class="linenos">40</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">34</span><span class="w">  </span><span class="nt">"resource_type_map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">35</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:34:42#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">36</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">37</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span>
+<span class="linenos">38</span><span class="w">        </span><span class="nt">"column"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
+<span class="linenos">39</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"int_partitioning.c"</span><span class="p">,</span>
+<span class="linenos">40</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">41</span><span class="w">      </span><span class="p">},</span>
-<span class="hll"><span class="linenos">42</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local bound&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">43</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1 + max(0, (k + -1))&quot;</span><span class="p">,</span>
-</span><span class="linenos">44</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span>
-<span class="hll"><span class="linenos">45</span><span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;O(n^1)&quot;</span>
+<span class="hll"><span class="linenos">42</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"local bound"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">43</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1 + max(0, (k + -1))"</span><span class="p">,</span>
+</span><span class="linenos">44</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">,</span>
+<span class="hll"><span class="linenos">45</span><span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"O(n^1)"</span>
 </span><span class="linenos">46</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">47</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:49:60#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">48</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">49</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">49</span><span class="p">,</span>
-<span class="linenos">50</span><span class="w">        </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
-<span class="linenos">51</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int_partitioning.c&quot;</span><span class="p">,</span>
-<span class="linenos">52</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">47</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:49:60#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">48</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">49</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">49</span><span class="p">,</span>
+<span class="linenos">50</span><span class="w">        </span><span class="nt">"column"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
+<span class="linenos">51</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"int_partitioning.c"</span><span class="p">,</span>
+<span class="linenos">52</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">53</span><span class="w">      </span><span class="p">},</span>
-<span class="linenos">54</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local bound&quot;</span><span class="p">,</span>
-<span class="linenos">55</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2 + max(0, (k + -1))&quot;</span><span class="p">,</span>
-<span class="linenos">56</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span>
-<span class="linenos">57</span><span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;O(n^1)&quot;</span>
+<span class="linenos">54</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"local bound"</span><span class="p">,</span>
+<span class="linenos">55</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2 + max(0, (k + -1))"</span><span class="p">,</span>
+<span class="linenos">56</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">,</span>
+<span class="linenos">57</span><span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"O(n^1)"</span>
 <span class="linenos">58</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">59</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:64:69#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">60</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">61</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">64</span><span class="p">,</span>
-<span class="linenos">62</span><span class="w">        </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">69</span><span class="p">,</span>
-<span class="linenos">63</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int_partitioning.c&quot;</span><span class="p">,</span>
-<span class="linenos">64</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">59</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:64:69#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">60</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">61</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">64</span><span class="p">,</span>
+<span class="linenos">62</span><span class="w">        </span><span class="nt">"column"</span><span class="p">:</span><span class="w"> </span><span class="mi">69</span><span class="p">,</span>
+<span class="linenos">63</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"int_partitioning.c"</span><span class="p">,</span>
+<span class="linenos">64</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">65</span><span class="w">      </span><span class="p">},</span>
-<span class="linenos">66</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local bound&quot;</span><span class="p">,</span>
-<span class="linenos">67</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2 + max(0, (k + -1))&quot;</span><span class="p">,</span>
-<span class="linenos">68</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span>
-<span class="linenos">69</span><span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;O(n^1)&quot;</span>
+<span class="linenos">66</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"local bound"</span><span class="p">,</span>
+<span class="linenos">67</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2 + max(0, (k + -1))"</span><span class="p">,</span>
+<span class="linenos">68</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">,</span>
+<span class="linenos">69</span><span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"O(n^1)"</span>
 <span class="linenos">70</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">71</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:18:4#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">72</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">73</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
-<span class="linenos">74</span><span class="w">        </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="linenos">75</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int_partitioning.c&quot;</span><span class="p">,</span>
-<span class="linenos">76</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">71</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:18:4#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">72</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">73</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span>
+<span class="linenos">74</span><span class="w">        </span><span class="nt">"column"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="linenos">75</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"int_partitioning.c"</span><span class="p">,</span>
+<span class="linenos">76</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">77</span><span class="w">      </span><span class="p">},</span>
-<span class="hll"><span class="linenos">78</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;total bound&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">79</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6 + 4 × max(0, (k + -1))&quot;</span><span class="p">,</span>
-</span><span class="linenos">80</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span>
-<span class="linenos">81</span><span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;O(n^1)&quot;</span>
+<span class="hll"><span class="linenos">78</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total bound"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">79</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6 + 4 × max(0, (k + -1))"</span><span class="p">,</span>
+</span><span class="linenos">80</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">,</span>
+<span class="linenos">81</span><span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"O(n^1)"</span>
 <span class="linenos">82</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">83</span><span class="w">    </span><span class="nt">&quot;int_partitioning.c:partitioning:55:58#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">84</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">85</span><span class="w">        </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">55</span><span class="p">,</span>
-<span class="linenos">86</span><span class="w">        </span><span class="nt">&quot;column&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">58</span><span class="p">,</span>
-<span class="linenos">87</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int_partitioning.c&quot;</span><span class="p">,</span>
-<span class="linenos">88</span><span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partitioning&quot;</span>
+<span class="linenos">83</span><span class="w">    </span><span class="nt">"int_partitioning.c:partitioning:55:58#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">84</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">85</span><span class="w">        </span><span class="nt">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">55</span><span class="p">,</span>
+<span class="linenos">86</span><span class="w">        </span><span class="nt">"column"</span><span class="p">:</span><span class="w"> </span><span class="mi">58</span><span class="p">,</span>
+<span class="linenos">87</span><span class="w">        </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"int_partitioning.c"</span><span class="p">,</span>
+<span class="linenos">88</span><span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"partitioning"</span>
 <span class="linenos">89</span><span class="w">      </span><span class="p">},</span>
-<span class="linenos">90</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local bound&quot;</span><span class="p">,</span>
-<span class="linenos">91</span><span class="w">      </span><span class="nt">&quot;bound&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1 + max(0, (k + -1))&quot;</span><span class="p">,</span>
-<span class="linenos">92</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span>
-<span class="linenos">93</span><span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;O(n^1)&quot;</span>
+<span class="linenos">90</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"local bound"</span><span class="p">,</span>
+<span class="linenos">91</span><span class="w">      </span><span class="nt">"bound"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1 + max(0, (k + -1))"</span><span class="p">,</span>
+<span class="linenos">92</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">,</span>
+<span class="linenos">93</span><span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"O(n^1)"</span>
 <span class="linenos">94</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos">95</span><span class="w">  </span><span class="p">}</span>
 <span class="linenos">96</span><span class="p">}</span>
@@ -1039,10 +1039,10 @@ interface of <code class="docutils literal notranslate"><span class="pre">perun<
 collector descriptions and definitions of constants that are used for automatic setting of
 profiles (namely the <a class="reference internal" href="profile.html#perfreg-collector_info"><code class="xref std std-preg docutils literal notranslate"><span class="pre">collector_info</span></code></a>) which has the following structure:</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">"""..."""</span>
 <span class="linenos">2</span>
-<span class="linenos">3</span><span class="n">COLLECTOR_TYPE</span> <span class="o">=</span> <span class="s2">&quot;time|memory|mixed&quot;</span>
-<span class="linenos">4</span><span class="n">COLLECTOR_DEFAULT_UNITS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unit&quot;</span><span class="p">}</span>
+<span class="linenos">3</span><span class="n">COLLECTOR_TYPE</span> <span class="o">=</span> <span class="s2">"time|memory|mixed"</span>
+<span class="linenos">4</span><span class="n">COLLECTOR_DEFAULT_UNITS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"unit"</span><span class="p">}</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -1053,17 +1053,17 @@ status of the phase, the status message (used in case of error) and dictionary i
 params passed to additional phases and ‘profile’ with dictionary w.r.t <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">"""(optional)"""</span>
 <span class="linenos"> 3</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span>
 <span class="linenos"> 6</span><span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="linenos"> 7</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="sd">"""..."""</span>
 <span class="linenos"> 8</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span><span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="linenos">12</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="sd">"""(optional)"""</span>
 <span class="linenos">13</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1081,19 +1081,19 @@ your collector. This function will is called from command line as <code class="d
 <span class="linenos"> 7</span><span class="gi">+</span>
 <span class="linenos"> 8</span><span class="gi">+</span>
 <span class="linenos"> 9</span><span class="w"> </span>def before(**kwargs):
-<span class="linenos">10</span><span class="w"> </span>    &quot;&quot;&quot;(optional)&quot;&quot;&quot;
+<span class="linenos">10</span><span class="w"> </span>    """(optional)"""
 <span class="linenos">11</span><span class="w"> </span>    return STATUS, STATUS_MSG, dict(kwargs)
 <span class="linenos">12</span><span class="gu">@@ -11,3 +16,10 @@</span>
 <span class="linenos">13</span><span class="w"> </span>def after(**kwargs):
-<span class="linenos">14</span><span class="w"> </span>    &quot;&quot;&quot;(optional)&quot;&quot;&quot;
+<span class="linenos">14</span><span class="w"> </span>    """(optional)"""
 <span class="linenos">15</span><span class="w"> </span>    return STATUS, STATUS_MSG, dict(kwargs)
 <span class="linenos">16</span><span class="gi">+</span>
 <span class="linenos">17</span><span class="gi">+</span>
 <span class="linenos">18</span><span class="gi">+@click.command()</span>
 <span class="linenos">19</span><span class="gi">+@click.pass_context</span>
 <span class="linenos">20</span><span class="gi">+def mycollector(ctx, **kwargs):</span>
-<span class="linenos">21</span><span class="gi">+    &quot;&quot;&quot;...&quot;&quot;&quot;</span>
-<span class="linenos">22</span><span class="gi">+    runner.run_collector_from_cli_context(ctx, &quot;mycollector&quot;, kwargs)</span>
+<span class="linenos">21</span><span class="gi">+    """..."""</span>
+<span class="linenos">22</span><span class="gi">+    runner.run_collector_from_cli_context(ctx, "mycollector", kwargs)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
@@ -1103,14 +1103,14 @@ your collector. This function will is called from command line as <code class="d
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_collectors.py</span>
 <span class="linenos"> 3</span><span class="gu">@@ -4,7 +4,7 @@</span>
-<span class="linenos"> 4</span><span class="w"> </span>        error(f&quot;trying to call get_supported_module_names with incorrect package &#39;{package}&#39;&quot;)
+<span class="linenos"> 4</span><span class="w"> </span>        error(f"trying to call get_supported_module_names with incorrect package '{package}'")
 <span class="linenos"> 5</span><span class="w"> </span>    return {
-<span class="linenos"> 6</span><span class="w"> </span>        &quot;vcs&quot;: [&quot;git&quot;, &quot;svs&quot;],
-<span class="linenos"> 7</span><span class="gd">-        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],</span>
-<span class="linenos"> 8</span><span class="gi">+        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;, &quot;mycollector&quot;],</span>
-<span class="linenos"> 9</span><span class="w"> </span>        &quot;postprocess&quot;: [
-<span class="linenos">10</span><span class="w"> </span>            &quot;moving-average&quot;,
-<span class="linenos">11</span><span class="w"> </span>            &quot;kernel-regression&quot;,
+<span class="linenos"> 6</span><span class="w"> </span>        "vcs": ["git", "svs"],
+<span class="linenos"> 7</span><span class="gd">-        "collect": ["trace", "memory", "time"],</span>
+<span class="linenos"> 8</span><span class="gi">+        "collect": ["trace", "memory", "time", "mycollector"],</span>
+<span class="linenos"> 9</span><span class="w"> </span>        "postprocess": [
+<span class="linenos">10</span><span class="w"> </span>            "moving-average",
+<span class="linenos">11</span><span class="w"> </span>            "kernel-regression",
 </pre></div>
 </div>
 <ol class="arabic" start="6">

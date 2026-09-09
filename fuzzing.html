@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Performance Fuzz-testing &#8212; Perun 0.27.4 documentation</title>
+    <title>Performance Fuzz-testing &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -153,7 +153,7 @@ list the link to the report.</p>
 <p id="module-perun.fuzz.methods.textfile">Collects fuzzing rules specific for text files.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.change_character">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">change_character</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.change_character" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">change_character</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.change_character" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.4: Change random character.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -162,11 +162,16 @@ list the link to the report.</p>
 at random line to different character.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_character">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_character</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_character" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_character</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_character" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.15: remove a random character.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -174,11 +179,16 @@ at random line to different character.</p></li>
 <li><p><strong>Description</strong>: Removes a random character in random word in random line.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.divide_line">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">divide_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.divide_line" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">divide_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.divide_line" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.3: Divide line.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “&lt;author&gt;Gambardella, Matthew&lt;/author&gt;”</p></li>
@@ -186,11 +196,16 @@ at random line to different character.</p></li>
 <li><p><strong>Description</strong>: Divides a line by inserting newline character in random position.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.double_line">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">double_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.double_line" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">double_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.double_line" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.1: Double the size of a line.</strong></p>
 <ul>
 <li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
@@ -206,11 +221,16 @@ appearing in files. The rule doubles the selected random line in the input.</p><
 </div></blockquote>
 </li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.duplicate_line">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">duplicate_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.duplicate_line" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">duplicate_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.duplicate_line" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.2: Duplicate a line.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
@@ -219,11 +239,16 @@ appearing in files. The rule doubles the selected random line in the input.</p><
 line in the file.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_line">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_line" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_line" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.13: Remove random line.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -231,11 +256,16 @@ line in the file.</p></li>
 <li><p><strong>Description</strong>: Removes random line.</p></li>
 <li><p><strong>Known Issues</strong>:</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.append_whitespace">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">append_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.append_whitespace" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">append_whitespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.append_whitespace" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.8: Append whitespaces.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -243,11 +273,16 @@ line in the file.</p></li>
 <li><p><strong>Description</strong>: The rule appends random number of whitespaces at random line.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.insert_whitespace">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">insert_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.insert_whitespace" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">insert_whitespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.insert_whitespace" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.10: Insert whitespaces on a random place.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -259,11 +294,16 @@ tables, can have bad properties and lead to a singly-linked list when induced wi
 words (e.g. when one chooses wrong size of the table or bad hash-function).</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.prepend_whitespace">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">prepend_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.prepend_whitespace" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">prepend_whitespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.prepend_whitespace" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.9: Prepend whitespaces.</strong></p>
 <blockquote>
 <div><ul class="simple">
@@ -277,11 +317,16 @@ words (e.g. when one chooses wrong size of the table or bad hash-function).</p><
 </li>
 </ul>
 </div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.repeat_whitespace">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_whitespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_whitespace" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_whitespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_whitespace" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.11: Repeat whitespaces.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -291,11 +336,16 @@ line. There intuition behind this rule is that some trimming regular expressions
 can induce the excessive number of backtracking.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.bloat_words">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">bloat_words</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.bloat_words" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">bloat_words</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.bloat_words" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.12: Remove whitespaces.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
@@ -304,11 +354,16 @@ can induce the excessive number of backtracking.</p></li>
 words that might bloat the underlying structures.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.repeat_word">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_word</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_word" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">repeat_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.repeat_word" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.5: Repeat random word of a line.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -320,11 +375,16 @@ of words can either lead to faster (e.g. when the word is cached) or slower time
 algorithms, such as quick sort are forced to worst-case, when all elements are same.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.delete_word">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_word</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_word" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">delete_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.delete_word" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.14: Remove random word</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -332,11 +392,16 @@ algorithms, such as quick sort are forced to worst-case, when all elements are s
 <li><p><strong>Description</strong>: Removes random word in random line.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.sort_line">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.6: Sort words or numbers of a line.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
@@ -346,11 +411,16 @@ algorithm, that in some cases perform worse for sorted output, or to balanced tr
 might be unbalanced for sorted values.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.textfile.sort_line_in_reverse">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line_in_reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line_in_reverse" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.textfile.</span></span><span class="sig-name descname"><span class="pre">sort_line_in_reverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.textfile.sort_line_in_reverse" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule T.7: Sort words or numbers of a line in reverse.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “The quick brown fox.”</p></li>
@@ -360,13 +430,18 @@ algorithm, that in some cases perform worse for sorted output, or to balanced tr
 might be unbalanced for sorted values.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p id="module-perun.fuzz.methods.binary">In case of binary files we cannot apply specific domain knowledge nor can we be inspired by
 existing performance issues. Instead, we mostly adapt the classical fuzzing rules.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.insert_byte">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_byte" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_byte" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.3: Insert random byte.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -374,11 +449,16 @@ existing performance issues. Instead, we mostly adapt the classical fuzzing rul
 <li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.remove_byte">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_byte" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_byte" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.4: Remove random byte.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -386,11 +466,16 @@ existing performance issues. Instead, we mostly adapt the classical fuzzing rul
 <li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.swap_byte">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">swap_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.swap_byte" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">swap_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.swap_byte" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.5: Swap random bytes.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -399,11 +484,16 @@ existing performance issues. Instead, we mostly adapt the classical fuzzing rul
 two random bytes in the line and swaps them.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.insert_zero_byte">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_zero_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_zero_byte" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">insert_zero_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.insert_zero_byte" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.2: Insert random zero byte.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: This is C string. You are gonna love it.</p></li>
@@ -413,11 +503,16 @@ target the C language application, that process the strings as zero-terminated s
 bytes.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.remove_zero_byte">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_zero_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_zero_byte" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">remove_zero_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.remove_zero_byte" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.1: Remove random zero byte</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: This is C string.You are gonna love it.</p></li>
@@ -428,11 +523,16 @@ bytes. Removing the zero byte could lead to program non-termination, or at least
 when reading the whole memory.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.binary.flip_bit">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">flip_bit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.flip_bit" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.binary.</span></span><span class="sig-name descname"><span class="pre">flip_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.binary.flip_bit" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule B.6: Flip random bit.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: “the quick brown fox jumps over the lazy dog”</p></li>
@@ -440,6 +540,11 @@ when reading the whole memory.</p></li>
 <li><p><strong>Description</strong>: Implementation of classical fuzzing rule.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p id="module-perun.fuzz.methods.xml">Exploiting more domain-specific knowledge about the workload we
@@ -452,7 +557,7 @@ will fail to find one or more of closing brackets (representing recursion
 stop condition) and may hit a stack overflow error.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute_value">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_value" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_value" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule D.3: Removed attribute value.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
@@ -460,11 +565,16 @@ stop condition) and may hit a stack overflow error.</p>
 <li><p><strong>Description</strong>: Removes random value of the attribute in the random line and tag.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute_name">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_name" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute_name" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule D.2: Remove attribute name.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
@@ -472,11 +582,16 @@ stop condition) and may hit a stack overflow error.</p>
 <li><p><strong>Description</strong>: Removes name of the attribute in random tag in the random line.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_attribute">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_attribute" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule D.1: Remove an attribute.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
@@ -484,11 +599,16 @@ stop condition) and may hit a stack overflow error.</p>
 <li><p><strong>Description</strong>: Selects random tag and removes a random attribute.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="perun.fuzz.methods.xml.remove_tag">
-<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_tag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_tag" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">perun.fuzz.methods.xml.</span></span><span class="sig-name descname"><span class="pre">remove_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#perun.fuzz.methods.xml.remove_tag" title="Link to this definition">¶</a></dt>
 <dd><p><strong>Rule D.4: Remove tag.</strong></p>
 <ul class="simple">
 <li><p><strong>Input</strong>: &lt;book id=”bk106” pages=”457”&gt;</p></li>
@@ -496,6 +616,11 @@ stop condition) and may hit a stack overflow error.</p>
 <li><p><strong>Description</strong>: Removes a random tag.</p></li>
 <li><p><strong>Known Issues</strong>: none</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>We further offer the possibility of adding custom rules. For adding the rules to a mutation strategy

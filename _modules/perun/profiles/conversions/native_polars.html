@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.conversions.native_polars &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.conversions.native_polars</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for converting native profiles to Polars representations."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="c1"># Third-Party Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">structs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.conversions</span><span class="w"> </span><span class="kn">import</span> <span class="n">native_folded</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.polars</span><span class="w"> </span><span class="kn">import</span> <span class="n">parser</span><span class="p">,</span> <span class="n">structs</span> <span class="k">as</span> <span class="n">pl_structs</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.native</span><span class="w"> </span><span class="kn">import</span> <span class="n">Profile</span>
+
+
+<div class="viewcode-block" id="native_to_polars_lf">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.native_polars.native_to_polars_lf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">native_to_polars_lf</span><span class="p">(</span>
+    <span class="n">native_profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span>
+    <span class="n">postprocess_params</span><span class="p">:</span> <span class="n">structs</span><span class="o">.</span><span class="n">PostprocessParameters</span><span class="p">,</span>
+    <span class="n">maps</span><span class="p">:</span> <span class="n">pl_structs</span><span class="o">.</span><span class="n">FunctionMaps</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">LazyFrame</span><span class="p">,</span> <span class="n">structs</span><span class="o">.</span><span class="n">ProfileFeatures</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Load and postprocess a Perun profile into a Polars LazyFrame.</span>
+
+<span class="sd">    The resource consumption for each UID are aggregated into a single value according to the</span>
+<span class="sd">    aggregation function specified in the postprocessing parameters.</span>
+
+<span class="sd">    Note that the returned profile features contain only those features that can be computed</span>
+<span class="sd">    cheaply during the parsing.</span>
+
+<span class="sd">    :param native_profile: the Perun profile to convert to Polars</span>
+<span class="sd">    :param postprocess_params: postprocessing parameters and configuration</span>
+<span class="sd">    :param maps: function maps</span>
+
+<span class="sd">    :return: a LazyFrame and incomplete profile features structure</span>
+<span class="sd">    """</span>
+    <span class="n">features</span><span class="p">:</span> <span class="n">structs</span><span class="o">.</span><span class="n">ProfileFeatures</span> <span class="o">=</span> <span class="n">structs</span><span class="o">.</span><span class="n">ProfileFeatures</span><span class="p">()</span>
+    <span class="c1"># Check whether we should squash recursion and select the parse function accordingly.</span>
+    <span class="n">parse_func</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">parse_polars_squash</span>
+        <span class="k">if</span> <span class="n">postprocess_params</span><span class="o">.</span><span class="n">squash_recursion</span>
+        <span class="k">else</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_polars_no_squash</span>
+    <span class="p">)</span>
+    <span class="c1"># We re-use the native-to-folded conversion which takes care of aggregating the resource values.</span>
+    <span class="n">polars_prof</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LazyFrame</span> <span class="o">=</span> <span class="n">parse_func</span><span class="p">(</span>
+        <span class="n">native_folded</span><span class="o">.</span><span class="n">native_to_folded</span><span class="p">(</span><span class="n">native_profile</span><span class="p">,</span> <span class="s2">"amount"</span><span class="p">,</span> <span class="n">postprocess_params</span><span class="o">.</span><span class="n">agg_func</span><span class="p">),</span>
+        <span class="n">maps</span><span class="p">,</span>
+        <span class="n">postprocess_params</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">polars_prof</span><span class="p">,</span> <span class="n">features</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

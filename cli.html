@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command Line Interface &#8212; Perun 0.27.4 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -322,6 +322,12 @@ using the <code class="docutils literal notranslate"><span class="pre">--vcs-par
 <dd><p>States the configuration template that will be used for initialization of local configuration. See <a class="reference internal" href="config.html#config-templates"><span class="std std-ref">Predefined Configuration Templates</span></a> for more details about predefined  configurations.</p>
 </dd></dl>
 
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-init-allow-unsafe-options">
+<span class="sig-name descname"><span class="pre">--allow-unsafe-options</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-init-allow-unsafe-options" title="Link to this definition">¶</a></dt>
+<dd><p>Allow unsafe init options, e.g., <code class="docutils literal notranslate"><span class="pre">--separate-git-dir</span></code>.</p>
+</dd></dl>
+
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-perun-init-arg-path">
@@ -462,7 +468,7 @@ operate in the nearest config mode.</p>
 values.</p>
 <p>E.g. using the following can set the log format for nearest perun instance
 wrapper:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>format.shortlog<span class="w"> </span><span class="s2">&quot;| %source% | %collector% |&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>format.shortlog<span class="w"> </span><span class="s2">"| %source% | %collector% |"</span>
 format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w"> </span>%source%<span class="w"> </span><span class="p">|</span><span class="w"> </span>%collector%<span class="w"> </span><span class="p">|</span>
 </pre></div>
 </div>
@@ -2855,7 +2861,7 @@ is asked for confirmation by user.</p></li>
 index of <code class="docutils literal notranslate"><span class="pre">HEAD~1</span></code> commit. The resulting graph will contain bars
 representing sum of amounts per each subtype of resources and will be shown
 in the browser:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">-</span><span class="n">v</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">'amount'</span> <span class="o">--</span><span class="n">per</span> <span class="s1">'subtype'</span> <span class="o">-</span><span class="n">v</span>
 </pre></div>
 </div>
 <p>Example 2. The following command will show the profile at the absolute path
@@ -2910,7 +2916,7 @@ different graph width.</p>
 <p>Example 1. The following will display the sum of sums of amounts of all
 resources of given for each subtype, stacked by uid (e.g. the locations in
 the program):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">'amount'</span> <span class="o">--</span><span class="n">per</span> <span class="s1">'subtype'</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">'uid'</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>
@@ -3007,9 +3013,9 @@ the program):</p>
 <p>Flame graph interprets the relative and inclusive presence of the
 resources according to the stack depth of the origin of resources.</p>
 <div class="line-block">
-<div class="line">* <strong>Limitations</strong>: <cite>memory</cite> profiles generated by</div>
+<div class="line">* <strong>Limitations</strong>: <cite>memory</cite> or <cite>time</cite> profiles generated by</div>
 <div class="line-block">
-<div class="line"><a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</div>
+<div class="line"><a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a> or kperf.</div>
 </div>
 <div class="line">* <strong>Interpretation style</strong>: graphical</div>
 <div class="line">* <strong>Visualization backend</strong>: HTML</div>
@@ -3020,10 +3026,7 @@ the data is depicted, while on Y axis a stack depth is displayed. The wider
 the bars are on the X axis are, the more the function consumed resources
 relative to others.</p>
 <p><strong>Acknowledgements</strong>: Big thanks to Brendan Gregg for creating the original
-perl script for creating flame graphs w.r.t simple format. If you like this
-visualization technique, please check out this guy’s site
-(<a class="reference external" href="https://brendangregg.com">https://brendangregg.com</a>) for more information about performance, profiling
-and useful talks and visualization techniques!</p>
+perl script for creating flame graphs w.r.t folded format: <a class="reference external" href="https://brendangregg.com">https://brendangregg.com</a>.</p>
 <p>The example output of the flamegraph is more or less as follows:</p>
 <pre class="literal-block">                    `
                     -                         .
@@ -3037,7 +3040,7 @@ and useful talks and visualization techniques!</p>
                     +````||````||````||````||````||````</pre>
 <p>Refer to <a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> for more thorough description and
 examples of the interpretation technique. Refer to
-<a class="reference internal" href="profile.html#perun.profile.convert.to_flame_graph_format" title="perun.profile.convert.to_flame_graph_format"><code class="xref py py-func docutils literal notranslate"><span class="pre">perun.profile.convert.to_flame_graph_format()</span></code></a> for more details how
+<a class="reference internal" href="profile.html#perun.profiles.conversions.native_folded.native_to_folded" title="perun.profiles.conversions.native_folded.native_to_folded"><code class="xref py py-func docutils literal notranslate"><span class="pre">perun.profiles.conversions.native_folded.native_to_folded()</span></code></a> for more details how
 the profiles are converted to the flame graph format.</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>perun<span class="w"> </span>show<span class="w"> </span>flamegraph<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -3045,9 +3048,92 @@ the profiles are converted to the flame graph format.</p>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-f">
-<span id="cmdoption-perun-show-flamegraph-filename"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-f" title="Link to this definition">¶</a></dt>
-<dd><p>Sets the output file of the resulting flame graph.</p>
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-width">
+<span class="sig-name descname"><span class="pre">--flamegraph-width</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_width&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-width" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the width of the flamegraph images in pixels. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-height">
+<span class="sig-name descname"><span class="pre">--flamegraph-height</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_height&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-height" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the height of each flamegraph frame in pixels. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-minwidth">
+<span class="sig-name descname"><span class="pre">--flamegraph-minwidth</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_minwidth&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-minwidth" title="Link to this definition">¶</a></dt>
+<dd><p>Filter out fast functions in flamegraphs. May be specified either in pixels (integer or float value) or as a percentage of time if suffixed with ‘%’. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-fonttype">
+<span class="sig-name descname"><span class="pre">--flamegraph-fonttype</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_fonttype&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-fonttype" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the font type to use in flamegraphs. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-fontsize">
+<span class="sig-name descname"><span class="pre">--flamegraph-fontsize</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_fontsize&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-fontsize" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the font size of text in flamegraphs. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-bgcolors">
+<span class="sig-name descname"><span class="pre">--flamegraph-bgcolors</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_bgcolors&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-bgcolors" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the background colors for flamegraphs. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-colors">
+<span class="sig-name descname"><span class="pre">--flamegraph-colors</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flamegraph_colors&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-colors" title="Link to this definition">¶</a></dt>
+<dd><p>Specifies the color theme for flamegraphs. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-inverted">
+<span class="sig-name descname"><span class="pre">--flamegraph-inverted</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-inverted" title="Link to this definition">¶</a></dt>
+<dd><p>Draws icicle graphs instead of flame graphs. This option is forwarded to the flamegraph.pl/.py script.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-flamegraph-use-perl-scripts">
+<span class="sig-name descname"><span class="pre">--flamegraph-use-perl-scripts</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-flamegraph-use-perl-scripts" title="Link to this definition">¶</a></dt>
+<dd><p>Use the canonical Perl scripts for generating flame graphs. Otherwise, our custom Python scripts will be used.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-squash">
+<span id="cmdoption-perun-show-flamegraph-no-squash"></span><span class="sig-name descname"><span class="pre">--squash</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-squash</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-squash" title="Link to this definition">¶</a></dt>
+<dd><p>Enables or disables squashing recursive function calls into a single stack frame (default=True)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-squash-regex">
+<span class="sig-name descname"><span class="pre">--squash-regex</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;squash_regex&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-squash-regex" title="Link to this definition">¶</a></dt>
+<dd><p>A regex specifying function names to squash if squashing is enabled (default=.*)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-hide-generics">
+<span class="sig-name descname"><span class="pre">--hide-generics</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-hide-generics" title="Link to this definition">¶</a></dt>
+<dd><p>Hide generic types, e.g., template specifications, in function names (default=False).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-a">
+<span id="cmdoption-perun-show-flamegraph-aggregate-by"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--aggregate-by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;aggregate_by&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-a" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregates the resources in profiles by given statistical function (default=median).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sum | min | max | count | nunique | mean | avg | average | median | med</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-perun-show-flamegraph-o">
+<span id="cmdoption-perun-show-flamegraph-output-path"></span><span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output-path</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_path&gt;</span></span><a class="headerlink" href="#cmdoption-perun-show-flamegraph-o" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the output file path (default=./flame.svg).</p>
 </dd></dl>
 
 </section>
@@ -3074,8 +3160,8 @@ different graph width.</p>
 <p>Example 1. The following will show the average amount (in this case
 the function running time) of each function depending on the size of the
 structure over which the given function operated:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
-    <span class="o">--</span><span class="n">accumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">'amount'</span> <span class="o">--</span><span class="n">per</span> <span class="s1">'structure-unit-size'</span>
+    <span class="o">--</span><span class="n">accumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">'uid'</span>
 </pre></div>
 </div>
 <p>The example output of the bars is as follows:</p>

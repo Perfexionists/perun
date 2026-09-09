@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.polars.structs &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.polars.structs</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""A collection of Polars profile representations and helper structures."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+
+<span class="c1"># Third-Party Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">structs</span>
+
+
+<div class="viewcode-block" id="FunctionMaps">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.polars.structs.FunctionMaps">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionMaps</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A collection of mappings between function names and IDs created during parsing of profiles.</span>
+
+<span class="sd">    The mappings are used to map function names to their IDs and back, which optimizes both memory</span>
+<span class="sd">    and time of profile representation and manipulation.</span>
+
+<span class="sd">    The maps may be reused when parsing multiple profiles (e.g., multiple baseline and target</span>
+<span class="sd">    profiles), which leads to faster and easier matching when merging the profiles.</span>
+
+<span class="sd">    :ivar func_id_map: a mapping of function name -&gt; function ID</span>
+<span class="sd">    :ivar func_id_reverse_map: a mapping of function ID -&gt; function name; sorted by function ID</span>
+<span class="sd">    :ivar squashed_id_map: a mapping of squashed function ID -&gt; function ID; squashed functions</span>
+<span class="sd">          refer to artificial function names representing merged recursive calls, e.g. 'func{x5}'</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"func_id_map"</span><span class="p">,</span> <span class="s2">"func_id_reverse_map"</span><span class="p">,</span> <span class="s2">"squashed_id_map"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_id_map</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func_id_map</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_id_reverse_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">squashed_id_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Construct the reverse map.</span>
+
+<span class="sd">        The reverse map is sorted in ascending order according to the function IDs, i.e., the keys.</span>
+
+<span class="sd">        The finalization should be done after all profiles are parsed.</span>
+<span class="sd">        """</span>
+        <span class="c1"># The func_id_map is sorted by values, i.e., the function IDs (see the defaultdict factory</span>
+        <span class="c1"># lambda). Hence, the reverse map will be sorted as well as long as it is constructed by</span>
+        <span class="c1"># iterating over the func_id_map.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_id_reverse_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">f_id</span><span class="p">:</span> <span class="n">f_name</span> <span class="k">for</span> <span class="n">f_name</span><span class="p">,</span> <span class="n">f_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_id_map</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+
+
+<div class="viewcode-block" id="PolarsTraceProfile">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.polars.structs.PolarsTraceProfile">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolarsTraceProfile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A Polars DataFrame representation of a single profile containing traces (e.g., perf folded).</span>
+
+<span class="sd">    The profile DataFrame has the following columns: 'func', 'trace', 'inclusive', 'exclusive'</span>
+<span class="sd">    where 'func' is the ID of the last function the trace, 'trace' is a semicolon-delimited string</span>
+<span class="sd">    of function IDs representing the trace, and 'inclusive' and 'exclusive' store the resource</span>
+<span class="sd">    consumption of the trace.</span>
+
+<span class="sd">    For example, the profile DataFrame might look like this:</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    shape: (369_033, 4)</span>
+<span class="sd">    ┌──────┬─────────────────────────────────┬───────────┬───────────┐</span>
+<span class="sd">    │ func ┆ trace                           ┆ inclusive ┆ exclusive │</span>
+<span class="sd">    │ ---  ┆ ---                             ┆ ---       ┆ ---       │</span>
+<span class="sd">    │ u32  ┆ str                             ┆ i64       ┆ i64       │</span>
+<span class="sd">    ╞══════╪═════════════════════════════════╪═══════════╪═══════════╡</span>
+<span class="sd">    │ 8    ┆ 0;3;2;4;5;6;7;8                 ┆ 657306    ┆ 657306    │</span>
+<span class="sd">    │ 15   ┆ 0;9;2;4;5;6;10;11;12;13;14;15   ┆ 475601    ┆ 475601    │</span>
+<span class="sd">    │ 27   ┆ 0;17;16;4;5;18;19;20;21;22;23;… ┆ 683530    ┆ 683530    │</span>
+<span class="sd">    │ …    ┆ …                               ┆ …         ┆ …         │</span>
+<span class="sd">    │ 6201 ┆ 6202;657;658;6186;6187;6200;62… ┆ 1360700   ┆ 1360700   │</span>
+<span class="sd">    │ 453  ┆ 6202;657;658;6186;6187;6203;29… ┆ 78594     ┆ 78594     │</span>
+<span class="sd">    │ 106  ┆ 6202;657;658;6186;6187;6203;29… ┆ 271800    ┆ 271800    │</span>
+<span class="sd">    └──────┴─────────────────────────────────┴───────────┴───────────┘</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    :ivar profile: a DataFrame representation of a trace profile</span>
+<span class="sd">    :ivar features: a set of features describing and summarizing the profile</span>
+<span class="sd">    :ivar maps: function maps created during the parsing of the profile</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"profile"</span><span class="p">,</span> <span class="s2">"features"</span><span class="p">,</span> <span class="s2">"maps"</span>
+
+    <span class="n">profile</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">features</span><span class="p">:</span> <span class="n">structs</span><span class="o">.</span><span class="n">ProfileFeatures</span>
+    <span class="n">maps</span><span class="p">:</span> <span class="n">FunctionMaps</span></div>
+
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolarsTraceProfilePair</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A Polars representation of a pair of baseline and target trace profiles.</span>
+
+<span class="sd">    This representation should be preferred when working with a pair of profiles that are expected</span>
+<span class="sd">    to be compared and analyzed, as it also stores sets of functions and traces that appear in both</span>
+<span class="sd">    profiles. These sets take into account all functions and traces that appeared in both profiles,</span>
+<span class="sd">    even if they have no measured exclusive resource consumption (and as such are omitted from the</span>
+<span class="sd">    PolarsTraceProfile). Currently, only functions and traces that are exact match are considered</span>
+<span class="sd">    to be common to both profiles.</span>
+
+<span class="sd">    :ivar baseline: the baseline trace profile</span>
+<span class="sd">    :ivar target: the target trace profile</span>
+<span class="sd">    :ivar common_traces: a DataFrame containing only one column 'trace' with traces that appear in</span>
+<span class="sd">          both profiles</span>
+<span class="sd">    :ivar common_funcs: a DataFrame containing only one column 'func' with function IDs that appear</span>
+<span class="sd">          in both profiles</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"baseline"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">,</span> <span class="s2">"common_traces"</span><span class="p">,</span> <span class="s2">"common_funcs"</span>
+
+    <span class="n">baseline</span><span class="p">:</span> <span class="n">PolarsTraceProfile</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">PolarsTraceProfile</span>
+    <span class="n">common_traces</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">common_funcs</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolarsMergedTraceProfiles</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A Polars representation of merged baseline-target trace and function profiles.</span>
+
+<span class="sd">    This representation stores both per-trace and per-function profiles that contain merged rows</span>
+<span class="sd">    for some baseline and target profiles.</span>
+
+<span class="sd">    *Structure*: Both DataFrames contain the 'func', 'inclusive', 'exclusive', 'inclusive_target',</span>
+<span class="sd">    'exclusive_target', 'prop_diff_incl', and 'prop_diff_excl' columns. The merged traces profile</span>
+<span class="sd">    additionally contains the 'trace' column. See the module docstring for description of the</span>
+<span class="sd">    difference metrics.</span>
+
+<span class="sd">    The merged function profile contains aggregated resource consumption (aggregated separately for</span>
+<span class="sd">    baseline and target profiles) across all traces associated with a function. Furthermore, it</span>
+<span class="sd">    omits functions that have 0 exclusive cost and do not meet filtering thresholds</span>
+<span class="sd">    (see FilterParameters).</span>
+
+<span class="sd">    The merged trace profile omits all traces that belong to filtered functions, and all traces that</span>
+<span class="sd">    have 0 exclusive cost and do not meet filtering thresholds (see FilterParameters).</span>
+
+<span class="sd">    For example, the merged traces and merged function DataFrames might look like this:</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    shape: (32_342, 8)</span>
+<span class="sd">    ┌──────┬───────────┬───────────┬───┬──────────────────┬────────────────┬────────────────┐</span>
+<span class="sd">    │ func ┆ trace     ┆ inclusive ┆ … ┆ exclusive_target ┆ prop_diff_incl ┆ prop_diff_excl │</span>
+<span class="sd">    │ ---  ┆ ---       ┆ ---       ┆ … ┆ ---              ┆ ---            ┆ ---            │</span>
+<span class="sd">    │ u32  ┆ str       ┆ i64       ┆ … ┆ i64              ┆ f32            ┆ f32            │</span>
+<span class="sd">    ╞══════╪═══════════╪═══════════╪═══╪══════════════════╪════════════════╪════════════════╡</span>
+<span class="sd">    │ 4    ┆ 971;4     ┆ 808775194 ┆ … ┆ 0                ┆ -0.010969      ┆ -0.000006      │</span>
+<span class="sd">    │ 5    ┆ 971;4;5   ┆ 808331377 ┆ … ┆ 0                ┆ -0.010963      ┆ -0.000009      │</span>
+<span class="sd">    │ 238  ┆ 971;4;5;… ┆ 246640065 ┆ … ┆ 0                ┆ -0.003345      ┆ -0.000063      │</span>
+<span class="sd">    │ …    ┆ …         ┆ …         ┆ … ┆ …                ┆ …              ┆ …              │</span>
+<span class="sd">    │ 135  ┆ 1554;155… ┆ 0         ┆ … ┆ 24230903         ┆ 0.001149       ┆ 0.001077       │</span>
+<span class="sd">    │ 6235 ┆ 4;5;6235  ┆ 0         ┆ … ┆ 2683915          ┆ 0.014867       ┆ 0.000119       │</span>
+<span class="sd">    │ 185  ┆ 3471;29…  ┆ 0         ┆ … ┆ 81537127         ┆ 0.003625       ┆ 0.003625       │</span>
+<span class="sd">    └──────┴───────────┴───────────┴───┴──────────────────┴────────────────┴────────────────┘</span>
+
+<span class="sd">    shape: (482, 7)</span>
+<span class="sd">    ┌──────┬──────────────┬──────────────┬───┬──────────────────┬────────────────┬────────────────┐</span>
+<span class="sd">    │ func ┆ inclusive    ┆ exclusive    ┆ … ┆ exclusive_target ┆ prop_diff_incl ┆ prop_diff_excl │</span>
+<span class="sd">    │ ---  ┆ ---          ┆ ---          ┆ … ┆ ---              ┆ ---            ┆ ---            │</span>
+<span class="sd">    │ u32  ┆ i64          ┆ i64          ┆ … ┆ i64              ┆ f32            ┆ f32            │</span>
+<span class="sd">    ╞══════╪══════════════╪══════════════╪═══╪══════════════════╪════════════════╪════════════════╡</span>
+<span class="sd">    │ 545  ┆ 905453006855 ┆ 203226689    ┆ … ┆ 162086637        ┆ 34.676102      ┆ 0.004449       │</span>
+<span class="sd">    │ 1200 ┆ 4591717786   ┆ 486459792    ┆ … ┆ 243767256        ┆ 0.304794       ┆ 0.004239       │</span>
+<span class="sd">    │ 3823 ┆ 108197824030 ┆ 104876145383 ┆ … ┆ 23210060569      ┆ -0.403142      ┆ -0.390618      │</span>
+<span class="sd">    │ …    ┆ …            ┆ …            ┆ … ┆ …                ┆ …              ┆ …              │</span>
+<span class="sd">    │ 1569 ┆ 49300568157  ┆ 208229571    ┆ … ┆ 54313042         ┆ -0.368518      ┆ -0.00041       │</span>
+<span class="sd">    │ 6931 ┆ 0            ┆ 0            ┆ … ┆ 79892101         ┆ 0.184407       ┆ 0.003551       │</span>
+<span class="sd">    │ 777  ┆ 25804957237  ┆ 12916984718  ┆ … ┆ 1312987872       ┆ -0.24692       ┆ -0.116819      │</span>
+<span class="sd">    └──────┴──────────────┴──────────────┴───┴──────────────────┴────────────────┴────────────────┘</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Note that if a function or trace shows 0 resource consumption in target or baseline, it does not</span>
+<span class="sd">    mean that such function or trace is baseline-only or target-only, respectively, since the</span>
+<span class="sd">    baseline and target profiles have already omitted functions and traces that exist in the profile</span>
+<span class="sd">    but have no exclusive resource consumption (see PolarsTraceProfile for more details). Use the</span>
+<span class="sd">    'common_traces' and 'common_funcs' to determine whether a 0 resource consumption indicates</span>
+<span class="sd">    baseline-only or target-only records.</span>
+
+<span class="sd">    :ivar traces: a merged trace profile</span>
+<span class="sd">    :ivar funcs: a merged per-function profile</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"traces"</span><span class="p">,</span> <span class="s2">"funcs"</span>
+
+    <span class="n">traces</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">funcs</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolarsTabularTraceProfiles</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A Polars representation of baseline-target trace and function tabular profiles.</span>
+
+<span class="sd">    The tabular trace and function profiles are similar to the merged profiles but contain fewer</span>
+<span class="sd">    records, additional difference metrics, and are sorted such that they can be easily iterated in</span>
+<span class="sd">    a lockstep to generate tabular records for diff reports.</span>
+
+<span class="sd">    *Structure*: Both DataFrames contain the 'func', 'inclusive', 'exclusive', 'inclusive_target',</span>
+<span class="sd">    'exclusive_target', 'prop_diff_incl', 'prop_diff_excl', 'abs_diff_incl', 'abs_diff_excl',</span>
+<span class="sd">    'rel_diff_incl', and 'rel_diff_excl' columns. The traces profile additionally contains the</span>
+<span class="sd">    'trace' column. See the module docstring for description of the difference metrics.</span>
+
+<span class="sd">    *Filtered*: The trace profile will have only up to top 'max_traces_per_func' traces per each</span>
+<span class="sd">    function w.r.t. the 'prop_diff_incl' and 'prop_diff_excl' metric. Note that the traces are</span>
+<span class="sd">    deduplicated; for example, if `max_traces_per_func` = 10 and some function has a total of 15</span>
+<span class="sd">    traces, but only 13 of them appear in both top selections, the resulting table will keep only</span>
+<span class="sd">    the 13 traces instead of 20 (7 of which would be duplicated).</span>
+
+<span class="sd">    *Sorted*: Both profiles are sorted by the function IDs in the ascending order.</span>
+
+<span class="sd">    For example, the tabular traces and function DataFrames might look like this:</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    shape: (3_447, 12)</span>
+<span class="sd">    ┌──────┬─────────────┬───────────────┬───┬───────────────┬───────────────┬───────────────┐</span>
+<span class="sd">    │ func ┆ trace       ┆ inclusive     ┆ … ┆ abs_diff_excl ┆ rel_diff_incl ┆ rel_diff_excl │</span>
+<span class="sd">    │ ---  ┆ ---         ┆ ---           ┆   ┆ ---           ┆ ---           ┆ ---           │</span>
+<span class="sd">    │ u32  ┆ str         ┆ i64           ┆   ┆ i64           ┆ f32           ┆ f32           │</span>
+<span class="sd">    ╞══════╪═════════════╪═══════════════╪═══╪═══════════════╪═══════════════╪═══════════════╡</span>
+<span class="sd">    │ 4    ┆ 1;268;4     ┆ 1246557813681 ┆ … ┆ -39682724     ┆ -1.382918     ┆ -68.930069    │</span>
+<span class="sd">    │ 4    ┆ 1;124;4     ┆ 0             ┆ … ┆ 1900490       ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ 4    ┆ 1;1174;4    ┆ 0             ┆ … ┆ 260703        ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ …    ┆ …           ┆ …             ┆ … ┆ …             ┆ …             ┆ …             │</span>
+<span class="sd">    │ 7483 ┆ 5284;5304;… ┆ 0             ┆ … ┆ 14016473      ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ 7483 ┆ 5284;5290;… ┆ 0             ┆ … ┆ 8070493       ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ 7483 ┆ 5284;5290;… ┆ 0             ┆ … ┆ 8065807       ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    └──────┴─────────────┴───────────────┴───┴───────────────┴───────────────┴───────────────┘</span>
+
+<span class="sd">    shape: (482, 11)</span>
+<span class="sd">    ┌──────┬───────────────┬───┬────────────────┬───────────────┬───────────────┬───────────────┐</span>
+<span class="sd">    │ func ┆ inclusive     ┆ … ┆ abs_diff_incl  ┆ abs_diff_excl ┆ rel_diff_incl ┆ rel_diff_excl │</span>
+<span class="sd">    │ ---  ┆ ---           ┆   ┆ ---            ┆ ---           ┆ ---           ┆ ---           │</span>
+<span class="sd">    │ u32  ┆ i64           ┆   ┆ i64            ┆ i64           ┆ f32           ┆ f32           │</span>
+<span class="sd">    ╞══════╪═══════════════╪═══╪════════════════╪═══════════════╪═══════════════╪═══════════════╡</span>
+<span class="sd">    │ 4    ┆ 4238716948387 ┆ … ┆ -2653980496373 ┆ -52677630     ┆ -62.612827    ┆ -42.958553    │</span>
+<span class="sd">    │ 5    ┆ 4247354710131 ┆ … ┆ -2658348948953 ┆ -97869614     ┆ -62.588345    ┆ -20.323265    │</span>
+<span class="sd">    │ 11   ┆ 196590265531  ┆ … ┆ -196590265531  ┆ -1199560386   ┆ -100.0        ┆ -100.0        │</span>
+<span class="sd">    │ …    ┆ …             ┆ … ┆ …              ┆ …             ┆ …             ┆ …             │</span>
+<span class="sd">    │ 6941 ┆ 0             ┆ … ┆ 24743188735    ┆ 95707629      ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ 6942 ┆ 0             ┆ … ┆ 24044566859    ┆ 225687075     ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    │ 7483 ┆ 0             ┆ … ┆ 3459034839     ┆ 71846967      ┆ 100.0         ┆ 100.0         │</span>
+<span class="sd">    └──────┴───────────────┴───┴────────────────┴───────────────┴───────────────┴───────────────┘</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Note that if a function or trace shows 0 resource consumption in target or baseline, it does not</span>
+<span class="sd">    mean that such function or trace is baseline-only or target-only, respectively, since the</span>
+<span class="sd">    baseline and target profiles have already omitted functions and traces that exist in the profile</span>
+<span class="sd">    but have no exclusive resource consumption (see PolarsTraceProfile for more details). Use the</span>
+<span class="sd">    'common_traces' and 'common_funcs' to determine whether a 0 resource consumption indicates</span>
+<span class="sd">    baseline-only or target-only records.</span>
+
+<span class="sd">    :ivar traces: a merged trace profile</span>
+<span class="sd">    :ivar funcs: a merged per-function profile</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">"traces"</span><span class="p">,</span> <span class="s2">"funcs"</span>
+
+    <span class="n">traces</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">funcs</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

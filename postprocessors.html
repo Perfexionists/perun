@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Postprocessors Overview &#8212; Perun 0.27.4 documentation</title>
+    <title>Postprocessors Overview &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -225,210 +225,210 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <section id="examples">
 <span id="postprocessors-regression-analysis-examples"></span><h4>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h4>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="p">{</span>
-<span class="linenos">  2</span><span class="w">  </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">  3</span><span class="w">    </span><span class="nt">&quot;SLList_insert(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">  4</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">  2</span><span class="w">  </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">  3</span><span class="w">    </span><span class="nt">"SLList_insert(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">  4</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">  5</span><span class="w">        </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos">  6</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">  7</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">  7</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">  8</span><span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
 <span class="linenos">  9</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 10</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 11</span><span class="w">    </span><span class="nt">&quot;SLList_destroy(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 12</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 11</span><span class="w">    </span><span class="nt">"SLList_destroy(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 12</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 13</span><span class="w">        </span><span class="mi">1</span>
 <span class="linenos"> 14</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 15</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 15</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 16</span><span class="w">        </span><span class="mi">4</span>
 <span class="linenos"> 17</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 18</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 19</span><span class="w">    </span><span class="nt">&quot;SLList_init(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 20</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 19</span><span class="w">    </span><span class="nt">"SLList_init(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 20</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 21</span><span class="w">        </span><span class="mi">6</span>
 <span class="linenos"> 22</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 23</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 23</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 24</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos"> 25</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 26</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 27</span><span class="w">    </span><span class="nt">&quot;SLList_search(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 28</span><span class="w">      </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 27</span><span class="w">    </span><span class="nt">"SLList_search(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 28</span><span class="w">      </span><span class="nt">"amount"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 29</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos"> 30</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos"> 31</span><span class="w">      </span><span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 31</span><span class="w">      </span><span class="nt">"structure-unit-size"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos"> 32</span><span class="w">        </span><span class="mi">0</span>
 <span class="linenos"> 33</span><span class="w">      </span><span class="p">]</span>
 <span class="linenos"> 34</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos"> 35</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos"> 36</span><span class="w">  </span><span class="nt">&quot;header&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 37</span><span class="w">    </span><span class="nt">&quot;workload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos"> 38</span><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
-<span class="linenos"> 39</span><span class="w">    </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 40</span><span class="w">      </span><span class="nt">&quot;mixed(time delta)&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;us&quot;</span>
+<span class="linenos"> 36</span><span class="w">  </span><span class="nt">"header"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 37</span><span class="w">    </span><span class="nt">"workload"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos"> 38</span><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span><span class="p">,</span>
+<span class="linenos"> 39</span><span class="w">    </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 40</span><span class="w">      </span><span class="nt">"mixed(time delta)"</span><span class="p">:</span><span class="w"> </span><span class="s2">"us"</span>
 <span class="linenos"> 41</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos"> 42</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-<span class="linenos"> 43</span><span class="w">    </span><span class="nt">&quot;cmd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;../stap-collector/tst&quot;</span>
+<span class="linenos"> 42</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span>
+<span class="linenos"> 43</span><span class="w">    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"../stap-collector/tst"</span>
 <span class="hll"><span class="linenos"> 44</span><span class="w">  </span><span class="p">},</span>
-</span><span class="hll"><span class="linenos"> 45</span><span class="w">  </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos"> 45</span><span class="w">  </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos"> 46</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 47</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos"> 47</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos"> 48</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 49</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.75</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 50</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos"> 49</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.75</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 50</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos"> 51</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 52</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 53</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 54</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos"> 53</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 54</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos"> 55</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos"> 56</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos"> 57</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 58</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 59</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 60</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 61</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 62</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos"> 57</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 58</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 59</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"constant"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 60</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 61</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 62</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos"> 63</span><span class="w">    </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 64</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 65</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos"> 65</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos"> 66</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 67</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 68</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos"> 67</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 68</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos"> 69</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 70</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 71</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 72</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos"> 71</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 72</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos"> 73</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos"> 74</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos"> 75</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 76</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 77</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;exponential&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 78</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 79</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 80</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos"> 75</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 76</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 77</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"exponential"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 78</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 79</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 80</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos"> 81</span><span class="w">    </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 82</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 83</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos"> 83</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos"> 84</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 85</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 86</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos"> 85</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 86</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos"> 87</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos"> 88</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos"> 89</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 90</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos"> 89</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 90</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos"> 91</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos"> 92</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos"> 93</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 94</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.06666666666666667</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 95</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 96</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 97</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos"> 98</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos"> 93</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 94</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.06666666666666667</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 95</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"linear"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 96</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 97</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos"> 98</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos"> 99</span><span class="w">    </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">100</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">101</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos">101</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos">102</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">103</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.08877935258260898</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">104</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos">103</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.08877935258260898</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">104</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos">105</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">106</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">107</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9675751528184126</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">108</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos">107</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9675751528184126</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">108</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos">109</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos">110</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos">111</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">112</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8668309711260865</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">113</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;logarithmic&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">114</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">115</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">116</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos">111</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">112</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8668309711260865</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">113</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"logarithmic"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">114</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">115</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">116</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos">117</span><span class="w">    </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">118</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">119</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos">119</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos">120</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">121</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">122</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos">121</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">122</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos">123</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">124</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">125</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">126</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos">125</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">126</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos">127</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos">128</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos">129</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">130</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">131</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;power&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">132</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">133</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">134</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos">129</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">130</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">131</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"power"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">132</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">133</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">134</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos">135</span><span class="w">    </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">136</span><span class="w">    </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">137</span><span class="w">      </span><span class="nt">&quot;coeffs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="linenos">137</span><span class="w">      </span><span class="nt">"coeffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span class="hll"><span class="linenos">138</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">139</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5714285714285714</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">140</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b0&quot;</span>
+</span><span class="hll"><span class="linenos">139</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5714285714285714</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">140</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b0"</span>
 </span><span class="hll"><span class="linenos">141</span><span class="w">        </span><span class="p">},</span>
 </span><span class="hll"><span class="linenos">142</span><span class="w">        </span><span class="p">{</span>
-</span><span class="hll"><span class="linenos">143</span><span class="w">          </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05102040816326531</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">144</span><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1&quot;</span>
+</span><span class="hll"><span class="linenos">143</span><span class="w">          </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05102040816326531</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">144</span><span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b1"</span>
 </span><span class="hll"><span class="linenos">145</span><span class="w">        </span><span class="p">}</span>
 </span><span class="hll"><span class="linenos">146</span><span class="w">      </span><span class="p">],</span>
-</span><span class="hll"><span class="linenos">147</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">148</span><span class="w">      </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.17006802721088435</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">149</span><span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quadratic&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">150</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">151</span><span class="w">      </span><span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span class="hll"><span class="linenos">152</span><span class="w">      </span><span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+</span><span class="hll"><span class="linenos">147</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">148</span><span class="w">      </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.17006802721088435</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">149</span><span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quadratic"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">150</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">151</span><span class="w">      </span><span class="nt">"x_interval_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span class="hll"><span class="linenos">152</span><span class="w">      </span><span class="nt">"x_interval_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 </span><span class="hll"><span class="linenos">153</span><span class="w">    </span><span class="p">}</span>
 </span><span class="linenos">154</span><span class="w">  </span><span class="p">],</span>
-<span class="linenos">155</span><span class="w">  </span><span class="nt">&quot;collector_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">156</span><span class="w">    </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">157</span><span class="w">      </span><span class="nt">&quot;global_sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="linenos">158</span><span class="w">      </span><span class="nt">&quot;sampling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">155</span><span class="w">  </span><span class="nt">"collector_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">156</span><span class="w">    </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">157</span><span class="w">      </span><span class="nt">"global_sampling"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="linenos">158</span><span class="w">      </span><span class="nt">"sampling"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="linenos">159</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos">160</span><span class="w">          </span><span class="nt">&quot;func&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-<span class="linenos">161</span><span class="w">          </span><span class="nt">&quot;sample&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="linenos">160</span><span class="w">          </span><span class="nt">"func"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+<span class="linenos">161</span><span class="w">          </span><span class="nt">"sample"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos">162</span><span class="w">        </span><span class="p">},</span>
 <span class="linenos">163</span><span class="w">        </span><span class="p">{</span>
-<span class="linenos">164</span><span class="w">          </span><span class="nt">&quot;func&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;func1&quot;</span><span class="p">,</span>
-<span class="linenos">165</span><span class="w">          </span><span class="nt">&quot;sample&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="linenos">164</span><span class="w">          </span><span class="nt">"func"</span><span class="p">:</span><span class="w"> </span><span class="s2">"func1"</span><span class="p">,</span>
+<span class="linenos">165</span><span class="w">          </span><span class="nt">"sample"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="linenos">166</span><span class="w">        </span><span class="p">}</span>
 <span class="linenos">167</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">168</span><span class="w">      </span><span class="nt">&quot;rules&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="linenos">169</span><span class="w">        </span><span class="s2">&quot;SLList_init&quot;</span><span class="p">,</span>
-<span class="linenos">170</span><span class="w">        </span><span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
-<span class="linenos">171</span><span class="w">        </span><span class="s2">&quot;SLList_search&quot;</span><span class="p">,</span>
-<span class="linenos">172</span><span class="w">        </span><span class="s2">&quot;SLList_destroy&quot;</span>
+<span class="linenos">168</span><span class="w">      </span><span class="nt">"rules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">169</span><span class="w">        </span><span class="s2">"SLList_init"</span><span class="p">,</span>
+<span class="linenos">170</span><span class="w">        </span><span class="s2">"SLList_insert"</span><span class="p">,</span>
+<span class="linenos">171</span><span class="w">        </span><span class="s2">"SLList_search"</span><span class="p">,</span>
+<span class="linenos">172</span><span class="w">        </span><span class="s2">"SLList_destroy"</span>
 <span class="linenos">173</span><span class="w">      </span><span class="p">],</span>
-<span class="linenos">174</span><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span>
+<span class="linenos">174</span><span class="w">      </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"custom"</span>
 <span class="linenos">175</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">176</span><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;complexity&quot;</span>
+<span class="linenos">176</span><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"complexity"</span>
 <span class="linenos">177</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">178</span><span class="w">  </span><span class="nt">&quot;resource_type_map&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">179</span><span class="w">    </span><span class="nt">&quot;SLList_insert(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">180</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">181</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_insert(SLList*, int)&quot;</span><span class="p">,</span>
-<span class="linenos">182</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">183</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">178</span><span class="w">  </span><span class="nt">"resource_type_map"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">179</span><span class="w">    </span><span class="nt">"SLList_insert(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">180</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">181</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_insert(SLList*, int)"</span><span class="p">,</span>
+<span class="linenos">182</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">183</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">184</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">185</span><span class="w">    </span><span class="nt">&quot;SLList_destroy(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">186</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">187</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_destroy(SLList*)&quot;</span><span class="p">,</span>
-<span class="linenos">188</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">189</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">185</span><span class="w">    </span><span class="nt">"SLList_destroy(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">186</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">187</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_destroy(SLList*)"</span><span class="p">,</span>
+<span class="linenos">188</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">189</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">190</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">191</span><span class="w">    </span><span class="nt">&quot;SLList_init(SLList*)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">192</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">193</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_init(SLList*)&quot;</span><span class="p">,</span>
-<span class="linenos">194</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">195</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">191</span><span class="w">    </span><span class="nt">"SLList_init(SLList*)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">192</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">193</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_init(SLList*)"</span><span class="p">,</span>
+<span class="linenos">194</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">195</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">196</span><span class="w">    </span><span class="p">},</span>
-<span class="linenos">197</span><span class="w">    </span><span class="nt">&quot;SLList_search(SLList*, int)#0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos">198</span><span class="w">      </span><span class="nt">&quot;subtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-<span class="linenos">199</span><span class="w">      </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SLList_search(SLList*, int)&quot;</span><span class="p">,</span>
-<span class="linenos">200</span><span class="w">      </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
-<span class="linenos">201</span><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mixed&quot;</span>
+<span class="linenos">197</span><span class="w">    </span><span class="nt">"SLList_search(SLList*, int)#0"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">198</span><span class="w">      </span><span class="nt">"subtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"time delta"</span><span class="p">,</span>
+<span class="linenos">199</span><span class="w">      </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SLList_search(SLList*, int)"</span><span class="p">,</span>
+<span class="linenos">200</span><span class="w">      </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.8e-05s"</span><span class="p">,</span>
+<span class="linenos">201</span><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mixed"</span>
 <span class="linenos">202</span><span class="w">    </span><span class="p">}</span>
 <span class="linenos">203</span><span class="w">  </span><span class="p">},</span>
-<span class="linenos">204</span><span class="w">  </span><span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="linenos">205</span><span class="w">  </span><span class="nt">&quot;origin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;f7f3dcea69b97f2b03c421a223a770917149cfae&quot;</span>
+<span class="linenos">204</span><span class="w">  </span><span class="nt">"postprocessors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="linenos">205</span><span class="w">  </span><span class="nt">"origin"</span><span class="p">:</span><span class="w"> </span><span class="s2">"f7f3dcea69b97f2b03c421a223a770917149cfae"</span>
 <span class="linenos">206</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -550,17 +550,17 @@ the code of these methods, you can visit <a class="reference external" href="htt
 <span id="id3"></span><h4>Examples<a class="headerlink" href="#postprocessors-regressogram-examples" title="Link to this heading">¶</a></h4>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;bucket_stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"bucket_stats"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="mf">13.0</span><span class="p">,</span>
 <span class="w">        </span><span class="mf">25.5</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linear::test2&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;bucket_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;doane&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;regressogram&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7575757575757576</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;statistic_function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"linear::test2"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bucket_method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"doane"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"regressogram"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.7575757575757576</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_end"</span><span class="p">:</span><span class="w"> </span><span class="mf">9.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"statistic_function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mean"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_start"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -801,7 +801,7 @@ factor or length of the average.</p>
 <span id="id5"></span><h4>Examples<a class="headerlink" href="#postprocessors-moving-average-examples" title="Link to this heading">¶</a></h4>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;bucket_stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"bucket_stats"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="mf">0.0</span><span class="p">,</span>
 <span class="w">      </span><span class="mf">3.0</span><span class="p">,</span>
 <span class="w">      </span><span class="mf">24.0</span><span class="p">,</span>
@@ -809,14 +809,14 @@ factor or length of the average.</p>
 <span class="w">      </span><span class="mf">192.0</span><span class="p">,</span>
 <span class="w">      </span><span class="mf">375.0</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;per_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pow::test3&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;moving_average&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;moving_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sma&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;window_width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="nt">"per_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"structure-unit-size"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pow::test3"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"moving_average"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"moving_method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sma"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"window_width"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1411,15 +1411,15 @@ kernel in resulting estimate: <span class="math notranslate nohighlight">\(K(x, 
 <span id="id9"></span><h4>Examples<a class="headerlink" href="#postprocessors-kernel-regression-examples" title="Link to this heading">¶</a></h4>
 <blockquote>
 <div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;per_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;uid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quad::test1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;kernel_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;estimator&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;r_square&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9990518378010778</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kernel_regression&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;bandwidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.672754640321602</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;x_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">64</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;kernel_stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"per_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"structure-unit-size"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"uid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quad::test1"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"kernel_mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"estimator"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"r_square"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9990518378010778</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kernel_regression"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_start"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"bandwidth"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.672754640321602</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"x_end"</span><span class="p">:</span><span class="w"> </span><span class="mi">64</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"kernel_stats"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="mf">115.6085941489687</span><span class="p">,</span>
 <span class="w">          </span><span class="mf">155.95838478107163</span><span class="p">,</span>
 <span class="w">          </span><span class="mf">190.27598428091824</span><span class="p">,</span>
@@ -1490,9 +1490,9 @@ interface of <code class="docutils literal notranslate"><span class="pre">perun<
 postprocessor description and definitions of constants that are used for internal
 checks which has the following structure:</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="sd">"""..."""</span>
 <span class="linenos">2</span>
-<span class="linenos">3</span><span class="n">SUPPORTED_PROFILES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mixed|memory|time&quot;</span><span class="p">]</span>
+<span class="linenos">3</span><span class="n">SUPPORTED_PROFILES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mixed|memory|time"</span><span class="p">]</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -1503,17 +1503,17 @@ the status message (used in case of error) and dictionary including params passe
 additional phases and ‘profile’ with dictionary w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">"""(optional)"""</span>
 <span class="linenos"> 3</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span>
 <span class="linenos"> 6</span><span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">**</span><span class="n">configuration</span><span class="p">):</span>
-<span class="linenos"> 7</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="sd">"""..."""</span>
 <span class="linenos"> 8</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span><span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="linenos">12</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional)&quot;&quot;&quot;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="sd">"""(optional)"""</span>
 <span class="linenos">13</span>    <span class="k">return</span> <span class="n">STATUS</span><span class="p">,</span> <span class="n">STATUS_MSG</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1531,19 +1531,19 @@ your collector. This function will be called from the command line as <code clas
 <span class="linenos"> 7</span><span class="gi">+</span>
 <span class="linenos"> 8</span><span class="gi">+</span>
 <span class="linenos"> 9</span><span class="w"> </span>def before(**kwargs):
-<span class="linenos">10</span><span class="w"> </span>    &quot;&quot;&quot;(optional)&quot;&quot;&quot;
+<span class="linenos">10</span><span class="w"> </span>    """(optional)"""
 <span class="linenos">11</span><span class="w"> </span>    return STATUS, STATUS_MSG, dict(kwargs)
 <span class="linenos">12</span><span class="gu">@@ -11,3 +16,10 @@</span>
 <span class="linenos">13</span><span class="w"> </span>def after(**kwargs):
-<span class="linenos">14</span><span class="w"> </span>    &quot;&quot;&quot;(optional)&quot;&quot;&quot;
+<span class="linenos">14</span><span class="w"> </span>    """(optional)"""
 <span class="linenos">15</span><span class="w"> </span>    return STATUS, STATUS_MSG, dict(kwargs)
 <span class="linenos">16</span><span class="gi">+</span>
 <span class="linenos">17</span><span class="gi">+</span>
 <span class="linenos">18</span><span class="gi">+@click.command()</span>
 <span class="linenos">19</span><span class="gi">+@pass_profile</span>
 <span class="linenos">20</span><span class="gi">+def regression_analysis(profile, **kwargs):</span>
-<span class="linenos">21</span><span class="gi">+    &quot;&quot;&quot;...&quot;&quot;&quot;</span>
-<span class="linenos">22</span><span class="gi">+    runner.run_postprocessor_on_profile(profile, &quot;mypostprocessor&quot;, kwargs)</span>
+<span class="linenos">21</span><span class="gi">+    """..."""</span>
+<span class="linenos">22</span><span class="gi">+    runner.run_postprocessor_on_profile(profile, "mypostprocessor", kwargs)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
@@ -1553,14 +1553,14 @@ your collector. This function will be called from the command line as <code clas
 <div class="highlight-udiff notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gd">--- /home/runner/work/perun/perun/docs/_static/templates/supported_module_names.py</span>
 <span class="linenos"> 2</span><span class="gi">+++ /home/runner/work/perun/perun/docs/_static/templates/supported_module_names_postprocess.py</span>
 <span class="linenos"> 3</span><span class="gu">@@ -3,7 +3,7 @@</span>
-<span class="linenos"> 4</span><span class="w"> </span>    if package not in (&quot;vcs&quot;, &quot;collect&quot;, &quot;postprocess&quot;, &quot;view&quot;):
-<span class="linenos"> 5</span><span class="w"> </span>        error(f&quot;trying to call get_supported_module_names with incorrect package &#39;{package}&#39;&quot;)
+<span class="linenos"> 4</span><span class="w"> </span>    if package not in ("vcs", "collect", "postprocess", "view"):
+<span class="linenos"> 5</span><span class="w"> </span>        error(f"trying to call get_supported_module_names with incorrect package '{package}'")
 <span class="linenos"> 6</span><span class="w"> </span>    return {
-<span class="linenos"> 7</span><span class="gd">-        &quot;vcs&quot;: [&quot;git&quot;, &quot;svs&quot;],</span>
-<span class="linenos"> 8</span><span class="gi">+        &quot;vcs&quot;: [&quot;git&quot;],</span>
-<span class="linenos"> 9</span><span class="w"> </span>        &quot;collect&quot;: [&quot;trace&quot;, &quot;memory&quot;, &quot;time&quot;],
-<span class="linenos">10</span><span class="w"> </span>        &quot;postprocess&quot;: [
-<span class="linenos">11</span><span class="w"> </span>            &quot;moving-average&quot;,
+<span class="linenos"> 7</span><span class="gd">-        "vcs": ["git", "svs"],</span>
+<span class="linenos"> 8</span><span class="gi">+        "vcs": ["git"],</span>
+<span class="linenos"> 9</span><span class="w"> </span>        "collect": ["trace", "memory", "time"],
+<span class="linenos">10</span><span class="w"> </span>        "postprocess": [
+<span class="linenos">11</span><span class="w"> </span>            "moving-average",
 </pre></div>
 </div>
 <ol class="arabic" start="6">

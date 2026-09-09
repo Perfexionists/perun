@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.conversions.native_pandas &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.conversions.native_pandas</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for converting native profiles to Pandas representations.</span>
+
+<span class="sd">.. _pandas: https://pandas.pydata.org/</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">array</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="c1"># Third-Party Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.native</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.native</span><span class="w"> </span><span class="kn">import</span> <span class="n">Profile</span>
+
+
+<div class="viewcode-block" id="resources_to_pandas_dataframe">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.native_pandas.resources_to_pandas_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resources_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Converts the profile (w.r.t :ref:`profile-spec`) to format supported by</span>
+<span class="sd">    `pandas`_ library.</span>
+
+<span class="sd">    Queries through the resources in the `profile`, and flattens each</span>
+<span class="sd">    key and value to the tabular representation. Refer to `pandas`_ library for</span>
+<span class="sd">    more possibilities how to work with the tabular representation of collected</span>
+<span class="sd">    resources.</span>
+
+<span class="sd">    E.g. given `time` and `memory` profiles ``tprof`` and ``mprof``</span>
+<span class="sd">    respectively, one can obtain the following formats::</span>
+
+<span class="sd">        &gt;&gt;&gt; convert.resources_to_pandas_dataframe(tprof)</span>
+<span class="sd">           amount  snapshots   uid</span>
+<span class="sd">        0  0.616s          0  real</span>
+<span class="sd">        1  0.500s          0  user</span>
+<span class="sd">        2  0.125s          0   sys</span>
+
+<span class="sd">        &gt;&gt;&gt; convert.resources_to_pandas_dataframe(mmprof)</span>
+<span class="sd">            address  amount  snapshots subtype                   trace    type</span>
+<span class="sd">        0  19284560       4          0  malloc  malloc:unreachabl...  memory</span>
+<span class="sd">        1  19284560       0          0    free  free:unreachable:...  memory</span>
+
+<span class="sd">                          uid uid:function  uid:line                 uid:source</span>
+<span class="sd">        0  main:../memo...:22         main        22   ../memory_collect_test.c</span>
+<span class="sd">        1  main:../memo...:27         main        27   ../memory_collect_test.c</span>
+
+<span class="sd">    :param profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
+<span class="sd">    :returns: converted profile to ``pandas.DataFramelist`` with resources</span>
+<span class="sd">        flattened as a pandas dataframe</span>
+<span class="sd">    """</span>
+    <span class="c1"># Since some keys may be missing in the resources, we consider the possible fields</span>
+    <span class="n">resource_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">all_resource_fields</span><span class="p">())</span>
+    <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">resource_keys</span>
+    <span class="p">}</span>
+    <span class="n">values</span><span class="p">[</span><span class="s2">"snapshots"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">"I"</span><span class="p">)</span>
+
+    <span class="c1"># All resources at this point should be flat</span>
+    <span class="k">for</span> <span class="n">snapshot</span><span class="p">,</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">log</span><span class="o">.</span><span class="n">progress</span><span class="p">(</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">all_resources</span><span class="p">(</span><span class="n">flatten_values</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="s2">"Converting To Pandas"</span>
+    <span class="p">):</span>
+        <span class="n">values</span><span class="p">[</span><span class="s2">"snapshots"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">resource_key</span> <span class="ow">in</span> <span class="n">resource_keys</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">resource_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_key</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="models_to_pandas_dataframe">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.native_pandas.models_to_pandas_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">models_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Converts the models of profile (w.r.t :ref:`profile-spec`) to format</span>
+<span class="sd">    supported by `pandas`_ library.</span>
+
+<span class="sd">    Queries through all the models in the `profile`, and flattens each</span>
+<span class="sd">    key and value to the tabular representation. Refer to `pandas`_ library for</span>
+<span class="sd">    more possibilities how to work with the tabular representation of models.</span>
+
+<span class="sd">    :param profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
+<span class="sd">    :returns: converted models of profile to ``pandas.DataFramelist``</span>
+<span class="sd">    """</span>
+    <span class="c1"># Note that we need to this inefficiently, because some keys can be missing in resources</span>
+    <span class="n">model_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_model_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">))</span>
+    <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">model_keys</span><span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">log</span><span class="o">.</span><span class="n">progress</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">all_models</span><span class="p">(),</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Converting To Pandas"</span><span class="p">):</span>
+        <span class="n">flattened_resources</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">model_key</span> <span class="ow">in</span> <span class="n">model_keys</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">model_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flattened_resources</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_key</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

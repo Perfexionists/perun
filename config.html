@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun Configuration files &#8212; Perun 0.27.4 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -164,7 +164,7 @@ tags, which are used to output information about concrete minor version (e.g. mi
 description, number of assigned profiles, etc.). Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for more information
 regarding the formatting strings for <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span></code>.</p>
 <p>E.g. the following formatting string:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">d:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">'</span><span class="si">%i</span><span class="s1">d:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%'</span>
 </pre></div>
 </div>
 <p>will yield the following output when running <code class="docutils literal notranslate"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code>:</p>
@@ -184,7 +184,7 @@ running <code class="docutils literal notranslate"><span class="pre">perun</span
 The formatting string consists either of raw characters or special tags, that output
 information according to the resulting profile. By default the following formatting string is
 set in the global configuration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%"</span>
 </pre></div>
 </div>
 <p>The supported tags are as follows:</p>
@@ -251,8 +251,8 @@ class attribute <code class="docutils literal notranslate"><span class="pre">Pro
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="perun.profile.helpers.ProfileInfo.valid_attributes">
-<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'stem',</span> <span class="pre">'copy',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></span><a class="headerlink" href="#perun.profile.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="perun.profiles.native.helpers.ProfileInfo.valid_attributes">
+<span class="sig-prename descclassname"><span class="pre">ProfileInfo.</span></span><span class="sig-name descname"><span class="pre">valid_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['realpath',</span> <span class="pre">'type',</span> <span class="pre">'time',</span> <span class="pre">'cmd',</span> <span class="pre">'workload',</span> <span class="pre">'label',</span> <span class="pre">'stem',</span> <span class="pre">'copy',</span> <span class="pre">'collector',</span> <span class="pre">'checksum',</span> <span class="pre">'source']</span></span><a class="headerlink" href="#perun.profiles.native.helpers.ProfileInfo.valid_attributes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="std confkey">
@@ -276,7 +276,7 @@ commands fall entirely into the user hands and we have no responsibility for the
 <p>All of these list are as follows:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">execute</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">pre_run</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo &quot;Running the code again&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo "Running the code again"</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make install</span>
 </pre></div>
@@ -653,7 +653,7 @@ operate in the nearest config mode.</p>
 values.</p>
 <p>E.g. using the following can set the log format for nearest perun instance
 wrapper:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>format.shortlog<span class="w"> </span><span class="s2">&quot;| %source% | %collector% |&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>perun<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>format.shortlog<span class="w"> </span><span class="s2">"| %source% | %collector% |"</span>
 format.shortlog:<span class="w"> </span><span class="p">|</span><span class="w"> </span>%source%<span class="w"> </span><span class="p">|</span><span class="w"> </span>%collector%<span class="w"> </span><span class="p">|</span>
 </pre></div>
 </div>
@@ -707,7 +707,7 @@ specified in the nearest perun configuration..</p>
 <li><a class="reference internal" href="#">Perun Configuration files</a><ul>
 <li><a class="reference internal" href="#configuration-types">Configuration types</a></li>
 <li><a class="reference internal" href="#list-of-supported-options">List of Supported Options</a><ul>
-<li><a class="reference internal" href="#perun.profile.helpers.ProfileInfo.valid_attributes"><code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code></a></li>
+<li><a class="reference internal" href="#perun.profiles.native.helpers.ProfileInfo.valid_attributes"><code class="docutils literal notranslate"><span class="pre">ProfileInfo.valid_attributes</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-perun.logic.config_templates">Predefined Configuration Templates</a></li>

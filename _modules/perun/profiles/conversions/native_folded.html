@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.conversions.native_folded &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.conversions.native_folded</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for converting native profiles to folded profiles."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="c1"># Third-Party Imports</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">common_kit</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.native</span><span class="w"> </span><span class="kn">import</span> <span class="n">Profile</span>
+
+
+<div class="viewcode-block" id="native_to_folded">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.native_folded.native_to_folded">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">native_to_folded</span><span class="p">(</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">Profile</span><span class="p">,</span>
+    <span class="n">profile_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"amount"</span><span class="p">,</span>
+    <span class="n">agg_func</span><span class="p">:</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">Aggregations</span> <span class="o">=</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">Aggregations</span><span class="o">.</span><span class="n">default</span><span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Transforms the **memory** or **time** profile w.r.t. :ref:`profile-spec` into the</span>
+<span class="sd">    folded format used, e.g., by flame graph scripts.</span>
+
+<span class="sd">    .. _Brendan Gregg's homepage: https://www.brendangregg.com/index.html</span>
+
+<span class="sd">    :ref:`views-flame-graph` can be used to visualize the inclusive consumption</span>
+<span class="sd">    of resources w.r.t. the call trace of the resource. It is useful for fast</span>
+<span class="sd">    detection, which point at the trace is the hotspot (or bottleneck) in the</span>
+<span class="sd">    computation. Refer to :ref:`views-flame-graph` for full capabilities of our</span>
+<span class="sd">    Wrapper. For more information about flame graphs itself, please check</span>
+<span class="sd">    `Brendan Gregg's homepage`_.</span>
+
+<span class="sd">    Example of format is as follows::</span>
+
+<span class="sd">        &gt;&gt;&gt; print(''.join(native_to_folded(memprof)))</span>
+<span class="sd">        malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4</span>
+<span class="sd">        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8</span>
+<span class="sd">        main()~/home/user/dev/test02.c~79 156</span>
+
+<span class="sd">    Each line corresponds to some collected resource (in this case amount of</span>
+<span class="sd">    allocated memory) preceded by its trace (i.e. functions or other unique</span>
+<span class="sd">    identifiers joined using ``;`` character).</span>
+
+<span class="sd">    :param profile: the memory/time profile</span>
+<span class="sd">    :param profile_key: the key under which the measured consumption is stored</span>
+<span class="sd">    :param agg_func: an aggregation to use when multiple measurements are present in time profiles</span>
+
+<span class="sd">    :returns: an iterator over folded profile records of (stack_trace, consumption)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"memory"</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">all_snapshots</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"subtype"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alloc</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">"subtype"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"free"</span><span class="p">:</span>
+                    <span class="c1"># Workaround for total time used in some collectors, so it is not outputted</span>
+                    <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">"uid"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"%TOTAL_TIME%"</span> <span class="ow">or</span> <span class="n">profile_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alloc</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">stack</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">alloc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"trace"</span><span class="p">,</span> <span class="n">alloc</span><span class="p">[</span><span class="s2">"uid"</span><span class="p">])</span>
+                    <span class="n">folded_record</span> <span class="o">=</span> <span class="s2">";"</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">_to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">stack</span><span class="p">)))</span>
+                    <span class="k">yield</span> <span class="n">folded_record</span><span class="p">,</span> <span class="n">alloc</span><span class="p">[</span><span class="n">profile_key</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">agg_callable</span> <span class="o">=</span> <span class="n">common_kit</span><span class="o">.</span><span class="n">get_aggregation_callable</span><span class="p">(</span><span class="n">agg_func</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">get_kperf_resources</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">resource</span><span class="p">[</span><span class="s2">"uid"</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">agg_callable</span><span class="p">(</span><span class="n">resource</span><span class="p">[</span><span class="n">profile_key</span><span class="p">]))</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Create string representing call stack's frame</span>
+
+<span class="sd">    :param frame: call stack's frame</span>
+<span class="sd">    :return: line representing call stack's frame</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">frame</span>
+    <span class="k">elif</span> <span class="s2">"function"</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">"source"</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">"line"</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">frame</span><span class="p">[</span><span class="s1">'function'</span><span class="p">]</span><span class="si">}</span><span class="s2">()~</span><span class="si">{</span><span class="n">frame</span><span class="p">[</span><span class="s1">'source'</span><span class="p">]</span><span class="si">}</span><span class="s2">~</span><span class="si">{</span><span class="n">frame</span><span class="p">[</span><span class="s1">'line'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="s2">"func"</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">frame</span><span class="p">[</span><span class="s1">'func'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

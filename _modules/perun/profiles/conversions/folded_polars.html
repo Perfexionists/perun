@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perun.profiles.conversions.folded_polars &#8212; Perun 0.28.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/perun.css?v=25c05b3f" />
+    <script src="../../../../_static/documentation_options.js?v=8d643f27"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profiles.conversions.folded_polars</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Functions for converting folded profiles into Polars profiles."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="c1"># Standard Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="c1"># Third-Party Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+
+<span class="c1"># Perun Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.folded</span><span class="w"> </span><span class="kn">import</span> <span class="n">parser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.polars</span><span class="w"> </span><span class="kn">import</span> <span class="n">parser</span> <span class="k">as</span> <span class="n">pl_parser</span><span class="p">,</span> <span class="n">structs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.profiles.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">PostprocessParameters</span><span class="p">,</span> <span class="n">ProfileFeatures</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">streams</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">perun.utils.common.common_kit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Aggregations</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PolarsAggregate</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Polars aggregation callable type."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pl</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="folded_profiles_to_polars_lf">
+<a class="viewcode-back" href="../../../../profile.html#perun.profiles.conversions.folded_polars.folded_profiles_to_polars_lf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">folded_profiles_to_polars_lf</span><span class="p">(</span>
+    <span class="n">folded_profiles</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
+    <span class="n">postprocess_params</span><span class="p">:</span> <span class="n">PostprocessParameters</span><span class="p">,</span>
+    <span class="n">maps</span><span class="p">:</span> <span class="n">structs</span><span class="o">.</span><span class="n">FunctionMaps</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">LazyFrame</span><span class="p">,</span> <span class="n">ProfileFeatures</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Load folded profile(s) into a Polars LazyFrame according to the parse parameters.</span>
+
+<span class="sd">    If multiple folded profiles are given, we aggregate them into a single LazyFrame according to</span>
+<span class="sd">    the aggregation function specified in the parse parameters.</span>
+
+<span class="sd">    Note that the returned profile features contain only those features that can be computed</span>
+<span class="sd">    cheaply during the parsing.</span>
+
+<span class="sd">    :param folded_profiles: possibly a collection of folded profile paths</span>
+<span class="sd">    :param postprocess_params: parsing parameters and configuration</span>
+<span class="sd">    :param maps: function maps</span>
+
+<span class="sd">    :return: a (possibly aggregated) LazyFrame and incomplete profile features</span>
+<span class="sd">    """</span>
+    <span class="n">features</span><span class="p">:</span> <span class="n">ProfileFeatures</span> <span class="o">=</span> <span class="n">ProfileFeatures</span><span class="p">()</span>
+    <span class="c1"># Check whether we should squash recursion and select the parse function accordingly.</span>
+    <span class="n">parse_func</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pl_parser</span><span class="o">.</span><span class="n">parse_polars_squash</span>
+        <span class="k">if</span> <span class="n">postprocess_params</span><span class="o">.</span><span class="n">squash_recursion</span>
+        <span class="k">else</span> <span class="n">pl_parser</span><span class="o">.</span><span class="n">parse_polars_no_squash</span>
+    <span class="p">)</span>
+    <span class="n">parsed_traces</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">LazyFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">profile_path</span> <span class="ow">in</span> <span class="n">folded_profiles</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">streams</span><span class="o">.</span><span class="n">open_folded_profile</span><span class="p">(</span><span class="n">profile_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">folded_handle</span><span class="p">:</span>
+            <span class="n">parsed_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">parse_func</span><span class="p">(</span>
+                    <span class="n">parser</span><span class="o">.</span><span class="n">parse_events_from_stream</span><span class="p">(</span><span class="n">folded_handle</span><span class="p">),</span>
+                    <span class="n">maps</span><span class="p">,</span>
+                    <span class="n">postprocess_params</span><span class="p">,</span>
+                    <span class="n">features</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">minor_success</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">path_style</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">profile_path</span><span class="p">)),</span> <span class="s2">"parsed"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parsed_traces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># No need to aggregate data for a single input profile.</span>
+        <span class="k">return</span> <span class="n">parsed_traces</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">features</span>
+    <span class="c1"># We have parsed multiple profiles. Hence, each trace might have more than 1 value that we</span>
+    <span class="c1"># need to aggregate. We do that by concatenating the profiles, grouping the same traces and</span>
+    <span class="c1"># then aggregating the values.</span>
+    <span class="n">agg_callable</span> <span class="o">=</span> <span class="n">_get_aggregation_polars_callable</span><span class="p">(</span><span class="n">postprocess_params</span><span class="o">.</span><span class="n">agg_func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">parsed_traces</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="s2">"func"</span><span class="p">,</span> <span class="s2">"trace"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="n">agg_callable</span><span class="p">(</span><span class="s2">"inclusive"</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">),</span> <span class="n">agg_callable</span><span class="p">(</span><span class="s2">"exclusive"</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Int64</span><span class="p">)]),</span>
+        <span class="n">features</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_aggregation_polars_callable</span><span class="p">(</span><span class="n">agg_func</span><span class="p">:</span> <span class="n">Aggregations</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PolarsAggregate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Maps an aggregation function to a polars callables.</span>
+
+<span class="sd">    If the function name does not have a valid mapping, the default function callable is used.</span>
+
+<span class="sd">    :param agg_func: aggregation function</span>
+<span class="sd">    :return: a polars callable</span>
+<span class="sd">    """</span>
+    <span class="n">callable_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Aggregations</span><span class="p">,</span> <span class="n">PolarsAggregate</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">SUM</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">COUNT</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">count</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">NUNIQUE</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">n_unique</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">MEAN</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+        <span class="n">Aggregations</span><span class="o">.</span><span class="n">MEDIAN</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">callable_map</span><span class="p">[</span><span class="n">agg_func</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">callable_map</span><span class="p">[</span><span class="n">Aggregations</span><span class="o">.</span><span class="n">default</span><span class="p">()]</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Perun: Performance Under Control &#8212; Perun 0.27.4 documentation</title>
+    <title>Perun: Performance Under Control &#8212; Perun 0.28.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/perun.css?v=25c05b3f" />
-    <script src="_static/documentation_options.js?v=c7068a04"></script>
+    <script src="_static/documentation_options.js?v=8d643f27"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -268,16 +268,16 @@ the profile.</p></li>
 proposed interfaced inside the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module. In order to register and use a new collector one
 needs to implement the following api in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Phase before execution of collector&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""(optional) Phase before execution of collector"""</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collection of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">do_collection</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">"""Collection of the profile---returned profile is in kwargs['profile']"""</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">'profile'</span><span class="p">]</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">do_collection</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""(optional) Final postprocessing of the generated profile"""</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 </pre></div>
 </div>
@@ -290,16 +290,16 @@ needs to implement the following api in the <code class="docutils literal notran
 The required API to be implemented has a similar requirements and one needs to implement the
 following in the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> module:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Phase before execution of postprocessor&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""(optional) Phase before execution of postprocessor"""</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Postprocessing of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">do_postprocessing</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">"""Postprocessing of the profile---returned profile is in kwargs['profile']"""</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">'profile'</span><span class="p">]</span> <span class="o">=</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">do_postprocessing</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""(optional) Final postprocessing of the generated profile"""</span>
     <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
 </pre></div>
 </div>
@@ -316,7 +316,7 @@ following in the <code class="docutils literal notranslate"><span class="pre">ru
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@helpers</span><span class="o">.</span><span class="n">pass_profile</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">visualization_name</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the profile in custom format&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Display the profile in custom format"""</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
