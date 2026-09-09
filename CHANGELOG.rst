@@ -2,6 +2,22 @@ Changelog
 =========
 
 
+0.28.0 (2026-09-09)
+-------------------
+
+  - Add copy icons to traces table, top function tables, and function detail popup window.
+  - The top functions now have a toggle for inclusive / exclusive values.
+  - Function detail popup now allow navigation to the next / previous functions.
+  - Native and Folded reports now use the same core logic to compute and generate the reports.
+
+    - The Native variant now uses the same postprocessing CLI options (squashing, hiding of generics, etc.) as the Folded variant.
+    - The `--minimize` option has been replaced by `--hide-generics`.
+    - The `--no-squash-unknown` option has been replaced by `--squash/--no-squash` and `--squash-regex`.
+    - The `--filter-by-relative` and `--top-n` have been replaced by `--function-threshold`, `--traces-threshold`, and `--max-function-traces`.
+
+  - The `escape_flamegraph_svg` function has been optimized, which significantly speeds up the creation of small Reports.
+
+
 0.27.4 (2026-07-04)
 -------------------
 
