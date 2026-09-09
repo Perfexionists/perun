@@ -19,7 +19,7 @@ import zlib
 # Third-Party Imports
 
 # Perun Imports
-from perun import profile as profile
+from perun.profiles import native as profile
 from perun.utils import log
 from perun.utils.common import common_kit
 from perun.utils.exceptions import IncorrectProfileFormatException

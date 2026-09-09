@@ -37,7 +37,7 @@ from perun.deltadebugging.factory import delta_debugging_algorithm
 
 if TYPE_CHECKING:
     import types
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
     from perun.utils.structs.common_structs import Executable, MinorVersion, CollectStatus, Job
 
 # to ignore numpy division warnings

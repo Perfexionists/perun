@@ -18,7 +18,7 @@ from typing import Iterable
 from perun.fuzz.structs import Mutation
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
     from perun.utils.structs.common_structs import Executable, MinorVersion, CollectStatus, Job
 
 

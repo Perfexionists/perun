@@ -7,6 +7,7 @@ perun_utils_structs_files = files(
     'common_structs.py',
     'diff_structs.py',
     'postprocess_structs.py',
+    'view_structs.py',
 )
 
 py3.install_sources(

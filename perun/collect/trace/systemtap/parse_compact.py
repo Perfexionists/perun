@@ -11,7 +11,7 @@ import perun.collect.trace.processes as proc
 import perun.utils.metrics as metrics
 import perun.collect.trace.optimizations.resources.manager as resources
 import perun.logic.stats as stats
-from perun.profile.factory import Profile
+from perun.profiles.native import Profile
 
 from perun.collect.trace.watchdog import WATCH_DOG
 import perun.collect.trace.values as vals

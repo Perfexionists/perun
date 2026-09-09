@@ -5,7 +5,7 @@ Postprocessor module with non-parametric analysis using the regressogram method.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 # Third-Party Imports
 import click
@@ -14,9 +14,13 @@ import click
 from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, tools
 from perun.postprocess.regressogram import methods
-from perun.profile.factory import pass_profile, Profile
+from perun.profiles import native as profile_factory
 from perun.utils.common import cli_kit
 from perun.utils.structs.common_structs import PostprocessStatus
+
+if TYPE_CHECKING:
+    from perun.profiles.native.factory import Profile
+
 
 _DEFAULT_BUCKETS_METHOD = "doane"
 _DEFAULT_STATISTIC = "mean"
@@ -78,7 +82,7 @@ def postprocess(
     ),
 )
 @cli_kit.resources_key_options
-@pass_profile
+@profile_factory.pass_profile
 def regressogram(profile: Profile, **kwargs: Any) -> None:
     """
     Execution of the interleaving of profiled resources by **regressogram** models.

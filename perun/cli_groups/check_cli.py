@@ -16,7 +16,7 @@ from perun.utils.common import cli_kit, common_kit
 from perun.utils.structs import check_structs
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 @click.group("check")

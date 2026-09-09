@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 # Standard Imports
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 # Third-Party Imports
 import click
@@ -11,10 +11,14 @@ import click
 # Perun Imports
 from perun.logic import runner
 from perun.postprocess.regression_analysis import data_provider, methods, tools
-from perun.profile.factory import pass_profile, Profile
+from perun.profiles import native as profile_factory
 from perun.utils import metrics
 from perun.utils.common import cli_kit
 from perun.utils.structs import common_structs, postprocess_structs
+
+if TYPE_CHECKING:
+    from perun.profiles.native.factory import Profile
+
 
 _DEFAULT_STEPS = 3
 
@@ -133,7 +137,7 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     callback=cli_kit.process_resource_key_param,
     help="Sets key for which we are finding the model.",
 )
-@pass_profile
+@profile_factory.pass_profile
 def regression_analysis(profile: Profile, **kwargs: Any) -> None:
     """Finds fitting regression models to estimate models of profiled resources.
 

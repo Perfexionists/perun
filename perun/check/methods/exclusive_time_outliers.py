@@ -67,7 +67,7 @@ reported as the IQR multiple of `110.46`.
 from __future__ import annotations
 
 # Standard Imports
-from typing import Optional, Iterable, Any, TYPE_CHECKING
+from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 # Third-Party Imports
 import difflib
@@ -78,11 +78,12 @@ from scipy import stats
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.logic import config
-from perun.profile import convert
+from perun.profiles.conversions import native_pandas
 from perun.utils.structs.common_structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
+
 
 OldLocMap = dict[str, str]
 NewLocMap = dict[str, str]
@@ -366,7 +367,7 @@ class DiffProfile:
         # Obtain "Uid (function name), exclusive time, location" DataFrame
         # and sum the exclusive times of individual functions
         df = (
-            convert.resources_to_pandas_dataframe(profile)[columns]
+            native_pandas.resources_to_pandas_dataframe(profile)[columns]
             .groupby(["uid", "location"])
             .sum()
             .reset_index()

@@ -13,8 +13,8 @@ import os
 import sys
 import tabulate
 import perun.logic.store as store
+from perun.profiles.conversions import native_pandas
 from perun.utils.common import common_kit
-import perun.profile.convert as convert
 import perun.utils.log as log
 import perun.utils.streams as streams
 
@@ -73,7 +73,7 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
 
     if "convert" in executed_tests:
         before = time.time()
-        _ = convert.resources_to_pandas_dataframe(profile)
+        _ = native_pandas.resources_to_pandas_dataframe(profile)
         elapsed = time.time() - before
         results.append(elapsed)
         log.write(

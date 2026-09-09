@@ -20,7 +20,7 @@ from perun.utils.structs.common_structs import DegradationInfo, ClassificationMe
 if TYPE_CHECKING:
     import numpy.typing as npt
 
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 THRESHOLD = 100000000
 

@@ -19,7 +19,7 @@ from perun.utils import log
 
 if TYPE_CHECKING:
     from perun.fuzz.structs import Mutation
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
     from perun.utils.structs.common_structs import Executable, MinorVersion, CollectStatus, Job
 
 

@@ -5,8 +5,8 @@ from __future__ import annotations
 # Standard Imports
 import glob
 import io
-import pkgutil
 import os
+import pkgutil
 import re
 import subprocess
 import signal
@@ -20,10 +20,13 @@ from perun import collect, postprocess, view
 from perun.collect.trace.optimizations.structs import Complexity
 from perun.fuzz import filetype
 from perun.logic import commands, config, locks
-from perun.profile import convert
+from perun.profiles import utils
+from perun.profiles.conversions import native_folded
+from perun.profiles.native import helpers
 from perun.testing import asserts
 from perun.utils import log, mapping
 from perun.utils.common import common_kit, cli_kit, traces_kit, view_kit
+from perun.utils.common.common_kit import Aggregations
 from perun.utils.exceptions import (
     SystemTapScriptCompilationException,
     SystemTapStartupException,
@@ -297,8 +300,8 @@ def test_common(capsys):
     assert common_kit.compact_convert_num_to_str(10.0) == "10"
     assert common_kit.compact_convert_num_to_str(10.123) == "10.12"
 
-    assert convert.to_string_line("uid") == "uid"
-    assert convert.flatten(["hello", "world"]) == "hello,world"
+    assert native_folded._to_string_line("uid") == "uid"
+    assert helpers.flatten(["hello", "world"]) == "hello,world"
 
     assert common_kit.strtobool("true") == True
     assert common_kit.strtobool("false") == False
@@ -316,19 +319,37 @@ def test_common(capsys):
     assert mapping.get_readable_key("benchmarking.time") == "Benchmarking Time [ms]"
     assert mapping.get_unit("unsupported") == "?"
 
-    assert common_kit.hide_generics("std::vector<std::vector<std::string>>") == "std::vector<>"
+    assert utils.hide_uid_generics("std::vector<std::vector<std::string>>") == "std::vector<>"
     assert external_commands.is_executable("nonexisting") == False
 
     p = {"type": "mixed", "units": {"mixed(time delta)": "s"}}
     assert view_kit.add_y_units(p, "min", "y") == "y [s]"
 
-    assert common_kit.aggregate_list([1, 2, 3], "min") == 1
-    assert common_kit.aggregate_list([1, 2, 3], "max") == 3
-    assert common_kit.aggregate_list([1, 2, 3], "med") == 2
-    assert common_kit.aggregate_list([2, 2, 5], "avg") == 3
-    assert common_kit.aggregate_list([2, 2, 5], "sum") == 9
-    with pytest.raises(AssertionError):
-        common_kit.aggregate_list([1, 2, 3], "sumvage")
+    # Test aggregation functions.
+    sum_func = common_kit.get_aggregation_callable(Aggregations.from_string("sum"))
+    min_func = common_kit.get_aggregation_callable(Aggregations.from_string("min"))
+    max_func = common_kit.get_aggregation_callable(Aggregations.from_string("max"))
+    count_func = common_kit.get_aggregation_callable(Aggregations.from_string("count"))
+    nunique_func = common_kit.get_aggregation_callable(Aggregations.from_string("nunique"))
+    mean_func = common_kit.get_aggregation_callable(Aggregations.from_string("mean"))
+    assert mean_func is common_kit.get_aggregation_callable(Aggregations.from_string("avg"))
+    assert mean_func is common_kit.get_aggregation_callable(Aggregations.from_string("average"))
+    median_func = common_kit.get_aggregation_callable(Aggregations.from_string("median"))
+    assert median_func is common_kit.get_aggregation_callable(Aggregations.from_string("med"))
+    with pytest.raises(ValueError):
+        common_kit.get_aggregation_callable(Aggregations.from_string("sumvage"))
+
+    assert sum_func([1, 2, 3]) == 6
+    assert min_func([1, 2, 3]) == 1
+    assert max_func([1, 2, 3]) == 3
+    assert count_func([1, 2, 3, 1]) == 4
+    assert nunique_func([1, 2, 3]) == 3
+    assert nunique_func([1, 2, 3, 1]) == 3
+    assert mean_func([2, 2, 5]) == 3
+    assert mean_func([]) == 0
+    assert median_func([2, 2, 5]) == 2
+    assert median_func([]) == 0
+    assert int(median_func([2, 6])) == 4
 
 
 def test_predicates(capsys):

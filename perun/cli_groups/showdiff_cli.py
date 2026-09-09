@@ -11,23 +11,21 @@ from typing import Any, Callable, TYPE_CHECKING
 import click
 
 # Perun Imports
+from perun.cli_groups import shared_options
 from perun.logic import config
 from perun.utils.common import cli_kit
 from perun.utils.structs.diff_structs import (
-    HeaderDisplayStyle,
-    Config,
-    DEFAULT_AGGREGATE_FUNC,
-    FG_DEFAULT_IMAGE_WIDTH,
-    FG_DEFAULT_MIN_WIDTH,
+    DEFAULT_FUNCTION_THRESHOLD,
     DEFAULT_MAX_FUNCTION_TRACES,
     DEFAULT_TOP_DIFFS,
-    DEFAULT_FUNCTION_THRESHOLD,
     DEFAULT_TRACE_THRESHOLD,
-    DEFAULT_SQUASH_RE,
+    HeaderDisplayStyle,
 )
+from perun.view_diff import flamegraph, short
+from perun.view_diff.report import native, folded
 
 if TYPE_CHECKING:
-    from perun import profile
+    from perun.profiles.native import Profile
 
 
 def perun_profile_list_options(command: Callable[..., Any]) -> Callable[..., Any]:
@@ -80,14 +78,12 @@ def common_html_options(command: Callable[..., Any]) -> Callable[..., Any]:
         default=False,
         help="Creates a self-contained output usable in offline environments (default=False).",
     )
-    # TODO: Add support for color theme in flamegraph diff as well.
     @click.option(
         "--default-theme",
         "-th",
         type=click.Choice(["light", "dark", "mono"], case_sensitive=False),
         help="Determines which theme will be set as the default theme.",
     )
-    # TODO: add support for a chatbot in flamegraph diff as well.
     @click.option(
         "--chatbot-url",
         "-c",
@@ -111,66 +107,13 @@ def common_html_options(command: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper_common_flamegraph_options
 
 
-def common_flamegraph_options(command: Callable[..., Any]) -> Callable[..., Any]:
-    """A set of common options for customizing generated flame graphs.
+def flamegraph_diff_cli_options(command: Callable[..., Any]) -> Callable[..., Any]:
+    """A set of options for generating diff flame graphs.
 
     :param command: a click command to extend with the options.
     :return: the click command augmented with the flame graph options.
     """
 
-    @click.option(
-        "--flamegraph-width",
-        type=int,
-        default=FG_DEFAULT_IMAGE_WIDTH,
-        help="Specifies the width of the flamegraph images in pixels. This option is forwarded to "
-        "the flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-height",
-        type=int,
-        help="Specifies the height of each flamegraph frame in pixels. This option is forwarded to "
-        "the flamegraph.pl script.",
-    )
-    # TODO: remove the default
-    @click.option(
-        "--flamegraph-minwidth",
-        type=str,
-        default=FG_DEFAULT_MIN_WIDTH,
-        help="Filter out fast functions in flamegraphs. May be specified either in pixels (integer "
-        "or float value) or as a percentage of time if suffixed with '%'. This option is "
-        "forwarded to the flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-fonttype",
-        type=str,
-        help="Specifies the font type to use in flamegraphs. This option is forwarded to the "
-        "flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-fontsize",
-        type=int,
-        help="Specifies the font size of text in flamegraphs. This option is forwarded to the "
-        "flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-bgcolors",
-        type=str,
-        help="Specifies the background colors for flamegraphs. This option is forwarded to the "
-        "flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-colors",
-        type=str,
-        help="Specifies the color theme for flamegraphs. This option is forwarded to the "
-        "flamegraph.pl script.",
-    )
-    @click.option(
-        "--flamegraph-inverted",
-        is_flag=True,
-        default=False,
-        help="Draws icicle graphs instead of flame graphs. This option is forwarded to the "
-        "flamegraph.pl script.",
-    )
     @click.option(
         "--flamegraph-normalize/--flamegraph-no-normalize",
         is_flag=True,
@@ -178,7 +121,7 @@ def common_flamegraph_options(command: Callable[..., Any]) -> Callable[..., Any]
         help="Normalize the baseline sample counts when creating differential flame graphs using "
         "the formula '(baseline_count * target_sum / baseline_sum)'. This colors the flame graph "
         "frames with hues that respect the change in the total consumptions between two profiles. "
-        "This option is forwarded to the difffolded.pl script.",
+        "This option is forwarded to the difffolded.pl/.py script.",
     )
     @click.option(
         "--flamegraph-parallelize/--flamegraph-no-parallelize",
@@ -187,29 +130,15 @@ def common_flamegraph_options(command: Callable[..., Any]) -> Callable[..., Any]
         help="Generate flamegraph grids using multiple processes. Note that this may consume too"
         "much peak memory for very large perf profiles.",
     )
-    @click.option(
-        "--flamegraph-use-perl-scripts",
-        is_flag=True,
-        default=False,
-        help="Use the canonical Perl scripts for generating flame graphs. Otherwise, our custom "
-        "Python scripts will be used.",
-    )
     @functools.wraps(command)
-    def wrapper_common_flamegraph_options(*args, **kwargs):
+    def wrapper_flamegraph_diff_options(*args, **kwargs):
         return command(*args, **kwargs)
 
-    return wrapper_common_flamegraph_options
+    return wrapper_flamegraph_diff_options
 
 
 @click.group("showdiff")
-@click.option(
-    "--aggregate-by",
-    "-a",
-    default=DEFAULT_AGGREGATE_FUNC,
-    type=click.Choice(["sum", "min", "max", "avg", "mean", "med", "median"]),
-    callback=cli_kit.set_config_option_from_flag(config.runtime, "profile.aggregation"),
-    help="Aggregates the resources in profiles by given statistical function (default=median).",
-)
+@shared_options.profile_aggregation_cli_option
 def showdiff_group(**_: Any) -> None:
     """Interprets the difference of baseline and target profiles.
 
@@ -224,7 +153,7 @@ def showdiff_group(**_: Any) -> None:
     """
 
 
-@showdiff_group.command()
+@showdiff_group.command("short")
 @perun_profile_list_options
 @click.option(
     "-n", "--top-n", type=click.INT, help="Prints top [INT] records (default=10).", default=10
@@ -244,39 +173,21 @@ def showdiff_group(**_: Any) -> None:
     type=click.STRING,
     help="Names the each profile by its particular option (default=origin).",
 )
-def short(profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwargs: Any) -> None:
+def short_diff(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: Any) -> None:
     """Creates a difference table of profiles in the terminal.
 
     Supports only perun-native profiles.
     """
-    # Lazy load the view_diff module and execute the command
-    from perun import view_diff
-
-    view_diff.compare_profiles(*profile_list, **kwargs)
+    short.compare_profiles(*profile_list, **kwargs)
 
 
-# TODO: split into 'native' and 'folded' similarly to report
-@showdiff_group.command()
+@showdiff_group.command("flamegraph")
 @perun_profile_list_options
-# TODO: unify with 'hide-generics'
-@click.option(
-    "--minimize",
-    "-m",
-    is_flag=True,
-    help="Minimizes the traces, folds the recursive calls, hides the generic types.",
-)
-# TODO: unify with 'squash'
-@click.option(
-    "--no-squash-unknown",
-    is_flag=True,
-    default=False,
-    help="Do not squash [unknown] frames in flamegraph into a single frame (default=False).",
-)
 @common_html_options
-@common_flamegraph_options
-def flamegraph(
-    profile_list: tuple[profile.Profile, profile.Profile], *_: Any, **kwargs: Any
-) -> None:
+@shared_options.flamegraph_cli_options
+@flamegraph_diff_cli_options
+@shared_options.profile_postprocess_cli_options
+def flamegraph_diff(profile_list: tuple[Profile, Profile], *_: Any, **kwargs: Any) -> None:
     """Creates a flame graph (or icicle graph) difference grid from perun-native profiles.
 
     The grid consists of baseline, target, baseline-target diff, and target-baseline diff flame
@@ -310,48 +221,10 @@ def flamegraph(
 
     Supports only perun-native profiles.
     """
-    # Lazy load the view_diff module and execute the command
-    from perun import view_diff
-
-    view_diff.generate_flamegraph_difference(*profile_list, **kwargs)
+    flamegraph.generate_flamegraph_difference(*profile_list, **kwargs)
 
 
-# TODO: we still keep most of the old report options until we refactor 'report native' and can
-#  merge the old options with the new ones.
 @showdiff_group.group("report")
-# TODO: replace with new filtering parameters.
-@click.option(
-    "--filter-by-relative",
-    "-fr",
-    nargs=1,
-    type=click.FLOAT,
-    default=Config().DefaultRelativeThreshold,
-    help="Filters records based on the relative increase wrt the target. It filters values that "
-    f"are lesser or equal than [FLOAT] (default={Config().DefaultRelativeThreshold}).",
-)
-# TODO: replace with 'function-threshold'
-@click.option(
-    "--top-n",
-    "-tn",
-    nargs=1,
-    type=click.INT,
-    default=Config().DefaultTopN,
-    help=f"Filters how many top traces will be recorded per uid (default={Config().DefaultTopN}). ",
-)
-# TODO: replace with 'hide-generics'
-@click.option(
-    "--minimize",
-    "-m",
-    is_flag=True,
-    help="Minimizes the traces, folds the recursive calls, hides the generic types.",
-)
-# TODO: replace with new squash parameters
-@click.option(
-    "--no-squash-unknown",
-    is_flag=True,
-    default=False,
-    help="Do not squash [unknown] frames in flamegraph into a single frame (default=False).",
-)
 @click.option(
     "--function-threshold",
     "-ft",
@@ -383,26 +256,6 @@ def flamegraph(
     f"Overview (default={DEFAULT_TOP_DIFFS}).",
 )
 @click.option(
-    "--squash/--no-squash",
-    is_flag=True,
-    default=True,
-    help="Enables or disables squashing recursive function calls into a single flamegraph frame "
-    "(default=True)",
-)
-@click.option(
-    "--squash-regex",
-    type=str,
-    default=DEFAULT_SQUASH_RE,
-    help="A regex specifying function names to squash if squashing is enabled "
-    f"(default={DEFAULT_SQUASH_RE})",
-)
-@click.option(
-    "--hide-generics",
-    is_flag=True,
-    default=False,
-    help="Hide generic types, e.g., template specifications, in function names (default=False).",
-)
-@click.option(
     "--display-style",
     "-d",
     type=click.Choice(HeaderDisplayStyle.supported()),
@@ -420,7 +273,9 @@ def flamegraph(
     help="Attaches the URL address and its display name to the links section in the report.",
 )
 @common_html_options
-@common_flamegraph_options
+@shared_options.flamegraph_cli_options
+@flamegraph_diff_cli_options
+@shared_options.profile_postprocess_cli_options
 @click.pass_context
 def report_group(ctx: click.Context, **kwargs: Any) -> None:
     """Creates a comprehensive interactive difference report of two profiles.
@@ -435,9 +290,9 @@ def report_group(ctx: click.Context, **kwargs: Any) -> None:
 @report_group.command("native")
 @perun_profile_list_options
 @click.pass_context
-def native(
+def report_native(
     ctx: click.Context,
-    profile_list: tuple[profile.Profile, profile.Profile],
+    profile_list: tuple[Profile, Profile],
     *_: Any,
     **kwargs: Any,
 ) -> None:
@@ -471,11 +326,8 @@ def native(
 
         perun showdiff report native -m HEAD~1 0@i 1@i
     """
-    # Lazy load the view_diff module and execute the command
-    from perun import view_diff
-
     kwargs.update(ctx.obj)
-    view_diff.generate_report_from_native(*profile_list, **kwargs)
+    native.generate_report_from_native_profiles(*profile_list, **kwargs)
 
 
 @report_group.command("folded")
@@ -654,8 +506,5 @@ def report_folded(ctx: click.Context, baseline: str, target: str, **kwargs: Any)
      - 'description' is shown as a tooltip for the stat (default=comparison_type).
 
     """
-    # Lazy load the view_diff module and execute the command
-    from perun import view_diff
-
     kwargs.update(ctx.obj)
-    view_diff.generate_report_from_folded(baseline, target, **kwargs)
+    folded.generate_report_from_folded_profiles(baseline, target, **kwargs)

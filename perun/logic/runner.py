@@ -30,13 +30,13 @@ from perun.utils.structs.common_structs import (
     Unit,
 )
 from perun.workload.singleton_generator import SingletonGenerator
-from perun import profile
+from perun.profiles import native as profile
 import perun.workload as workloads
 
 if TYPE_CHECKING:
     import types
 
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 def construct_job_matrix(

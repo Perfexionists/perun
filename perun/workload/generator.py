@@ -15,14 +15,14 @@ from typing import Any, Callable, Iterable, TYPE_CHECKING
 # Third-Party Imports
 
 # Perun Imports
-from perun import profile
+from perun.profiles import native as profile
 from perun.logic import config
 from perun.utils import log
 from perun.utils.structs.common_structs import CollectStatus, Job, Unit
 from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 class WorkloadGenerator:

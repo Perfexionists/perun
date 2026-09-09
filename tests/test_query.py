@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 
 # Perun Imports
-from perun.profile import query, helpers
+from perun.profiles.native import query, helpers
 import perun.testing.utils as test_utils
 
 # number of expected resource fields in memory profile

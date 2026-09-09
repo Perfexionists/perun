@@ -1,4 +1,4 @@
-"""Basic tests for profile convert module.
+"""Basic tests for profile conversion modules.
 
 Tests basic functionality of creating other representations of profiles, like e.g for
 heap and heat map visualizations, etc.
@@ -12,7 +12,8 @@ from __future__ import annotations
 import pytest
 
 # Perun Imports
-from perun.profile import convert
+from perun.postprocess.regression_analysis import transform
+from perun.profiles.conversions import native_folded, native_pandas
 from perun.utils import exceptions
 import perun.testing.utils as test_utils
 
@@ -23,7 +24,7 @@ def test_convert_models_to_dataframe():
     models_profile = test_utils.load_profile("postprocess_profiles", "complexity-models.perf")
     assert models_profile is not None
 
-    df = convert.models_to_pandas_dataframe(models_profile)
+    df = native_pandas.models_to_pandas_dataframe(models_profile)
     assert sorted(list(df)) == sorted(
         [
             "coeffs",
@@ -47,14 +48,11 @@ def test_flame_graph(memory_profiles):
     Expecting no errors and returned list of lines representing the format by greg.
     """
     for memory_profile in memory_profiles:
-        flame_graph = convert.to_flame_graph_format(memory_profile)
+        flame_graph = list(native_folded.native_to_folded(memory_profile))
 
         line_no = 0
         for _, snap in memory_profile.all_snapshots():
             line_no += len(list(filter(lambda item: item["subtype"] != "free", snap)))
-
-        for line in flame_graph:
-            print(line)
 
         assert line_no == len(flame_graph)
 
@@ -72,9 +70,9 @@ def test_coefficients_to_points_correct():
     # TODO: add more advanced checks
     models = list(models_profile.all_models())
     for model in models:
-        data = convert.plot_data_from_coefficients_of(model[1])
-        assert "plot_x" in data
-        assert "plot_y" in data
+        model[1].update(transform.coefficients_to_points(**model[1]))
+        assert "plot_x" in model[1]
+        assert "plot_y" in model[1]
 
 
 def test_coefficients_to_points_corrupted_model():
@@ -92,5 +90,5 @@ def test_coefficients_to_points_corrupted_model():
     models = list(models_profile.all_models())
     with pytest.raises(exceptions.InvalidModelException) as exc:
         for model in models:
-            convert.plot_data_from_coefficients_of(model[1])
+            model[1].update(transform.coefficients_to_points(**model[1]))
     assert "Invalid or unsupported regression model: invalid_model." in str(exc.value)

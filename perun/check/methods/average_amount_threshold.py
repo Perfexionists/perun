@@ -44,12 +44,13 @@ from typing import Any, Iterable, TYPE_CHECKING
 
 # Perun Imports
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
-from perun.profile import convert
+from perun.profiles.conversions import native_pandas
 from perun.utils.common import common_kit
 from perun.utils.structs.common_structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
+
 
 DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5
@@ -61,7 +62,7 @@ def get_averages(profile: Profile) -> dict[str, float]:
     :param profile: dictionary representation of profile
     :returns: dictionary with averages for all uids
     """
-    data_frame = convert.resources_to_pandas_dataframe(profile)
+    data_frame = native_pandas.resources_to_pandas_dataframe(profile)
     # Short fix for non-measured (static) profiles
     if "amount" not in data_frame:
         data_frame["amount"] = 0

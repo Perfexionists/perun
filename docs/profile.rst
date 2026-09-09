@@ -355,9 +355,9 @@ to the look-up table should greatly reduce the size of profiles.
 Profile API
 -----------
 
-.. automodule:: perun.profile.helpers
+.. automodule:: perun.profiles.native.helpers
 
-.. automodule:: perun.profile.factory
+.. automodule:: perun.profiles.native.factory
 
 .. autoclass:: Profile
    :members: all_resources, all_snapshots, all_models, all_filtered_models
@@ -367,20 +367,46 @@ Profile API
 Profile Conversions API
 -----------------------
 
-.. automodule:: perun.profile.convert
+.. automodule:: perun.profiles.conversions.elk_native
+
+.. autofunction:: import_elk_from_json
+
+.. automodule:: perun.profiles.conversions.folded_polars
+
+.. autofunction:: folded_profiles_to_polars_lf
+
+.. automodule:: perun.profiles.conversions.native_folded
+
+.. autofunction:: native_to_folded
+
+.. automodule:: perun.profiles.conversions.native_pandas
 
 .. autofunction:: resources_to_pandas_dataframe
 
-.. autofunction:: to_flame_graph_format
+.. autofunction:: models_to_pandas_dataframe
 
-.. autofunction:: plot_data_from_coefficients_of
+.. automodule:: perun.profiles.conversions.native_polars
+
+.. autofunction:: native_to_polars_lf
+
+.. automodule:: perun.profiles.conversions.perf_native
+
+.. autofunction:: import_perf_from_record
+
+.. autofunction:: import_perf_from_script
+
+.. autofunction:: import_perf_from_stack
+
+.. automodule:: perun.profiles.conversions.polars_folded
+
+.. autofunction:: store_polars_as_folded_profile
 
 .. _profile-query-api:
 
 Profile Query API
 -----------------
 
-.. automodule:: perun.profile.query
+.. automodule:: perun.profiles.native.query
 
 .. autofunction:: all_items_of
 
@@ -391,3 +417,18 @@ Profile Query API
 .. autofunction:: all_key_values_of
 
 .. autofunction:: unique_model_values_of
+
+Helper Structures
+-----------------
+
+.. automodule:: perun.profiles.structs
+
+.. autoclass:: PostprocessParameters
+
+.. autoclass:: ProfileFeatures
+
+.. automodule:: perun.profiles.polars.structs
+
+.. autoclass:: FunctionMaps
+
+.. autoclass:: PolarsTraceProfile
