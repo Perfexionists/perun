@@ -4,6 +4,7 @@ from __future__ import annotations
 
 # Standard Imports
 import pathlib
+import sys
 import tempfile
 from typing import Any, Iterator, Optional
 
@@ -82,15 +83,22 @@ def build_flamegraph_command(
     :return: the command for generating a flame graph
     """
 
-    suffix = ".pl" if settings.use_perl else ".py"
-    cmd = [
-        script_kit.get_script(f"flamegraph{suffix}"),
-        str(input_path) if input_path is not None else "",
-        "--title",
-        f"'{title}'",
-    ]
+    cmd: list[str]
+    if settings.use_perl:
+        cmd = [script_kit.get_script("flamegraph.pl")]
+    else:
+        # This makes sure we invoke the same Python interpreter as the one executing Perun.
+        cmd = [sys.executable, script_kit.get_script("flamegraph.py")]
+
     # Extend the command with parameters.
-    cmd.extend(_add_flamegraph_params(settings, *new_flags, **override_kwargs))
+    cmd.extend(
+        [
+            str(input_path) if input_path is not None else "",
+            "--title",
+            f"'{title}'",
+        ]
+        + _add_flamegraph_params(settings, *new_flags, **override_kwargs)
+    )
     return " ".join(cmd)
 
 
@@ -126,7 +134,9 @@ def build_diff_flamegraph_commands(
         if settings.normalize and "normalize" not in new_flags:
             extended_flags.append("normalize")
         # We take advantage of our diff_flamegraph helper script here.
+        # This makes sure we invoke the same Python interpreter as the one executing Perun.
         cmd = [
+            sys.executable,
             script_kit.get_script("diff_flamegraph.py"),
             str(baseline),
             str(target),

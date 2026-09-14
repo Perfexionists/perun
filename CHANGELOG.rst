@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+0.28.1 (2026-09-14)
+-------------------
+
+  - Fix a bug that invoked incorrect Python interpreter for generating flame graphs when using isolated environments (e.g., `pipx`).
+
+
 0.28.0 (2026-09-09)
 -------------------
 
