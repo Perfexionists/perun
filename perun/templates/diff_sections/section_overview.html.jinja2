@@ -11,6 +11,19 @@
 <div class="section" id="overview">
     {{ m_title.display_title("Perun Performance Report", "overview") }}
 
+    {% if chatbot %}
+    <button id="llm-summary-button" class="llm-summary-button" type="button"
+            onclick="generateReportSummary()">
+        <span aria-hidden="true">✨</span> AI summary
+    </button>
+    <section class="llm-summary" id="llm-summary" aria-labelledby="llm-summary-title" hidden>
+        <div class="llm-summary__header">
+            <h2 id="llm-summary-title">AI summary</h2>
+        </div>
+        <div id="llm-summary-output" class="llm-summary__output" role="status" aria-live="polite"></div>
+    </section>
+    {% endif %}
+
     <div class="comparison_container">
 
         {% set user_names = (lhs_user_stats + rhs_user_stats) | map(attribute=0) | unique | sort | list %}
