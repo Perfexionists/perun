@@ -1,5 +1,27 @@
 /* global formatNumber */
-/* exported TRACES_TOOLTIPS, TracesTable, createCopyButton */
+/* exported TRACES_TOOLTIPS, TracesTable, createCopyButton, findTraceDataBySymbol */
+
+/**
+ * Look up a row in window.tracesData by a symbol string.
+ *
+ * A symbol is either:
+ *   - A plain function-ID string (e.g. "182")  — used by Top Functions
+ *   - A semicolon-separated trace string (e.g. "12;178;2;3;182") — used by Top Traces
+ *
+ * In the folded-stack format the rightmost ID is the leaf function (top of call stack),
+ * which is also the key used by tracesData entries (r.index). For a plain function-ID
+ * string there is no semicolon, so the symbol itself is used as the key.
+ *
+ * @param {string} symbol - A function ID string or a full trace string.
+ * @returns {object|null} The matching tracesData row, or null if not found.
+ */
+function findTraceDataBySymbol(symbol) {
+    if (!window.tracesData) return null;
+    const symbolStr = symbol.toString();
+    const ids = symbolStr.split(';');
+    const leafId = ids.length > 1 ? ids[ids.length - 1] : symbolStr;
+    return window.tracesData.find(r => r.index === leafId) || null;
+}
 
 const TRACES_TOOLTIPS = {
     index: 'The trace index.',

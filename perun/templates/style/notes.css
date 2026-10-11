@@ -7,9 +7,39 @@
 }
 
 .notes-sidepanel:hover {
-    width: 650px;
-    height: 350px;
-    overflow: scroll;
+    width: min(380px, 90vw);
+    height: min(420px, 70vh);
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: stretch;
+    padding: 14px;
+}
+
+.notes-sidepanel > .notes-export-button {
+    display: none;
+}
+
+.notes-sidepanel:hover > .notes-export-button {
+    display: block;
+    width: 100%;
+    margin: 12px 0 8px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--color-primary);
+    color: var(--color-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+}
+
+.notes-sidepanel:hover > .notes-export-button:hover {
+    background: var(--color-primary-hover);
+}
+
+.notes-sidepanel > .environment-sidepanel__icon {
+    align-self: center;
 }
 
 .notes-sidepanel a {
@@ -21,12 +51,13 @@
     background-color: unset !important;
 }
 
-.notes-sidepanel-content {
-    display: none;
-    color: var(--color-secondary);
-    padding: 10px;
-    width: 100%;
-    flex-direction: column;
+.notes-export-hint {
+    margin: 0 0 12px;
+    color: var(--color-white-not-changing);
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+    opacity: 0.8;
 }
 
 .notes-sidepanel .material-icons {
@@ -39,12 +70,16 @@
 .notes-sidepanel .notes-sidepanel-content {
     display: none;
     color: var(--color-white-not-changing);
-    padding: 10px;
+    padding: 0;
     width: 100%;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    text-align: left;
 }
 
 .notes-sidepanel:hover .notes-sidepanel-content {
-    display: block;
+    display: flex;
 }
 
 .note-item {

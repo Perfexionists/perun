@@ -207,7 +207,16 @@ def test_diff_report_native(pcs_with_root):
         ],
     )
     assert result.exit_code == 0
-    assert Path.cwd() / "diff_report.html" in Path.cwd().iterdir()
+    report_path = Path.cwd() / "diff_report.html"
+    assert report_path in Path.cwd().iterdir()
+    report_html = report_path.read_text(encoding="utf-8")
+    assert 'id="llm-summary"' in report_html
+    assert 'id="llm-summary" aria-labelledby="llm-summary-title" hidden' in report_html
+    assert "No summary generated yet." not in report_html
+    assert 'onclick="generateReportSummary()"' in report_html
+    assert "✨</span> AI summary" in report_html
+    assert "Export includes your notes and any AI summary you've generated." in report_html
+    assert "document.documentElement.cloneNode(true)" in report_html
 
 
 def test_diff_report_folded(pcs_with_svs):

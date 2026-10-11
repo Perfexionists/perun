@@ -2,8 +2,9 @@
     <span class="environment-sidepanel__icon">
         {% include 'assets/note.svg' %}
     </span>
-    <a> <p class="tag-element tag-common note-shortcut-button" onclick="exportNotes()">Export with notes</p> </a>
+    <button type="button" class="notes-export-button" onclick="exportNotes()">Export report</button>
     <div class="notes-sidepanel-content">
+        <p class="notes-export-hint">Export includes your notes and any AI summary you've generated.</p>
         <div id="notes-list">
             <!-- place for dynamically added notes -->
         </div>

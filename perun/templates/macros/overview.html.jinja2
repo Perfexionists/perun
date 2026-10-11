@@ -1,3 +1,5 @@
+{% import 'macros/traces_selection.html.jinja2' as traces_selection %}
+
 {% macro populate_top_diffs(top_diffs) %}
         {%- for data_set in top_diffs %}
             [
@@ -6,4 +8,23 @@
             {%- endfor %}
             ],
         {%- endfor %}
+{% endmacro %}
+
+{% macro top_diff_section(title, prefix, onchange_func) %}
+    <div class="section_header top-diff-header">
+        <span class="top-diff-title">{{ title }}</span>
+        <div class="segmented-toggle" title="Switch between inclusive (cumulative) and exclusive (self-only) samples">
+            <input type="checkbox" id="{{ prefix }}-incl-excl-toggle" onchange="{{ onchange_func }}">
+            <label for="{{ prefix }}-incl-excl-toggle" class="segmented-toggle-label">
+                <span class="segmented-slider"></span>
+                <span class="segmented-option seg-incl">Inclusive</span>
+                <span class="segmented-option seg-excl">Exclusive</span>
+            </label>
+        </div>
+    </div>
+    <div class="comparison_container">
+        {{ traces_selection.empty_table('Baseline-Only', prefix ~ '-baseline') }}
+        {{ traces_selection.empty_table_switchable('Common', prefix ~ '-common') }}
+        {{ traces_selection.empty_table('Target-Only', prefix ~ '-target') }}
+    </div>
 {% endmacro %}
