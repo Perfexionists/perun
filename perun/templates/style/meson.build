@@ -12,7 +12,6 @@ perun_templates_style_files = files(
     'navigation_sidepanel.css',
     'notes.css',
     'pins.css',
-    'sankey_graph.css',
     'overview.css',
     'tag.css',
     'themes_sidepanel.css',

@@ -15,7 +15,7 @@ from scipy import integrate
 # Perun Imports
 from perun import check as check
 from perun.check.methods.abstract_base_checker import AbstractBaseChecker
-from perun.profile.factory import Profile
+from perun.profiles.native import Profile
 from perun.utils.common import common_kit
 from perun.utils.structs.common_structs import DegradationInfo, ModelRecord, DetectionChangeResult
 

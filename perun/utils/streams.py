@@ -14,17 +14,18 @@ import json
 import os
 from pathlib import Path
 import re
-from typing import Any, BinaryIO, Iterator, IO, Literal, TextIO, TYPE_CHECKING, overload
+from typing import Any, BinaryIO, Iterator, IO, Literal, overload, TextIO, TYPE_CHECKING
 import zlib
-
-if TYPE_CHECKING:
-    from _typeshed import OpenBinaryMode, OpenTextMode
 
 # Third-Party Imports
 from ruamel.yaml import YAML
 
 # Perun Imports
 from perun.utils import log
+
+if TYPE_CHECKING:
+    from _typeshed import OpenBinaryMode, OpenTextMode
+
 
 GzBinaryMode = Literal["r", "rb", "w", "wb", "x", "xb", "a", "ab"]
 GzTextMode = Literal["rt", "wt", "xt", "at"]
@@ -294,3 +295,20 @@ def safely_open_and_log_gz(
         if fatal_fail:
             log.error(str(exc), exc)
         yield None
+
+
+@contextlib.contextmanager
+def open_folded_profile(filepath: Path) -> Iterator[TextIO]:
+    """Open a (possibly gzipped) folded profile for reading.
+
+     Regardless if the file is compressed or not, the file is opened in a text mode and can be read
+     line by line in a streaming manner.
+
+    :param filepath: a path to the folded profile
+    :return: the file handle
+    """
+    open_func = safely_open_and_log_gz if filepath.suffix.lower() == ".gz" else safely_open_and_log
+
+    # DO NOT simplify the mode to "r": the gzip library interprets "r" as a binary mode.
+    with open_func(filepath, "rt", fatal_fail=True, encoding="utf-8") as folded_handle:
+        yield folded_handle

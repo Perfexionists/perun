@@ -13,15 +13,15 @@ import bokeh.themes.theme as bk_theme
 import holoviews as hv
 
 # Perun Imports
-from perun.utils import decorators, log
-import perun.profile.helpers as profiles
+from perun.utils import decorators
+import perun.profiles.native as profiles
 
 if TYPE_CHECKING:
     import pandas as pd
 
     from collections.abc import MutableMapping, Iterable
     from types import ModuleType
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 GRAPH_LR_PADDING: int = 0

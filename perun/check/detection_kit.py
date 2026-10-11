@@ -19,7 +19,7 @@ import numpy as np
 # Perun Imports
 from perun.check.methods import linear_regression, polynomial_regression, fast_check
 from perun.postprocess.regression_analysis import regression_models
-from perun.profile import query
+from perun.profiles.native import query
 from perun.utils.common import common_kit
 from perun.utils.structs.common_structs import (
     PerformanceChange,
@@ -29,7 +29,7 @@ from perun.utils.structs.common_structs import (
 )
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 SAMPLES: int = 1000

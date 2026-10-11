@@ -79,7 +79,7 @@ import perun.view_diff
 import perun.deltadebugging.factory as delta
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 DEV_MODE = False
@@ -274,6 +274,12 @@ def configure_local_perun(perun_path: str) -> None:
         " configuration. See :ref:`config-templates` for more details about predefined "
         " configurations."
     ),
+)
+@click.option(
+    "--allow-unsafe-options",
+    is_flag=True,
+    default=False,
+    help="Allow unsafe init options, e.g., ``--separate-git-dir``.",
 )
 def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None:
     """Initializes performance versioning system at the destination path.

@@ -10,7 +10,7 @@ import click
 
 # Perun Imports
 from perun.utils.common import cli_kit, common_kit, view_kit
-import perun.profile.factory as profile_factory
+from perun.profiles import native as profile_factory
 import perun.view.scatter.factory as scatter_factory
 
 

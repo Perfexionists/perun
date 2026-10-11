@@ -9,7 +9,6 @@ perun_templates_script_files = files(
     'chatbot.html.jinja2',
     'navigation_sidepanel.js',
     'notes.js',
-    'sankey_graph_js.html.jinja2',
     'overview.js',
     'themes_js.html.jinja2',
     'tooltip.js',

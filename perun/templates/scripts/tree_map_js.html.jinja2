@@ -856,14 +856,12 @@
             .attr("y", FONT_SIZE * 2)
             .text(HIGHLIGHT_STATES[panel.highlight].btnLabel);
 
-        {% if is_folded %}
         svg.append("text")
             .attr("id", `${panelId}-excToggle`)
             .attr("class", "svg-btn")
             .attr("x", VIEW_WIDTH - XPAD1 - 200)
             .attr("y", FONT_SIZE * 2)
             .text(exclusiveToggleLabel(panel.metric));
-        {% endif %}
 
         svg.append("text")
             .attr("id", `${panelId}-search`)
@@ -985,12 +983,10 @@
         if (icBtn) {
             icBtn.classList.toggle("show", panel.search.ignorecase);
         }
-        {% if is_folded %}
         const excBtn = document.getElementById(`${panelId}-excToggle`);
         if (excBtn) {
             excBtn.textContent = exclusiveToggleLabel(panel.metric);
         }
-        {% endif %}
     }
 
     function renderPanel(panelId) {
@@ -1177,7 +1173,7 @@
         { suffix: "-search", handler: panelSearchPrompt },
         { suffix: "-ignorecase", handler: togglePanelIgnorecase },
         { suffix: "-highlight", handler: togglePanelHighlight },
-        {% if is_folded %} { suffix: "-excToggle", handler: togglePanelExclusive }, {% endif %}
+        { suffix: "-excToggle", handler: togglePanelExclusive },
     ];
 
     function handlePanelControlClick(targetId) {
@@ -1201,9 +1197,7 @@
         initTreemapHoverDelegation(chartGrid);
 
         document.getElementById("treemap_search_reset_all").addEventListener("click", globalSearchReset);
-        {% if is_folded %}
         document.getElementById("treemap_toggle_ie_all").addEventListener("click", globalMetricToggle);
-        {% endif %}
         document.getElementById("treemap_search_all_input").addEventListener("input", globalSearchApply);
         document.getElementById("treemap_search_all_input").addEventListener("keypress", function (e) {
             globalSearchApply();

@@ -9,8 +9,8 @@ import pytest
 
 # Perun Imports
 from perun.utils.exceptions import UnsupportedModuleException
-from perun.select.whole_repository_selection import WholeRepositorySelection
-import perun.select.factory as select
+import perun.selection.factory as select
+from perun.selection.whole_repository_selection import WholeRepositorySelection
 
 
 def test_selection(pcs_with_root):

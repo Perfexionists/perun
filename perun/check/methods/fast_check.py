@@ -20,7 +20,7 @@ from perun.logic import runner
 from perun.utils.structs.common_structs import DegradationInfo, ClassificationMethod
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 class FastCheck(AbstractBaseChecker):

@@ -8,9 +8,8 @@ from __future__ import annotations
 
 # Standard Imports
 from collections import defaultdict
-from importlib import metadata
-from typing import Optional, Callable, Any
 import functools
+from importlib import metadata
 import json
 import os
 import platform
@@ -18,6 +17,7 @@ import re
 import sys
 import time
 import traceback
+from typing import Optional, Callable, Any
 
 # Third-Party Imports
 import click
@@ -25,15 +25,15 @@ import jinja2
 
 # Perun Imports
 import perun
-from perun import profile as profile
-from perun.logic import commands, store, stats, config, pcs
-from perun.utils import exceptions, streams, timestamps, log, metrics
+from perun.profiles import native as profile
+from perun.logic import commands, config, pcs, stats, store
+from perun.utils import exceptions, log, metrics, streams, timestamps
 from perun.utils.common import common_kit
 from perun.utils.exceptions import (
-    VersionControlSystemException,
-    TagOutOfRangeException,
-    StatsFileNotFoundException,
     NotPerunRepositoryException,
+    StatsFileNotFoundException,
+    TagOutOfRangeException,
+    VersionControlSystemException,
 )
 from perun.utils.structs import collect_structs
 from perun.utils.structs.common_structs import MinorVersion, SortOrder
@@ -510,13 +510,7 @@ def lookup_list_of_profiles_callback(
     :param value: list of profiles
     :return: list of profiles
     """
-    profiles = []
-    aggregation_function = config.lookup_key_recursively("profile.aggregation", default="median")
-    for prof in value:
-        loaded_profile = lookup_any_profile_callback(ctx, arg, prof)
-        loaded_profile.apply(aggregation_function)
-        profiles.append(loaded_profile)
-    return profiles
+    return [lookup_any_profile_callback(ctx, arg, prof) for prof in value]
 
 
 def lookup_any_profile_callback(

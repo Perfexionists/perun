@@ -10,7 +10,7 @@ import click
 
 # Perun Imports
 from perun.logic import commands, config
-from perun import profile as profile
+from perun.profiles import native as profile, conversions
 from perun.utils.common import cli_kit
 
 
@@ -186,7 +186,7 @@ def from_binary(ctx: click.Context, import_entries: list[str], **kwargs: Any) ->
     that combines the --stats-headers option and profile entries.
     """
     kwargs.update(ctx.obj)
-    profile.import_perf_from_record(import_entries, **kwargs)
+    conversions.perf_native.import_perf_from_record(import_entries, **kwargs)
 
 
 @perf_group.command("script")
@@ -213,7 +213,7 @@ def from_text(ctx: click.Context, import_entries: list[str], **kwargs: Any) -> N
     that combines the --stats-headers option and profile entries.
     """
     kwargs.update(ctx.obj)
-    profile.import_perf_from_script(import_entries, **kwargs)
+    conversions.perf_native.import_perf_from_script(import_entries, **kwargs)
 
 
 @perf_group.command("stack")
@@ -241,7 +241,7 @@ def from_stacks(ctx: click.Context, import_entries: list[str], **kwargs: Any) ->
     that combines the --stats-headers option and profile entries.
     """
     kwargs.update(ctx.obj)
-    profile.import_perf_from_stack(import_entries, **kwargs)
+    conversions.perf_native.import_perf_from_stack(import_entries, **kwargs)
 
 
 @import_group.group("elk")
@@ -271,4 +271,4 @@ def from_json(ctx: click.Context, import_entries: list[str], **kwargs: Any) -> N
     Each import entry may specify a JSON path 'file_path.json'.
     """
     kwargs.update(ctx.obj)
-    profile.import_elk_from_json(import_entries, **kwargs)
+    conversions.elk_native.import_elk_from_json(import_entries, **kwargs)

@@ -9,10 +9,10 @@ from typing import Any
 import click
 
 # Perun Imports
+from perun.profiles import native as profile_factory
 from perun.utils import log
 from perun.utils.common import cli_kit, common_kit, view_kit
 from perun.utils.exceptions import InvalidParameterException
-import perun.profile.factory as profile_factory
 import perun.view.flow.factory as flow_factory
 
 
@@ -43,9 +43,9 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 @click.argument(
     "func",
     required=False,
-    default="sum",
+    default=common_kit.Aggregations.SUM.value,
     metavar="<aggregation_function>",
-    type=click.Choice(common_kit.AGGREGATIONS),
+    type=click.Choice(common_kit.Aggregations.supported()),
     is_eager=True,
 )
 @click.option(

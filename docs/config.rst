@@ -207,7 +207,7 @@ List of Supported Options
     multi-key sort semantics by providing a list of the following attributes specified by the
     class attribute ``ProfileInfo.valid_attributes``:
 
-.. currentmodule:: perun.profile.helpers
+.. currentmodule:: perun.profiles.native.helpers
 .. autoattribute:: ProfileInfo.valid_attributes
 
 .. confkey:: format.sort_profiles_order

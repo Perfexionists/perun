@@ -8,7 +8,6 @@ perun_templates_diff_section_files = files(
     'section_page_footer.html.jinja2',
     'section_page_title.html.jinja2',
     'section_profile_stats.html.jinja2',
-    'section_sankey_graph.html.jinja2',
     'section_tree_maps.html.jinja2',
     'section_vulnerabilities.html.jinja2',
 )

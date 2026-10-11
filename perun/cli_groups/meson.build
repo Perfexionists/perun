@@ -2,11 +2,13 @@ perun_cli_groups_dir = perun_dir / 'cli_groups'
 
 perun_cli_groups_files = files(
     '__init__.py',
+    '__init__.pyi',
     'check_cli.py',
     'collect_cli.py',
     'config_cli.py',
     'import_cli.py',
     'run_cli.py',
+    'shared_options.py',
     'showdiff_cli.py',
     'utils_cli.py',
 )

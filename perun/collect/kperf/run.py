@@ -12,11 +12,11 @@ import time
 import click
 
 # Perun Imports
-from perun.collect.kperf import parser
 from perun.logic import runner
+from perun.profiles.folded import parser
 from perun.utils import log
 from perun.utils.common import script_kit
-from perun.utils.structs.common_structs import Executable, CollectStatus
+from perun.utils.structs.common_structs import CollectStatus, Executable
 from perun.utils.external import commands
 from perun.utils.exceptions import SuppressedExceptions
 
@@ -108,7 +108,8 @@ def collect(executable: Executable, **kwargs: Any) -> tuple[CollectStatus, str, 
 def after(**kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Parses the raw data into performance profile"""
     log.major_info("Creating performance profile")
-    resources = parser.parse_events(kwargs["raw_data"])
+    resources: list[dict[str, str | int]] = []
+    parser.parse_resources_from_stream(kwargs["raw_data"], resources)
 
     if resources:
         log.minor_success("perf events", "parsed")

@@ -229,7 +229,7 @@ def test_failed_init_vcs(monkeypatch, capsys):
     """
     pcs_path = os.getcwd()
 
-    def raiseexc(*_):
+    def raiseexc(*_, **__):
         raise GitCommandError("git", "pit")
 
     monkeypatch.setattr("git.repo.base.Repo.init", raiseexc)

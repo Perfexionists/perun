@@ -4,9 +4,9 @@ from __future__ import annotations
 
 # Standard Imports
 from itertools import groupby
-from typing import Callable, Any
 import operator
 import os
+from typing import Any, Callable, TYPE_CHECKING
 
 # Third-Party Imports
 import click
@@ -14,9 +14,12 @@ import pandas
 import tabulate
 
 # Perun Imports
+from perun.profiles.conversions import native_pandas
+from perun.profiles.native import helpers, query
 from perun.utils import log
-from perun.profile import convert, query, helpers
-from perun.profile.factory import Profile
+
+if TYPE_CHECKING:
+    from perun.profiles.native import Profile
 
 
 def get_headers(ctx: click.Context) -> list[str]:
@@ -304,7 +307,7 @@ def resources(
     profile = ctx.parent.parent.params["profile"]
     profile_as_table = create_table_from(
         profile,
-        convert.resources_to_pandas_dataframe,
+        native_pandas.resources_to_pandas_dataframe,
         headers,
         tablefmt,
         sort_by,
@@ -367,7 +370,7 @@ def models(
     profile = ctx.parent.parent.params["profile"]
     profile_as_table = create_table_from(
         profile,
-        convert.models_to_pandas_dataframe,
+        native_pandas.models_to_pandas_dataframe,
         headers,
         tablefmt,
         sort_by,

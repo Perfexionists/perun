@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 # Standard Imports
-from decimal import Decimal
-from typing import Any, TYPE_CHECKING
 import collections
+from decimal import Decimal
 import re
+from typing import Any, TYPE_CHECKING
 
 # Third-Party Imports
 
 # Perun Imports
 from perun.collect.memory import syscalls
-from perun.profile import convert
+from perun.profiles.native import helpers
 from perun.utils.common import common_kit
 
 if TYPE_CHECKING:
@@ -116,7 +116,7 @@ def parse_resources(allocation: list[str]) -> dict[str, Any]:
     data["uid"] = parse_allocation_location(trace)
 
     # update the resource number
-    flattened_uid = convert.flatten(data["uid"])
+    flattened_uid = helpers.flatten(data["uid"])
     UID_RESOURCE_MAP[flattened_uid] += 1
     data["allocation_order"] = UID_RESOURCE_MAP[flattened_uid]
 

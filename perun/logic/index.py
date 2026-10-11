@@ -28,7 +28,7 @@ from perun.utils.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 # List of current versions of format and magic constants

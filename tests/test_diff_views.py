@@ -75,11 +75,11 @@ def test_diff_flamegraphs_basic(pcs_with_root):
             "-o",
             "icicle_graph.html",
             "--flamegraph-inverted",
-            "--no-squash-unknown",
+            "--no-squash",
         ],
     )
     assert result.exit_code == 0
-    assert Path.cwd() / "icicle_graph.html" in Path.cwd().iterdir()
+    assert Path.cwd() / "icicle_graph.html" in list(Path.cwd().iterdir())
 
 
 def test_diff_flamegraphs_custom(pcs_with_root):
@@ -104,7 +104,7 @@ def test_diff_flamegraphs_custom(pcs_with_root):
             target_profilename,
             "-o",
             "flamegraph_custom",
-            "--minimize",
+            "--hide-generics",
             "--flamegraph-width",
             1000,
             "--flamegraph-height",
@@ -185,11 +185,12 @@ def test_diff_report_native(pcs_with_root):
             "diff",
             "-o",
             "diff_report.html",
-            "--filter-by-relative",
-            0.05,
-            "--top-n",
+            "--function-threshold",
+            0.2,
+            "--traces-threshold",
+            0.005,
+            "--max-function-traces",
             5,
-            "--minimize",
             "--link",
             "https://perfexionists.github.io/perun/",
             "Perun documentation",

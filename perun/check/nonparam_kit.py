@@ -15,7 +15,7 @@ from perun.utils.structs.common_structs import PerformanceChange, ModelRecord
 import perun.postprocess.regressogram.methods as rg_methods
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 def classify_change(

@@ -53,7 +53,7 @@ from perun.check.methods.abstract_base_checker import AbstractBaseChecker
 from perun.utils.structs.common_structs import DegradationInfo, PerformanceChange
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 CONFIDENCE_THRESHOLD = 0.9

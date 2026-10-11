@@ -19,7 +19,7 @@ from perun.utils.common import cli_kit
 from perun.utils.structs.common_structs import PostprocessStatus
 
 if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 # set the labels at the center of the window as default

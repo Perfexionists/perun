@@ -16,16 +16,19 @@ from __future__ import annotations
 
 # Standard Imports
 from dataclasses import dataclass
-from typing import Any
 import itertools
+from typing import Any
 
 # Third-Party Imports
 import pandas
 import tabulate
 
 # Perun Imports
-from perun import profile as profile
+from perun.logic import config
+from perun.profiles import native as profile
+from perun.profiles.conversions import native_pandas
 from perun.utils import log
+from perun.utils.common import common_kit
 
 PRECISION: int = 2
 
@@ -75,13 +78,13 @@ def print_header(lhs_profile: profile.Profile, rhs_profile: profile.Profile) -> 
     """
     log.major_info("Difference Summary")
     command = " ".join([lhs_profile["header"]["cmd"], lhs_profile["header"]["workload"]]).strip()
-    data = [
+    data: list[list[Any]] = [
         ["baseline origin", lhs_profile.get("origin")],
         ["target origin", rhs_profile.get("origin")],
         ["command", command],
         ["collector command", log.collector_to_command(lhs_profile.get("collector_info", {}))],
     ]
-    print(tabulate.tabulate(data))  # type: ignore
+    print(tabulate.tabulate(data))
 
 
 def get_top_n_records(
@@ -94,7 +97,13 @@ def get_top_n_records(
     :param aggregated_key: key for aggregation of the top table
     :return: list of top N records
     """
-    df = profile.resources_to_pandas_dataframe(prof)
+    df = native_pandas.resources_to_pandas_dataframe(prof)
+    # Compact kperf representation has the entire trace in "uid". Split the column if needed.
+    if not {"command", "trace"}.issubset(df.columns):
+        df_parts = df["uid"].str.split(";")
+        df["command"] = df_parts.str[0]
+        df["trace"] = df_parts.str[1:-1].str.join(";")
+        df["uid"] = df_parts.str[-1]
 
     if filters := kwargs.get("filters"):
         df = filter_df(df, filters)
@@ -164,6 +173,15 @@ def compare_profiles(
     """
     # Print short header with some information
     print_header(lhs_profile, rhs_profile)
+
+    # Aggregate the resources in LHS and RHS profiles.
+    aggregation: common_kit.Aggregations = common_kit.Aggregations.from_string(
+        config.lookup_key_recursively(
+            "profile.aggregation", default=common_kit.Aggregations.default_name()
+        )
+    )
+    lhs_profile.apply(aggregation)
+    rhs_profile.apply(aggregation)
 
     # Compare top-N resources
     top_n_lhs = get_top_n_records(lhs_profile, **kwargs)

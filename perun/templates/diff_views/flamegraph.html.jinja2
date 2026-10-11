@@ -8,21 +8,46 @@
         <!-- JS LIBRARIES -->
         {% if not offline %}
             <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+            {% if chatbot %}
+                <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+                <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+                <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/marked@15.0.12/lib/marked.umd.min.js"></script>
+                <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+            {% endif %}
         {% else %}
+            <style>
+                {% if chatbot %}
+                    {% include "libs/bootstrap.min.css" %}
+                {% endif %}
+            </style>
             <script>
                 {% include 'libs/jquery-3.6.0.min.js' %}
+                {% if chatbot %}
+                    {% include 'libs/bootstrap.bundle.min.js' %}
+                    {% include 'libs/marked.min.js' %}
+                    {% include 'libs/purify.min.js' %}
+                {% endif %}
             </script>
         {% endif %}
 
         <!-- CSS STYLES -->
         <style>
+            {% include 'style/colors_setup.css' %}
             {% include 'style/general_setup.css' %}
             {% include 'style/layout.css' %}
+
+            {% include 'style/navigation_sidepanel.css' %}
+            {% include 'style/themes_sidepanel.css' %}
 
             {% include 'style/pins.css' %}
             {% include 'style/tooltip.css' %}
 
             {% include 'style/graph_grids.css' %}
+
+            {% if chatbot %}
+                {% include 'style/chatbot.css' %}
+            {% endif %}
 
             /* Make the flame graph report more dense since there are fewer sections. */
             .section {
@@ -31,9 +56,21 @@
         </style>
 </head>
 <body>
+
+    <!-- GLOBAL FORMATTERS -->
+    {% include 'scripts/value_formatters_js.html.jinja2' %}
+
+    <!----------------------- COMPONENTS ----------------------->
     <!-- PAGE TITLE -->
     {% include 'diff_sections/section_page_title.html.jinja2' %}
 
+    <!-- CHATBOT -->
+    {% include 'diff_components/chatbot.html.jinja2' %}
+
+    <!-- COLOR THEMES & PALETTE -->
+    {% include 'diff_components/side_panels/themes_sidepanel.html.jinja2' %}
+
+    <!----------------------- SECTIONS ----------------------->
     <!-- FLAME GRAPHS -->
     {% include 'diff_sections/section_flame_graphs.html.jinja2' %}
 
@@ -43,10 +80,17 @@
     <!-- JS -->
     <script>
         {% include 'scripts/tooltip.js' %}
+        {% include 'scripts/graph_grids.js' %}
+        {% include 'scripts/navigation_sidepanel.js' %}
     </script>
 
-    {% include 'scripts/value_formatters_js.html.jinja2' %}
+    {% include 'scripts/themes_js.html.jinja2' %}
     {% include 'scripts/flame_graph_js.html.jinja2' %}
+    {% include 'scripts/chatbot.html.jinja2' %}
+
+    <script>
+        {% include 'scripts/drag_n_drop.js' %}
+    </script>
 
 </body>
 </html>

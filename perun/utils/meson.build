@@ -9,6 +9,7 @@ perun_utils_files = files(
     'metrics.py',
     'streams.py',
     'timestamps.py',
+    'type_hints.py',
 )
 
 py3.install_sources(

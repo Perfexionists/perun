@@ -49,7 +49,7 @@ import zlib
 
 # Perun Imports
 from perun.logic import index, pcs, store
-from perun.profile import helpers
+from perun.profiles.native import helpers
 from perun.utils import exceptions, log as perun_log
 from perun.utils.common import common_kit
 from perun.utils.exceptions import SuppressedExceptions

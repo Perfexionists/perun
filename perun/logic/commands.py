@@ -46,11 +46,11 @@ from perun.utils.common.common_kit import (
 from perun.utils.structs.common_structs import ProfileListConfig, MinorVersion
 from perun.vcs import vcs_kit
 from perun.vcs.git_repository import GitRepository
-import perun.profile.helpers as profile
+import perun.profiles.native.helpers as profile
 
 if TYPE_CHECKING:
-    from perun.profile.helpers import ProfileInfo
-    from perun.profile.factory import Profile
+    from perun.profiles.native.helpers import ProfileInfo
+    from perun.profiles.native import Profile
 
 UNTRACKED_REGEX: re.Pattern[str] = re.compile(
     r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf"
@@ -206,22 +206,31 @@ def try_init():
             raise NotPerunRepositoryException(os.getcwd())
 
 
-def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
+def init(
+    dst: str,
+    configuration_template: str = "master",
+    allow_unsafe_options: bool = False,
+    **kwargs: Any,
+) -> None:
     """Initializes the performance and version control systems
 
     Inits the performance control system at a given directory. Optionally inits the
     wrapper of the Version Control System that is used as tracking point.
 
     :param dst: path where the pcs will be initialized
-    :param kwargs: keyword arguments of the initialization
     :param configuration_template: name of the template that will be used for initialization
         of local configuration
+    :param allow_unsafe_options: allow unsafe initialization options to be passed to GitPython
+    :param kwargs: keyword arguments of the initialization
     """
     perun_log.major_info("Initializing Perun")
     # First init the wrapping repository well
     vcs_type = kwargs["vcs_type"]
     vcs_path = kwargs.get("vcs_path", dst) or dst
     vcs_params = kwargs.get("vcs_params", {})
+    if vcs_params is None:
+        vcs_params = {}
+    vcs_params["allow_unsafe_options"] = allow_unsafe_options
 
     # Construct local config
     vcs_config = {"vcs": {"url": vcs_path, "type": vcs_type}}

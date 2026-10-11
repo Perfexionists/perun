@@ -13,7 +13,7 @@ from perun.utils import decorators, streams
 
 if TYPE_CHECKING:
     from perun.logic.index import BasicIndexEntry
-    from perun.profile.factory import Profile
+    from perun.profiles.native import Profile
 
 
 def load_profilename(prof_directory: str, prof_filename: str) -> str:
