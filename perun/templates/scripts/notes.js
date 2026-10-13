@@ -113,29 +113,19 @@ noteContent.addEventListener('input', () => {
 });
 
 function exportNotes() {
-        let docHTML = document.documentElement.outerHTML;
-        let parser = new DOMParser();
-        let doc = parser.parseFromString(docHTML, 'text/html');
+    const exportedDocument = document.documentElement.cloneNode(true);
+    const html = `<!DOCTYPE html>\n${exportedDocument.outerHTML}`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
 
-        let rawTable = doc.getElementById('table-to-replace');
-        let currentTable = doc.getElementById('table_wrapper');
-
-        if (rawTable && currentTable) {
-            let newTable = rawTable.cloneNode(true);
-            newTable.id = 'table';
-
-            currentTable.replaceWith(newTable);
-
-            let updatedHTML = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
-
-            let blob = new Blob([updatedHTML], { type: 'text/html' });
-
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'report_with_notes.html';
-            link.click();
-        }
-    }
+    link.href = downloadUrl;
+    link.download = 'report_with_notes.html';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+}
 
     document.addEventListener("DOMContentLoaded", () => {
         const notesList = document.getElementById("notes-list");

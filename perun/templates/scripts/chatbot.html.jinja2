@@ -83,6 +83,56 @@ function getPilotPrompt() {
   return $block.length ? $block.text().trim() : "";
 }
 
+async function generateReportSummary() {
+  const button = document.getElementById("llm-summary-button");
+  const output = document.getElementById("llm-summary-output");
+  const overview = document.getElementById("overview");
+  const context = overview.cloneNode(true);
+
+  context.querySelector("#llm-summary")?.remove();
+  context.querySelectorAll(".context-eye-icon").forEach(icon => icon.remove());
+
+  document.getElementById("llm-summary").hidden = false;
+  button.disabled = true;
+  button.innerHTML = '<span aria-hidden="true">✨</span> Generating...';
+  output.textContent = "Generating summary...";
+
+  try {
+    const requestBody = {
+      prompt: "Summarize the performance comparison using the report overview below. Highlight the most important regressions and improvements, explain the overall result, and avoid conclusions not supported by the data. Keep the summary concise.",
+      pilot_prompt: getPilotPrompt(),
+      context: context.innerText.trim(),
+      report_url: window.location.href
+    };
+    const model = localStorage.getItem("selectedModel");
+    if (model) {
+      requestBody.model = model;
+    }
+
+    const response = await fetch(`${BACKEND_API_URL}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+      credentials: "include"
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `LLM request failed (HTTP ${response.status}).`);
+    }
+    if (typeof data.reply !== "string" || !data.reply.trim()) {
+      throw new Error(data.error || "LLM service returned an empty summary.");
+    }
+
+    output.textContent = data.reply.trim();
+  } catch (err) {
+    output.textContent = `Could not generate summary: ${err.message}`;
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<span aria-hidden="true">✨</span> AI summary';
+  }
+}
+
 async function sendMessage() {
   const message = $messageInput.val().trim();
   if (!message) return;

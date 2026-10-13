@@ -26,10 +26,11 @@ body.mono-theme {
 
 .slider-container {
     position: relative;
-    width: 100%;
-    max-width: 700px;
+    flex: 1;
+    min-width: 0;
+    max-width: 49%;
     background-color: var(--color-secondary);
-    padding: 25px;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     outline: 3px solid var(--color-primary-transparent);
@@ -42,6 +43,12 @@ body.mono-theme {
 
 .top-traces-column {
     outline: 3px solid var(--color-primary-transparent);
+}
+
+.slider-title-wrapper h2 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .slider-container:hover {
@@ -224,11 +231,11 @@ body.mono-theme .top-traces-column:hover {
 
 /* ── Segmented Inclusive / Exclusive Pill Toggle ─────────────────────────────── */
 
-.top-funcs-header {
-    margin-top: 40px;
+.top-diff-header {
+    margin-top: 15px;
 }
 
-.top-funcs-title {
+.top-diff-title {
     font-size: 1.5em;
     font-weight: bold;
     color: var(--color-primary);
@@ -319,3 +326,4 @@ body.mono-theme .segmented-toggle-label {
 body.mono-theme .segmented-slider {
     background-color: var(--color-primary);
 }
+

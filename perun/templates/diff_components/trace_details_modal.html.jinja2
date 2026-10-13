@@ -60,9 +60,8 @@
         if (item.uid && item.index) {
             return item;
         }
-        if (Array.isArray(item) && window.tracesData) {
-            const nodeIdStr = item[0].toString();
-            return window.tracesData.find(r => r.index === nodeIdStr) || null;
+        if (Array.isArray(item)) {
+            return findTraceDataBySymbol(item[0]);
         }
         return null;
     }
@@ -76,10 +75,17 @@
         const item = currentPopupNavContext.items[newIndex];
         const rowData = getRowDataFromNavContextItem(item);
         if (rowData) {
-            openTracePopup(rowData, currentPopupNavContext.isExclusive, {
+            const newNavContext = {
                 ...currentPopupNavContext,
-                currentIndex: newIndex
-            });
+                currentIndex: newIndex,
+            };
+            // When navigating a Top Traces list, carry the trace string forward for highlighting.
+            if (Array.isArray(item) && item[0].toString().includes(';')) {
+                newNavContext.preSelectTrace = item[0].toString();
+            } else {
+                delete newNavContext.preSelectTrace;
+            }
+            openTracePopup(rowData, currentPopupNavContext.isExclusive, newNavContext);
         }
     }
 
@@ -297,7 +303,7 @@
                 funcName.textContent = name;
                 frame.appendChild(funcName);
 
-                const copyBtn = createCopyButton(name, 'callstack-copy-btn');
+                const copyBtn = createCopyButton(name);
                 copyBtn.title = 'Copy function name';
                 frame.appendChild(copyBtn);
 
@@ -396,10 +402,28 @@
                 }
             });
 
-            // Auto-select the first displayed row
+            // Auto-select the first displayed row, or the pre-selected trace when navigating
+            // from a Top Traces click (navContext.preSelectTrace carries the full trace string).
             if (tracesTableInstance.processedData.length > 0) {
-                const firstTr = document.querySelector(`#${containerId} tbody tr`);
-                renderCallStack(tracesTableInstance.processedData[0], firstTr);
+                let targetRowData = tracesTableInstance.processedData[0];
+                const allTrs = document.querySelectorAll(`#${containerId} tbody tr`);
+                let targetTr = allTrs[0] || null;
+
+                if (navContext && navContext.preSelectTrace) {
+                    const preSelectStr = navContext.preSelectTrace;
+                    const matchIdx = tracesTableInstance.processedData.findIndex(r => {
+                        // row[12] is "id1;id2;...;idN#zeros" — compare the part before '#'.
+                        const fullTrace = r[12] ? r[12].split('#')[0] : '';
+                        return fullTrace === preSelectStr;
+                    });
+                    if (matchIdx >= 0 && allTrs[matchIdx]) {
+                        targetRowData = tracesTableInstance.processedData[matchIdx];
+                        targetTr = allTrs[matchIdx];
+                        targetTr.scrollIntoView({ block: 'nearest' });
+                    }
+                }
+
+                renderCallStack(targetRowData, targetTr);
             }
         } else {
             document.getElementById(containerId).innerHTML = '<div style="text-align: center; padding: 10px;">No trace statistics available.</div>';
