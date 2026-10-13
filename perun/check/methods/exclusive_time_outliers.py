@@ -316,8 +316,8 @@ class DiffProfile:
         Also flag those records that are below or above the IQR cut-off score.
         """
         # Compute IQR
-        q1 = self.df["exclusive T Δ [ms]"].quantile(0.25)
-        q3 = self.df["exclusive T Δ [ms]"].quantile(0.75)
+        q1 = float(self.df["exclusive T Δ [ms]"].quantile(0.25))
+        q3 = float(self.df["exclusive T Δ [ms]"].quantile(0.75))
         iqr = q3 - q1
         # Create an IQR filter based on the distance of IQR_CUTOFF * IQR from Q1 and Q3
         below_low_base = self.df["exclusive T Δ [ms]"] < q1 - IQR_CUTOFF * iqr
