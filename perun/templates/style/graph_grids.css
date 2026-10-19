@@ -1,3 +1,10 @@
+.graph-grid {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .grid_search_box {
     display: flex;
     justify-content: center;
@@ -9,6 +16,11 @@
     font-weight: bold;
     color: var(--color-primary);
     background-color: var(--color-secondary-hover);
+}
+
+.graph-grid > .grid_search_box {
+    width: 93%;
+    box-sizing: border-box;
 }
 
 .grid_search_input_label {
@@ -47,6 +59,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9em;
+    white-space: nowrap;
 }
 
 .grid_btn:hover {
@@ -96,11 +109,8 @@
     pointer-events: none;
 }
 
-#flame,
-#flame .comparison_container,
-#flame .grid-svg-container,
-#treemaps,
-#treemaps .comparison_container,
-#treemaps .grid-svg-container {
+#graphs,
+#graphs .comparison_container,
+#graphs .grid-svg-container {
     overflow-anchor: none;
 }

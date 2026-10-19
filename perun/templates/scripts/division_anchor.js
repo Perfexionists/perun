@@ -3,8 +3,7 @@ const anchorTgt = document.getElementById("division_anchor__target");
 
 const hiddenSections = [
     document.getElementById("overview"),
-    document.getElementById("flame"),
-    document.getElementById("treemaps"),
+    document.getElementById("graphs"),
     document.getElementById("traces")
 ].filter(el => el !== null);
 

@@ -25,7 +25,7 @@ def flamegraph_cli_options(command: Callable[..., Any]) -> Callable[..., Any]:
     @click.option(
         "--flamegraph-width",
         type=int,
-        default=FlameGraphSettings.DefaultImageWidth,
+        default=800,  # TODO: a workaround
         help="Specifies the width of the flamegraph images in pixels. This option is forwarded to "
         "the flamegraph.pl/.py script.",
     )

@@ -30,16 +30,6 @@
         targetDiff: "Target > Baseline Treemap",
     };
 
-    const GRID_PANELS = [
-        { panelId: "treemap-baseline", mode: "baseline" },
-        { panelId: "treemap-target", mode: "target" },
-        { panelId: "treemap-baseline-diff", mode: "baselineDiff" },
-        { panelId: "treemap-target-diff", mode: "targetDiff" },
-    ];
-    const GRID_PANEL_BY_ID = Object.fromEntries(
-        GRID_PANELS.map((p) => [p.panelId, p])
-    );
-
     const NUMERIC_KEYS = [
         "baseline_abs_incl", "target_abs_incl",
         "baseline_abs_excl", "target_abs_excl",
@@ -53,116 +43,15 @@
         "common": {btnLabel: "Reset", gLabel: "Reset Highlight", cls: "treemap-common", nextState: "none"},
     }
 
-    // --- State ---
-    const globalOptions = { minAreaPercent: 0.1 };
-    const panelStates = Object.fromEntries(
-        GRID_PANELS.map(({ panelId }) => [
-            panelId,
-            {
-                metric: "incl",
-                search: { active: false, term: null, ignorecase: false },
-                highlight: "none"
-            },
-        ])
-    );
-    const hoverRegistry = new Map();
-    const panelRectRegistry = new Map();
-    const statusRegistry = new Map();
-    const panelLeavesRegistry = new Map();
-    let parsedDataCache = null;
-    let activeHoverUid = null;
-    let treemapHoverLeaveTimer = null;
-    let globalHighlight = "none";
-
-    // --- Shared helpers ---
+    // --- Shared pure helpers ---
+    let _parsedDataCache = null;
     function getParsedData() {
-        if (!parsedDataCache) {
-            parsedDataCache = rawData.map(parseRow);
+        if (!_parsedDataCache) {
+            _parsedDataCache = rawData.map(parseRow);
         }
-        return parsedDataCache;
+        return _parsedDataCache;
     }
 
-    function getPanel(panelId) {
-        return panelStates[panelId];
-    }
-
-    function getPanelConfig(panelId) {
-        return GRID_PANEL_BY_ID[panelId];
-    }
-
-    function getStatus(panelId) {
-        return statusRegistry.get(panelId);
-    }
-
-    function getPanelRects(panelId) {
-        return panelRectRegistry.get(panelId) ?? [];
-    }
-
-    function forEachPanel(fn) {
-        for (const config of GRID_PANELS) {
-            fn(config);
-        }
-    }
-
-    function anyPanelSearchActive() {
-        return GRID_PANELS.some(({ panelId }) => isPanelSearchActive(panelId));
-    }
-
-    function anyPanelHighlightActive() {
-        return GRID_PANELS.some(({ panelId }) => isPanelHighlightActive(panelId));
-    }
-
-
-    function isPanelSearchActive(panelId) {
-        return getPanel(panelId).search.active;
-    }
-
-    function isPanelHighlightActive(panelId) {
-        return getPanel(panelId).highlight !== "none";
-    }
-
-    function exclusiveToggleLabel(metric) {
-        return metric === "incl" ? "Show exclusive" : "Show inclusive";
-    }
-
-    function allPanelsUseMetric(metric) {
-        return GRID_PANELS.every(({ panelId }) => getPanel(panelId).metric === metric);
-    }
-
-    function cancelTreemapHoverLeave() {
-        if (treemapHoverLeaveTimer !== null) {
-            clearTimeout(treemapHoverLeaveTimer);
-            treemapHoverLeaveTimer = null;
-        }
-    }
-
-    function resetRenderState() {
-        hoverRegistry.clear();
-        panelRectRegistry.clear();
-        statusRegistry.clear();
-        panelLeavesRegistry.clear();
-        parsedDataCache = null;
-        activeHoverUid = null;
-        cancelTreemapHoverLeave();
-    }
-
-    function buildPanelRegex(panelId) {
-        const { search } = getPanel(panelId);
-        if (!search.active || !search.term) {
-            return null;
-        }
-        try {
-            return new RegExp(search.term, search.ignorecase ? "i" : "");
-        } catch {
-            return null;
-        }
-    }
-
-    function formatMatchedSamplesLine(samples, pct) {
-        return `${samples} ${COUNT_NAME}, ${pct}%`;
-    }
-
-    // --- Data parsing and tooltips ---
     function parseRow(row) {
         const parsed = { uid: row.uid };
         for (const key of NUMERIC_KEYS) {
@@ -203,7 +92,6 @@
         };
     }
 
-    // --- Colors and layout ---
     function hotColor(name) {
         const rnd = seededRandom(sumNameHash(name));
         const v1 = rnd();
@@ -225,8 +113,6 @@
         if (value > 0) {
             g = b = Math.floor(210 * (maxDelta - value) / maxDelta);
         } else if (value < 0) {
-            // Use a minimum value of 30 for Red and Green, otherwise the dark blue makes
-            // the text illegible.
             r = g = Math.max(30, Math.floor(210 * (maxDelta + value) / maxDelta));
         }
         return `rgb(${r},${g},${b})`;
@@ -254,7 +140,7 @@
             .replace(/"/g, "&quot;");
     }
 
-    function totalFactorForMode(parsed, mode) {
+    function totalFactorForMode(mode) {
         return profilePrefix(mode) === "baseline" ? totalBaseline : totalTarget;
     }
 
@@ -298,7 +184,6 @@
     const TILE_FONT_MIN = 10;
     const TILE_FONT_MAX = 14;
     const TILE_FONT_CHAR_RATIO = LABEL_CHAR_WIDTH / FONT_SIZE;
-
 
     function tileFontSizeFromArea(area, minArea, maxArea) {
         if (maxArea <= minArea) {
@@ -396,174 +281,12 @@
         return withValues.filter((d) => d.value >= threshold);
     }
 
-    // --- Registries and linked hover ---
-    function registerHoverRect(panelId, uid, rect, fill) {
-        if (!hoverRegistry.has(uid)) {
-            hoverRegistry.set(uid, []);
-        }
-        hoverRegistry.get(uid).push({ panelId, rect, fill });
-        if (!panelRectRegistry.has(panelId)) {
-            panelRectRegistry.set(panelId, []);
-        }
-        panelRectRegistry.get(panelId).push({ rect, fill, uid });
+    function exclusiveToggleLabel(metric) {
+        return metric === "incl" ? "Show exclusive" : "Show inclusive";
     }
 
-    function removePanelFromRegistries(panelId) {
-        for (const [uid, entries] of hoverRegistry.entries()) {
-            const filtered = entries.filter((e) => e.panelId !== panelId);
-            if (filtered.length) {
-                hoverRegistry.set(uid, filtered);
-            } else {
-                hoverRegistry.delete(uid);
-            }
-        }
-        panelRectRegistry.delete(panelId);
-        panelLeavesRegistry.delete(panelId);
-    }
-
-    function fillAfterHover(rect, fill) {
-        return rect.classed("search-match") ? SEARCH_COLOR : fill;
-    }
-
-    function setLinkedHover(uid, active) {
-        const entries = hoverRegistry.get(uid);
-        if (!entries) {
-            return;
-        }
-        for (const { rect, fill } of entries) {
-            rect.attr("fill", active ? HOVER_COLOR : fillAfterHover(rect, fill));
-        }
-    }
-
-    function findTreemapLeafUid(target) {
-        const chartGrid = document.getElementById("treemaps");
-        let node = target;
-        while (node && node !== chartGrid) {
-            if (node.nodeName === "rect" && node.hasAttribute("data-uid")) {
-                return node.getAttribute("data-uid");
-            }
-            if (node.classList && node.classList.contains("leaf")) {
-                const rect = node.querySelector("rect[data-uid]");
-                if (rect) {
-                    return rect.getAttribute("data-uid");
-                }
-            }
-            node = node.parentElement;
-        }
-        return null;
-    }
-    function uidUnderPointer(clientX, clientY) {
-        const el = document.elementFromPoint(clientX, clientY);
-        if (!el) {
-            return null;
-        }
-        return findTreemapLeafUid(el);
-    }
-    function scheduleTreemapHoverLeave(clientX, clientY) {
-        cancelTreemapHoverLeave();
-        treemapHoverLeaveTimer = setTimeout(function () {
-            treemapHoverLeaveTimer = null;
-            if (activeHoverUid === null) {
-                return;
-            }
-            if (uidUnderPointer(clientX, clientY) === activeHoverUid) {
-                return;
-            }
-            flushActiveHover();
-        }, 0);
-    }
-    function initTreemapHoverDelegation(chartGrid) {
-        chartGrid.addEventListener("mouseover", function (e) {
-            const uid = findTreemapLeafUid(e.target);
-            cancelTreemapHoverLeave();
-            if (uid) {
-                enterHover(uid);
-                return;
-            }
-            if (activeHoverUid !== null) {
-                scheduleTreemapHoverLeave(e.clientX, e.clientY);
-            }
-        });
-        chartGrid.addEventListener("mouseout", function (e) {
-            if (e.relatedTarget && chartGrid.contains(e.relatedTarget)) {
-                return;
-            }
-            scheduleTreemapHoverLeave(e.clientX, e.clientY);
-        });
-    }
-
-
-    function onHoverEnd() {
-        if (!anyPanelSearchActive() && !anyPanelHighlightActive()) {
-            clearStatus();
-            return;
-        }
-        forEachPanel(({ panelId }) => {
-            clearPanelDetails(panelId);
-            getStatus(panelId)?.nameTypeLabel.classed("status-hide", true);
-            if (isPanelSearchActive(panelId)) {
-                applyPanelSearch(panelId);
-            }
-            else if (!isPanelHighlightActive(panelId)) {
-                setStatusLabelsVisible(panelId, false);
-            }
-        });
-    }
-
-    function applyLinkedHover(uid) {
-        if (activeHoverUid !== null && activeHoverUid !== uid) {
-            setLinkedHover(activeHoverUid, false);
-        }
-        activeHoverUid = uid;
-        setLinkedHover(uid, true);
-    }
-
-    function enterHover(uid) {
-        cancelTreemapHoverLeave();
-        if (activeHoverUid === uid) {
-            return;
-        }
-        applyLinkedHover(uid);
-        showStatusForUid(uid);
-    }
-
-    function flushActiveHover() {
-        cancelTreemapHoverLeave();
-        if (activeHoverUid === null) {
-            return;
-        }
-        const uid = activeHoverUid;
-        activeHoverUid = null;
-        setLinkedHover(uid, false);
-        onHoverEnd();
-    }
-
-    // --- Per-panel search ---
-    function applySearchToRects(panelId, re) {
-        for (const { rect, fill, uid } of getPanelRects(panelId)) {
-            const match = re.test(uid);
-            rect.classed("search-match", match);
-            if (activeHoverUid !== uid) {
-                rect.attr("fill", match ? SEARCH_COLOR : fill);
-            }
-        }
-    }
-
-    function applyPanelSearch(panelId) {
-        const re = buildPanelRegex(panelId);
-        if (!re) {
-            return;
-        }
-        updatePanelMatchedSearch(panelId, re);
-        applySearchToRects(panelId, re);
-    }
-
-    function resetPanelSearch(panelId) {
-        for (const { rect, fill, uid } of getPanelRects(panelId)) {
-            rect.classed("search-match", false);
-            rect.attr("fill", activeHoverUid === uid ? HOVER_COLOR : fill);
-        }
-        clearMatchedDisplay(panelId, "Search", true);
+    function formatMatchedSamplesLine(samples, pct) {
+        return `${samples} ${COUNT_NAME}, ${pct}%`;
     }
 
     function parseTooltipDetails(titleText) {
@@ -613,611 +336,781 @@
         return "not in baseline";
     }
 
-    // --- Status bar ---
-    function setStatusLabelsVisible(panelId, visible) {
-        const status = getStatus(panelId);
-        if (!status) {
-            return;
-        }
-        for (const key of ["nameTypeLabel", "inclusiveLabel", "exclusiveLabel"]) {
-            status[key].classed("status-hide", !visible);
-        }
-    }
-
-    function updatePanelDetails(panelId, titleText) {
-        const status = getStatus(panelId);
-        if (!status) {
-            return;
-        }
-        const details = parseTooltipDetails(titleText);
-        status.detailsName.text(details.name);
-        status.detailsIncl.text(details.incl);
-        status.detailsExcl.text(details.excl);
-    }
-
-    function clearPanelDetails(panelId) {
-        const status = getStatus(panelId);
-        if (!status) {
-            return;
-        }
-        status.detailsName.text(" ");
-        status.detailsIncl.text(" ");
-        status.detailsExcl.text(" ");
-    }
-
-    function displayMatchedStats(panelId, kind, matched, showInclusiveLabels) {
-        const status = getStatus(panelId);
-        if (!status) {
-            return;
-        }
-        status[`matched${kind}Label`].classed("status-hide", false);
-        if (showInclusiveLabels) {
-            status.inclusiveLabel.classed("status-hide", false);
-            status.exclusiveLabel.classed("status-hide", false);
-        }
-        status[`matched${kind}Count`].text(String(matched.count));
-        status[`matched${kind}Incl`].text(
-            formatMatchedSamplesLine(matched.totalInclSamples, matched.pctIncl)
+    // =========================================================================
+    //  createTreemapGrid — factory that returns an independent treemap grid
+    // =========================================================================
+    function createTreemapGrid(gridId, panelConfigs, defaultMetric) {
+        const gridPanels = panelConfigs;
+        const gridPanelById = Object.fromEntries(
+            gridPanels.map((p) => [p.panelId, p])
         );
-        status[`matched${kind}Excl`].text(
-            formatMatchedSamplesLine(matched.totalExclSamples, matched.pctExcl)
-        );
-    }
 
-    function clearMatchedDisplay(panelId, kind, hideInclusiveWhenIdle) {
-        const status = getStatus(panelId);
-        if (!status) {
-            return;
-        }
-        status[`matched${kind}Label`].classed("status-hide", true);
-        status[`matched${kind}Count`].text(" ");
-        status[`matched${kind}Incl`].text(" ");
-        status[`matched${kind}Excl`].text(" ");
-        if (hideInclusiveWhenIdle && !activeHoverUid) {
-            status.inclusiveLabel.classed("status-hide", true);
-            status.exclusiveLabel.classed("status-hide", true);
-        }
-    }
-
-    function updatePanelMatchedSearch(panelId, re) {
-        const leaves = panelLeavesRegistry.get(panelId);
-        if (!leaves) {
-            return;
-        }
-
-        const total = totalFactorForMode(getPanelConfig(panelId).mode)
-        const matched = calculateTreemapMatched(leaves, total, (leaf) => re.test(leaf.uid));
-        displayMatchedStats(panelId, "Search", matched, true);
-    }
-
-    function findLeafTitle(panelId, uid) {
-        const leaves = panelLeavesRegistry.get(panelId);
-        if (!leaves) {
-            return null;
-        }
-        const leaf = leaves.find((entry) => entry.uid === uid);
-        return leaf ? leaf.titleText : null;
-    }
-
-    function showStatusForUid(uid) {
-        forEachPanel(({ panelId }) => {
-            setStatusLabelsVisible(panelId, true);
-            const titleText = findLeafTitle(panelId, uid);
-            if (titleText) {
-                setStatusLabelsVisible(panelId, true);
-                updatePanelDetails(panelId, titleText);
-            } else {
-                clearPanelDetails(panelId);
-                if (!isPanelSearchActive(panelId) && !isPanelHighlightActive(panelId)) {
-                    setStatusLabelsVisible(panelId, false);
-                }
-            }
-        });
-    }
-
-    function clearStatus() {
-        activeHoverUid = null;
-        forEachPanel(({ panelId }) => {
-            setStatusLabelsVisible(panelId, false);
-            clearPanelDetails(panelId);
-        });
-    }
-
-    function appendStatusTexts(svg, panelId) {
-        const [y0, y1, y2] = STATUS_LINE_Y;
-        const labelClass = "status-label status-hide";
-
-        const status = {
-            nameTypeLabel: svg.append("text")
-                .attr("id", `${panelId}-nameTypeLabel`)
-                .attr("class", labelClass)
-                .attr("x", XPAD1 + 70)
-                .attr("y", y0)
-                .attr("text-anchor", "end")
-                .attr("font-weight", "bold")
-                .text(NAME_TYPE),
-            inclusiveLabel: svg.append("text")
-                .attr("id", `${panelId}-inclusiveLabel`)
-                .attr("class", labelClass)
-                .attr("x", XPAD1 + 70)
-                .attr("y", y1)
-                .attr("text-anchor", "end")
-                .attr("font-weight", "bold")
-                .text("Inclusive:"),
-            exclusiveLabel: svg.append("text")
-                .attr("id", `${panelId}-exclusiveLabel`)
-                .attr("class", labelClass)
-                .attr("x", XPAD1 + 70)
-                .attr("y", y2)
-                .attr("text-anchor", "end")
-                .attr("font-weight", "bold")
-                .text("Exclusive:"),
-            detailsName: svg.append("text")
-                .attr("id", `${panelId}-detailsName`)
-                .attr("class", "status-detail-name")
-                .attr("x", XPAD1 + 75)
-                .attr("y", y0)
-                .text(" "),
-            detailsIncl: svg.append("text")
-                .attr("id", `${panelId}-detailsIncl`)
-                .attr("x", XPAD1 + 75)
-                .attr("y", y1)
-                .text(" "),
-            detailsExcl: svg.append("text")
-                .attr("id", `${panelId}-detailsExcl`)
-                .attr("x", XPAD1 + 75)
-                .attr("y", y2)
-                .text(" "),
-            matchedHighlightLabel: svg.append("text")
-                .attr("id", `${panelId}-matchedHighlightLabel`)
-                .attr("class", "status-label status-hide")
-                .attr("x", VIEW_WIDTH / 2 - 50)
-                .attr("y", y0)
-                .attr("font-weight", "bold")
-                .text("Matched (highlight):"),
-            matchedHighlightCount: svg.append("text")
-                .attr("id", `${panelId}-matchedHighlightCount`)
-                .attr("x", VIEW_WIDTH / 2 + 90)
-                .attr("y", y0)
-                .text(" "),
-            matchedHighlightIncl: svg.append("text")
-                .attr("id", `${panelId}-matchedHighlightIncl`)
-                .attr("x", VIEW_WIDTH / 2 - 50)
-                .attr("y", y1)
-                .text(" "),
-            matchedHighlightExcl: svg.append("text")
-                .attr("id", `${panelId}-matchedHighlightExcl`)
-                .attr("x", VIEW_WIDTH / 2 - 50)
-                .attr("y", y2)
-                .text(" "),
-            matchedSearchLabel: svg.append("text")
-                .attr("id", `${panelId}-matchedSearchLabel`)
-                .attr("class", "status-label status-hide")
-                .attr("x", VIEW_WIDTH - 60 - XPAD2)
-                .attr("y", y0)
-                .attr("font-weight", "bold")
-                .text("Matched (search):"),
-            matchedSearchCount: svg.append("text")
-                .attr("id", `${panelId}-matchedSearchCount`)
-                .attr("x", VIEW_WIDTH - 90)
-                .attr("y", y0)
-                .text(" "),
-            matchedSearchIncl: svg.append("text")
-                .attr("id", `${panelId}-matchedSearchIncl`)
-                .attr("x", VIEW_WIDTH - 60 - XPAD2)
-                .attr("y", y1)
-                .text(" "),
-            matchedSearchExcl: svg.append("text")
-                .attr("id", `${panelId}-matchedSearchExcl`)
-                .attr("x", VIEW_WIDTH - 60 - XPAD2)
-                .attr("y", y2)
-                .text(" "),
-        };
-
-        statusRegistry.set(panelId, status);
-    }
-
-    function appendSvgChrome(svg, panelId, mode) {
-        const gradId = `${panelId}-background`;
-        const defs = svg.append("defs");
-        defs.append("linearGradient")
-            .attr("id", gradId)
-            .attr("x1", 0)
-            .attr("y1", 0)
-            .attr("x2", 0)
-            .attr("y2", 1)
-            .selectAll("stop")
-            .data([
-                { offset: "5%", color: BG_COLOR_1 },
-                { offset: "95%", color: BG_COLOR_2 },
-            ])
-            .join("stop")
-            .attr("offset", (d) => d.offset)
-            .attr("stop-color", (d) => d.color);
-
-        svg.append("rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", VIEW_WIDTH)
-            .attr("height", VIEW_HEIGHT)
-            .attr("fill", `url(#${gradId})`);
-
-        svg.append("text")
-            .attr("class", "panel-title")
-            .attr("x", VIEW_WIDTH / 2)
-            .attr("y", FONT_SIZE * 2)
-            .text(MODE_TITLES[mode]);
-
-        const panel = getPanel(panelId)
-        svg.append("text")
-            .attr("id", `${panelId}-highlight`)
-            .attr("class", "svg-btn")
-            .attr("x", VIEW_WIDTH - XPAD1 - 270)
-            .attr("y", FONT_SIZE * 2)
-            .text(HIGHLIGHT_STATES[panel.highlight].btnLabel);
-
-        svg.append("text")
-            .attr("id", `${panelId}-excToggle`)
-            .attr("class", "svg-btn")
-            .attr("x", VIEW_WIDTH - XPAD1 - 200)
-            .attr("y", FONT_SIZE * 2)
-            .text(exclusiveToggleLabel(panel.metric));
-
-        svg.append("text")
-            .attr("id", `${panelId}-search`)
-            .attr("class", `svg-btn${panel.search.active ? " show" : ""}`)
-            .attr("x", VIEW_WIDTH - XPAD1 - 100)
-            .attr("y", FONT_SIZE * 2)
-            .text(panel.search.active ? "Reset Search" : "Search");
-
-        svg.append("text")
-            .attr("id", `${panelId}-ignorecase`)
-            .attr("class", `svg-btn${panel.search.ignorecase ? " show" : ""}`)
-            .attr("x", VIEW_WIDTH - XPAD1 - 16)
-            .attr("y", FONT_SIZE * 2)
-            .text("ic");
-
-        appendStatusTexts(svg, panelId);
-
-        return svg.append("g").attr("id", `${panelId}-frames`).attr("class", "frames");
-    }
-
-    // --- Rendering ---
-    function renderTreemapPanel(panelId, mode, parsed, metric, minAreaPercent) {
-        const filtered = filterRows(parsed, mode, metric, minAreaPercent);
-        const totalFactor = totalFactorForMode(parsed, mode);
-        const diff = isDiffMode(mode);
-        const scale = totalTarget / totalBaseline;
-        const maxScaledDelta = diff
-            ? d3.max(filtered, (d) => Math.abs(d[`target_abs_${metric}`] - d[`baseline_abs_${metric}`] * scale)) || 0
-            : 0;
-
-        for (const row of filtered) {
-            row.fill = fillColor(row, mode, metric, scale, maxScaledDelta);
-        }
-
-        const root = d3.hierarchy({ children: filtered })
-            .sum((d) => d.value)
-            .sort((a, b) => b.value - a.value);
-
-        d3.treemap()
-            .size([TREEMAP_WIDTH, INNER_HEIGHT])
-            .paddingInner(1)
-            .round(true)(root);
-
-        const svg = d3.select(`#${panelId} svg`);
-        svg.selectAll("*").remove();
-        panelRectRegistry.set(panelId, []);
-
-        const frames = appendSvgChrome(svg, panelId, mode);
-        const prefix = profilePrefix(mode);
-
-        const leaves = frames.selectAll(".leaf")
-            .data(root.leaves())
-            .join("g")
-            .attr("class", (d) => d.data.occurrence.replaceAll(" ", "-"))
-            .classed("leaf", true)
-            .attr(
-                "transform",
-                (d) => `translate(${d.x0 + TREEMAP_X_MARGIN},${d.y0 + Y_PAD1})`
-            );
-
-        leaves.append("rect")
-            .attr("width", (d) => Math.max(0, d.x1 - d.x0))
-            .attr("height", (d) => Math.max(0, d.y1 - d.y0))
-            .attr("fill", (d) => d.data.fill)
-            .attr("data-uid", (d) => d.data.uid)
-            .attr("rx", 2)
-            .attr("ry", 2)
-            .each(function (d) {
-                registerHoverRect(panelId, d.data.uid, d3.select(this), d.data.fill);
-            })
-            .append("title")
-            .text((d) => tooltipText(d.data, mode, totalFactor));
-
-        const leafAreas = root.leaves().map((d) => {
-            const lw = Math.max(0, d.x1 - d.x0);
-            const lh = Math.max(0, d.y1 - d.y0);
-            return lw * lh;
-        });
-        const minLeafArea = d3.min(leafAreas) ?? 0;
-        const maxLeafArea = d3.max(leafAreas) ?? 0;
-
-        leaves.each(function (d) {
-            const w = d.x1 - d.x0;
-            const h = d.y1 - d.y0;
-            const g = d3.select(this);
-
-            const fontSize = tileFontSizeFromArea(w * h, minLeafArea, maxLeafArea);
-            const nameLabel = truncateLabel(d.data.uid, w, h, fontSize);
-            const pctText = tilePercentText(d.data, mode, metric, totalFactor);
-            const lines = buildTileLabelLines(nameLabel, pctText, w, h, fontSize);
-            appendCenteredTileLabels(g, w, h, lines, fontSize);
-        });
-
-        panelLeavesRegistry.set(
-            panelId,
-            root.leaves().map((d) => {
-                const w = Math.max(0, d.x1 - d.x0);
-                const h = Math.max(0, d.y1 - d.y0);
-                return {
-                    uid: d.data.uid,
-                    area: w * h,
-                    inclAbs: d.data[`${prefix}_abs_incl`],
-                    exclAbs: d.data[`${prefix}_abs_excl`],
-                    occurrence: d.data.occurrence,
-                    titleText: tooltipText(d.data, mode, totalFactor),
-                };
-            })
-        );
-    }
-
-    function updatePanelChromeButtons(panelId) {
-        const panel = getPanel(panelId);
-        const searchBtn = document.getElementById(`${panelId}-search`);
-        if (searchBtn) {
-            searchBtn.textContent = panel.search.active ? "Reset Search" : "Search";
-            searchBtn.classList.toggle("show", panel.search.active);
-        }
-        const icBtn = document.getElementById(`${panelId}-ignorecase`);
-        if (icBtn) {
-            icBtn.classList.toggle("show", panel.search.ignorecase);
-        }
-        const excBtn = document.getElementById(`${panelId}-excToggle`);
-        if (excBtn) {
-            excBtn.textContent = exclusiveToggleLabel(panel.metric);
-        }
-    }
-
-    function renderPanel(panelId) {
-        const { mode } = getPanelConfig(panelId);
-        removePanelFromRegistries(panelId);
-        renderTreemapPanel(
-            panelId,
-            mode,
-            getParsedData(),
-            getPanel(panelId).metric,
-            globalOptions.minAreaPercent
-        );
-        updatePanelChromeButtons(panelId);
-        if (isPanelSearchActive(panelId)) {
-            applyPanelSearch(panelId);
-        }
-        applyTheme(themesSidepanel.getAttribute('data-theme') || default_theme_js);
-    }
-
-    function renderTreemap(options = {}) {
-        if (options.minAreaPercent !== undefined) {
-            globalOptions.minAreaPercent = options.minAreaPercent;
-        }
-        resetRenderState();
-        const parsed = getParsedData();
-        forEachPanel(({ panelId, mode }) => {
-            renderTreemapPanel(
+        const globalOptions = { minAreaPercent: 0.1 };
+        const panelStates = Object.fromEntries(
+            gridPanels.map(({ panelId }) => [
                 panelId,
-                mode,
-                parsed,
-                getPanel(panelId).metric,
-                globalOptions.minAreaPercent
-            );
-            updatePanelChromeButtons(panelId);
-            if (isPanelSearchActive(panelId)) {
-                applyPanelSearch(panelId);
-            }
-        });
-    }
+                {
+                    metric: defaultMetric,
+                    search: { active: false, term: null, ignorecase: false },
+                    highlight: "none"
+                },
+            ])
+        );
+        const hoverRegistry = new Map();
+        const panelRectRegistry = new Map();
+        const statusRegistry = new Map();
+        const panelLeavesRegistry = new Map();
+        let activeHoverUid = null;
+        let hoverLeaveTimer = null;
+        let globalHighlight = "none";
 
-    // --- Controls ---
-    function panelIdFromControlId(id, suffix) {
-        if (!id.endsWith(suffix)) {
+        function getPanel(panelId) { return panelStates[panelId]; }
+        function getPanelConfig(panelId) { return gridPanelById[panelId]; }
+        function getStatus(panelId) { return statusRegistry.get(panelId); }
+        function getPanelRects(panelId) { return panelRectRegistry.get(panelId) ?? []; }
+        function forEachPanel(fn) { for (const config of gridPanels) { fn(config); } }
+
+        function isPanelSearchActive(panelId) { return getPanel(panelId).search.active; }
+        function isPanelHighlightActive(panelId) { return getPanel(panelId).highlight !== "none"; }
+        function anyPanelSearchActive() { return gridPanels.some(({ panelId }) => isPanelSearchActive(panelId)); }
+        function anyPanelHighlightActive() { return gridPanels.some(({ panelId }) => isPanelHighlightActive(panelId)); }
+        function allPanelsUseMetric(metric) { return gridPanels.every(({ panelId }) => getPanel(panelId).metric === metric); }
+
+        function cancelHoverLeave() {
+            if (hoverLeaveTimer !== null) {
+                clearTimeout(hoverLeaveTimer);
+                hoverLeaveTimer = null;
+            }
+        }
+
+        function resetRenderState() {
+            hoverRegistry.clear();
+            panelRectRegistry.clear();
+            statusRegistry.clear();
+            panelLeavesRegistry.clear();
+            _parsedDataCache = null;
+            activeHoverUid = null;
+            cancelHoverLeave();
+        }
+
+        function buildPanelRegex(panelId) {
+            const { search } = getPanel(panelId);
+            if (!search.active || !search.term) { return null; }
+            try { return new RegExp(search.term, search.ignorecase ? "i" : ""); }
+            catch { return null; }
+        }
+
+        // --- Registries and linked hover ---
+        function registerHoverRect(panelId, uid, rect, fill) {
+            if (!hoverRegistry.has(uid)) { hoverRegistry.set(uid, []); }
+            hoverRegistry.get(uid).push({ panelId, rect, fill });
+            if (!panelRectRegistry.has(panelId)) { panelRectRegistry.set(panelId, []); }
+            panelRectRegistry.get(panelId).push({ rect, fill, uid });
+        }
+
+        function removePanelFromRegistries(panelId) {
+            for (const [uid, entries] of hoverRegistry.entries()) {
+                const filtered = entries.filter((e) => e.panelId !== panelId);
+                if (filtered.length) { hoverRegistry.set(uid, filtered); }
+                else { hoverRegistry.delete(uid); }
+            }
+            panelRectRegistry.delete(panelId);
+            panelLeavesRegistry.delete(panelId);
+        }
+
+        function fillAfterHover(rect, fill) {
+            return rect.classed("search-match") ? SEARCH_COLOR : fill;
+        }
+
+        function setLinkedHover(uid, active) {
+            const entries = hoverRegistry.get(uid);
+            if (!entries) { return; }
+            for (const { rect, fill } of entries) {
+                rect.attr("fill", active ? HOVER_COLOR : fillAfterHover(rect, fill));
+            }
+        }
+
+        function findTreemapLeafUid(target) {
+            const gridEl = document.getElementById(gridId);
+            let node = target;
+            while (node && node !== gridEl) {
+                if (node.nodeName === "rect" && node.hasAttribute("data-uid")) {
+                    return node.getAttribute("data-uid");
+                }
+                if (node.classList && node.classList.contains("leaf")) {
+                    const rect = node.querySelector("rect[data-uid]");
+                    if (rect) { return rect.getAttribute("data-uid"); }
+                }
+                node = node.parentElement;
+            }
             return null;
         }
-        return id.slice(0, -suffix.length);
-    }
 
-    function panelSearchPrompt(panelId) {
-        const search = getPanel(panelId).search;
-        if (!search.active) {
-            const term = prompt(
-                "Enter a search term (regexp allowed, e.g. ^do_)" +
-                    (search.ignorecase ? ", ignoring case" : "") +
-                    ")",
-                ""
+        function uidUnderPointer(clientX, clientY) {
+            const el = document.elementFromPoint(clientX, clientY);
+            if (!el) { return null; }
+            return findTreemapLeafUid(el);
+        }
+
+        // --- Status bar ---
+        function setStatusLabelsVisible(panelId, visible) {
+            const status = getStatus(panelId);
+            if (!status) { return; }
+            for (const key of ["nameTypeLabel", "inclusiveLabel", "exclusiveLabel"]) {
+                status[key].classed("status-hide", !visible);
+            }
+        }
+
+        function updatePanelDetails(panelId, titleText) {
+            const status = getStatus(panelId);
+            if (!status) { return; }
+            const details = parseTooltipDetails(titleText);
+            status.detailsName.text(details.name);
+            status.detailsIncl.text(details.incl);
+            status.detailsExcl.text(details.excl);
+        }
+
+        function clearPanelDetails(panelId) {
+            const status = getStatus(panelId);
+            if (!status) { return; }
+            status.detailsName.text(" ");
+            status.detailsIncl.text(" ");
+            status.detailsExcl.text(" ");
+        }
+
+        function displayMatchedStats(panelId, kind, matched, showInclusiveLabels) {
+            const status = getStatus(panelId);
+            if (!status) { return; }
+            status[`matched${kind}Label`].classed("status-hide", false);
+            if (showInclusiveLabels) {
+                status.inclusiveLabel.classed("status-hide", false);
+                status.exclusiveLabel.classed("status-hide", false);
+            }
+            status[`matched${kind}Count`].text(String(matched.count));
+            status[`matched${kind}Incl`].text(
+                formatMatchedSamplesLine(matched.totalInclSamples, matched.pctIncl)
             );
-            if (term === null || term === "") {
+            status[`matched${kind}Excl`].text(
+                formatMatchedSamplesLine(matched.totalExclSamples, matched.pctExcl)
+            );
+        }
+
+        function clearMatchedDisplay(panelId, kind, hideInclusiveWhenIdle) {
+            const status = getStatus(panelId);
+            if (!status) { return; }
+            status[`matched${kind}Label`].classed("status-hide", true);
+            status[`matched${kind}Count`].text(" ");
+            status[`matched${kind}Incl`].text(" ");
+            status[`matched${kind}Excl`].text(" ");
+            if (hideInclusiveWhenIdle && !activeHoverUid) {
+                status.inclusiveLabel.classed("status-hide", true);
+                status.exclusiveLabel.classed("status-hide", true);
+            }
+        }
+
+        function updatePanelMatchedSearch(panelId, re) {
+            const leaves = panelLeavesRegistry.get(panelId);
+            if (!leaves) { return; }
+            const total = totalFactorForMode(getPanelConfig(panelId).mode);
+            const matched = calculateTreemapMatched(leaves, total, (leaf) => re.test(leaf.uid));
+            displayMatchedStats(panelId, "Search", matched, true);
+        }
+
+        function findLeafTitle(panelId, uid) {
+            const leaves = panelLeavesRegistry.get(panelId);
+            if (!leaves) { return null; }
+            const leaf = leaves.find((entry) => entry.uid === uid);
+            return leaf ? leaf.titleText : null;
+        }
+
+        function showStatusForUid(uid) {
+            forEachPanel(({ panelId }) => {
+                setStatusLabelsVisible(panelId, true);
+                const titleText = findLeafTitle(panelId, uid);
+                if (titleText) {
+                    setStatusLabelsVisible(panelId, true);
+                    updatePanelDetails(panelId, titleText);
+                } else {
+                    clearPanelDetails(panelId);
+                    if (!isPanelSearchActive(panelId) && !isPanelHighlightActive(panelId)) {
+                        setStatusLabelsVisible(panelId, false);
+                    }
+                }
+            });
+        }
+
+        function clearStatus() {
+            activeHoverUid = null;
+            forEachPanel(({ panelId }) => {
+                setStatusLabelsVisible(panelId, false);
+                clearPanelDetails(panelId);
+            });
+        }
+
+        function onHoverEnd() {
+            if (!anyPanelSearchActive() && !anyPanelHighlightActive()) {
+                clearStatus();
                 return;
             }
-            search.active = true;
-            search.term = term;
-            updatePanelChromeButtons(panelId);
-            applyPanelSearch(panelId);
-        } else {
-            search.active = false;
-            search.term = null;
-            updatePanelChromeButtons(panelId);
-            resetPanelSearch(panelId);
-        }
-    }
-
-    function togglePanelIgnorecase(panelId) {
-        const search = getPanel(panelId).search;
-        search.ignorecase = !search.ignorecase;
-        updatePanelChromeButtons(panelId);
-        if (search.active) {
-            applyPanelSearch(panelId);
-        }
-    }
-
-    function togglePanelExclusive(panelId) {
-        const panel = getPanel(panelId);
-        panel.metric = panel.metric === "incl" ? "excl" : "incl";
-        renderPanel(panelId);
-        setHighlight(panelId, panel.highlight);
-    }
-
-    function setHighlight(panelId, hl) {
-        const panel = getPanel(panelId);
-
-        const currState = HIGHLIGHT_STATES[panel.highlight];
-        const newState = HIGHLIGHT_STATES[hl];
-
-        const panelDiv = document.getElementById(panelId);
-        let highlightBtn = document.getElementById(`${panelId}-highlight`);
-
-        panel.highlight = hl;
-        highlightBtn.textContent = newState.btnLabel;
-        if (currState.cls) {
-            panelDiv.classList.remove(currState.cls);
-        }
-        if (newState.cls) {
-            panelDiv.classList.add(newState.cls);
+            forEachPanel(({ panelId }) => {
+                clearPanelDetails(panelId);
+                getStatus(panelId)?.nameTypeLabel.classed("status-hide", true);
+                if (isPanelSearchActive(panelId)) {
+                    applyPanelSearch(panelId);
+                }
+                else if (!isPanelHighlightActive(panelId)) {
+                    setStatusLabelsVisible(panelId, false);
+                }
+            });
         }
 
-        // Calculate the highlighted consumption.
-        if (hl !== "none") {
-            const leaves = panelLeavesRegistry.get(panelId);
-            const total = totalFactorForMode(getPanelConfig(panelId).mode)
-            const occurrence = searchedOccurrence(getPanelConfig(panelId).mode, hl);
-            const matched = calculateTreemapMatched(leaves, total, (leaf) => leaf.occurrence === occurrence);
-            displayMatchedStats(panelId, "Highlight", matched, true);
-        } else {
-            clearMatchedDisplay(panelId, "Highlight", true);
+        function applyLinkedHover(uid) {
+            if (activeHoverUid !== null && activeHoverUid !== uid) {
+                setLinkedHover(activeHoverUid, false);
+            }
+            activeHoverUid = uid;
+            setLinkedHover(uid, true);
         }
-    }
 
-    function togglePanelHighlight(panelId) {
-        setHighlight(panelId, HIGHLIGHT_STATES[getPanel(panelId).highlight].nextState)
-    }
-
-    function globalHighlightToggle() {
-        globalHighlight = HIGHLIGHT_STATES[globalHighlight].nextState;
-
-        forEachPanel(({ panelId }) => {
-            setHighlight(panelId, globalHighlight);
-        });
-        document.getElementById("treemap_toggle_highlight_all").textContent = HIGHLIGHT_STATES[globalHighlight].gLabel;
-    }
-
-    function updateGlobalMetricButton() {
-        const btn = document.getElementById("treemap_toggle_ie_all");
-        if (!btn) {
-            return;
+        function enterHover(uid) {
+            cancelHoverLeave();
+            if (activeHoverUid === uid) { return; }
+            applyLinkedHover(uid);
+            showStatusForUid(uid);
         }
-        btn.textContent = allPanelsUseMetric("excl")
-            ? "Show Inclusive Consumption"
-            : "Show Exclusive Consumption";
-    }
 
-    function globalMetricToggle() {
-        const target = allPanelsUseMetric("excl") ? "incl" : "excl";
-        forEachPanel(({ panelId }) => {
+        function flushActiveHover() {
+            cancelHoverLeave();
+            if (activeHoverUid === null) { return; }
+            const uid = activeHoverUid;
+            activeHoverUid = null;
+            setLinkedHover(uid, false);
+            onHoverEnd();
+        }
+
+        function getActiveHoverUid() { return activeHoverUid; }
+
+        // --- Per-panel search ---
+        function applySearchToRects(panelId, re) {
+            for (const { rect, fill, uid } of getPanelRects(panelId)) {
+                const match = re.test(uid);
+                rect.classed("search-match", match);
+                if (activeHoverUid !== uid) {
+                    rect.attr("fill", match ? SEARCH_COLOR : fill);
+                }
+            }
+        }
+
+        function applyPanelSearch(panelId) {
+            const re = buildPanelRegex(panelId);
+            if (!re) { return; }
+            updatePanelMatchedSearch(panelId, re);
+            applySearchToRects(panelId, re);
+        }
+
+        function resetPanelSearch(panelId) {
+            for (const { rect, fill, uid } of getPanelRects(panelId)) {
+                rect.classed("search-match", false);
+                rect.attr("fill", activeHoverUid === uid ? HOVER_COLOR : fill);
+            }
+            clearMatchedDisplay(panelId, "Search", true);
+        }
+
+        // --- SVG chrome ---
+        function appendStatusTexts(svg, panelId) {
+            const [y0, y1, y2] = STATUS_LINE_Y;
+            const labelClass = "status-label status-hide";
+
+            const status = {
+                nameTypeLabel: svg.append("text")
+                    .attr("id", `${panelId}-nameTypeLabel`)
+                    .attr("class", labelClass)
+                    .attr("x", XPAD1 + 70).attr("y", y0)
+                    .attr("text-anchor", "end").attr("font-weight", "bold")
+                    .text(NAME_TYPE),
+                inclusiveLabel: svg.append("text")
+                    .attr("id", `${panelId}-inclusiveLabel`)
+                    .attr("class", labelClass)
+                    .attr("x", XPAD1 + 70).attr("y", y1)
+                    .attr("text-anchor", "end").attr("font-weight", "bold")
+                    .text("Inclusive:"),
+                exclusiveLabel: svg.append("text")
+                    .attr("id", `${panelId}-exclusiveLabel`)
+                    .attr("class", labelClass)
+                    .attr("x", XPAD1 + 70).attr("y", y2)
+                    .attr("text-anchor", "end").attr("font-weight", "bold")
+                    .text("Exclusive:"),
+                detailsName: svg.append("text")
+                    .attr("id", `${panelId}-detailsName`)
+                    .attr("class", "status-detail-name")
+                    .attr("x", XPAD1 + 75).attr("y", y0)
+                    .text(" "),
+                detailsIncl: svg.append("text")
+                    .attr("id", `${panelId}-detailsIncl`)
+                    .attr("x", XPAD1 + 75).attr("y", y1)
+                    .text(" "),
+                detailsExcl: svg.append("text")
+                    .attr("id", `${panelId}-detailsExcl`)
+                    .attr("x", XPAD1 + 75).attr("y", y2)
+                    .text(" "),
+                matchedHighlightLabel: svg.append("text")
+                    .attr("id", `${panelId}-matchedHighlightLabel`)
+                    .attr("class", "status-label status-hide")
+                    .attr("x", VIEW_WIDTH / 2 - 50).attr("y", y0)
+                    .attr("font-weight", "bold")
+                    .text("Matched (highlight):"),
+                matchedHighlightCount: svg.append("text")
+                    .attr("id", `${panelId}-matchedHighlightCount`)
+                    .attr("x", VIEW_WIDTH / 2 + 90).attr("y", y0)
+                    .text(" "),
+                matchedHighlightIncl: svg.append("text")
+                    .attr("id", `${panelId}-matchedHighlightIncl`)
+                    .attr("x", VIEW_WIDTH / 2 - 50).attr("y", y1)
+                    .text(" "),
+                matchedHighlightExcl: svg.append("text")
+                    .attr("id", `${panelId}-matchedHighlightExcl`)
+                    .attr("x", VIEW_WIDTH / 2 - 50).attr("y", y2)
+                    .text(" "),
+                matchedSearchLabel: svg.append("text")
+                    .attr("id", `${panelId}-matchedSearchLabel`)
+                    .attr("class", "status-label status-hide")
+                    .attr("x", VIEW_WIDTH - 60 - XPAD2).attr("y", y0)
+                    .attr("font-weight", "bold")
+                    .text("Matched (search):"),
+                matchedSearchCount: svg.append("text")
+                    .attr("id", `${panelId}-matchedSearchCount`)
+                    .attr("x", VIEW_WIDTH - 90).attr("y", y0)
+                    .text(" "),
+                matchedSearchIncl: svg.append("text")
+                    .attr("id", `${panelId}-matchedSearchIncl`)
+                    .attr("x", VIEW_WIDTH - 60 - XPAD2).attr("y", y1)
+                    .text(" "),
+                matchedSearchExcl: svg.append("text")
+                    .attr("id", `${panelId}-matchedSearchExcl`)
+                    .attr("x", VIEW_WIDTH - 60 - XPAD2).attr("y", y2)
+                    .text(" "),
+            };
+            statusRegistry.set(panelId, status);
+        }
+
+        function appendSvgChrome(svg, panelId, mode) {
+            const gradId = `${panelId}-background`;
+            const defs = svg.append("defs");
+            defs.append("linearGradient")
+                .attr("id", gradId).attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 1)
+                .selectAll("stop")
+                .data([
+                    { offset: "5%", color: BG_COLOR_1 },
+                    { offset: "95%", color: BG_COLOR_2 },
+                ])
+                .join("stop")
+                .attr("offset", (d) => d.offset)
+                .attr("stop-color", (d) => d.color);
+
+            svg.append("rect")
+                .attr("x", 0).attr("y", 0)
+                .attr("width", VIEW_WIDTH).attr("height", VIEW_HEIGHT)
+                .attr("fill", `url(#${gradId})`);
+
+            svg.append("text")
+                .attr("class", "panel-title")
+                .attr("x", VIEW_WIDTH / 2).attr("y", FONT_SIZE * 2)
+                .text(MODE_TITLES[mode]);
+
             const panel = getPanel(panelId);
-            if (panel.metric !== target) {
-                panel.metric = target;
-                renderPanel(panelId);
-                setHighlight(panelId, panel.highlight);
-            }
-        });
-        updateGlobalMetricButton();
-    }
+            svg.append("text")
+                .attr("id", `${panelId}-highlight`).attr("class", "svg-btn")
+                .attr("x", VIEW_WIDTH - XPAD1 - 270).attr("y", FONT_SIZE * 2)
+                .text(HIGHLIGHT_STATES[panel.highlight].btnLabel);
 
-    function globalSearchApply() {
-        const term = document.getElementById("treemap_search_all_input")?.value.trim();
-        if (!term) {
-            return;
+            svg.append("text")
+                .attr("id", `${panelId}-excToggle`).attr("class", "svg-btn")
+                .attr("x", VIEW_WIDTH - XPAD1 - 200).attr("y", FONT_SIZE * 2)
+                .text(exclusiveToggleLabel(panel.metric));
+
+            svg.append("text")
+                .attr("id", `${panelId}-search`)
+                .attr("class", `svg-btn${panel.search.active ? " show" : ""}`)
+                .attr("x", VIEW_WIDTH - XPAD1 - 100).attr("y", FONT_SIZE * 2)
+                .text(panel.search.active ? "Reset Search" : "Search");
+
+            svg.append("text")
+                .attr("id", `${panelId}-ignorecase`)
+                .attr("class", `svg-btn${panel.search.ignorecase ? " show" : ""}`)
+                .attr("x", VIEW_WIDTH - XPAD1 - 16).attr("y", FONT_SIZE * 2)
+                .text("ic");
+
+            appendStatusTexts(svg, panelId);
+            return svg.append("g").attr("id", `${panelId}-frames`).attr("class", "frames");
         }
-        forEachPanel(({ panelId }) => {
-            const search = getPanel(panelId).search;
-            search.active = true;
-            search.term = term;
+
+        // --- Rendering ---
+        function renderTreemapPanel(panelId, mode, parsed, metric, minAreaPercent) {
+            const filtered = filterRows(parsed, mode, metric, minAreaPercent);
+            const totalFactor = totalFactorForMode(mode);
+            const diff = isDiffMode(mode);
+            const scale = totalTarget / totalBaseline;
+            const maxScaledDelta = diff
+                ? d3.max(filtered, (d) => Math.abs(d[`target_abs_${metric}`] - d[`baseline_abs_${metric}`] * scale)) || 0
+                : 0;
+
+            for (const row of filtered) {
+                row.fill = fillColor(row, mode, metric, scale, maxScaledDelta);
+            }
+
+            const root = d3.hierarchy({ children: filtered })
+                .sum((d) => d.value)
+                .sort((a, b) => b.value - a.value);
+
+            d3.treemap()
+                .size([TREEMAP_WIDTH, INNER_HEIGHT])
+                .paddingInner(1)
+                .round(true)(root);
+
+            const svg = d3.select(`#${panelId} svg`);
+            svg.selectAll("*").remove();
+            panelRectRegistry.set(panelId, []);
+
+            const frames = appendSvgChrome(svg, panelId, mode);
+            const prefix = profilePrefix(mode);
+
+            const leaves = frames.selectAll(".leaf")
+                .data(root.leaves())
+                .join("g")
+                .attr("class", (d) => d.data.occurrence.replaceAll(" ", "-"))
+                .classed("leaf", true)
+                .attr("transform", (d) => `translate(${d.x0 + TREEMAP_X_MARGIN},${d.y0 + Y_PAD1})`);
+
+            leaves.append("rect")
+                .attr("width", (d) => Math.max(0, d.x1 - d.x0))
+                .attr("height", (d) => Math.max(0, d.y1 - d.y0))
+                .attr("fill", (d) => d.data.fill)
+                .attr("data-uid", (d) => d.data.uid)
+                .attr("rx", 2).attr("ry", 2)
+                .each(function (d) {
+                    registerHoverRect(panelId, d.data.uid, d3.select(this), d.data.fill);
+                })
+                .append("title")
+                .text((d) => tooltipText(d.data, mode, totalFactor));
+
+            const leafAreas = root.leaves().map((d) => {
+                const lw = Math.max(0, d.x1 - d.x0);
+                const lh = Math.max(0, d.y1 - d.y0);
+                return lw * lh;
+            });
+            const minLeafArea = d3.min(leafAreas) ?? 0;
+            const maxLeafArea = d3.max(leafAreas) ?? 0;
+
+            leaves.each(function (d) {
+                const w = d.x1 - d.x0;
+                const h = d.y1 - d.y0;
+                const g = d3.select(this);
+                const fontSize = tileFontSizeFromArea(w * h, minLeafArea, maxLeafArea);
+                const nameLabel = truncateLabel(d.data.uid, w, h, fontSize);
+                const pctText = tilePercentText(d.data, mode, getPanel(panelId).metric, totalFactor);
+                const lines = buildTileLabelLines(nameLabel, pctText, w, h, fontSize);
+                appendCenteredTileLabels(g, w, h, lines, fontSize);
+            });
+
+            panelLeavesRegistry.set(
+                panelId,
+                root.leaves().map((d) => {
+                    const w = Math.max(0, d.x1 - d.x0);
+                    const h = Math.max(0, d.y1 - d.y0);
+                    return {
+                        uid: d.data.uid,
+                        area: w * h,
+                        inclAbs: d.data[`${prefix}_abs_incl`],
+                        exclAbs: d.data[`${prefix}_abs_excl`],
+                        occurrence: d.data.occurrence,
+                        titleText: tooltipText(d.data, mode, totalFactor),
+                    };
+                })
+            );
+        }
+
+        function updatePanelChromeButtons(panelId) {
+            const panel = getPanel(panelId);
+            const searchBtn = document.getElementById(`${panelId}-search`);
+            if (searchBtn) {
+                searchBtn.textContent = panel.search.active ? "Reset Search" : "Search";
+                searchBtn.classList.toggle("show", panel.search.active);
+            }
+            const icBtn = document.getElementById(`${panelId}-ignorecase`);
+            if (icBtn) { icBtn.classList.toggle("show", panel.search.ignorecase); }
+            const excBtn = document.getElementById(`${panelId}-excToggle`);
+            if (excBtn) { excBtn.textContent = exclusiveToggleLabel(panel.metric); }
+        }
+
+        function renderPanel(panelId) {
+            const { mode } = getPanelConfig(panelId);
+            removePanelFromRegistries(panelId);
+            renderTreemapPanel(panelId, mode, getParsedData(), getPanel(panelId).metric, globalOptions.minAreaPercent);
             updatePanelChromeButtons(panelId);
-            applyPanelSearch(panelId);
-        });
-    }
-
-    function globalSearchReset() {
-        const input = document.getElementById("treemap_search_all_input");
-        if (input) {
-            input.value = "";
+            if (isPanelSearchActive(panelId)) { applyPanelSearch(panelId); }
+            // Only re-apply the theme to this panel's own (freshly re-rendered) SVG content.
+            // Calling the global applyTheme() here would re-run recolorSVGRectangles() over
+            // every flame graph on the page, which clobbers the "white" background rects set
+            // by the flame graph's exclusive-view overlay with their stale cached colors.
+            const theme = themesSidepanel.getAttribute('data-theme') || default_theme_js;
+            recolorSVGBackground(`${panelId}-background`, theme);
+            recolorSVGRectangles(`${panelId}-frames`, theme);
         }
-        forEachPanel(({ panelId }) => {
+
+        function renderAll(options = {}) {
+            if (options.minAreaPercent !== undefined) {
+                globalOptions.minAreaPercent = options.minAreaPercent;
+            }
+            resetRenderState();
+            const parsed = getParsedData();
+            forEachPanel(({ panelId, mode }) => {
+                renderTreemapPanel(panelId, mode, parsed, getPanel(panelId).metric, globalOptions.minAreaPercent);
+                updatePanelChromeButtons(panelId);
+                if (isPanelSearchActive(panelId)) { applyPanelSearch(panelId); }
+            });
+        }
+
+        // --- Highlight ---
+        function setHighlight(panelId, hl) {
+            const panel = getPanel(panelId);
+            const currState = HIGHLIGHT_STATES[panel.highlight];
+            const newState = HIGHLIGHT_STATES[hl];
+            const panelDiv = document.getElementById(panelId);
+            let highlightBtn = document.getElementById(`${panelId}-highlight`);
+
+            panel.highlight = hl;
+            highlightBtn.textContent = newState.btnLabel;
+            if (currState.cls) { panelDiv.classList.remove(currState.cls); }
+            if (newState.cls) { panelDiv.classList.add(newState.cls); }
+
+            if (hl !== "none") {
+                const leaves = panelLeavesRegistry.get(panelId);
+                const total = totalFactorForMode(getPanelConfig(panelId).mode);
+                const occurrence = searchedOccurrence(getPanelConfig(panelId).mode, hl);
+                const matched = calculateTreemapMatched(leaves, total, (leaf) => leaf.occurrence === occurrence);
+                displayMatchedStats(panelId, "Highlight", matched, true);
+            } else {
+                clearMatchedDisplay(panelId, "Highlight", true);
+            }
+        }
+
+        function togglePanelHighlight(panelId) {
+            setHighlight(panelId, HIGHLIGHT_STATES[getPanel(panelId).highlight].nextState);
+        }
+
+        function togglePanelExclusive(panelId) {
+            const panel = getPanel(panelId);
+            panel.metric = panel.metric === "incl" ? "excl" : "incl";
+            renderPanel(panelId);
+            setHighlight(panelId, panel.highlight);
+        }
+
+        function panelSearchPrompt(panelId) {
             const search = getPanel(panelId).search;
-            search.active = false;
-            search.term = null;
-            updatePanelChromeButtons(panelId);
-            resetPanelSearch(panelId);
-        });
-    }
-
-    const PANEL_SVG_CONTROLS = [
-        { suffix: "-search", handler: panelSearchPrompt },
-        { suffix: "-ignorecase", handler: togglePanelIgnorecase },
-        { suffix: "-highlight", handler: togglePanelHighlight },
-        { suffix: "-excToggle", handler: togglePanelExclusive },
-    ];
-
-    function handlePanelControlClick(targetId) {
-        for (const { suffix, handler } of PANEL_SVG_CONTROLS) {
-            const panelId = panelIdFromControlId(targetId, suffix);
-            if (panelId) {
-                handler(panelId);
-                return true;
+            if (!search.active) {
+                const term = prompt(
+                    "Enter a search term (regexp allowed, e.g. ^do_)" +
+                        (search.ignorecase ? ", ignoring case" : "") + ")", "");
+                if (term === null || term === "") { return; }
+                search.active = true;
+                search.term = term;
+                updatePanelChromeButtons(panelId);
+                applyPanelSearch(panelId);
+            } else {
+                search.active = false;
+                search.term = null;
+                updatePanelChromeButtons(panelId);
+                resetPanelSearch(panelId);
             }
         }
-        return false;
+
+        function togglePanelIgnorecase(panelId) {
+            const search = getPanel(panelId).search;
+            search.ignorecase = !search.ignorecase;
+            updatePanelChromeButtons(panelId);
+            if (search.active) { applyPanelSearch(panelId); }
+        }
+
+        // --- Per-panel SVG control dispatch ---
+        const PANEL_SVG_CONTROLS = [
+            { suffix: "-search", handler: panelSearchPrompt },
+            { suffix: "-ignorecase", handler: togglePanelIgnorecase },
+            { suffix: "-highlight", handler: togglePanelHighlight },
+            { suffix: "-excToggle", handler: togglePanelExclusive },
+        ];
+
+        function panelIdFromControlId(id, suffix) {
+            if (!id.endsWith(suffix)) { return null; }
+            return id.slice(0, -suffix.length);
+        }
+
+        function handlePanelControlClick(targetId) {
+            for (const { suffix, handler } of PANEL_SVG_CONTROLS) {
+                const panelId = panelIdFromControlId(targetId, suffix);
+                if (panelId && panelStates[panelId]) {
+                    handler(panelId);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- Global controls ---
+        function globalHighlightToggle(highlightBtnId) {
+            globalHighlight = HIGHLIGHT_STATES[globalHighlight].nextState;
+            forEachPanel(({ panelId }) => { setHighlight(panelId, globalHighlight); });
+            document.getElementById(highlightBtnId).textContent = HIGHLIGHT_STATES[globalHighlight].gLabel;
+        }
+
+        function globalMetricToggle(metricBtnId) {
+            const target = allPanelsUseMetric("excl") ? "incl" : "excl";
+            forEachPanel(({ panelId }) => {
+                const panel = getPanel(panelId);
+                if (panel.metric !== target) {
+                    panel.metric = target;
+                    renderPanel(panelId);
+                    setHighlight(panelId, panel.highlight);
+                }
+            });
+            updateGlobalMetricButton(metricBtnId);
+        }
+
+        function updateGlobalMetricButton(metricBtnId) {
+            const btn = document.getElementById(metricBtnId);
+            if (!btn) { return; }
+            btn.textContent = allPanelsUseMetric("excl")
+                ? "Show Inclusive Consumption"
+                : "Show Exclusive Consumption";
+        }
+
+        function globalSearchApplyFromInput(inputId) {
+            const term = document.getElementById(inputId)?.value.trim();
+            if (!term) { return; }
+            forEachPanel(({ panelId }) => {
+                const search = getPanel(panelId).search;
+                search.active = true;
+                search.term = term;
+                updatePanelChromeButtons(panelId);
+                applyPanelSearch(panelId);
+            });
+        }
+
+        function globalSearchApplyTerm(term) {
+            if (!term) { return; }
+            forEachPanel(({ panelId }) => {
+                const search = getPanel(panelId).search;
+                search.active = true;
+                search.term = term;
+                updatePanelChromeButtons(panelId);
+                applyPanelSearch(panelId);
+            });
+        }
+
+        function globalSearchReset(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) { input.value = ""; }
+            forEachPanel(({ panelId }) => {
+                const search = getPanel(panelId).search;
+                search.active = false;
+                search.term = null;
+                updatePanelChromeButtons(panelId);
+                resetPanelSearch(panelId);
+            });
+        }
+
+        return {
+            gridId,
+            gridPanels,
+            enterHover,
+            flushActiveHover,
+            applyLinkedHover,
+            getActiveHoverUid,
+            cancelHoverLeave,
+            showStatusForUid,
+            findTreemapLeafUid,
+            uidUnderPointer,
+            handlePanelControlClick,
+            globalHighlightToggle,
+            globalMetricToggle,
+            updateGlobalMetricButton,
+            globalSearchApplyFromInput,
+            globalSearchApplyTerm,
+            globalSearchReset,
+            renderAll,
+            renderPanel,
+            setHighlight,
+        };
     }
 
-    function initControls() {
-        const chartGrid = document.getElementById("treemaps");
+    // =========================================================================
+    //  Create two grid instances
+    // =========================================================================
+    const diffTreemapGrid = createTreemapGrid("graphs-diff", [
+        { panelId: "treemap-baseline-diff", mode: "baselineDiff" },
+        { panelId: "treemap-target-diff", mode: "targetDiff" },
+    ], "excl");
 
-        chartGrid.addEventListener("click", (e) => {
-            handlePanelControlClick(e.target.id || "");
-        });
+    const nondiffTreemapGrid = createTreemapGrid("graphs-nondiff", [
+        { panelId: "treemap-baseline", mode: "baseline" },
+        { panelId: "treemap-target", mode: "target" },
+    ], "incl");
 
-        initTreemapHoverDelegation(chartGrid);
+    const TREEMAP_GRIDS = [diffTreemapGrid, nondiffTreemapGrid];
 
-        document.getElementById("treemap_search_reset_all").addEventListener("click", globalSearchReset);
-        document.getElementById("treemap_toggle_ie_all").addEventListener("click", globalMetricToggle);
-        document.getElementById("treemap_search_all_input").addEventListener("input", globalSearchApply);
-        document.getElementById("treemap_search_all_input").addEventListener("keypress", function (e) {
-            globalSearchApply();
-            if (e.key === 'Enter') {
-                this.blur();
+    function findTreemapGridForElement(target) {
+        for (const grid of TREEMAP_GRIDS) {
+            const el = document.getElementById(grid.gridId);
+            if (el && el.contains(target)) {
+                return grid;
             }
-        });
-        document.getElementById("treemap_toggle_highlight_all").addEventListener("click", globalHighlightToggle);
+        }
+        return null;
+    }
 
-        renderTreemap();
-        updateGlobalMetricButton();
+    window.diffTreemapGrid = diffTreemapGrid;
+    window.nondiffTreemapGrid = nondiffTreemapGrid;
+    window.TREEMAP_GRIDS = TREEMAP_GRIDS;
+    window.findTreemapGridForElement = findTreemapGridForElement;
+
+    window.renderTreemap = function (options) {
+        diffTreemapGrid.renderAll(options);
+        nondiffTreemapGrid.renderAll(options);
+    };
+
+    function initTreemapControls() {
+        // Diff grid controls
+        const diffGridEl = document.getElementById("graphs-diff");
+        diffGridEl.addEventListener("click", (e) => {
+            diffTreemapGrid.handlePanelControlClick(e.target.id || "");
+        });
+
+        document.getElementById("diff_graph_toggle_highlight_all").addEventListener("click", () =>
+            diffTreemapGrid.globalHighlightToggle("diff_graph_toggle_highlight_all"));
+
+        // Non-diff grid controls
+        const nondiffGridEl = document.getElementById("graphs-nondiff");
+        nondiffGridEl.addEventListener("click", (e) => {
+            nondiffTreemapGrid.handlePanelControlClick(e.target.id || "");
+        });
+
+        document.getElementById("nondiff_graph_toggle_highlight_all").addEventListener("click", () =>
+            nondiffTreemapGrid.globalHighlightToggle("nondiff_graph_toggle_highlight_all"));
+
+        // Layout switches
+        document.getElementById("diff_graph_layout_switch").addEventListener("click", function () {
+            switchGridLayout("#graphs-diff");
+        });
+        document.getElementById("nondiff_graph_layout_switch").addEventListener("click", function () {
+            switchGridLayout("#graphs-nondiff");
+        });
+
+        // Render all treemaps
+        diffTreemapGrid.renderAll();
+        nondiffTreemapGrid.renderAll();
 
         const savedTheme = localStorage.getItem('theme') || default_theme_js;
         applyTheme(savedTheme);
     }
 
-    window.renderTreemap = renderTreemap;
-    window.addEventListener("DOMContentLoaded", initControls);
-
-    document.getElementById("treemaps_layout_switch").addEventListener("click", function () {
-        switchGridLayout("#treemaps");
-    });
+    window.addEventListener("DOMContentLoaded", initTreemapControls);
 </script>
