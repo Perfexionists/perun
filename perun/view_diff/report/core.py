@@ -257,6 +257,7 @@ def generate_report_view(
         timestamp=report_time,
         chatbot=cli_kwargs["chatbot_url"],
         chatbot_prompt_context=prompt_ctx,
+        summary_prompt=chatbot.SUMMARY_PROMPT,
         lhs_tag="Baseline",
         lhs_header=lhs_header,
         lhs_vulnerabilities=lhs_vulnerabilities,

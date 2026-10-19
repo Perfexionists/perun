@@ -208,7 +208,7 @@
                 onClick: () => {
                     const rowData = findTraceDataBySymbol(row[0]);
                     if (rowData && window.openTracePopup) {
-                        const isExcl = getSectionInclExclIndex('top-funcs') === 1;
+                        const isExcl = getSectionInclExclIndex('top-funcs') === 0;
                         window.openTracePopup(rowData, isExcl, {
                             items: dataArray,
                             currentIndex: index,
@@ -235,7 +235,7 @@
                 onClick: () => {
                     const rowData = findTraceDataBySymbol(traceStr);
                     if (rowData && window.openTracePopup) {
-                        const isExcl = getSectionInclExclIndex('top-traces') === 1;
+                        const isExcl = getSectionInclExclIndex('top-traces') === 0;
                         window.openTracePopup(rowData, isExcl, {
                             items: dataArray,
                             currentIndex: index,
@@ -250,7 +250,7 @@
 
     function getSectionInclExclIndex(prefix) {
         const toggle = document.getElementById(`${prefix}-incl-excl-toggle`);
-        return toggle && toggle.checked ? 1 : 0;
+        return toggle && toggle.checked ? 0 : 1;
     }
 
     function updateSectionTables(prefix, diffsData, renderFn) {
