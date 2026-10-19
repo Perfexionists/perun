@@ -508,15 +508,9 @@ def escape_flamegraph_svg(tag: str, content: str, _tag_to_index: dict[str, int] 
 
     :param tag: the tag used to prefix the functions and ids
     :param content: the SVG content to escape
-    :param _tag_to_index: a cache-like tag -> index mapping. Used to correctly replace calls to
-           `getElementsByClassName("svg-content")` by
-           `getElementsByClassName("svg-content")[<index>]`.
-           The default value is mutable intentionally: this allows the caller to control the
-           escaping per each generated HTML file.
+    :param _tag_to_index: unused, kept for backward compatibility
     :return: the escaped content
     """
-    tag_index = _tag_to_index.setdefault(tag, len(_tag_to_index))
-
     content = _FUNC_PATTERN.sub(rf"{tag}_\1(", content)
 
     def _literal_repl(m: re.Match[str]) -> str:
@@ -533,9 +527,7 @@ def escape_flamegraph_svg(tag: str, content: str, _tag_to_index: dict[str, int] 
 
     content = _SVG_VAR_PATTERN.sub(rf"{tag}_svg\1", content)
     content = _WS_PATTERN.sub("><", content)
-    content = _GET_ELEMENTS_PATTERN.sub(
-        f'getElementsByClassName("svg-content")[{tag_index}]', content
-    )
+    content = _GET_ELEMENTS_PATTERN.sub(f'getElementById("{tag}_svg_el")', content)
 
     # Replace 'document.' references, then revert specific cases.
     content = re.sub(r"document.", f"{tag}_svg.", content)
@@ -555,7 +547,7 @@ def escape_flamegraph_svg(tag: str, content: str, _tag_to_index: dict[str, int] 
     # https://chartio.com/resources/tutorials/how-to-resize-an-svg-when-the-window-is-resized-in-d3-js/
     # Which helped to solve the issue with non-resizable flamegraphs
     content = _SVG_TAG_PATTERN.sub(
-        '<svg version="1.1" preserveAspectRatio="xMinYMin meet" class="svg-content"',
+        f'<svg version="1.1" preserveAspectRatio="xMinYMin meet" class="svg-content" id="{tag}_svg_el"',
         content,
     )
     return content

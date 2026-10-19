@@ -3,6 +3,7 @@ perun_templates_diff_sections_dir = perun_templates_dir / 'diff_sections'
 perun_templates_diff_section_files = files(
     'section_environment.html.jinja2',
     'section_flame_graphs.html.jinja2',
+    'section_graphs.html.jinja2',
     'section_metadata.html.jinja2',
     'section_overview.html.jinja2',
     'section_page_footer.html.jinja2',
