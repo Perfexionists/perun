@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+0.28.2 (2026-10-20)
+-------------------
+
+  - The Report overview now lists traces with the highest consumption deltas (similar to the function lists)
+  - The Report overview can generate AI summary using the selected model.
+  - The Flame Graph and Tree View sections in Report have been merged into a common Graphs view.
+  - The layout of Flame Graph and Tree Map grids has been changed.
+  - Fixed a bug with Flame Graphs being incorrectly scaled.
+
+
 0.28.1 (2026-09-14)
 -------------------
 
