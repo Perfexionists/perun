@@ -240,7 +240,7 @@ body.chat-open .context-selected {
 
 .llm-summary {
   width: fit-content;
-  max-width: min(70ch, 90vw);
+  max-width: min(200ch, 90vw);
   margin: 12px 0 24px;
   padding: 12px 16px;
   border: 1px solid var(--color-bg-dt-table);

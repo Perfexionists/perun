@@ -1,3 +1,7 @@
+<script>
+    const SUMMARY_INFO_FOR_AGENTS = `{{ summary_prompt }}`;
+</script>
+
 {% if chatbot %}
 <script>
     const BACKEND_API_URL = "{{ chatbot }}";
@@ -99,7 +103,7 @@ async function generateReportSummary() {
 
   try {
     const requestBody = {
-      prompt: "Summarize the performance comparison using the report overview below. Highlight the most important regressions and improvements, explain the overall result, and avoid conclusions not supported by the data. Keep the summary concise.",
+      prompt: `${SUMMARY_INFO_FOR_AGENTS}`,
       pilot_prompt: getPilotPrompt(),
       context: context.innerText.trim(),
       report_url: window.location.href
