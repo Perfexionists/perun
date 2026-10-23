@@ -39,7 +39,6 @@
                 searchResetBtnId: "diff_graph_search_reset_all",
                 zoomResetBtnId: "diff_graph_zoom_reset_all",
                 toggleIEBtnId: "diff_graph_toggle_ie_all",
-                defaultExcl: true,
             },
             {
                 gridId: "graphs-nondiff",
@@ -48,7 +47,6 @@
                 searchResetBtnId: "nondiff_graph_search_reset_all",
                 zoomResetBtnId: "nondiff_graph_zoom_reset_all",
                 toggleIEBtnId: "nondiff_graph_toggle_ie_all",
-                defaultExcl: false,
             },
         ];
 
@@ -301,42 +299,6 @@
                         const metricBtnId = gridConfig.toggleIEBtnId;
                         treemapGrid.globalMetricToggle(metricBtnId);
                     }
-                });
-            }
-
-            // --- Auto-toggle diff flame graphs to exclusive on load ---
-            if (gridConfig.defaultExcl) {
-                function autoToggleExclusive() {
-                    gridConfig.types.forEach(function (type) {
-                        const toggle = document.getElementById(`${type}_{{ index }}_excToggle`);
-                        if (toggle && toggle.firstChild.nodeValue === "Show exclusive") {
-                            toggle.dispatchEvent(new Event("click", { bubbles: true }));
-                        }
-                    });
-                    // Update the grid button label to reflect exclusive state
-                    const btn = document.getElementById(gridConfig.toggleIEBtnId);
-                    if (btn) { btn.firstChild.nodeValue = "Show Inclusive Consumption"; }
-                }
-
-                window.addEventListener("DOMContentLoaded", function () {
-                    // Each flame graph only finishes initializing (and assigns its
-                    // "_svg" variable) once its own <svg> fires its "load" event. For
-                    // large graphs that can happen before or after DOMContentLoaded, so
-                    // toggling here directly can race ahead of initialization and throw.
-                    // Wait for every type's own svg to be ready before toggling it.
-                    let pending = gridConfig.types.length;
-                    function onTypeReady() {
-                        pending -= 1;
-                        if (pending === 0) { autoToggleExclusive(); }
-                    }
-                    gridConfig.types.forEach(function (type) {
-                        if (window[`${type}_{{ index }}_svg`]) {
-                            onTypeReady();
-                        } else {
-                            const svgEl = document.getElementById(`${type}_{{ index }}_svg_el`);
-                            svgEl.addEventListener("load", onTypeReady, { once: true });
-                        }
-                    });
                 });
             }
         });

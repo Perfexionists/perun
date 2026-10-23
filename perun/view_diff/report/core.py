@@ -150,7 +150,6 @@ def generate_report_view(
     )
     minwidth_threshold = fg_settings.compute_minwidth_threshold()
 
-    log.minor_info(f"Units: {fg_settings.countname}")
     # Dump the profiles back into a folded format for flamegraph scripts.
     grid = fg_grid.FlameGraphGrid()
     log.minor_info("Saving post-processed profiles in temporary files.")
