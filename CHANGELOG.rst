@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.28.3 (2026-10-24)
+-------------------
+
+  - Fix a bug that caused differential flame graphs to be in inclusive mode in Firefox.
+
 
 0.28.2 (2026-10-20)
 -------------------
