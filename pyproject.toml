@@ -73,6 +73,7 @@ dependencies = [
 
     # Constraints on transitive dependencies
     "bitstring<5",
+    "pycparser<3.12",
 ]
 dynamic = ["version"]
 

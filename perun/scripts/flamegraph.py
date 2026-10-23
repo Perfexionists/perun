@@ -1410,7 +1410,7 @@ def create_svg_without_frames(
             "excToggle",
             settings.image_width - Geometry.XPad1 - 220,
             settings.font_size * 2,
-            "Show exclusive",
+            "Show inclusive" if is_diff else "Show exclusive",
         ),
         create_svg_text(
             "search",
@@ -1617,13 +1617,21 @@ def create_svg_js_css(
         searching = 0;
         currentSearchTerm = null;
         hoverSearchTerm = null;
-        exclusiveMode = false;
+        // Differential flame graphs default to the exclusive view, since the
+        // frame width is scaled to the absolute baseline/target consumption
+        // and only the color hue distinguishes inclusive and exclusive
+        // deltas there (see updateExclusiveView).
+        exclusiveMode = isDiff;
 
         nameTypeLabel.classList.add("hide");
         inclusiveLabel.classList.add("hide");
         exclusiveLabel.classList.add("hide");
         matchedHoverLabel.classList.add("hide");
         matchedSearchLabel.classList.add("hide");
+
+        if (exclusiveMode) {{
+            updateExclusiveView();
+        }}
     }}
 
     // event listeners
