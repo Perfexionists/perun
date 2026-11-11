@@ -348,7 +348,7 @@ class Settings:
     )
 
     DefaultBgColors: ClassVar[str] = ""
-    DefaultColors: ClassVar[ColorPalettes] = ColorPalettes.default()
+    DefaultColors: ClassVar[str] = ColorPalettes.default().value
     DefaultCountName: ClassVar[str] = "samples"
     DefaultEncoding: ClassVar[str] = ""
     DefaultFactor: ClassVar[float] = 1.0
@@ -386,7 +386,7 @@ class Settings:
         infile: Path,
         *,
         bgcolors: str = DefaultBgColors,
-        colors: ColorPalettes = DefaultColors,
+        colors: str = DefaultColors,
         countname: str = DefaultCountName,
         cp: bool = DefaultPaletteFlag,
         encoding: str = DefaultEncoding,
@@ -477,7 +477,7 @@ class Settings:
         """
         self.infile: Path = infile
         self.bg_colors: str = bgcolors
-        self.colors: ColorPalettes = colors
+        self.colors: ColorPalettes = ColorPalettes(colors)
         self.count_name: str = countname
         self.encoding: str = encoding
         self.factor: float = factor
@@ -769,13 +769,24 @@ class Colors:
         self.palette_map: dict[str, str] = self._init_palette_cache(has_consistent_palette)
         self.consistent_palette_flag: bool = has_consistent_palette
         # Select the appropriate __getitem__ method depending on whether we can
-        # or cannot use a color cache. When random coloring is requested, even
-        # frames with identical names should compute a new color every time,
-        # hence the cache cannot be used.
-        if use_random:
-            self.__getitem__ = self._getitem_random
+        # or cannot use a color cache, and whether the color function needs the 'self' context.
+        # When random coloring is requested, even frames with identical names should compute
+        # a new color every time, hence the cache cannot be used.
+        if palette in (
+            ColorPalettes.JAVA,
+            ColorPalettes.JS,
+            ColorPalettes.PERL,
+            ColorPalettes.CHAIN,
+        ):
+            if use_random:
+                self.__getitem__ = self._getitem_random_ctx
+            else:
+                self.__getitem__ = self._getitem_cached_ctx
         else:
-            self.__getitem__ = self._getitem_cached
+            if use_random:
+                self.__getitem__ = self._getitem_random
+            else:
+                self.__getitem__ = self._getitem_cached
 
     @staticmethod
     def _init_color_functions(use_hash: bool, use_random: bool) -> list[ColoringFn]:
@@ -1288,7 +1299,7 @@ class Colors:
     def _getitem_cached(self, name: str) -> str:
         """Use cache to obtain/store frame color.
 
-        Do not use this directly, it is one of two __getitem__ variants that
+        Do not use this directly, it is one of four __getitem__ variants that
         are chosen programmatically during runtime.
 
         :param name: the frame name to color.
@@ -1303,8 +1314,48 @@ class Colors:
             self.palette_map[name] = new_color
             return new_color
 
+    def _getitem_cached_ctx(self, name: str) -> str:
+        """Use cache to obtain/store frame color.
+
+        This variant calls a function that requires the 'self' parameter.
+
+        Do not use this directly, it is one of four __getitem__ variants that
+        are chosen programmatically during runtime.
+
+        :param name: the frame name to color.
+
+        :return: a (possibly cached) RGB color string for the given ``name``.
+        """
+        try:
+            return self.palette_map[name]
+        except KeyError:
+            # Known mypy issue: https://github.com/python/mypy/issues/17438.
+            new_color = self.color_fn(self, name)  # type: ignore
+            self.palette_map[name] = new_color
+            return new_color
+
     def _getitem_random(self, name: str) -> str:
         """Compute a new random color for the frame name.
+
+        Do not use this directly, it is one of four __getitem__ variants that
+        are chosen programmatically during runtime.
+
+        :param name: the frame name to color.
+
+        :return: a new RGB color string for the given ``name``.
+        """
+        # Handle the delimiter frames.
+        if name == "--":
+            return Colors.RGBvdgrey
+        if name == "-":
+            return Colors.RGBdgrey
+        # Known mypy issue: https://github.com/python/mypy/issues/17438.
+        return self.color_fn(name)  # type: ignore
+
+    def _getitem_random_ctx(self, name: str) -> str:
+        """Compute a new random color for the frame name.
+
+        This variant calls a function that requires the 'self' parameter.
 
         Do not use this directly, it is one of two __getitem__ variants that
         are chosen programmatically during runtime.
@@ -1319,7 +1370,7 @@ class Colors:
         if name == "-":
             return Colors.RGBdgrey
         # Known mypy issue: https://github.com/python/mypy/issues/17438.
-        return self.color_fn(name)  # type: ignore
+        return self.color_fn(self, name)  # type: ignore
 
 
 #### SECTION: SVG UTILITIES
@@ -3598,7 +3649,7 @@ def create_flame_graph(
     profile: Path | FoldedData | FoldedDiffData,
     *,
     bgcolors: str = ...,
-    colors: ColorPalettes = ...,
+    colors: str = ...,
     countname: str = ...,
     cp: bool = ...,
     encoding: str = ...,
@@ -3634,7 +3685,7 @@ def create_flame_graph(
     profile: Path | FoldedData | FoldedDiffData,
     *,
     bgcolors: str = ...,
-    colors: ColorPalettes = ...,
+    colors: str = ...,
     countname: str = ...,
     cp: bool = ...,
     encoding: str = ...,
@@ -3669,7 +3720,7 @@ def create_flame_graph(
     profile: Path | FoldedData | FoldedDiffData,
     *,
     bgcolors: str = Settings.DefaultBgColors,
-    colors: ColorPalettes = Settings.DefaultColors,
+    colors: str = Settings.DefaultColors,
     countname: str = Settings.DefaultCountName,
     cp: bool = Settings.DefaultPaletteFlag,
     encoding: str = Settings.DefaultEncoding,
@@ -3830,8 +3881,8 @@ def initialize_cli_options(cli_parser: argparse.ArgumentParser) -> None:
     )
     cli_parser.add_argument(
         "--colors",
-        type=ColorPalettes,
-        default=Settings.DefaultColors.value,
+        type=str,
+        default=Settings.DefaultColors,
         choices=ColorPalettes.supported(),
         help="Set color palette for frames (default: %(default)s).",
     )
