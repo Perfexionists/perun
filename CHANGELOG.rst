@@ -1,6 +1,14 @@
 Changelog
 =========
 
+
+0.28.4 (2026-11-10)
+-------------------
+
+  - Fix a bug with `--flamegraph-colors` not propagating correctly.
+  - Fix a bug with certain flame graphs color throwing an exception.
+
+
 0.28.3 (2026-10-24)
 -------------------
 
